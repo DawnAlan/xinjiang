@@ -27,8 +27,8 @@ npm run dev
 |         应用         |       启动类        | 端口号  |
 |:---------------:|:-------------------:|:----:|
 |  cj-nacos-app   |  CjCloudNacosApp    | 8848 |
-| cj-gateway-app  |  CjCloudGatewayApp  | 9003 |
 | cj-actuator-app |  CjCloudActuatorApp | 9001 |
+| cj-gateway-app  |  CjCloudGatewayApp  | 9003 |
 | cj-sentinel-app |  CjCloudSentinelApp | 9002 |
 | cj-xxl-job-app  |  CjCloudXxlJobApp   | 9004 |
 | cj-web-app      |  CjCloudWebApp      | 9101 |
