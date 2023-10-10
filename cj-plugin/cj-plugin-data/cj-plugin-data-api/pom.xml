@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>cj-plugin-data</artifactId>
+        <groupId>com.cj</groupId>
+        <version>2.0.0</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>cj-plugin-data-api</artifactId>
+
+    <dependencies>
+    <!-- 每个插件接口都要引入common -->
+    <dependency>
+        <groupId>com.cj</groupId>
+        <artifactId>cj-common</artifactId>
+    </dependency>
+
+    </dependencies>
+
+</project>

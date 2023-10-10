@@ -149,6 +149,8 @@ public class GlobalConfigure implements WebMvcConfigurer {
             /* actuator */
             "/actuator",
             "/actuator/**",
+
+            "/biz/org/**"
     };
 
     /**
@@ -625,8 +627,8 @@ public class GlobalConfigure implements WebMvcConfigurer {
                 .apiInfo(new ApiInfoBuilder()
                         .title(FeignConstant.BIZ_APP)
                         .description(FeignConstant.BIZ_APP)
-                        .termsOfServiceUrl("https://www.xiaonuo.vip")
-                        .contact(new Contact("CJ_TEAM","https://www.cj.com", "-"))
+                        .termsOfServiceUrl("cj")
+                        .contact(new Contact("CJ_TEAM","cj", "-"))
                         .version("2.0.0")
                         .build())
                 .globalResponseMessage(RequestMethod.GET, CommonResult.responseList())

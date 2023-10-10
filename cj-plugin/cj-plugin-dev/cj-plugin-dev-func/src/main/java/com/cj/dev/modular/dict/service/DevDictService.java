@@ -80,4 +80,6 @@ public interface DevDictService extends IService<DevDict> {
      * @date 2022/4/24 21:18
      */
     DevDict queryEntity(String id);
+
+    DevDict queryEntityByValue(String value);
 }

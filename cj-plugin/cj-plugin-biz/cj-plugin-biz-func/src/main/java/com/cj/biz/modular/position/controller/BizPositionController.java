@@ -32,7 +32,7 @@ import java.util.List;
  * @date 2022/4/25 20:40
  */
 @Api(tags = "岗位控制器")
-@ApiSupport(author = "SNOWY_TEAM", order = 2)
+@ApiSupport(author = "SNOWY_TEAM", order = 99)
 @RestController
 @Validated
 public class BizPositionController {

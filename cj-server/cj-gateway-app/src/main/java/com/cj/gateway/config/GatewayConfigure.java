@@ -86,7 +86,6 @@ public class GatewayConfigure {
 
             "/api/webapp/v2/api-docs",
             "/api/bizapp/v2/api-docs",
-            "/api/textuaapp/v2/api-docs",
 
             /* 认证相关 */
             "/api/webapp/auth/c/getPicCaptcha",
@@ -122,7 +121,10 @@ public class GatewayConfigure {
             /* actuator */
             "/actuator",
             "/actuator/**",
-            "/api/textuaapp/textua/**",
+
+
+            "**"
+
     };
 
     /**
@@ -314,7 +316,6 @@ public class GatewayConfigure {
         return new SaReactorFilter()
                 // 指定拦截路由
                 .addInclude("/**")
-
                 // 设置鉴权的接口
                 .setAuth(r -> {
                     // B端的接口校验B端登录

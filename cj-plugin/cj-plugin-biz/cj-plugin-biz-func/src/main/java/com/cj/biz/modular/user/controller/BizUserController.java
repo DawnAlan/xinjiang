@@ -38,7 +38,7 @@ import java.util.List;
  * @date 2022/4/22 9:34
  **/
 @Api(tags = "人员控制器")
-@ApiSupport(author = "SNOWY_TEAM", order = 9)
+@ApiSupport(author = "SNOWY_TEAM", order = 99)
 @RestController
 @Validated
 public class BizUserController {

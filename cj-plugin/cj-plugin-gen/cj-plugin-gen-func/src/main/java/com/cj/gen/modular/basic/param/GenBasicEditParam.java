@@ -62,10 +62,10 @@ public class GenBasicEditParam {
     @NotNull(message = "menuPid不能为空")
     private String menuPid;
 
-    /** 移动端所属模块 */
-    @ApiModelProperty(value = "移动端所属模块", required = true, position = 10)
+    /** 移动端所属模块
+    @ApiModelProperty(value = "移动端所属模块", required = false, position = 10)
     @NotNull(message = "mobileModule不能为空")
-    private String mobileModule;
+    private String mobileModule;*/
 
     /** 功能名 */
     @ApiModelProperty(value = "功能名", required = true, position = 11)

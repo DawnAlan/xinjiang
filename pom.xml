@@ -7,7 +7,7 @@
     <artifactId>cj-cloud</artifactId>
     <name>cj-cloud</name>
     <version>2.0.0</version>
-    <description>cj-cloud快速开发平台</description>
+    <description>cj-cloud云平台</description>
     <packaging>pom</packaging>
 
     <parent>
@@ -665,10 +665,12 @@
                 <artifactId>sa-token-reactor-spring-boot-starter</artifactId>
                 <version>${sa.token.version}</version>
             </dependency>
+
         </dependencies>
     </dependencyManagement>
 
     <build>
+        <defaultGoal>compile</defaultGoal>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

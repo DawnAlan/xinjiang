@@ -33,4 +33,8 @@ public class DevConfigFeignProvider implements DevConfigFeign {
     public String getValueByKey(@RequestParam("key") String key) {
         return devConfigApiProvider.getValueByKey(key);
     }
+
+
+
+
 }

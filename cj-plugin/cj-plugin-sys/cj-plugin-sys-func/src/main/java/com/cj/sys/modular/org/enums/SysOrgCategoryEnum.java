@@ -1,4 +1,3 @@
-
 package com.cj.sys.modular.org.enums;
 
 import lombok.Getter;

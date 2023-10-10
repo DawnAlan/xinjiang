@@ -186,10 +186,10 @@
         </dependency>
 
         <!-- jwt token -->
-<!--        <dependency>-->
-<!--            <groupId>io.jsonwebtoken</groupId>-->
-<!--            <artifactId>jjwt</artifactId>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>io.jsonwebtoken</groupId>-->
+        <!--            <artifactId>jjwt</artifactId>-->
+        <!--        </dependency>-->
 
         <!-- 数据库驱动,可根据自己需要自行删减 -->
         <dependency>

@@ -127,13 +127,6 @@
             <version>${project.parent.version}</version>
         </dependency>
 
-        <!-- 业务功能插件 -->
-        <dependency>
-            <groupId>com.cj</groupId>
-            <artifactId>cj-plugin-biz-func</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-
         <!-- 系统功能插件Feign接口 -->
         <dependency>
             <groupId>com.cj</groupId>
@@ -148,10 +141,24 @@
             <version>${project.parent.version}</version>
         </dependency>
 
-        <!-- C端功能插件 -->
+        <!-- 业务功能插件 -->
         <dependency>
             <groupId>com.cj</groupId>
+            <artifactId>cj-plugin-biz-func</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+
+        <!-- C端功能插件 -->
+        <!--<dependency>
+            <groupId>com.cj</groupId>
             <artifactId>cj-plugin-client-func</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>-->
+
+        <!-- 项目基础功能插件 -->
+        <dependency>
+            <groupId>com.cj</groupId>
+            <artifactId>cj-plugin-project-func</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
 

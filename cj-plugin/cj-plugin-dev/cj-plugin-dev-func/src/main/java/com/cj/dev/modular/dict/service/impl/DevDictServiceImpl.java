@@ -1,4 +1,3 @@
-
 package com.cj.dev.modular.dict.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
@@ -80,7 +79,7 @@ public class DevDictServiceImpl extends ServiceImpl<DevDictMapper, DevDict> impl
         if (ObjectUtil.isNotEmpty(devDictListParam.getCategory())) {
             lambdaQueryWrapper.eq(DevDict::getCategory, devDictListParam.getCategory());
         }
-        return this.list(lambdaQueryWrapper);
+        return this.list(lambdaQueryWrapper.orderByAsc(DevDict::getSortCode));
     }
 
     @Override
@@ -177,6 +176,15 @@ public class DevDictServiceImpl extends ServiceImpl<DevDictMapper, DevDict> impl
         DevDict devDict = this.getById(id);
         if (ObjectUtil.isEmpty(devDict)) {
             throw new CommonException("字典不存在，id值为：{}", id);
+        }
+        return devDict;
+    }
+
+    public DevDict queryEntityByValue(String value) {
+        DevDict devDict = this.getOne(new LambdaQueryWrapper<DevDict>()
+                .eq(DevDict::getDictValue, value));
+        if (ObjectUtil.isEmpty(devDict)) {
+            throw new CommonException("字典不存在，value值为：{}", value);
         }
         return devDict;
     }

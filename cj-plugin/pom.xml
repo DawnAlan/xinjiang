@@ -32,6 +32,8 @@
 
         <!-- 系统功能插件 -->
         <module>cj-plugin-sys</module>
+        <module>cj-plugin-project</module>
+        <module>cj-plugin-data</module>
     </modules>
 
 </project>

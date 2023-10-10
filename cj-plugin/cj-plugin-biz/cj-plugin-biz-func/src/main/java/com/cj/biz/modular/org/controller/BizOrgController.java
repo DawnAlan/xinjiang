@@ -2,6 +2,7 @@
 package com.cj.biz.modular.org.controller;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
+import cn.dev33.satoken.annotation.SaIgnore;
 import cn.hutool.core.lang.tree.Tree;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
@@ -33,7 +34,7 @@ import java.util.List;
  * @date 2022/4/24 19:55
  */
 @Api(tags = "机构控制器")
-@ApiSupport(author = "SNOWY_TEAM", order = 1)
+@ApiSupport(author = "SNOWY_TEAM", order = 99)
 @RestController
 @Validated
 public class BizOrgController {
@@ -156,7 +157,7 @@ public class BizOrgController {
      */
     @ApiOperationSupport(order = 8)
     @ApiOperation("获取人员选择器")
-    @SaCheckPermission("/biz/org/userSelector")
+    @SaIgnore
     @GetMapping("/biz/org/userSelector")
     public CommonResult<Page<BizUser>> userSelector(BizOrgSelectorUserParam bizOrgSelectorUserParam) {
         return CommonResult.data(bizOrgService.userSelector(bizOrgSelectorUserParam));

@@ -1,11 +1,32 @@
 
 package com.cj.dev.api;
 
+import cn.hutool.json.JSONObject;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.List;
+
+
 /**
  * 字典API
  *
- * @author xuyuxiang
- * @date 2022/9/2 15:58
+ * @author LB
+ * @date 2023/9/19 15:58
  */
 public interface DevDictApi {
+
+    /**
+     * 根据字典值查询其下所有子字典
+     *
+     * @param value 字典的值 DictValue
+     * @return
+     */
+    List<JSONObject> getDictByValue(@RequestParam("value") String value);
+
+    /**
+     * 根据字典名称查询其下所有子字典
+     * @param name 字典的名称 DictLabel
+     * @return
+     */
+    List<JSONObject> getDictByName(@RequestParam("name") String name);
 }

@@ -44,6 +44,7 @@ public class CommonExcelCustomMergeStrategy extends AbstractMergeStrategy {
         this.targetColumnIndex = targetColumnIndex;
     }
 
+    /*方法*/
 
     @Override
     protected void merge(Sheet sheet, Cell cell, Head head, Integer relativeRowIndex) {

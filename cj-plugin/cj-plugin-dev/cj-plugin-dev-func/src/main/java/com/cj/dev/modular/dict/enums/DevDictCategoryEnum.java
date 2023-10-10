@@ -21,7 +21,12 @@ public enum DevDictCategoryEnum {
     /**
      * 业务
      */
-    BIZ("BIZ");
+    BIZ("BIZ"),
+
+    /**
+     * 考证字典
+     */
+    FIDUCIAL("FIDUCIAL");
 
     private final String value;
 
@@ -30,7 +35,7 @@ public enum DevDictCategoryEnum {
     }
 
     public static void validate(String value) {
-        boolean flag = FRM.getValue().equals(value) || BIZ.getValue().equals(value);
+        boolean flag = FRM.getValue().equals(value) || BIZ.getValue().equals(value)|| FIDUCIAL.getValue().equals(value);
         if(!flag) {
             throw new CommonException("不支持的字典分类：{}", value);
         }

@@ -107,9 +107,9 @@ import java.util.stream.Collectors;
 @Service
 public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> implements SysUserService {
 
-    private static final String SNOWY_SYS_DEFAULT_PASSWORD_KEY = "SNOWY_SYS_DEFAULT_PASSWORD";
+    private static final String SYS_DEFAULT_PASSWORD_KEY = "SYS_DEFAULT_PASSWORD";
 
-    private static final String SNOWY_SYS_DEFAULT_WORKBENCH_DATA_KEY = "SNOWY_SYS_DEFAULT_WORKBENCH_DATA";
+    private static final String SYS_DEFAULT_WORKBENCH_DATA_KEY = "SYS_DEFAULT_WORKBENCH_DATA";
 
     private static final String USER_VALID_CODE_CACHE_KEY = "user-validCode:";
 
@@ -228,7 +228,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
             sysUser.setAvatar(CommonAvatarUtil.generateImg(sysUser.getName()));
         }
         // 设置默认密码
-        sysUser.setPassword(CommonCryptogramUtil.doHashValue(devConfigApi.getValueByKey(SNOWY_SYS_DEFAULT_PASSWORD_KEY)));
+        sysUser.setPassword(CommonCryptogramUtil.doHashValue(devConfigApi.getValueByKey(SYS_DEFAULT_PASSWORD_KEY)));
         // 设置状态
         sysUser.setUserStatus(SysUserStatusEnum.ENABLE.getValue());
         this.save(sysUser);
@@ -367,7 +367,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     public void resetPassword(SysUserIdParam sysUserIdParam) {
         this.update(new LambdaUpdateWrapper<SysUser>().eq(SysUser::getId,
                 sysUserIdParam.getId()).set(SysUser::getPassword,
-                CommonCryptogramUtil.doHashValue(devConfigApi.getValueByKey(SNOWY_SYS_DEFAULT_PASSWORD_KEY))));
+                CommonCryptogramUtil.doHashValue(devConfigApi.getValueByKey(SYS_DEFAULT_PASSWORD_KEY))));
     }
 
     @Override
@@ -874,7 +874,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         if (ObjectUtil.isNotEmpty(sysRelation)) {
             return sysRelation.getExtJson();
         }
-        return devConfigApi.getValueByKey(SNOWY_SYS_DEFAULT_WORKBENCH_DATA_KEY);
+        return devConfigApi.getValueByKey(SYS_DEFAULT_WORKBENCH_DATA_KEY);
     }
 
     @Override
@@ -1096,7 +1096,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
                     // 设置默认头像
                     sysUser.setAvatar(CommonAvatarUtil.generateImg(sysUser.getName()));
                     // 设置默认密码
-                    sysUser.setPassword(CommonCryptogramUtil.doHashValue(devConfigApi.getValueByKey(SNOWY_SYS_DEFAULT_PASSWORD_KEY)));
+                    sysUser.setPassword(CommonCryptogramUtil.doHashValue(devConfigApi.getValueByKey(SYS_DEFAULT_PASSWORD_KEY)));
                     // 设置排序码
                     sysUser.setSortCode(99);
                     // 设置状态

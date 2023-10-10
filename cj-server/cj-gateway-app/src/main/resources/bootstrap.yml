@@ -16,3 +16,6 @@ spring:
         file-extension: yaml
         username: nacos
         password: nacos
+    gateway:
+      x-forwarded:
+        prefix-enabled: false
