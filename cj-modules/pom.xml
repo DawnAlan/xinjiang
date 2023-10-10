@@ -21,9 +21,6 @@
 
         <!-- 业务应用启动组件 -->
         <module>cj-biz-app</module>
-
-        <!-- 考证业务类 -->
-        <module>cj-textua-app</module>
     </modules>
 
 </project>

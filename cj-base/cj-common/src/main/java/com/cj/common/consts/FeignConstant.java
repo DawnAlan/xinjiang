@@ -14,7 +14,4 @@ public final class FeignConstant {
     /** BIZ_APP **/
     public static final String BIZ_APP = "cj-biz-app";
 
-    /** TEXTUA_APP **/
-    public static final String TEXTUA_APP = "cj-textua-app";
-
 }
