@@ -34,6 +34,11 @@
         <module>cj-plugin-sys</module>
         <module>cj-plugin-project</module>
         <module>cj-plugin-data</module>
+        <module>cj-plugin-waterResources</module>
+        <module>cj-plugin-flood</module>
+        <module>cj-plugin-model</module>
+        <module>cj-plugin-dataSynchronization</module>
+        <module>cj-plugin-middleDatabase</module>
     </modules>
 
 </project>

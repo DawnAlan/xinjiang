@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cj.flood.func.modular.dispatch.mapper.FloodControlOperationMapper">
+    <select id="selectFloodControlOperationList" parameterType="com.cj.flood.func.modular.dispatch.bean.req.FloodControlOperationListReq" resultType="com.cj.flood.func.modular.dispatch.bean.res.FloodControlOperationListRes">
+        select fco.ID,fco.SCHEME_NAME,iwf.PROGRAMME_NAME,fco.CREATE_BY,iwf.PREDICTION_TIME
+        from FLOOD_CONTROL_OPERATION fco
+        left join INCOMING_WATER_FORECAST iwf on iwf.ID = fco.FORECASTING_SCHEME_ID
+        <where>
+            <if test="waterTransferReq.schemeName !=null and waterTransferReq.schemeName !=''">
+                AND fco.SCHEME_NAME LIKE CONCAT('%',#{waterTransferReq.schemeName},'%')
+            </if>
+            <if test="waterTransferReq.createBy !=null and waterTransferReq.createBy !=''">
+                AND fco.CREATE_BY LIKE CONCAT('%',#{waterTransferReq.createBy},'%')
+            </if>
+            <if test="waterTransferReq.startTime !=null and waterTransferReq.endTime != null">
+                AND iwf.PREDICTION_TIME BETWEEN #{waterTransferReq.startTime} and #{waterTransferReq.endTime}
+            </if>
+        </where>
+    </select>
+</mapper>

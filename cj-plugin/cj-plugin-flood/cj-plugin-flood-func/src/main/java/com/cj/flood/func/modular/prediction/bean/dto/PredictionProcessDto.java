@@ -1,0 +1,18 @@
+package com.cj.flood.func.modular.prediction.bean.dto;
+
+import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
+
+import java.io.Serializable;
+import java.util.Date;
+
+@Data
+public class PredictionProcessDto implements Serializable {
+
+    @ApiModelProperty(value = "时间")
+    private Date time;
+
+    @ApiModelProperty(value = "来水过程\\入库流量")
+    private Double preQ;
+
+}

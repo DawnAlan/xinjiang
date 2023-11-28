@@ -192,10 +192,16 @@
         <!--        </dependency>-->
 
         <!-- 数据库驱动,可根据自己需要自行删减 -->
+        <!-- 达梦数据库 -->
         <dependency>
+            <groupId>com.dameng</groupId>
+            <artifactId>Dm8JdbcDriver18</artifactId>
+        </dependency>
+
+        <!--<dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-        </dependency>
+        </dependency>-->
         <!--
         <dependency>
             <groupId>com.oracle</groupId>

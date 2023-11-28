@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cj.waterresources.func.modular.trendsTable.mapper.TrendsTableParamMapper">
+
+    <resultMap id="BaseResultMap" type="com.cj.waterresources.func.modular.trendsTable.entity.TrendsTableParam">
+            <id property="ID" column="ID" jdbcType="VARCHAR"/>
+            <result property="p_ID" column="P_ID" jdbcType="VARCHAR"/>
+            <result property="PARAM_NAME" column="PARAM_NAME" jdbcType="VARCHAR"/>
+            <result property="IS_PARENT" column="IS_PARENT" jdbcType="VARCHAR"/>
+            <result property="ORDER_NUM" column="ORDER_NUM" jdbcType="INTEGER"/>
+            <result property="USER_USE" column="USER_USE" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        ID,P_ID,PARAM_NAME,
+        IS_PARENT,ORDER_NUM,USER_USE
+    </sql>
+</mapper>

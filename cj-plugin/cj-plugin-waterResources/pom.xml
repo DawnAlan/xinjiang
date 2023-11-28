@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>cj-plugin</artifactId>
+        <groupId>com.cj</groupId>
+        <version>2.0.0</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>cj-plugin-waterResources</artifactId>
+    <packaging>pom</packaging>
+    <description>水资源业务管理系统基础插件</description>
+
+    <modules>
+        <module>cj-plugin-waterResources-feign</module>
+        <module>cj-plugin-waterResources-func</module>
+        <module>cj-plugin-waterResources-api</module>
+    </modules>
+
+
+</project>

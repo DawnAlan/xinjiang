@@ -46,10 +46,10 @@
             <artifactId>dynamic-datasource-spring-boot-starter</artifactId>
         </dependency>
 
-        <!-- mysql -->
+        <!-- 达梦数据库 -->
         <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
+            <groupId>com.dameng</groupId>
+            <artifactId>Dm8JdbcDriver18</artifactId>
         </dependency>
 
         <!-- oracle -->

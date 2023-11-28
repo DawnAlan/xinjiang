@@ -21,6 +21,11 @@
 
         <!-- 业务应用启动组件 -->
         <module>cj-biz-app</module>
+
+        <!-- 水资源系统组件 -->
+        <module>cj-waterResources-app</module>
+        <module>cj-flood-app</module>
+        <module>cj-dataSynchronization-app</module>
     </modules>
 
 </project>

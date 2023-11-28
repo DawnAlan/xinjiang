@@ -1,0 +1,30 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.cj</groupId>
+        <artifactId>cj-plugin-dataSynchronization</artifactId>
+        <version>2.0.0</version>
+    </parent>
+
+    <artifactId>cj-plugin-dataSynchronization-func</artifactId>
+    <packaging>jar</packaging>
+    <name>数据同步基础插件func接口</name>
+
+    <dependencies>
+        <!-- 每个插件接口都要引入common -->
+        <dependency>
+            <groupId>com.cj</groupId>
+            <artifactId>cj-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>dynamic-datasource-spring-boot-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.cj</groupId>
+            <artifactId>cj-plugin-middleDatabase-func</artifactId>
+            <version>2.0.0</version>
+        </dependency>
+    </dependencies>
+</project>

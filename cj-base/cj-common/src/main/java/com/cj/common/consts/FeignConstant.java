@@ -14,4 +14,10 @@ public final class FeignConstant {
     /** BIZ_APP **/
     public static final String BIZ_APP = "cj-biz-app";
 
+    /** WATER_RESOURCES_APP **/
+    public static final String WATER_RESOURCES_APP = "cj-water-app";
+
+    public static final String FLOOD_APP = "cj-flood-app";
+    public static final String DATA_SYNCHRONIZATION_APP = "cj-dataSynchronization-app";
+
 }

@@ -72,7 +72,8 @@
         <mssql.connector.java.version>9.2.1.jre8</mssql.connector.java.version>
         <mybatis.plus.version>3.5.3.1</mybatis.plus.version>
         <mybatis.version>3.5.10</mybatis.version>
-        <mysql.connector.java.version>8.0.28</mysql.connector.java.version>
+        <!--<mysql.connector.java.version>8.0.28</mysql.connector.java.version>-->
+        <dm-connector-java.version>8.1.1.49</dm-connector-java.version>
         <netty.common.version>4.1.89.Final</netty.common.version>
         <netty.handler.version>4.1.89.Final</netty.handler.version>
         <okhttp3.version>4.10.0</okhttp3.version>
@@ -231,6 +232,68 @@
                 <version>${cj.version}</version>
             </dependency>
 
+            <!-- cj-plugin-flood-api -->
+            <dependency>
+                <groupId>com.cj</groupId>
+                <artifactId>cj-plugin-flood-api</artifactId>
+                <version>${cj.version}</version>
+            </dependency>
+
+            <!-- cj-plugin-flood-feign -->
+            <dependency>
+                <groupId>com.cj</groupId>
+                <artifactId>cj-plugin-flood-feign</artifactId>
+                <version>${cj.version}</version>
+            </dependency>
+
+            <!-- cj-plugin-flood-func -->
+            <dependency>
+                <groupId>com.cj</groupId>
+                <artifactId>cj-plugin-flood-func</artifactId>
+                <version>${cj.version}</version>
+            </dependency>
+
+            <!-- cj-plugin-model-api -->
+            <dependency>
+                <groupId>com.cj</groupId>
+                <artifactId>cj-plugin-model-api</artifactId>
+                <version>${cj.version}</version>
+            </dependency>
+
+            <!-- cj-plugin-model-feign -->
+            <dependency>
+                <groupId>com.cj</groupId>
+                <artifactId>cj-plugin-model-feign</artifactId>
+                <version>${cj.version}</version>
+            </dependency>
+
+            <!-- cj-plugin-model-func -->
+            <dependency>
+                <groupId>com.cj</groupId>
+                <artifactId>cj-plugin-model-func</artifactId>
+                <version>${cj.version}</version>
+            </dependency>
+
+            <!-- cj-plugin-waterResources-api -->
+            <dependency>
+                <groupId>com.cj</groupId>
+                <artifactId>cj-plugin-waterResources-api</artifactId>
+                <version>${cj.version}</version>
+            </dependency>
+
+            <!-- cj-plugin-waterResources-feign -->
+            <dependency>
+                <groupId>com.cj</groupId>
+                <artifactId>cj-plugin-waterResources-feign</artifactId>
+                <version>${cj.version}</version>
+            </dependency>
+
+            <!-- cj-plugin-waterResources-func -->
+            <dependency>
+                <groupId>com.cj</groupId>
+                <artifactId>cj-plugin-waterResources-func</artifactId>
+                <version>${cj.version}</version>
+            </dependency>
             <!-- cj-cloud-inner-end -->
 
 
@@ -594,11 +657,11 @@
             </dependency>
 
             <!-- mysql -->
-            <dependency>
+            <!--<dependency>
                 <groupId>mysql</groupId>
                 <artifactId>mysql-connector-java</artifactId>
                 <version>${mysql.connector.java.version}</version>
-            </dependency>
+            </dependency>-->
 
             <!-- postgresql -->
             <!--<dependency>
@@ -608,11 +671,11 @@
             </dependency>-->
 
             <!-- 达梦数据库 -->
-            <!--<dependency>
+            <dependency>
                 <groupId>com.dameng</groupId>
-                <artifactId>DmJdbcDriver18</artifactId>
-                <version>${dm.connector.java.version}</version>
-            </dependency>-->
+                <artifactId>Dm8JdbcDriver18</artifactId>
+                <version>${dm-connector-java.version}</version>
+            </dependency>
 
             <!-- 人大金仓数据库 -->
             <!--<dependency>
@@ -653,11 +716,12 @@
             </dependency>-->
 
             <!-- mssql -->
-            <!--<dependency>
+            <dependency>
                 <groupId>com.microsoft.sqlserver</groupId>
                 <artifactId>mssql-jdbc</artifactId>
                 <version>${mssql.connector.java.version}</version>
-            </dependency>-->
+            </dependency>
+
 
             <!-- Sa-Token 权限认证（Reactor响应式集成）, 在线文档：https://sa-token.cc -->
             <dependency>
