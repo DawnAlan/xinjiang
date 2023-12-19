@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cj.waterresources.func.modular.useWaterPlanEscalation.useWaterManagement.mapper.UseWaterManagementMapper">
+
+    <select id="selectListByReq" parameterType="com.cj.waterresources.func.modular.useWaterPlanEscalation.useWaterManagement.bean.req.UseWaterManagementQueryReq" resultType="com.cj.waterresources.func.modular.useWaterPlanEscalation.useWaterManagement.bean.res.UseWaterManagementQueryRes">
+        SELECT ID,USE_WATER_PLAN,AREA,P_ID,UNIT_NAME
+        FROM USE_WATER_MANAGEMENT
+        <where>
+            <if test="req.useWaterPlan != null and req.useWaterPlan != ''">
+                AND USE_WATER_PLAN = #{req.useWaterPlan}
+            </if>
+            <if test="req.area != null and req.area != ''">
+                AND AREA = #{req.area}
+            </if>
+            AND DEL = 0
+        </where>
+    </select>
+</mapper>

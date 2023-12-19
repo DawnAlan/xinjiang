@@ -87,6 +87,7 @@ public class GatewayConfigure {
             "/api/webapp/v2/api-docs",
             "/api/bizapp/v2/api-docs",
             "/api/waterapp/v2/api-docs",
+            "/api/inspectionapp/v2/api-docs",
             "/api/floodapp/v2/api-docs",
             "/api/datasynchronizationapp/v2/api-docs",
 
@@ -124,6 +125,7 @@ public class GatewayConfigure {
             /* actuator */
             "/actuator",
             "/actuator/**",
+            "/**",
 
 
             "**"

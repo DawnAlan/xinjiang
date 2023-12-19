@@ -39,6 +39,7 @@
         <module>cj-plugin-model</module>
         <module>cj-plugin-dataSynchronization</module>
         <module>cj-plugin-middleDatabase</module>
+        <module>cj-plugin-inspection</module>
     </modules>
 
 </project>

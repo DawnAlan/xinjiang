@@ -26,6 +26,7 @@
         <module>cj-waterResources-app</module>
         <module>cj-flood-app</module>
         <module>cj-dataSynchronization-app</module>
+        <module>cj-inspection-app</module>
     </modules>
 
 </project>

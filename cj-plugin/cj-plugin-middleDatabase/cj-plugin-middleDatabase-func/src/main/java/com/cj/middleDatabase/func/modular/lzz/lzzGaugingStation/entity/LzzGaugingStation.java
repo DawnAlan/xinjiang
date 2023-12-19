@@ -1,0 +1,34 @@
+package com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.entity;
+
+import java.util.Date;
+import com.baomidou.mybatisplus.extension.activerecord.Model;
+import lombok.Data;
+
+import java.io.Serializable;
+
+/**
+ * 水位站数据表(LzzGaugingStation)表实体类
+ *
+ * @author makejava
+ * @since 2023-12-05 17:55:45
+ */
+@Data
+public class LzzGaugingStation extends Model<LzzGaugingStation> {
+    //主键ID
+    private String id;
+    //站点名
+    private String stationName;
+    //相对水位
+    private Double relativeWaterLevel;
+    //相对流量
+    private Double flow;
+    //采集时间
+    private Date gatherTime;
+    //温度
+    private Double temperature;
+    //实时库容
+    private Double storageCapacity;
+    //树结构ID
+    private String treeId;
+}
+

@@ -13,3 +13,9 @@ spring:
         file-extension: yaml
         username: nacos
         password: nacos
+irrigatedArea:
+  ip: http://10.1.1.82:9710
+  ip1: http://10.1.1.82:9700
+  cmd: D:\tth_system\environment\js\md5.js
+  heDong: 西二支四队,东干第一支,西三支计量点,东二支计量点,西一支三队,西二支五队,东干渠计量点,园林队,东一支计量点,西一支二队,西五支,乌鲁木齐分灌区取水口(东三支)
+  heXi: 三工渠,三工绿化渠,旗帜东一支(一队),二工渠,旗帜渠,红光渠,长丰渠,长丰水厂,园艺渠,六工渠

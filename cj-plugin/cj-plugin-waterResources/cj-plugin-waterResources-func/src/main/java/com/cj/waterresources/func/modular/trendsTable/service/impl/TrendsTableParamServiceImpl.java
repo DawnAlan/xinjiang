@@ -1,22 +1,33 @@
 package com.cj.waterresources.func.modular.trendsTable.service.impl;
 
+import cn.hutool.extra.spring.SpringUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cj.common.model.RestResponse;
 import com.cj.sys.feign.SysUserFeign;
 import com.cj.waterresources.func.modular.trendsTable.bean.req.QueryTrendsTableParamReq;
+import com.cj.waterresources.func.modular.trendsTable.bean.req.TrendsTableParamAddReq;
+import com.cj.waterresources.func.modular.trendsTable.bean.req.TrendsTableParamUpdateReq;
 import com.cj.waterresources.func.modular.trendsTable.bean.res.WaterDailyParamSelectRes;
 import com.cj.waterresources.func.modular.trendsTable.entity.TrendsTableParam;
 import com.cj.waterresources.func.modular.trendsTable.service.TrendsTableParamService;
 import com.cj.waterresources.func.modular.trendsTable.mapper.TrendsTableParamMapper;
 import com.cj.common.util.UUIDUtils;
+import com.cj.waterresources.func.modular.waterPrice.totalIdToStation.entity.TotalIdToStation;
+import com.cj.waterresources.func.modular.waterPrice.totalIdToStation.service.TotalIdToStationService;
+import com.cj.waterresources.func.modular.waterPrice.waterPriceManagement.entity.WaterPriceManagement;
+import com.cj.waterresources.func.modular.waterPrice.waterPriceManagement.service.WaterPriceManagementService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 /**
@@ -32,28 +43,73 @@ public class TrendsTableParamServiceImpl extends ServiceImpl<TrendsTableParamMap
     @Autowired
     private SysUserFeign sysUserFeign;
 
+    @Autowired
+    private WaterPriceManagementService waterPriceManagementService;
+
+    @Autowired
+    private TotalIdToStationService totalIdToStationService;
+
     @Override
-    public RestResponse add(TrendsTableParam param) {
-        try {
-            param.setId(UUIDUtils.getUUID());
-            if(StringUtils.isEmpty(param.getPId())){
-                param.setPId("0");
+    @Transactional(rollbackFor=Exception.class)
+    public RestResponse add(TrendsTableParamAddReq req) {
+        TrendsTableParam one = this.lambdaQuery().eq(TrendsTableParam::getUseType, req.getUseType()).
+                eq(TrendsTableParam::getUseStation, req.getUseStation()).
+                eq(TrendsTableParam::getPId,req.getPId()).
+                eq(TrendsTableParam::getParamName, req.getParamName()).one();
+        if(one != null){
+            return RestResponse.no("该表头名称已存在，请更换名称");
+        }
+        TrendsTableParam param = new TrendsTableParam();
+        BeanUtils.copyProperties(req, param);
+        param.setId(UUIDUtils.getUUID());
+        if(StringUtils.isEmpty(param.getPId())){
+            param.setPId("0");
+        }
+        boolean save = this.save(param);
+        if(save){
+            if(!param.getPId().equals("0")){
+                this.lambdaUpdate().set(TrendsTableParam::getIsParent, 1).eq(TrendsTableParam::getId, param.getPId()).update();
             }
-            boolean save = this.save(param);
-            if(save){
-                if(!param.getPId().equals("0")){
-                    this.lambdaUpdate().set(TrendsTableParam::getIsParent, 1).eq(TrendsTableParam::getId, param.getPId()).update();
+            if(param.getUseType()==2){
+                if(!req.getParamName().equals("合计")){
+                    if(StringUtils.isEmpty(req.getUseWaterType())){
+                        throw new RuntimeException("请选择用水类型");
+                    }
+                    WaterPriceManagement waterPriceManagement = new WaterPriceManagement();
+                    waterPriceManagement.setUseWaterType(req.getUseWaterType());
+                    waterPriceManagement.setId(param.getId());
+                    waterPriceManagement.setCreateTime(new Date());
+                    waterPriceManagement.setDel(0);
+                    waterPriceManagement.setStation(param.getUseStation());
+                    waterPriceManagement.setPId(param.getPId());
+                    waterPriceManagement.setUserName(param.getParamName());
+                    boolean save1 = waterPriceManagementService.save(waterPriceManagement);
+                    if(!save1){
+                        throw new RuntimeException("保存失败");
+                    }else {
+                        return RestResponse.ok("保存成功");
+                    }
+
+                }else {
+                    TotalIdToStation  totalIdToStation = new TotalIdToStation();
+                    totalIdToStation.setStation(param.getUseStation());
+                    totalIdToStation.setTotalId(param.getId());
+                    totalIdToStation.setUseType(param.getUseType());
+                    totalIdToStation.setName(param.getParamName());
+                    boolean save2 = totalIdToStationService.save(totalIdToStation);
+                    if(save2){
+                        return RestResponse.ok("保存成功");
+                    }else {
+                        throw new RuntimeException("保存失败");
+                    }
                 }
-                return RestResponse.ok("保存成功");
             }else {
-                return RestResponse.no("保存失败");
+                return RestResponse.ok("保存成功");
             }
-        }catch (Exception e){
-            log.error("保存参数节点报错:"+e.getMessage());
-            return RestResponse.no("保存错误");
+        }else {
+            return RestResponse.no("保存失败");
         }
     }
-
     @Override
     public RestResponse delete(String id) {
         try {
@@ -65,6 +121,32 @@ public class TrendsTableParamServiceImpl extends ServiceImpl<TrendsTableParamMap
                     if(collect.size()>0){
                         boolean b1 = this.removeBatchByIds(collect);
                         if(b1){
+                            if(byId.getUseType()==2){
+                                ExecutorService pool = Executors.newSingleThreadExecutor();
+                                pool.submit(new Runnable() {
+                                    private WaterPriceManagementService waterPriceManagementService = SpringUtil.getBean(WaterPriceManagementService.class);
+                                    private TotalIdToStationService totalIdToStationService = SpringUtil.getBean(TotalIdToStationService.class);
+                                    private TrendsTableParamService trendsTableParamService = SpringUtil.getBean(TrendsTableParamService.class);
+                                    @Override
+                                    public void run() {
+                                        try {
+                                            waterPriceManagementService.removeById(id);
+                                            waterPriceManagementService.removeBatchByIds(collect);
+                                            TrendsTableParam tableParam = trendsTableParamService.getById(id);
+                                            if(null!= tableParam && tableParam.getParamName().equals("合计")){
+                                                totalIdToStationService.lambdaUpdate().eq(TotalIdToStation::getTotalId,id).remove();
+                                                List<String> collected = trendsTableParamService.lambdaQuery().eq(TrendsTableParam::getPId, id).list().stream().filter(t -> t.getParamName().equals("合计")).map(TrendsTableParam::getId).collect(Collectors.toList());
+                                                if(null != collected && collected.size()>0){
+                                                    totalIdToStationService.lambdaUpdate().in(TotalIdToStation::getTotalId,collected).remove();
+                                                }
+                                            }
+
+                                        }catch (Exception e){
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                });
+                            }
                             return RestResponse.ok("删除成功");
                         }else {
                             return RestResponse.no("删除失败");
@@ -78,6 +160,27 @@ public class TrendsTableParamServiceImpl extends ServiceImpl<TrendsTableParamMap
             }else {
                 boolean b = this.removeById(id);
                 if(b){
+                    if(byId.getUseType()==2){
+                        ExecutorService pool = Executors.newSingleThreadExecutor();
+                        pool.submit(new Runnable() {
+                            private WaterPriceManagementService waterPriceManagementService = SpringUtil.getBean(WaterPriceManagementService.class);
+
+                            private TotalIdToStationService totalIdToStationService = SpringUtil.getBean(TotalIdToStationService.class);
+                            private TrendsTableParamService trendsTableParamService = SpringUtil.getBean(TrendsTableParamService.class);
+                            @Override
+                            public void run() {
+                                try {
+                                    waterPriceManagementService.removeById(id);
+                                    TrendsTableParam tableParam = trendsTableParamService.getById(id);
+                                    if(null!= tableParam && tableParam.getParamName().equals("合计")){
+                                        totalIdToStationService.lambdaUpdate().eq(TotalIdToStation::getTotalId,id).remove();
+                                    }
+                                }catch (Exception e){
+                                    e.printStackTrace();
+                                }
+                            }
+                        });
+                    }
                     return RestResponse.ok("删除成功");
                 }else {
                     return RestResponse.no("删除失败");
@@ -90,15 +193,77 @@ public class TrendsTableParamServiceImpl extends ServiceImpl<TrendsTableParamMap
     }
 
     @Override
-    public RestResponse update(TrendsTableParam param) {
+    @Transactional(rollbackFor=RuntimeException.class)
+    public RestResponse update(TrendsTableParamUpdateReq req) {
         try {
-            boolean b = this.updateById(param);
-            if(b){
-                return RestResponse.ok("修改成功");
+            TrendsTableParam byId = this.getById(req.getParam().getId());
+            if(byId.getParamName().equals(req.getParam().getParamName())){
+                if(req.getParam().getUseType()==2){
+                    if(StringUtils.isNotEmpty(req.getUseWaterType())){
+                        boolean update = waterPriceManagementService.lambdaUpdate().set(WaterPriceManagement::getUseWaterType, req.getUseWaterType()).
+                                eq(WaterPriceManagement::getId, req.getParam().getId()).update();
+                        if(update){
+                            return RestResponse.ok("修改成功");
+                        }else {
+                            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                            return RestResponse.no("修改失败");
+                        }
+                    }else {
+                        return RestResponse.ok("修改成功");
+                    }
+                }else {
+                    return RestResponse.ok("修改成功");
+                }
             }else {
-                return RestResponse.no("修改失败");
+                TrendsTableParam one = this.lambdaQuery().eq(TrendsTableParam::getUseType, req.getParam().getUseType()).
+                        eq(TrendsTableParam::getUseStation, req.getParam().getUseStation()).
+                        eq(TrendsTableParam::getPId,req.getParam().getPId()).
+                        eq(TrendsTableParam::getParamName, req.getParam().getParamName()).one();
+                if(one != null){
+                    TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                    return RestResponse.no("该表头名称已存在，请更换名称");
+                }else {
+                    boolean b = this.updateById(req.getParam());
+                    if(b){
+                        if(req.getParam().getUseType()==2){
+                            if(!req.getParam().getParamName().equals("合计")) {
+                                boolean update = waterPriceManagementService.lambdaUpdate().
+                                        set(WaterPriceManagement::getUserName, req.getParam().getParamName()).
+                                        set(WaterPriceManagement::getUseWaterType, req.getUseWaterType()).
+                                        eq(WaterPriceManagement::getId, req.getParam().getId()).update();
+                                if(update){
+                                    return RestResponse.ok("修改成功");
+                                }else {
+                                    TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                                    return RestResponse.no("修改失败");
+                                }
+                            }else {
+                                if (StringUtils.isEmpty(req.getUseWaterType())) {
+                                    TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                                    return RestResponse.no("请选择用水类型");
+                                }else {
+                                    boolean update = waterPriceManagementService.lambdaUpdate().
+                                            set(WaterPriceManagement::getUserName, req.getParam().getParamName()).
+                                            set(WaterPriceManagement::getUseWaterType, req.getUseWaterType()).
+                                            eq(WaterPriceManagement::getId, req.getParam().getId()).update();
+                                    if(update){
+                                        return RestResponse.ok("修改成功");
+                                    }else {
+                                        TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                                        return RestResponse.no("修改失败");
+                                    }
+                                }
+                            }
+                        }else {
+                            return RestResponse.ok("修改成功");
+                        }
+                    }else {
+                        return RestResponse.no("修改失败");
+                    }
+                }
             }
         }catch (Exception e){
+            e.printStackTrace();
             log.error("修改参数节点报错:"+e.getMessage());
             return RestResponse.no("修改错误");
         }
@@ -115,7 +280,12 @@ public class TrendsTableParamServiceImpl extends ServiceImpl<TrendsTableParamMap
             resultList.add(tempRes);
         }
         getParamTree(resultList,list);
-        return RestResponse.ok(resultList);
+        if(null != resultList && resultList.size()>0){
+            return RestResponse.ok(resultList);
+        }else {
+            return RestResponse.no("暂无数据");
+        }
+
     }
 
     @Override
@@ -139,10 +309,17 @@ public class TrendsTableParamServiceImpl extends ServiceImpl<TrendsTableParamMap
                     for (TrendsTableParam param:collect){
                         WaterDailyParamSelectRes tempRes = new WaterDailyParamSelectRes();
                         BeanUtils.copyProperties(param,tempRes);
+                        WaterPriceManagement byId = waterPriceManagementService.getById(tempRes.getId());
+                        tempRes.setUseWaterType(byId != null ? byId.getUseWaterType():"");
                         tempList.add(tempRes);
                     }
+                    WaterPriceManagement byId = waterPriceManagementService.getById(res.getId());
+                    res.setUseWaterType(byId != null ? byId.getUseWaterType():"");
                     res.setChildren(tempList);
                     getParamTree(tempList,list);
+                }else {
+                    WaterPriceManagement byId = waterPriceManagementService.getById(res.getId());
+                    res.setUseWaterType(byId != null ? byId.getUseWaterType():"");
                 }
             }
         }

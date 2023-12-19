@@ -11,4 +11,6 @@ public class ParamDto {
     private Date time;
 
     private BigDecimal v;
+
+    private String senid;
 }

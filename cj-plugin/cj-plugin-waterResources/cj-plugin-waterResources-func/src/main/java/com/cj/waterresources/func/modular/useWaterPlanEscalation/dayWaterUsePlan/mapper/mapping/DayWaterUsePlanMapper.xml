@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cj.waterresources.func.modular.useWaterPlanEscalation.dayWaterUsePlan.mapper.DayWaterUsePlanMapper">
+
+    <select id="selectOne" parameterType="com.cj.waterresources.func.modular.useWaterPlanEscalation.dayWaterUsePlan.bean.req.DayWaterUsePlanSelectReq" resultType="com.cj.waterresources.func.modular.useWaterPlanEscalation.dayWaterUsePlan.entity.DayWaterUsePlan">
+        select * from DAY_WATER_USE_PLAN
+        <where>
+            <if test="req.area !=null and req.area !=''">
+                and AREA = #{req.area}
+            </if>
+            <if test="req.recordTime !=null">
+                and TO_CHAR(RECORD_TIME,'YYYY-MM-DD') = TO_CHAR(#{req.recordTime},'YYYY-MM-DD')
+            </if>
+            and DEL = 0
+        </where>
+    </select>
+
+</mapper>
