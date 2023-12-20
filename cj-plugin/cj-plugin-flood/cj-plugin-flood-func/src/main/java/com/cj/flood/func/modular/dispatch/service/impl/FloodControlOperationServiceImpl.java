@@ -91,7 +91,7 @@ public class FloodControlOperationServiceImpl extends ServiceImpl<FloodControlOp
         }
     }
 
-   /* @Override
+    @Override
     public RestResponse add(FloodControlOperationAddReq req) {
         try {
             String incomingWaterForecastId = req.getIncomingWaterForecastId();
@@ -145,7 +145,7 @@ public class FloodControlOperationServiceImpl extends ServiceImpl<FloodControlOp
                         }else {
                             data.put("lat",null);
                         }
-                        List<DataFloodPrevent> lzzEntryStation  = getDataFloodPrevent(floods,"楼庄子进库站");
+                        List<DataFloodPrevent> lzzEntryStation  = getDataFloodPrevent(floods,"楼庄子");
                         if(null != lzzEntryStation){
                             data.put("lzz",lzzEntryStation);
                         }else {
@@ -190,8 +190,8 @@ public class FloodControlOperationServiceImpl extends ServiceImpl<FloodControlOp
             e.printStackTrace();
             return RestResponse.no("防洪调度生成错误");
         }
-    }*/
-   @Override
+    }
+  /* @Override
    public RestResponse add(FloodControlOperationAddReq req) {
        try {
            String incomingWaterForecastId = req.getIncomingWaterForecastId();
@@ -285,7 +285,7 @@ public class FloodControlOperationServiceImpl extends ServiceImpl<FloodControlOp
            return RestResponse.no("防洪调度生成错误");
        }
    }
-
+*/
     @Override
     public RestResponse<IPage<FloodControlOperationListRes>> selectList(FloodControlOperationListReq req) {
         try {
