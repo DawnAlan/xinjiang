@@ -53,8 +53,9 @@ public class InspectionEquipmentManagementServiceImpl extends ServiceImpl<Inspec
     @Override
     public RestResponse addImage(String id) {
         try {
+            InspectionEquipmentManagement byId = this.getById(id);
             String tempFilePath = getTempFilePath();
-            Integer integer = QrCodeUtils.zxingCodeCreate(id, tempFilePath, 500, "");
+            Integer integer = QrCodeUtils.zxingCodeCreate(byId.getDeviceCode(), tempFilePath, 500, "");
             String path = tempFilePath+integer+".jpg";
             Date date = new Date();
             String yyyyMMdd = DateUtil.format(date, "yyyyMMdd");

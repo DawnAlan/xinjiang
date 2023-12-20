@@ -10,6 +10,8 @@ import com.cj.waterresources.func.modular.waterPrice.canalHeadManagementStation.
 import com.cj.waterresources.func.modular.waterPrice.canalHeadManagementStation.entity.CanalHeadManagementStationDetails;
 import com.cj.waterresources.func.modular.waterPrice.canalHeadManagementStation.service.CanalHeadManagementStationDetailsService;
 import com.cj.waterresources.func.modular.waterPrice.canalHeadManagementStation.service.CanalHeadManagementStationTotalService;
+import com.cj.waterresources.func.modular.waterPrice.waterDistributionRatio.entity.WaterDistributionRatio;
+import com.cj.waterresources.func.modular.waterPrice.waterDistributionRatio.service.WaterDistributionRatioService;
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.bean.req.WaterFeeStatisticsDetailsSelectListReq;
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.entity.WaterFeeStatisticsDetails;
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.service.WaterFeeStatisticsDetailsService;
@@ -35,6 +37,9 @@ public class CanalHeadManagementStationDetailsServiceImpl extends ServiceImpl<Ca
     private TrendsTableParamService trendsTableParamService;
     @Autowired
     private CanalHeadManagementStationTotalService canalHeadManagementStationTotalService;
+
+    @Autowired
+    private WaterDistributionRatioService waterDistributionRatioService;
 
 
     @Override
@@ -129,7 +134,7 @@ public class CanalHeadManagementStationDetailsServiceImpl extends ServiceImpl<Ca
                 total1.setYear(canalHeadManagementStationDetails.getYear());
                 total1.setMonth(canalHeadManagementStationDetails.getMonth());
                 total1.setTenDays(canalHeadManagementStationDetails.getTenDays());
-                total1.setAmountTo(list.stream().map(CanalHeadManagementStationDetails::getIncomingWater).reduce(Double::sum).orElse(0.00));
+                total1.setAmountTo(list.stream().filter(t->t.getIncomingWater()!=null).map(CanalHeadManagementStationDetails::getIncomingWater).reduce(Double::sum).orElse(0.00));
                 total1.setCurrentWaterVolume((total1.getAmountTo()==null?0.0:total1.getAmountTo())*60*60*24);
                 total1.setWaterVolumeFirstTenDays(firstTenDays==null?0.0:firstTenDays.getWaterVolumeFirstTenDays()==null?0.0:firstTenDays.getWaterVolumeFirstTenDays());
                 total1.setAccumulatedWaterVolume(
@@ -146,7 +151,7 @@ public class CanalHeadManagementStationDetailsServiceImpl extends ServiceImpl<Ca
                 total2.setYear(canalHeadManagementStationDetails.getYear());
                 total2.setMonth(canalHeadManagementStationDetails.getMonth());
                 total2.setTenDays(canalHeadManagementStationDetails.getTenDays());
-                total2.setAmountTo(list.stream().map(CanalHeadManagementStationDetails::getDiversion).reduce(Double::sum).orElse(0.00));
+                total2.setAmountTo(list.stream().filter(t->t.getDiversion()!=null).map(CanalHeadManagementStationDetails::getDiversion).reduce(Double::sum).orElse(0.00));
                 total2.setCurrentWaterVolume((total2.getAmountTo()==null?0.0:total2.getAmountTo())*60*60*24);
                 total2.setWaterVolumeFirstTenDays(firstTenDays==null?0.0:firstTenDays.getWaterVolumeFirstTenDays()==null?0.0:firstTenDays.getWaterVolumeFirstTenDays());
                 total2.setAccumulatedWaterVolume(
@@ -163,7 +168,7 @@ public class CanalHeadManagementStationDetailsServiceImpl extends ServiceImpl<Ca
                 total3.setYear(canalHeadManagementStationDetails.getYear());
                 total3.setMonth(canalHeadManagementStationDetails.getMonth());
                 total3.setTenDays(canalHeadManagementStationDetails.getTenDays());
-                total3.setAmountTo(list.stream().map(CanalHeadManagementStationDetails::getTotalDry).reduce(Double::sum).orElse(0.00));
+                total3.setAmountTo(list.stream().filter(t->t.getTotalDry()!=null).map(CanalHeadManagementStationDetails::getTotalDry).reduce(Double::sum).orElse(0.00));
                 total3.setCurrentWaterVolume((total3.getAmountTo()==null?0.0:total3.getAmountTo())*60*60*24);
                 total3.setWaterVolumeFirstTenDays(firstTenDays==null?0.0:firstTenDays.getWaterVolumeFirstTenDays()==null?0.0:firstTenDays.getWaterVolumeFirstTenDays());
                 total3.setAccumulatedWaterVolume(
@@ -180,7 +185,7 @@ public class CanalHeadManagementStationDetailsServiceImpl extends ServiceImpl<Ca
                 total4.setYear(canalHeadManagementStationDetails.getYear());
                 total4.setMonth(canalHeadManagementStationDetails.getMonth());
                 total4.setTenDays(canalHeadManagementStationDetails.getTenDays());
-                total4.setAmountTo(list.stream().map(CanalHeadManagementStationDetails::getXiGan).reduce(Double::sum).orElse(0.00));
+                total4.setAmountTo(list.stream().filter(t->t.getXiGan()!=null).map(CanalHeadManagementStationDetails::getXiGan).reduce(Double::sum).orElse(0.00));
                 total4.setCurrentWaterVolume((total4.getAmountTo()==null?0.0:total4.getAmountTo())*60*60*24);
                 total4.setWaterVolumeFirstTenDays(firstTenDays==null?0.0:firstTenDays.getWaterVolumeFirstTenDays()==null?0.0:firstTenDays.getWaterVolumeFirstTenDays());
                 total4.setAccumulatedWaterVolume(
@@ -197,7 +202,7 @@ public class CanalHeadManagementStationDetailsServiceImpl extends ServiceImpl<Ca
                 total5.setYear(canalHeadManagementStationDetails.getYear());
                 total5.setMonth(canalHeadManagementStationDetails.getMonth());
                 total5.setTenDays(canalHeadManagementStationDetails.getTenDays());
-                total5.setAmountTo(list.stream().map(CanalHeadManagementStationDetails::getEastBankTotal).reduce(Double::sum).orElse(0.00));
+                total5.setAmountTo(list.stream().filter(t->t.getEastBankTotal()!=null).map(CanalHeadManagementStationDetails::getEastBankTotal).reduce(Double::sum).orElse(0.00));
                 total5.setCurrentWaterVolume((total5.getAmountTo()==null?0.0:total5.getAmountTo())*60*60*24);
                 total5.setWaterVolumeFirstTenDays(firstTenDays==null?0.0:firstTenDays.getWaterVolumeFirstTenDays()==null?0.0:firstTenDays.getWaterVolumeFirstTenDays());
                 total5.setAccumulatedWaterVolume(
@@ -214,7 +219,7 @@ public class CanalHeadManagementStationDetailsServiceImpl extends ServiceImpl<Ca
                 total6.setYear(canalHeadManagementStationDetails.getYear());
                 total6.setMonth(canalHeadManagementStationDetails.getMonth());
                 total6.setTenDays(canalHeadManagementStationDetails.getTenDays());
-                total6.setAmountTo(list.stream().map(CanalHeadManagementStationDetails::getDongGan).reduce(Double::sum).orElse(0.00));
+                total6.setAmountTo(list.stream().filter(t->t.getDongGan()!=null).map(CanalHeadManagementStationDetails::getDongGan).reduce(Double::sum).orElse(0.00));
                 total6.setCurrentWaterVolume((total6.getAmountTo()==null?0.0:total6.getAmountTo())*60*60*24);
                 total6.setWaterVolumeFirstTenDays(firstTenDays==null?0.0:firstTenDays.getWaterVolumeFirstTenDays()==null?0.0:firstTenDays.getWaterVolumeFirstTenDays());
                 total6.setAccumulatedWaterVolume(
@@ -231,7 +236,7 @@ public class CanalHeadManagementStationDetailsServiceImpl extends ServiceImpl<Ca
                 total7.setYear(canalHeadManagementStationDetails.getYear());
                 total7.setMonth(canalHeadManagementStationDetails.getMonth());
                 total7.setTenDays(canalHeadManagementStationDetails.getTenDays());
-                total7.setAmountTo(list.stream().map(CanalHeadManagementStationDetails::getLanternCanalTotal).reduce(Double::sum).orElse(0.00));
+                total7.setAmountTo(list.stream().filter(t->t.getLanternCanalTotal()!=null).map(CanalHeadManagementStationDetails::getLanternCanalTotal).reduce(Double::sum).orElse(0.00));
                 total7.setCurrentWaterVolume((total7.getAmountTo()==null?0.0:total7.getAmountTo())*60*60*24);
                 total6.setWaterVolumeFirstTenDays(firstTenDays==null?0.0:firstTenDays.getWaterVolumeFirstTenDays()==null?0.0:firstTenDays.getWaterVolumeFirstTenDays());
                 total6.setAccumulatedWaterVolume(
@@ -248,7 +253,7 @@ public class CanalHeadManagementStationDetailsServiceImpl extends ServiceImpl<Ca
                 total8.setYear(canalHeadManagementStationDetails.getYear());
                 total8.setMonth(canalHeadManagementStationDetails.getMonth());
                 total8.setTenDays(canalHeadManagementStationDetails.getTenDays());
-                total8.setAmountTo(list.stream().map(CanalHeadManagementStationDetails::getLanternCanalAgriculture).reduce(Double::sum).orElse(0.00));
+                total8.setAmountTo(list.stream().filter(t->t.getLanternCanalAgriculture()!=null).map(CanalHeadManagementStationDetails::getLanternCanalAgriculture).reduce(Double::sum).orElse(0.00));
                 total8.setCurrentWaterVolume((total8.getAmountTo()==null?0.0:total8.getAmountTo())*60*60*24);
                 total8.setWaterVolumeFirstTenDays(firstTenDays==null?0.0:firstTenDays.getWaterVolumeFirstTenDays()==null?0.0:firstTenDays.getWaterVolumeFirstTenDays());
                 total8.setAccumulatedWaterVolume(
@@ -265,7 +270,7 @@ public class CanalHeadManagementStationDetailsServiceImpl extends ServiceImpl<Ca
                 total9.setYear(canalHeadManagementStationDetails.getYear());
                 total9.setMonth(canalHeadManagementStationDetails.getMonth());
                 total9.setTenDays(canalHeadManagementStationDetails.getTenDays());
-                total9.setAmountTo(list.stream().map(CanalHeadManagementStationDetails::getLanternCanalGreen).reduce(Double::sum).orElse(0.00));
+                total9.setAmountTo(list.stream().filter(t->t.getLanternCanalGreen()!=null).map(CanalHeadManagementStationDetails::getLanternCanalGreen).reduce(Double::sum).orElse(0.00));
                 total9.setCurrentWaterVolume((total9.getAmountTo()==null?0.0:total9.getAmountTo())*60*60*24);
                 total9.setWaterVolumeFirstTenDays(firstTenDays==null?0.0:firstTenDays.getWaterVolumeFirstTenDays()==null?0.0:firstTenDays.getWaterVolumeFirstTenDays());
                 total9.setAccumulatedWaterVolume(
@@ -282,7 +287,7 @@ public class CanalHeadManagementStationDetailsServiceImpl extends ServiceImpl<Ca
                 total10.setYear(canalHeadManagementStationDetails.getYear());
                 total10.setMonth(canalHeadManagementStationDetails.getMonth());
                 total10.setTenDays(canalHeadManagementStationDetails.getTenDays());
-                total10.setAmountTo(list.stream().map(CanalHeadManagementStationDetails::getLanternCanalIndustry).reduce(Double::sum).orElse(0.00));
+                total10.setAmountTo(list.stream().filter(t->t.getLanternCanalIndustry()!=null).map(CanalHeadManagementStationDetails::getLanternCanalIndustry).reduce(Double::sum).orElse(0.00));
                 total10.setCurrentWaterVolume((total10.getAmountTo()==null?0.0:total10.getAmountTo())*60*60*24);
                 total10.setWaterVolumeFirstTenDays(firstTenDays==null?0.0:firstTenDays.getWaterVolumeFirstTenDays()==null?0.0:firstTenDays.getWaterVolumeFirstTenDays());
                 total10.setAccumulatedWaterVolume(
@@ -299,7 +304,7 @@ public class CanalHeadManagementStationDetailsServiceImpl extends ServiceImpl<Ca
                 total11.setYear(canalHeadManagementStationDetails.getYear());
                 total11.setMonth(canalHeadManagementStationDetails.getMonth());
                 total11.setTenDays(canalHeadManagementStationDetails.getTenDays());
-                total11.setAmountTo(list.stream().map(CanalHeadManagementStationDetails::getFunnel).reduce(Double::sum).orElse(0.00));
+                total11.setAmountTo(list.stream().filter(t->t.getFunnel()!=null).map(CanalHeadManagementStationDetails::getFunnel).reduce(Double::sum).orElse(0.00));
                 total11.setCurrentWaterVolume((total11.getAmountTo()==null?0.0:total11.getAmountTo())*60*60*24);
                 total11.setWaterVolumeFirstTenDays(firstTenDays==null?0.0:firstTenDays.getWaterVolumeFirstTenDays()==null?0.0:firstTenDays.getWaterVolumeFirstTenDays());
                 total11.setAccumulatedWaterVolume(
@@ -316,7 +321,7 @@ public class CanalHeadManagementStationDetailsServiceImpl extends ServiceImpl<Ca
                 total12.setYear(canalHeadManagementStationDetails.getYear());
                 total12.setMonth(canalHeadManagementStationDetails.getMonth());
                 total12.setTenDays(canalHeadManagementStationDetails.getTenDays());
-                total12.setAmountTo(list.stream().map(CanalHeadManagementStationDetails::getFloodDischarge).reduce(Double::sum).orElse(0.00));
+                total12.setAmountTo(list.stream().filter(t->t.getFloodDischarge()!=null).map(CanalHeadManagementStationDetails::getFloodDischarge).reduce(Double::sum).orElse(0.00));
                 total12.setCurrentWaterVolume((total12.getAmountTo()==null?0.0:total12.getAmountTo())*60*60*24);
                 total12.setWaterVolumeFirstTenDays(firstTenDays==null?0.0:firstTenDays.getWaterVolumeFirstTenDays()==null?0.0:firstTenDays.getWaterVolumeFirstTenDays());
                 total12.setAccumulatedWaterVolume(
@@ -409,7 +414,7 @@ public class CanalHeadManagementStationDetailsServiceImpl extends ServiceImpl<Ca
                     total1.setYear(canalHeadManagementStationDetails.getYear());
                     total1.setMonth(canalHeadManagementStationDetails.getMonth());
                     total1.setTenDays(canalHeadManagementStationDetails.getTenDays());
-                    total1.setAmountTo(list.stream().map(CanalHeadManagementStationDetails::getIncomingWater).reduce(Double::sum).orElse(0.00));
+                    total1.setAmountTo(list.stream().filter(t->t.getIncomingWater()!=null).map(CanalHeadManagementStationDetails::getIncomingWater).reduce(Double::sum).orElse(0.00));
                     total1.setCurrentWaterVolume((total1.getAmountTo()==null?0.0:total1.getAmountTo())*60*60*24);
                     total1.setWaterVolumeFirstTenDays(firstTenDays==null?0.0:firstTenDays.getWaterVolumeFirstTenDays()==null?0.0:firstTenDays.getWaterVolumeFirstTenDays());
                     total1.setAccumulatedWaterVolume(
@@ -426,7 +431,7 @@ public class CanalHeadManagementStationDetailsServiceImpl extends ServiceImpl<Ca
                     total2.setYear(canalHeadManagementStationDetails.getYear());
                     total2.setMonth(canalHeadManagementStationDetails.getMonth());
                     total2.setTenDays(canalHeadManagementStationDetails.getTenDays());
-                    total2.setAmountTo(list.stream().map(CanalHeadManagementStationDetails::getDiversion).reduce(Double::sum).orElse(0.00));
+                    total2.setAmountTo(list.stream().filter(t->t.getDiversion()!=null).map(CanalHeadManagementStationDetails::getDiversion).reduce(Double::sum).orElse(0.00));
                     total2.setCurrentWaterVolume((total2.getAmountTo()==null?0.0:total2.getAmountTo())*60*60*24);
                     total2.setWaterVolumeFirstTenDays(firstTenDays==null?0.0:firstTenDays.getWaterVolumeFirstTenDays()==null?0.0:firstTenDays.getWaterVolumeFirstTenDays());
                     total2.setAccumulatedWaterVolume(
@@ -443,7 +448,7 @@ public class CanalHeadManagementStationDetailsServiceImpl extends ServiceImpl<Ca
                     total3.setYear(canalHeadManagementStationDetails.getYear());
                     total3.setMonth(canalHeadManagementStationDetails.getMonth());
                     total3.setTenDays(canalHeadManagementStationDetails.getTenDays());
-                    total3.setAmountTo(list.stream().map(CanalHeadManagementStationDetails::getTotalDry).reduce(Double::sum).orElse(0.00));
+                    total3.setAmountTo(list.stream().filter(t->t.getTotalDry()!=null).map(CanalHeadManagementStationDetails::getTotalDry).reduce(Double::sum).orElse(0.00));
                     total3.setCurrentWaterVolume((total3.getAmountTo()==null?0.0:total3.getAmountTo())*60*60*24);
                     total3.setWaterVolumeFirstTenDays(firstTenDays==null?0.0:firstTenDays.getWaterVolumeFirstTenDays()==null?0.0:firstTenDays.getWaterVolumeFirstTenDays());
                     total3.setAccumulatedWaterVolume(
@@ -460,7 +465,7 @@ public class CanalHeadManagementStationDetailsServiceImpl extends ServiceImpl<Ca
                     total4.setYear(canalHeadManagementStationDetails.getYear());
                     total4.setMonth(canalHeadManagementStationDetails.getMonth());
                     total4.setTenDays(canalHeadManagementStationDetails.getTenDays());
-                    total4.setAmountTo(list.stream().map(CanalHeadManagementStationDetails::getXiGan).reduce(Double::sum).orElse(0.00));
+                    total4.setAmountTo(list.stream().filter(t->t.getXiGan()!=null).map(CanalHeadManagementStationDetails::getXiGan).reduce(Double::sum).orElse(0.00));
                     total4.setCurrentWaterVolume((total4.getAmountTo()==null?0.0:total4.getAmountTo())*60*60*24);
                     total4.setWaterVolumeFirstTenDays(firstTenDays==null?0.0:firstTenDays.getWaterVolumeFirstTenDays()==null?0.0:firstTenDays.getWaterVolumeFirstTenDays());
                     total4.setAccumulatedWaterVolume(
@@ -477,7 +482,7 @@ public class CanalHeadManagementStationDetailsServiceImpl extends ServiceImpl<Ca
                     total5.setYear(canalHeadManagementStationDetails.getYear());
                     total5.setMonth(canalHeadManagementStationDetails.getMonth());
                     total5.setTenDays(canalHeadManagementStationDetails.getTenDays());
-                    total5.setAmountTo(list.stream().map(CanalHeadManagementStationDetails::getEastBankTotal).reduce(Double::sum).orElse(0.00));
+                    total5.setAmountTo(list.stream().filter(t->t.getEastBankTotal()!=null).map(CanalHeadManagementStationDetails::getEastBankTotal).reduce(Double::sum).orElse(0.00));
                     total5.setCurrentWaterVolume((total5.getAmountTo()==null?0.0:total5.getAmountTo())*60*60*24);
                     total5.setWaterVolumeFirstTenDays(firstTenDays==null?0.0:firstTenDays.getWaterVolumeFirstTenDays()==null?0.0:firstTenDays.getWaterVolumeFirstTenDays());
                     total5.setAccumulatedWaterVolume(
@@ -494,7 +499,7 @@ public class CanalHeadManagementStationDetailsServiceImpl extends ServiceImpl<Ca
                     total6.setYear(canalHeadManagementStationDetails.getYear());
                     total6.setMonth(canalHeadManagementStationDetails.getMonth());
                     total6.setTenDays(canalHeadManagementStationDetails.getTenDays());
-                    total6.setAmountTo(list.stream().map(CanalHeadManagementStationDetails::getDongGan).reduce(Double::sum).orElse(0.00));
+                    total6.setAmountTo(list.stream().filter(t->t.getDongGan()!=null).map(CanalHeadManagementStationDetails::getDongGan).reduce(Double::sum).orElse(0.00));
                     total6.setCurrentWaterVolume((total6.getAmountTo()==null?0.0:total6.getAmountTo())*60*60*24);
                     total6.setWaterVolumeFirstTenDays(firstTenDays==null?0.0:firstTenDays.getWaterVolumeFirstTenDays()==null?0.0:firstTenDays.getWaterVolumeFirstTenDays());
                     total6.setAccumulatedWaterVolume(
@@ -511,7 +516,7 @@ public class CanalHeadManagementStationDetailsServiceImpl extends ServiceImpl<Ca
                     total7.setYear(canalHeadManagementStationDetails.getYear());
                     total7.setMonth(canalHeadManagementStationDetails.getMonth());
                     total7.setTenDays(canalHeadManagementStationDetails.getTenDays());
-                    total7.setAmountTo(list.stream().map(CanalHeadManagementStationDetails::getLanternCanalTotal).reduce(Double::sum).orElse(0.00));
+                    total7.setAmountTo(list.stream().filter(t->t.getLanternCanalTotal()!=null).map(CanalHeadManagementStationDetails::getLanternCanalTotal).reduce(Double::sum).orElse(0.00));
                     total7.setCurrentWaterVolume((total7.getAmountTo()==null?0.0:total7.getAmountTo())*60*60*24);
                     total6.setWaterVolumeFirstTenDays(firstTenDays==null?0.0:firstTenDays.getWaterVolumeFirstTenDays()==null?0.0:firstTenDays.getWaterVolumeFirstTenDays());
                     total6.setAccumulatedWaterVolume(
@@ -528,7 +533,7 @@ public class CanalHeadManagementStationDetailsServiceImpl extends ServiceImpl<Ca
                     total8.setYear(canalHeadManagementStationDetails.getYear());
                     total8.setMonth(canalHeadManagementStationDetails.getMonth());
                     total8.setTenDays(canalHeadManagementStationDetails.getTenDays());
-                    total8.setAmountTo(list.stream().map(CanalHeadManagementStationDetails::getLanternCanalAgriculture).reduce(Double::sum).orElse(0.00));
+                    total8.setAmountTo(list.stream().filter(t->t.getLanternCanalAgriculture()!=null).map(CanalHeadManagementStationDetails::getLanternCanalAgriculture).reduce(Double::sum).orElse(0.00));
                     total8.setCurrentWaterVolume((total8.getAmountTo()==null?0.0:total8.getAmountTo())*60*60*24);
                     total8.setWaterVolumeFirstTenDays(firstTenDays==null?0.0:firstTenDays.getWaterVolumeFirstTenDays()==null?0.0:firstTenDays.getWaterVolumeFirstTenDays());
                     total8.setAccumulatedWaterVolume(
@@ -545,7 +550,7 @@ public class CanalHeadManagementStationDetailsServiceImpl extends ServiceImpl<Ca
                     total9.setYear(canalHeadManagementStationDetails.getYear());
                     total9.setMonth(canalHeadManagementStationDetails.getMonth());
                     total9.setTenDays(canalHeadManagementStationDetails.getTenDays());
-                    total9.setAmountTo(list.stream().map(CanalHeadManagementStationDetails::getLanternCanalGreen).reduce(Double::sum).orElse(0.00));
+                    total9.setAmountTo(list.stream().filter(t->t.getLanternCanalGreen()!=null).map(CanalHeadManagementStationDetails::getLanternCanalGreen).reduce(Double::sum).orElse(0.00));
                     total9.setCurrentWaterVolume((total9.getAmountTo()==null?0.0:total9.getAmountTo())*60*60*24);
                     total9.setWaterVolumeFirstTenDays(firstTenDays==null?0.0:firstTenDays.getWaterVolumeFirstTenDays()==null?0.0:firstTenDays.getWaterVolumeFirstTenDays());
                     total9.setAccumulatedWaterVolume(
@@ -562,7 +567,7 @@ public class CanalHeadManagementStationDetailsServiceImpl extends ServiceImpl<Ca
                     total10.setYear(canalHeadManagementStationDetails.getYear());
                     total10.setMonth(canalHeadManagementStationDetails.getMonth());
                     total10.setTenDays(canalHeadManagementStationDetails.getTenDays());
-                    total10.setAmountTo(list.stream().map(CanalHeadManagementStationDetails::getLanternCanalIndustry).reduce(Double::sum).orElse(0.00));
+                    total10.setAmountTo(list.stream().filter(t->t.getLanternCanalIndustry()!=null).map(CanalHeadManagementStationDetails::getLanternCanalIndustry).reduce(Double::sum).orElse(0.00));
                     total10.setCurrentWaterVolume((total10.getAmountTo()==null?0.0:total10.getAmountTo())*60*60*24);
                     total10.setWaterVolumeFirstTenDays(firstTenDays==null?0.0:firstTenDays.getWaterVolumeFirstTenDays()==null?0.0:firstTenDays.getWaterVolumeFirstTenDays());
                     total10.setAccumulatedWaterVolume(
@@ -579,7 +584,7 @@ public class CanalHeadManagementStationDetailsServiceImpl extends ServiceImpl<Ca
                     total11.setYear(canalHeadManagementStationDetails.getYear());
                     total11.setMonth(canalHeadManagementStationDetails.getMonth());
                     total11.setTenDays(canalHeadManagementStationDetails.getTenDays());
-                    total11.setAmountTo(list.stream().map(CanalHeadManagementStationDetails::getFunnel).reduce(Double::sum).orElse(0.00));
+                    total11.setAmountTo(list.stream().filter(t->t.getFunnel()!=null).map(CanalHeadManagementStationDetails::getFunnel).reduce(Double::sum).orElse(0.00));
                     total11.setCurrentWaterVolume((total11.getAmountTo()==null?0.0:total11.getAmountTo())*60*60*24);
                     total11.setWaterVolumeFirstTenDays(firstTenDays==null?0.0:firstTenDays.getWaterVolumeFirstTenDays()==null?0.0:firstTenDays.getWaterVolumeFirstTenDays());
                     total11.setAccumulatedWaterVolume(
@@ -596,7 +601,7 @@ public class CanalHeadManagementStationDetailsServiceImpl extends ServiceImpl<Ca
                     total12.setYear(canalHeadManagementStationDetails.getYear());
                     total12.setMonth(canalHeadManagementStationDetails.getMonth());
                     total12.setTenDays(canalHeadManagementStationDetails.getTenDays());
-                    total12.setAmountTo(list.stream().map(CanalHeadManagementStationDetails::getFloodDischarge).reduce(Double::sum).orElse(0.00));
+                    total12.setAmountTo(list.stream().filter(t->t.getFloodDischarge()!=null).map(CanalHeadManagementStationDetails::getFloodDischarge).reduce(Double::sum).orElse(0.00));
                     total12.setCurrentWaterVolume((total12.getAmountTo()==null?0.0:total12.getAmountTo())*60*60*24);
                     total12.setWaterVolumeFirstTenDays(firstTenDays==null?0.0:firstTenDays.getWaterVolumeFirstTenDays()==null?0.0:firstTenDays.getWaterVolumeFirstTenDays());
                     total12.setAccumulatedWaterVolume(
@@ -635,6 +640,26 @@ public class CanalHeadManagementStationDetailsServiceImpl extends ServiceImpl<Ca
             return RestResponse.no("暂无数据");
         }
     }
+
+    @Override
+    public RestResponse remove(WaterFeeStatisticsDetailsSelectListReq req) {
+        boolean remove = this.lambdaUpdate().eq(CanalHeadManagementStationDetails::getYear, req.getYear()).
+                eq(CanalHeadManagementStationDetails::getMonth, req.getMonth()).
+                eq(CanalHeadManagementStationDetails::getTenDays, req.getTenDays()).remove();
+        boolean remove1 = canalHeadManagementStationTotalService.lambdaUpdate().eq(CanalHeadManagementStationTotal::getYear, req.getYear()).
+                eq(CanalHeadManagementStationTotal::getMonth, req.getMonth()).
+                eq(CanalHeadManagementStationTotal::getTenDays, req.getTenDays()).remove();
+        boolean remove2 = waterDistributionRatioService.lambdaUpdate().eq(WaterDistributionRatio::getStation, req.getStation()).
+                eq(WaterDistributionRatio::getYear, req.getYear()).
+                eq(WaterDistributionRatio::getMonth, req.getMonth()).
+                eq(WaterDistributionRatio::getTenDays, req.getTenDays()).remove();
+        if(remove1&&remove&&remove2){
+            return RestResponse.ok();
+        }else {
+            return RestResponse.no("error");
+        }
+    }
+
     public static Map<String, Object> jisuan(Integer year,Integer month,String tenDays){
         Map<String, Object> result = new HashMap();
         if(tenDays.equals("上旬")){

@@ -1,6 +1,7 @@
 package com.cj.waterresources.func.modular.waterPrice.canalHeadManagementStation.controller;
 
 import com.cj.common.model.RestResponse;
+import com.cj.waterresources.func.modular.waterPrice.canalHeadManagementStation.entity.CanalHeadManagementStationTotal;
 import com.cj.waterresources.func.modular.waterPrice.canalHeadManagementStation.service.CanalHeadManagementStationTotalService;
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.bean.req.WaterFeeStatisticsDetailsSelectListReq;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
@@ -32,6 +33,19 @@ public class CanalHeadManagementStationTotalController{
     @PostMapping("/select")
     public RestResponse select(@RequestBody WaterFeeStatisticsDetailsSelectListReq req) {
         return canalHeadManagementStationTotalService.selectList(req);
+    }
+
+    @ApiOperationSupport(order = 1)
+    @ApiOperation("修改备注")
+    @PostMapping("/updateRemark")
+    public RestResponse updateRemark(@RequestBody CanalHeadManagementStationTotal total) {
+        boolean update = canalHeadManagementStationTotalService.lambdaUpdate().set(CanalHeadManagementStationTotal::getRemark, total.getRemark()).
+                eq(CanalHeadManagementStationTotal::getId, total.getId()).update();
+        if(update){
+            return RestResponse.ok();
+        }else{
+            return RestResponse.no("error");
+        }
     }
 }
 

@@ -27,7 +27,7 @@ public class MachineModel {
         ParamsSetVO pvo = pvoSet(modelTrainInput, param);//设置输入
 
         //数值的赋值
-        param.setVmdK(9);
+        param.setVmdK(3);
         int K = param.vmdK;//分解层数
         int length = modelTrainInput.length;
         int trainLength = length / 4 * 3;//训练集个数
@@ -119,7 +119,7 @@ public class MachineModel {
                 String Option = location + period;
                 File tempFileParam = File.createTempFile(Option + pvo.getNetClass()+"-PARAM",".xlsx");
                 String pathParam= tempFileParam.getAbsolutePath();
-                ExcelTool.writeListExcel(pathParam, "模型参数", paramResult);
+                ExcelTool.writeList2DoubleExcel(pathParam, "模型参数", paramResult);
                 temxParam.setPath(pathParam);
                 temxParam.setSheetName("模型参数");
                 paramList.add(temxParam);

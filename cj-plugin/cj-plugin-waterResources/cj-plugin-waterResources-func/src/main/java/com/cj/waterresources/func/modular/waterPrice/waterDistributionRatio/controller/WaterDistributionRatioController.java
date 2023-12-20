@@ -67,13 +67,13 @@ public class WaterDistributionRatioController{
                     for(TrendsTableParam param:noTotalList){
                         for(WaterDistributionRatio t:waterDistributionRatios){
                             if(t.getTableBeadId().equals(param.getId())){
-                                value+=t.getV();
+                                value+=t.getV()==null?0.0:t.getV();
                             }
                             List<TrendsTableParam> listed = trendsTableParamService.lambdaQuery().eq(TrendsTableParam::getPId, param.getId()).ne(TrendsTableParam::getParamName, "合计").list();
                             if(null != listed && listed.size()>0){
                                 for (TrendsTableParam param1:listed){
                                     if(t.getTableBeadId().equals(param1.getId())){
-                                        value+=t.getV();
+                                        value+=t.getV()==null?0.0:t.getV();
                                     }
                                 }
                             }
@@ -89,7 +89,7 @@ public class WaterDistributionRatioController{
             }
             for(WaterDistributionRatio t:waterDistributionRatios){
                 if(!list.stream().map(TotalIdToStation::getTotalId).collect(Collectors.toList()).contains(t.getTableBeadId())){
-                    total+=t.getV();
+                    total+=t.getV()==null?0.0:t.getV();
                 }
             }
             TrendsTableParam one = trendsTableParamService.lambdaQuery().eq(TrendsTableParam::getPId, "0").eq(TrendsTableParam::getUseType,2).in(TrendsTableParam::getId, collect).one();
@@ -126,13 +126,13 @@ public class WaterDistributionRatioController{
                     for(TrendsTableParam param:noTotalList){
                         for(WaterDistributionRatio t:waterDistributionRatios){
                             if(t.getTableBeadId().equals(param.getId())){
-                                value+=t.getV();
+                                value+=t.getV()==null?0.0:t.getV();
                             }
                             List<TrendsTableParam> listed = trendsTableParamService.lambdaQuery().eq(TrendsTableParam::getPId, param.getId()).ne(TrendsTableParam::getParamName, "合计").list();
                             if(null != listed && listed.size()>0){
                                 for (TrendsTableParam param1:listed){
                                     if(t.getTableBeadId().equals(param1.getId())){
-                                        value+=t.getV();
+                                        value+=t.getV()==null?0.0:t.getV();
                                     }
                                 }
                             }
@@ -148,7 +148,7 @@ public class WaterDistributionRatioController{
             }
             for(WaterDistributionRatio t:waterDistributionRatios){
                 if(!list.stream().map(TotalIdToStation::getTotalId).collect(Collectors.toList()).contains(t.getTableBeadId())){
-                    total+=t.getV();
+                    total+=t.getV()==null?0.0:t.getV();
                 }
             }
             TrendsTableParam one = trendsTableParamService.lambdaQuery().eq(TrendsTableParam::getPId, "0").eq(TrendsTableParam::getUseType,2).in(TrendsTableParam::getId, collect).one();

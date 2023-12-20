@@ -54,5 +54,12 @@ public class CanalHeadManagementStationDetailsController {
         return canalHeadManagementStationDetailsService.selectList(req);
     }
 
+    @ApiOperationSupport(order = 3)
+    @ApiOperation("清空表")
+    @PostMapping("/remove")
+    public RestResponse remove(@RequestBody WaterFeeStatisticsDetailsSelectListReq req) {
+        return canalHeadManagementStationDetailsService.remove(req);
+    }
+
 }
 

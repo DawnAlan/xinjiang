@@ -3,6 +3,8 @@ package com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.service
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.UUIDUtils;
+import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.entity.IrrigatedPlatformDataInfo;
+import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.service.IrrigatedPlatformDataInfoService;
 import com.cj.waterresources.func.modular.trendsTable.entity.TrendsTableParam;
 import com.cj.waterresources.func.modular.trendsTable.service.TrendsTableParamService;
 import com.cj.waterresources.func.modular.waterPrice.paymentWaterFees.entity.PaymentWaterFees;
@@ -26,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -59,10 +62,26 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
     @Autowired
     private WaterDistributionRatioService waterDistributionRatioService;
 
+    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+
+    @Autowired
+    private IrrigatedPlatformDataInfoService irrigatedPlatformDataInfoService;
+
+
+
     @Override
     @Transactional(rollbackFor=Exception.class)
     public RestResponse add(List<WaterFeeStatisticsDetails> waterFeeStatisticsDetails) {
+        String dateTemp = waterFeeStatisticsDetails.get(0).getYear()+"-"+waterFeeStatisticsDetails.get(0).getMonth()+"-"+waterFeeStatisticsDetails.get(0).getStatisticsDate().substring(3,5);
         waterFeeStatisticsDetails.forEach(t->{
+            if(!sdf.format(new Date()).equals(dateTemp)){
+                String dateTemp1 = waterFeeStatisticsDetails.get(0).getYear()+"-"+waterFeeStatisticsDetails.get(0).getMonth()+"-"+(Integer.valueOf(waterFeeStatisticsDetails.get(0).getStatisticsDate().substring(3,5))+1);
+                String paramName = trendsTableParamService.getById(t.getTableHeadId()).getParamName();
+                if(!paramName.equals("合计")){
+                    IrrigatedPlatformDataInfo irrigatedPlatformDataInfo = irrigatedPlatformDataInfoService.selectOneByCondition(paramName, dateTemp1);
+                    t.setV(irrigatedPlatformDataInfo==null?null:irrigatedPlatformDataInfo.getYesterdayAvgFlow()==null?null:irrigatedPlatformDataInfo.getYesterdayAvgFlow());
+                }
+            }
             t.setId(UUIDUtils.getUUID());
         });
         List<TotalIdToStation> list = totalIdToStationService.lambdaQuery().eq(TotalIdToStation::getUseType, 2).eq(TotalIdToStation::getStation, waterFeeStatisticsDetails.get(0).getStation()).list();
@@ -78,13 +97,13 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                     for(TrendsTableParam param:noTotalList){
                         for(WaterFeeStatisticsDetails t:waterFeeStatisticsDetails){
                             if(t.getTableHeadId().equals(param.getId())){
-                                value+=t.getV();
+                                value+=t.getV()==null?0.0:t.getV();
                             }
                             List<TrendsTableParam> listed = trendsTableParamService.lambdaQuery().eq(TrendsTableParam::getPId, param.getId()).ne(TrendsTableParam::getParamName, "合计").list();
                             if(null != listed && listed.size()>0){
                                 for (TrendsTableParam param1:listed){
                                     if(t.getTableHeadId().equals(param1.getId())){
-                                        value+=t.getV();
+                                        value+=t.getV()==null?0.0:t.getV();
                                     }
                                 }
                             }
@@ -100,7 +119,7 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
             }
             for(WaterFeeStatisticsDetails t:waterFeeStatisticsDetails){
                 if(!list.stream().map(TotalIdToStation::getTotalId).collect(Collectors.toList()).contains(t.getTableHeadId())){
-                    total+=t.getV();
+                    total+=t.getV()==null?0.0:t.getV();
                 }
             }
             TrendsTableParam one = trendsTableParamService.lambdaQuery().eq(TrendsTableParam::getPId, "0").eq(TrendsTableParam::getUseType,2).in(TrendsTableParam::getId, collect).one();
@@ -131,7 +150,7 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                 for(WaterFeeStatisticsTotal tempTotal : tempList){
                     WaterFeeStatisticsTotal waterFeeStatisticsTotal = new WaterFeeStatisticsTotal();
                     BeanUtils.copyProperties(tempTotal,waterFeeStatisticsTotal);
-                    Double amountTo = waterFeeStatisticsDetails.stream().filter(t -> t.getTableHeadId().equals(tempTotal.getTableHeadId())).map(WaterFeeStatisticsDetails::getV).reduce(Double::sum).orElse(0.00);
+                    Double amountTo = waterFeeStatisticsDetails.stream().filter(t -> t.getTableHeadId().equals(tempTotal.getTableHeadId()) && t.getV()!=null).map(WaterFeeStatisticsDetails::getV).reduce(Double::sum).orElse(0.00);
                     //本旬水量
                     waterFeeStatisticsTotal.setAmountTo(amountTo+waterFeeStatisticsTotal.getAmountTo());
                     waterFeeStatisticsTotal.setCurrentWaterVolume(waterFeeStatisticsTotal.getAmountTo()*60*60*24);
@@ -501,7 +520,7 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                 for(String string : strings){
                     WaterFeeStatisticsTotal waterFeeStatisticsTotal = new WaterFeeStatisticsTotal();
                     WaterFeeStatisticsDetails temp = waterFeeStatisticsDetails.get(0);
-                    Double amountTo = collect.get(string).stream().map(WaterFeeStatisticsDetails::getV).reduce(Double::sum).orElse(0.00);
+                    Double amountTo = collect.get(string).stream().filter(t->t.getV()!=null).map(WaterFeeStatisticsDetails::getV).reduce(Double::sum).orElse(0.00);
                     waterFeeStatisticsTotal.setStation(temp.getStation());
                     waterFeeStatisticsTotal.setYear(temp.getYear());
                     waterFeeStatisticsTotal.setMonth(temp.getMonth());
@@ -889,13 +908,13 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                         for(TrendsTableParam param:noTotalList){
                             for(WaterFeeStatisticsDetails t:waterFeeStatisticsDetails){
                                 if(t.getTableHeadId().equals(param.getId())){
-                                    value+=t.getV();
+                                    value+=t.getV()==null?0.0:t.getV();
                                 }
                                 List<TrendsTableParam> listed = trendsTableParamService.lambdaQuery().eq(TrendsTableParam::getPId, param.getId()).ne(TrendsTableParam::getParamName, "合计").list();
                                 if(null != listed && listed.size()>0){
                                     for (TrendsTableParam param1:listed){
                                         if(t.getTableHeadId().equals(param1.getId())){
-                                            value+=t.getV();
+                                            value+=t.getV()==null?0.0:t.getV();
                                         }
                                     }
                                 }
@@ -911,7 +930,7 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                 }
                 for(WaterFeeStatisticsDetails t:waterFeeStatisticsDetails){
                     if(!list.stream().map(TotalIdToStation::getTotalId).collect(Collectors.toList()).contains(t.getTableHeadId())){
-                        total+=t.getV();
+                        total+=t.getV()==null?0.0:t.getV();
                     }
                 }
                 TrendsTableParam one = trendsTableParamService.lambdaQuery().eq(TrendsTableParam::getPId, "0").eq(TrendsTableParam::getUseType,2).in(TrendsTableParam::getId, collect).one();
@@ -957,7 +976,7 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
             //详细列表数据统计
             for(WaterFeeStatisticsTotal total : totalCountList){
                 WaterFeeStatisticsTotal waterFeeStatisticsTotal = new WaterFeeStatisticsTotal();
-                Double aDouble = totaDetailslList.stream().filter(t -> t.getTableHeadId().equals(total.getTableHeadId())).map(WaterFeeStatisticsDetails::getV).reduce(Double::sum).orElse(0.00);
+                Double aDouble = totaDetailslList.stream().filter(t -> t.getTableHeadId().equals(total.getTableHeadId()) && t.getV()!=null).map(WaterFeeStatisticsDetails::getV).reduce(Double::sum).orElse(0.00);
                 waterFeeStatisticsTotal.setUpdateTime(new Date());
                 BeanUtils.copyProperties(total,waterFeeStatisticsTotal);
                 //本旬水量
@@ -1420,8 +1439,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
     }
 
     public static void main(String[] args) {
-        Map<String, Object> result = jisuan(2023, 12, "中旬");
-        System.out.println("year: " + result.get("year")+",month: " + result.get("month")+",tenDays: "+result.get("tenDays"));
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        String s = "2023-12-18";
+        System.out.println(sdf.format(new Date()).equals(s));
     }
 }
 

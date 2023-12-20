@@ -58,7 +58,19 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
     @Autowired
     private MinioUtils minioUtils;
 
-    @Override
+    @Autowired
+    private IncomingWaterForecastService incomingWaterForecastService;
+
+    @Autowired
+    private LzzGaugingStationService lzzGaugingStationService;
+
+    @Autowired
+    private LzzRainfallStationService lzzRainfallStationService;
+
+    @Autowired
+    private IrrigatedPlatformDataInfoService irrigatedPlatformDataInfoService;
+
+    /*@Override
     public RestResponse add(IncomingWaterForecast incomingWaterForecast) {
         try {
             incomingWaterForecast.setId(UUIDUtils.getUUID());
@@ -150,10 +162,107 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                         incomingWaterForecastService.lambdaUpdate().set(IncomingWaterForecast::getModelResultAddress,object).eq(IncomingWaterForecast::getId,incomingWaterForecast.getId()).update();
                     }catch (Exception e) {
                         e.printStackTrace();
+                        log.error("-------------------------------------------error-------------------------------------------");
                     }
                 }
             });
             if(save){
+                return RestResponse.ok("生成模型结果成功");
+            }else {
+                return RestResponse.no("生成模型结果失败");
+            }
+        }catch (Exception e) {
+            log.error("生成模型结果错误:"+e.getMessage());
+            e.printStackTrace();
+            return RestResponse.no(e.getMessage());
+        }
+    }*/
+
+    @Override
+    public RestResponse add(IncomingWaterForecast incomingWaterForecast) {
+        try {
+            incomingWaterForecast.setId(UUIDUtils.getUUID());
+            incomingWaterForecast.setCreateTime(new Date());
+            if(incomingWaterForecast.getPeriodTimeType()==1){
+                Date predictionTime = incomingWaterForecast.getPredictionTime();
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(predictionTime);
+                calendar.add(Calendar.DATE,incomingWaterForecast.getPeriodTimeStep()*30);
+                Date targetDate = calendar.getTime();
+                incomingWaterForecast.setEndTime(targetDate);
+            }
+            if(incomingWaterForecast.getPeriodTimeType()==2){
+                Date predictionTime = incomingWaterForecast.getPredictionTime();
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(predictionTime);
+                calendar.add(Calendar.DATE,incomingWaterForecast.getPeriodTimeStep()*10);
+                Date targetDate = calendar.getTime();
+                incomingWaterForecast.setEndTime(targetDate);
+            }
+            if(incomingWaterForecast.getPeriodTimeType()==3){
+                Date predictionTime = incomingWaterForecast.getPredictionTime();
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(predictionTime);
+                calendar.add(Calendar.DATE,incomingWaterForecast.getPeriodTimeStep());
+                Date targetDate = calendar.getTime();
+                incomingWaterForecast.setEndTime(targetDate);
+            }
+            if(incomingWaterForecast.getPeriodTimeType()==4){
+                Date predictionTime = incomingWaterForecast.getPredictionTime();
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(predictionTime);
+                calendar.add(Calendar.HOUR,incomingWaterForecast.getPeriodTimeStep());
+                Date targetDate = calendar.getTime();
+                incomingWaterForecast.setEndTime(targetDate);
+            }
+            boolean save = this.save(incomingWaterForecast);
+            if(save){
+                try {
+                    ForcastInputParamNew forcastInputParamNew = new ForcastInputParamNew();
+                    forcastInputParamNew.setPredictionTime(incomingWaterForecast.getPredictionTime());
+                    forcastInputParamNew.setModelType(incomingWaterForecast.getModelType());
+                    forcastInputParamNew.setPeriodTimeNum(incomingWaterForecast.getPeriodTimeNum());
+                    forcastInputParamNew.setPeriodTimeStep(incomingWaterForecast.getPeriodTimeStep());
+                    forcastInputParamNew.setPeriodTimeType(incomingWaterForecast.getPeriodTimeType());
+                    LzzHydrologyParam lzzHydrologyParam = new LzzHydrologyParam();
+                    lzzHydrologyParam.setThreeGaugingStation(lzzGaugingStationService.lambdaQuery().eq(LzzGaugingStation::getStationName,"3号桥水位站").list());
+                    lzzHydrologyParam.setLzzInput(lzzGaugingStationService.lambdaQuery().eq(LzzGaugingStation::getStationName,"楼庄子入库水位站").list());
+                    lzzHydrologyParam.setLzzOutput(lzzGaugingStationService.lambdaQuery().eq(LzzGaugingStation::getStationName,"楼庄子出库水位站").list());
+                    lzzHydrologyParam.setLzzWaterLevel(lzzGaugingStationService.lambdaQuery().eq(LzzGaugingStation::getStationName,"楼庄子库水位站").list());
+                    lzzHydrologyParam.setKsgRainfallStation(lzzRainfallStationService.lambdaQuery().eq(LzzRainfallStation::getStationName,"喀什沟自动雨量站").list());
+                    lzzHydrologyParam.setHgRainfallStation(lzzRainfallStationService.lambdaQuery().eq(LzzRainfallStation::getStationName,"黑沟自动雨量站").list());
+                    lzzHydrologyParam.setMkgRainfallStation(lzzRainfallStationService.lambdaQuery().eq(LzzRainfallStation::getStationName,"煤矿沟自动雨量站").list());
+                    lzzHydrologyParam.setWmgRainfallStation(lzzRainfallStationService.lambdaQuery().eq(LzzRainfallStation::getStationName,"无名沟自动雨量站").list());
+                    lzzHydrologyParam.setJpsRainfallStation(lzzRainfallStationService.lambdaQuery().eq(LzzRainfallStation::getStationName,"加普沙自动雨量站").list());
+                    lzzHydrologyParam.setZrdRainfallStation(lzzRainfallStationService.lambdaQuery().eq(LzzRainfallStation::getStationName,"宰尔德自动雨量站").list());
+                    lzzHydrologyParam.setDngRainfallStation(lzzRainfallStationService.lambdaQuery().eq(LzzRainfallStation::getStationName,"东南沟自动雨量站").list());
+                    lzzHydrologyParam.setBylcRainfallStation(lzzRainfallStationService.lambdaQuery().eq(LzzRainfallStation::getStationName,"八一林场自动雨量站").list());
+                    lzzHydrologyParam.setSedwRainfallStation(lzzRainfallStationService.lambdaQuery().eq(LzzRainfallStation::getStationName,"萨尔达万自动雨量站").list());
+                    lzzHydrologyParam.setZccRainfallStation(lzzRainfallStationService.lambdaQuery().eq(LzzRainfallStation::getStationName,"制材厂自动雨量站").list());
+                    IrrigatedHydrologyParam irrigatedHydrologyParam = new IrrigatedHydrologyParam();
+                    irrigatedHydrologyParam.setXqzGaugingStation(irrigatedPlatformDataInfoService.lambdaQuery().eq(IrrigatedPlatformDataInfo::getMonitorName,"小渠子雨量站").list());
+                    irrigatedHydrologyParam.setTjydGaugingStation(irrigatedPlatformDataInfoService.lambdaQuery().eq(IrrigatedPlatformDataInfo::getMonitorName,"团结一队雨量站").list());
+                    irrigatedHydrologyParam.setTthGaugingStation(irrigatedPlatformDataInfoService.lambdaQuery().eq(IrrigatedPlatformDataInfo::getMonitorName,"头屯河水库雨量站").list());
+                    irrigatedHydrologyParam.setTthInput(irrigatedPlatformDataInfoService.lambdaQuery().eq(IrrigatedPlatformDataInfo::getMonitorName,"入库流量").list());
+                    forcastInputParamNew.setLzzHydrologyParam(lzzHydrologyParam);
+                    forcastInputParamNew.setIrrigatedHydrologyParam(irrigatedHydrologyParam);
+                    //调用模型方法生成模型结果，更新到数据库
+                    TemporaryXlsx floodList = TouTunHe.getFloodList(forcastInputParamNew);
+                    //生成模型结果文件
+                    String fileAddress = floodList.getPath();
+                    String[] split = fileAddress.split("\\\\");
+                    Date date = new Date();
+                    String yyyyMMdd = DateUtil.format(date, "yyyyMMdd");
+                    String hh = DateUtil.format(date, "HH");
+                    String mm = DateUtil.format(date, "mm");
+                    String ss = DateUtil.format(date, "ss");
+                    ObjectWriteResponse objectWriteResponse = minioUtils.putObject("tth", yyyyMMdd+"/"+hh+"/"+mm+"/"+ss+"/"+ UUID.fastUUID().toString(true)+"/"+split[split.length-1], fileAddress);
+                    String object = objectWriteResponse.object();
+                    incomingWaterForecastService.lambdaUpdate().set(IncomingWaterForecast::getModelResultAddress,object).eq(IncomingWaterForecast::getId,incomingWaterForecast.getId()).update();
+                }catch (Exception e) {
+                    e.printStackTrace();
+                    log.error("-------------------------------------------error-------------------------------------------");
+                }
                 return RestResponse.ok("生成模型结果成功");
             }else {
                 return RestResponse.no("生成模型结果失败");

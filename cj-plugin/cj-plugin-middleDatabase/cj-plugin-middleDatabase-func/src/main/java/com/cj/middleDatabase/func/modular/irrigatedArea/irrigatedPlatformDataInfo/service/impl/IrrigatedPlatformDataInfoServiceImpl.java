@@ -46,5 +46,10 @@ public class IrrigatedPlatformDataInfoServiceImpl extends ServiceImpl<IrrigatedP
         }
         return null;
     }
+
+    @Override
+    public IrrigatedPlatformDataInfo selectOneByCondition(String name, String time) {
+        return this.baseMapper.selectOneByCondition(name,time);
+    }
 }
 

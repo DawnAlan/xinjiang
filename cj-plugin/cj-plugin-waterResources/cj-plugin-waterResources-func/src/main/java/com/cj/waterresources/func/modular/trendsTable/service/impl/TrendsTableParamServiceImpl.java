@@ -132,15 +132,11 @@ public class TrendsTableParamServiceImpl extends ServiceImpl<TrendsTableParamMap
                                         try {
                                             waterPriceManagementService.removeById(id);
                                             waterPriceManagementService.removeBatchByIds(collect);
-                                            TrendsTableParam tableParam = trendsTableParamService.getById(id);
-                                            if(null!= tableParam && tableParam.getParamName().equals("合计")){
-                                                totalIdToStationService.lambdaUpdate().eq(TotalIdToStation::getTotalId,id).remove();
-                                                List<String> collected = trendsTableParamService.lambdaQuery().eq(TrendsTableParam::getPId, id).list().stream().filter(t -> t.getParamName().equals("合计")).map(TrendsTableParam::getId).collect(Collectors.toList());
-                                                if(null != collected && collected.size()>0){
-                                                    totalIdToStationService.lambdaUpdate().in(TotalIdToStation::getTotalId,collected).remove();
-                                                }
+                                            totalIdToStationService.lambdaUpdate().eq(TotalIdToStation::getTotalId,id).remove();
+                                            List<String> collected = trendsTableParamService.lambdaQuery().eq(TrendsTableParam::getPId, id).list().stream().filter(t -> t.getParamName().equals("合计")).map(TrendsTableParam::getId).collect(Collectors.toList());
+                                            if(null != collected && collected.size()>0){
+                                                totalIdToStationService.lambdaUpdate().in(TotalIdToStation::getTotalId,collected).remove();
                                             }
-
                                         }catch (Exception e){
                                             e.printStackTrace();
                                         }
@@ -171,10 +167,7 @@ public class TrendsTableParamServiceImpl extends ServiceImpl<TrendsTableParamMap
                             public void run() {
                                 try {
                                     waterPriceManagementService.removeById(id);
-                                    TrendsTableParam tableParam = trendsTableParamService.getById(id);
-                                    if(null!= tableParam && tableParam.getParamName().equals("合计")){
-                                        totalIdToStationService.lambdaUpdate().eq(TotalIdToStation::getTotalId,id).remove();
-                                    }
+                                    totalIdToStationService.lambdaUpdate().eq(TotalIdToStation::getTotalId,id).remove();
                                 }catch (Exception e){
                                     e.printStackTrace();
                                 }

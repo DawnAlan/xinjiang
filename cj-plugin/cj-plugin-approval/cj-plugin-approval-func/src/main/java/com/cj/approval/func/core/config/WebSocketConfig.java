@@ -1,4 +1,4 @@
-package com.cj.waterresources.func.core.config;
+package com.cj.approval.func.core.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

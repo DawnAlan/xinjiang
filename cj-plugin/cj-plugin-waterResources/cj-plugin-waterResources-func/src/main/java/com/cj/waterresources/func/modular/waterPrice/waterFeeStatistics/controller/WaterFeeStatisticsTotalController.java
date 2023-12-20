@@ -38,5 +38,17 @@ public class WaterFeeStatisticsTotalController{
     public RestResponse<List<WaterFeeStatisticsTotal>> select(@RequestBody WaterFeeStatisticsDetailsSelectListReq req) {
         return waterFeeStatisticsTotalService.selectInfoList(req);
     }
+
+    @ApiOperationSupport(order = 1)
+    @ApiOperation("修改备注")
+    @PostMapping("/updateRemark")
+    public RestResponse updateRemark(@RequestBody WaterFeeStatisticsTotal total) {
+        boolean update = waterFeeStatisticsTotalService.lambdaUpdate().set(WaterFeeStatisticsTotal::getRemark, total.getRemark()).eq(WaterFeeStatisticsTotal::getId, total.getId()).update();
+        if(update){
+            return RestResponse.ok();
+        }else {
+            return RestResponse.no("Error");
+        }
+    }
 }
 

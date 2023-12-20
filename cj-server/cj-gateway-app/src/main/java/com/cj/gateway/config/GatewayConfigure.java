@@ -90,6 +90,7 @@ public class GatewayConfigure {
             "/api/inspectionapp/v2/api-docs",
             "/api/floodapp/v2/api-docs",
             "/api/datasynchronizationapp/v2/api-docs",
+            "/api/approvalapp/v2/api-docs",
 
             /* 认证相关 */
             "/api/webapp/auth/c/getPicCaptcha",

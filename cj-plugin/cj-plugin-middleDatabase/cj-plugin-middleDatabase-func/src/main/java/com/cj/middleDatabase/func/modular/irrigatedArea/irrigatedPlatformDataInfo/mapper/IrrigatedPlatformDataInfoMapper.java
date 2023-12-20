@@ -27,5 +27,8 @@ public interface IrrigatedPlatformDataInfoMapper extends BaseMapper<IrrigatedPla
 
     @Select("SELECT * FROM IRRIGATED_PLATFORM_DATA_INFO WHERE MONITOR_ID = #{id}")
     List<IrrigatedPlatformDataInfo> selectInfoByCondition3(@Param("id") String id);
+
+    @Select("SELECT * FROM IRRIGATED_PLATFORM_DATA_INFO WHERE MONITOR_NAME = #{name} AND TO_CHAR(MONITOR_TIME,'YYYY-MM-DD') = #{time} order by MONITOR_TIME DESC limit 1")
+    IrrigatedPlatformDataInfo selectOneByCondition(@Param("name") String name, @Param("time")String time);
 }
 

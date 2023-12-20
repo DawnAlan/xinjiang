@@ -62,7 +62,14 @@ public class ExcelTool {
 	}
 	public static void writeObjectExcel(String path, String sheetName, Object[][] data) throws IOException, InvalidFormatException {
 		XSSFWorkbook workbook = new XSSFWorkbook();
-		XSSFSheet sheet = workbook.createSheet();
+		File file = new File(path);
+		//如果文件存在则续写
+		if (file.exists()){
+			FileInputStream fis = new FileInputStream(path);
+			workbook = new XSSFWorkbook(fis);
+		}
+//		XSSFWorkbook workbook = new XSSFWorkbook();
+		XSSFSheet sheet = workbook.getSheet(sheetName);
 		CellStyle cellStyle = workbook.createCellStyle();
 		cellStyle.setDataFormat(workbook.getCreationHelper().createDataFormat().getFormat("yyyy-mm-dd hh:mm:ss"));
 // 先判断工作簿是否存在，不存在则创建，存在则清空
@@ -79,7 +86,6 @@ public class ExcelTool {
 				e.printStackTrace();
 			}
 			// 在单元格中写入数据
-			sheet = workbook.createSheet(sheetName);
 			fillSheet(workbook, sheet, data);
 		}else {
 			sheet = workbook.createSheet(sheetName);
@@ -95,7 +101,7 @@ public class ExcelTool {
 		}
 	}
 
-	public static void writeListExcel(String path, String sheetName, List<List<Double>> data) throws IOException, InvalidFormatException {
+	public static void writeList2DoubleExcel(String path, String sheetName, List<List<Double>> data) throws IOException, InvalidFormatException {
 		XSSFWorkbook workbook = new XSSFWorkbook();
 		XSSFSheet sheet = workbook.createSheet();
 		CellStyle cellStyle = workbook.createCellStyle();
@@ -144,9 +150,9 @@ public class ExcelTool {
 	}
 
 	public static void writeFloodExcel(String path, String sheetName, Object[][] data) throws IOException, InvalidFormatException {
+
 		XSSFWorkbook wb = new XSSFWorkbook();
 		XSSFSheet sheet = wb.createSheet(sheetName);
-		OutputStream out = null;
 		CellStyle cellStyle = wb.createCellStyle();
 		cellStyle.setDataFormat(wb.getCreationHelper().createDataFormat().getFormat("yyyy-mm-dd hh:mm:ss"));
 
@@ -264,19 +270,20 @@ public class ExcelTool {
 			for(int j=cellStart;j<cellEnd;j++){
 				Cell cell = row.getCell(j);
 				if(cell == null)continue;
-				int type = cell.getCellType();
-				if(type == Cell.CELL_TYPE_STRING)output[i][j] = cell.getStringCellValue();
-				else if(type == Cell.CELL_TYPE_NUMERIC){
+				CellType type = cell.getCellType();
+				if(type == CellType.STRING)output[i][j] = cell.getStringCellValue();
+
+				else if(type == CellType.NUMERIC){
 					if(DateUtil.isCellDateFormatted(cell))output[i][j] = cell.getDateCellValue();
 					else output[i][j] = cell.getNumericCellValue();
 				}
-				else if(type == Cell.CELL_TYPE_BOOLEAN)output[i][j] = cell.getBooleanCellValue();
-				else if(type == Cell.CELL_TYPE_BLANK)output[i][j] = null;
-				else if(type == Cell.CELL_TYPE_FORMULA)output[i][j] = cell.getNumericCellValue();
-				else if(type == Cell.CELL_TYPE_ERROR)output[i][j] = null;
+				else if(type == CellType.BOOLEAN)output[i][j] = cell.getBooleanCellValue();
+				else if(type == CellType.BLANK)output[i][j] = null;
+				else if(type == CellType.FORMULA)output[i][j] = cell.getNumericCellValue();
+				else if(type == CellType.ERROR)output[i][j] = null;
+
 			}
 		}
 		return output;
 	}
-
 }

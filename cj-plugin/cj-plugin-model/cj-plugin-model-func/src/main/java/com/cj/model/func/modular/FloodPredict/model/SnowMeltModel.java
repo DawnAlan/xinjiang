@@ -13,7 +13,6 @@ import java.io.File;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -98,7 +97,7 @@ public class SnowMeltModel {
             String Option = location + "融雪";
             File tempFileParam = File.createTempFile(Option + pvo.getNetClass()+"-PARAM",".xlsx");
             String pathParam= tempFileParam.getAbsolutePath();
-            ExcelTool.writeListExcel(pathParam, "模型参数", paramResult);
+            ExcelTool.writeList2DoubleExcel(pathParam, "模型参数", paramResult);
             temxParam.setPath(pathParam);
             temxParam.setSheetName("模型参数");
             paramList.add(temxParam);

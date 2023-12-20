@@ -1,4 +1,4 @@
-package com.cj.waterresources.func.core.utils;
+package com.cj.approval.func.core.utils;
 
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;

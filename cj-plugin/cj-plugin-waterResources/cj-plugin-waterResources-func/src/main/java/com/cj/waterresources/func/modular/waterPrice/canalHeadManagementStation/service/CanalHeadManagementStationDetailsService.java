@@ -26,6 +26,7 @@ public interface CanalHeadManagementStationDetailsService extends IService<Canal
     RestResponse update(CanalHeadManagementStationDetails canalHeadManagementStationDetails);
 
     RestResponse selectList(WaterFeeStatisticsDetailsSelectListReq req);
+    RestResponse remove(WaterFeeStatisticsDetailsSelectListReq req);
 
 }
 

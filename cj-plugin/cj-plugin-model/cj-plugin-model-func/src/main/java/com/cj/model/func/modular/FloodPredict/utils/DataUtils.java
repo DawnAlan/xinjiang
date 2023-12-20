@@ -403,12 +403,13 @@ public class DataUtils {
 
 	/**
 	 * 保留前72小时雨量
-	 * @param input
+	 * @param param(前多少个小时），input原始数据
+	 *
 	 * @return
 	 */
-	public static List<PredictInputData> TwentyFourRain(List<PredictInputData> input) {
+	public static List<PredictInputData> hoursRain(ForcastInputParamNew param,List<PredictInputData> input) {
 		List<PredictInputData> result = new ArrayList<>();
-		int n = 72;
+		int n = param.getPeriodTimeNum();
 		if (input.size()>n){
 			for (int i = n; i > 0; i--) {
 				result.add(input.get(input.size() - i));
@@ -418,7 +419,6 @@ public class DataUtils {
 				result.add(input.get(input.size() - i));
 			}
 		}
-
 		return result;
 	}
 	/**
@@ -444,7 +444,7 @@ public class DataUtils {
 	/**
 	 * 楼庄子上游雨量站数据整合
 	 * @param paramForcastInputParamNew
-	 * @return 24小时各个雨量站时间、站点、温度、雨量
+	 * @return 前期雨量和小时尺度降水
 	 */
 	public static List<List<PredictInputData>> LzzRainIntegration(ForcastInputParamNew paramForcastInputParamNew){
 		List<List<PredictInputData>> result = new ArrayList<>();
@@ -453,70 +453,70 @@ public class DataUtils {
 		List<PredictInputData> RainDay = new ArrayList<>();
 		//喀什沟
 		List<PredictInputData> KSG = DataUtils.lzzDataConversion(paramForcastInputParamNew.getLzzHydrologyParam()).get(3);
-		KSG=DataUtils.TwentyFourRain(KSG);
+		KSG=DataUtils.hoursRain(paramForcastInputParamNew ,KSG);
 		List<PredictInputData> KSGDAY = DataUtils.lzzRainHourToDay(paramForcastInputParamNew.getLzzHydrologyParam().getKsgRainfallStation());
 		KSGDAY=DataUtils.TwentyDayRain(KSGDAY);
 		RainDay.addAll(KSGDAY);
 		RainHour.addAll(KSG);
 		//黑沟
 		List<PredictInputData> HG = DataUtils.lzzDataConversion(paramForcastInputParamNew.getLzzHydrologyParam()).get(4);
-		HG=DataUtils.TwentyFourRain(HG);
+		HG=DataUtils.hoursRain(paramForcastInputParamNew,HG);
 		List<PredictInputData> HGDAY = DataUtils.lzzRainHourToDay(paramForcastInputParamNew.getLzzHydrologyParam().getHgRainfallStation());
 		HGDAY=DataUtils.TwentyDayRain(HGDAY);
 		RainDay.addAll(HGDAY);
 		RainHour.addAll(HG);
 		//煤矿沟
 		List<PredictInputData> MKG = DataUtils.lzzDataConversion(paramForcastInputParamNew.getLzzHydrologyParam()).get(5);
-		MKG=DataUtils.TwentyFourRain(MKG);
+		MKG=DataUtils.hoursRain(paramForcastInputParamNew,MKG);
 		List<PredictInputData> MKGDAY = DataUtils.lzzRainHourToDay(paramForcastInputParamNew.getLzzHydrologyParam().getMkgRainfallStation());
 		MKGDAY=DataUtils.TwentyDayRain(MKGDAY);
 		RainDay.addAll(MKGDAY);
 		RainHour.addAll(MKG);
 		//无名沟
 		List<PredictInputData> WMG = DataUtils.lzzDataConversion(paramForcastInputParamNew.getLzzHydrologyParam()).get(6);
-		WMG=DataUtils.TwentyFourRain(WMG);
+		WMG=DataUtils.hoursRain(paramForcastInputParamNew,WMG);
 		List<PredictInputData> WMGDAY = DataUtils.lzzRainHourToDay(paramForcastInputParamNew.getLzzHydrologyParam().getWmgRainfallStation());
 		WMGDAY=DataUtils.TwentyDayRain(WMGDAY);
 		RainDay.addAll(WMGDAY);
 		RainHour.addAll(WMG);
 		//加普沙
 		List<PredictInputData> JPS = DataUtils.lzzDataConversion(paramForcastInputParamNew.getLzzHydrologyParam()).get(7);
-		JPS=DataUtils.TwentyFourRain(JPS);
+		JPS=DataUtils.hoursRain(paramForcastInputParamNew,JPS);
 		List<PredictInputData> JPSDAY = DataUtils.lzzRainHourToDay(paramForcastInputParamNew.getLzzHydrologyParam().getJpsRainfallStation());
 		JPSDAY=DataUtils.TwentyDayRain(JPSDAY);
 		RainDay.addAll(JPSDAY);
 		RainHour.addAll(JPS);
 		//宰尔德
 		List<PredictInputData> ZED = DataUtils.lzzDataConversion(paramForcastInputParamNew.getLzzHydrologyParam()).get(8);
-		ZED=DataUtils.TwentyFourRain(ZED);
+		ZED=DataUtils.hoursRain(paramForcastInputParamNew,ZED);
 		List<PredictInputData> ZEDDAY = DataUtils.lzzRainHourToDay(paramForcastInputParamNew.getLzzHydrologyParam().getZrdRainfallStation());
 		ZEDDAY=DataUtils.TwentyDayRain(ZEDDAY);
 		RainDay.addAll(ZEDDAY);
 		RainHour.addAll(ZED);
 		//东南沟
 		List<PredictInputData> DNG = DataUtils.lzzDataConversion(paramForcastInputParamNew.getLzzHydrologyParam()).get(9);
-		DNG=DataUtils.TwentyFourRain(DNG);
+		DNG=DataUtils.hoursRain(paramForcastInputParamNew,DNG);
 		List<PredictInputData> DNGDAY = DataUtils.lzzRainHourToDay(paramForcastInputParamNew.getLzzHydrologyParam().getDngRainfallStation());
 		DNGDAY=DataUtils.TwentyDayRain(DNGDAY);
 		RainDay.addAll(DNGDAY);
 		RainHour.addAll(DNG);
 		//八一林场
 		List<PredictInputData> BYLC = DataUtils.lzzDataConversion(paramForcastInputParamNew.getLzzHydrologyParam()).get(10);
-		BYLC=DataUtils.TwentyFourRain(BYLC);
+		BYLC=DataUtils.hoursRain(paramForcastInputParamNew,BYLC);
 		List<PredictInputData> BYLCDAY = DataUtils.lzzRainHourToDay(paramForcastInputParamNew.getLzzHydrologyParam().getBylcRainfallStation());
 		BYLCDAY=DataUtils.TwentyDayRain(BYLCDAY);
 		RainDay.addAll(BYLCDAY);
 		RainHour.addAll(BYLC);
 		//萨尔达万
 		List<PredictInputData> SEDW = DataUtils.lzzDataConversion(paramForcastInputParamNew.getLzzHydrologyParam()).get(11);
-		SEDW=DataUtils.TwentyFourRain(SEDW);
+		SEDW=DataUtils.hoursRain(paramForcastInputParamNew,SEDW);
 		List<PredictInputData> SEDWDAY = DataUtils.lzzRainHourToDay(paramForcastInputParamNew.getLzzHydrologyParam().getSedwRainfallStation());
 		SEDWDAY=DataUtils.TwentyDayRain(SEDWDAY);
 		RainDay.addAll(SEDWDAY);
 		RainHour.addAll(SEDW);
 		//制材厂
 		List<PredictInputData> ZCC = DataUtils.lzzDataConversion(paramForcastInputParamNew.getLzzHydrologyParam()).get(12);
-		ZCC=DataUtils.TwentyFourRain(ZCC);
+		ZCC=DataUtils.hoursRain(paramForcastInputParamNew,ZCC);
 		List<PredictInputData> ZCCDAY = DataUtils.lzzRainHourToDay(paramForcastInputParamNew.getLzzHydrologyParam().getZccRainfallStation());
 		ZCCDAY=DataUtils.TwentyDayRain(ZCCDAY);
 		RainDay.addAll(ZCCDAY);
@@ -557,21 +557,21 @@ public class DataUtils {
 		List<PredictInputData> RainDay = new ArrayList<>();
 		//小渠子
 		List<PredictInputData> XQZ = DataUtils.irrigatedDataConversion(paramForcastInputParamNew.getIrrigatedHydrologyParam()).get(1);
-		XQZ=DataUtils.TwentyFourRain(XQZ);
+		XQZ=DataUtils.hoursRain(paramForcastInputParamNew,XQZ);
 		List<PredictInputData> XQZDAY = DataUtils.IrrigateRainHourToDay(paramForcastInputParamNew.getIrrigatedHydrologyParam().getXqzGaugingStation());
 		XQZDAY=DataUtils.TwentyDayRain(XQZDAY);
 		RainDay.addAll(XQZDAY);
 		RainHour.addAll(XQZ);
 		//团结一队
 		List<PredictInputData> TJYD = DataUtils.irrigatedDataConversion(paramForcastInputParamNew.getIrrigatedHydrologyParam()).get(2);
-		TJYD=DataUtils.TwentyFourRain(TJYD);
+		TJYD=DataUtils.hoursRain(paramForcastInputParamNew,TJYD);
 		List<PredictInputData> TJYDDAY = DataUtils.IrrigateRainHourToDay(paramForcastInputParamNew.getIrrigatedHydrologyParam().getTjydGaugingStation());
 		TJYDDAY=DataUtils.TwentyDayRain(TJYDDAY);
 		RainDay.addAll(TJYDDAY);
 		RainHour.addAll(TJYD);
 		//头屯河水库
 		List<PredictInputData> TTHR = DataUtils.irrigatedDataConversion(paramForcastInputParamNew.getIrrigatedHydrologyParam()).get(3);
-		TTHR=DataUtils.TwentyFourRain(TTHR);
+		TTHR=DataUtils.hoursRain(paramForcastInputParamNew,TTHR);
 		List<PredictInputData> TTHRDAY = DataUtils.IrrigateRainHourToDay(paramForcastInputParamNew.getIrrigatedHydrologyParam().getTthGaugingStation());
 		TTHRDAY=DataUtils.TwentyDayRain(TTHRDAY);
 		RainDay.addAll(TTHRDAY);
@@ -728,7 +728,7 @@ public class DataUtils {
 			String id = station.getId();
 			String[] parts = id.split(":");
 			String bridgeNumber = parts[0];
-			if (parts.length > 1 &&bridgeNumber.length() > 1 && station.getFlow() != null && station.getFlow() <= 300) {
+			if (parts.length > 1 && bridgeNumber.length() > 1 && station.getFlow() != null && station.getFlow() <= 300) {
 				LZZOresult.add(LZZO.get(i));
 			}
 		}
@@ -1353,6 +1353,34 @@ public class DataUtils {
 		return result;
 	}
 
+	/**
+	 * 相同列的Object相加
+	 * @param input
+	 * @return
+	 */
+	public static Object[][] AddObject(List<Object[][]> input){
+		int n = input.size();
+		int rowNum = 0;
+		int lineNum= 0;
+		for (int i = 0; i < n; i++) {
+			rowNum += input.get(i).length;
+			if (lineNum<input.get(i)[0].length){
+				lineNum=input.get(i)[0].length;
+			}
+		}
+		Object[][] result = new Object[rowNum][lineNum];
+		int row = 0;
+		for (int i = 0; i < n; i++) {
+			Object[][] inObject = input.get(i);
+			for (int j = 0; j < inObject.length; j++) {
+				for (int k = 0; k < inObject[0].length; k++) {
+					result[j+row][k]=inObject[j][k];
+				}
+			}
+			row +=inObject.length;
+		}
+		return result;
+	}
 	/**
 	 * 获得数据中的年、月、日、小时
 	 * @param date

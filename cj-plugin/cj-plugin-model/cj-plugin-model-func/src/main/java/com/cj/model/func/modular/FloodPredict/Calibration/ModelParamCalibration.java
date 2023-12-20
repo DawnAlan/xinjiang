@@ -37,24 +37,28 @@ public class ModelParamCalibration {
 
     public static void main(String[] args) throws IOException, InvalidFormatException {
 
-//        Double area = 1900.0;
+//        Double area = 2125.561;
 //        Object[][]Flood= ShanBeiCalibration(area);
-//        ExcelTool.writeObjectExcel(absolutePath+"率定结果.xlsx","3号桥",Flood);
+//        ExcelTool.writeObjectExcel("D:\\tth_system\\end\\file\\率定结果.xlsx","楼庄子", Flood);
         double[] shanbeiParams=new double[12];
-        shanbeiParams[0]=1900;// Area
-        shanbeiParams[1]=0.7;//FB
-        shanbeiParams[2]=60;//WM张力水蓄水容量，或最大蓄水量 60-80mm
-        shanbeiParams[3]=0.5;//蒸散发折减系数 KC
-        shanbeiParams[4]=18;//fc流域土壤稳定下渗率 0.3-0.5 mm/min
-        shanbeiParams[5]=60;//fm流域土壤最大下渗率 1-2 mm/min
-        shanbeiParams[6]=1;//K霍尔顿下渗曲线方程
-        shanbeiParams[7]=3;//B反映下渗能力在透水面积上的分布特性
-        shanbeiParams[8]=0.5;//CS 为地面径流消退系数
-        shanbeiParams[9]=2;//L汇流滞时（时段数）
+        shanbeiParams[0]=2125.561;// Area
+        shanbeiParams[1]=0.000001;//FB
+        shanbeiParams[2]=80;//WM张力水蓄水容量，或最大蓄水量 60-80mm(对洪水过程并无太大影响)
+        shanbeiParams[3]=10;//蒸散发折减系数 KC(无影响）
+        shanbeiParams[4]=30;//fc流域土壤稳定下渗率 0.3-0.5 mm/min(无影响)
+        shanbeiParams[5]=60;//fm流域土壤最大下渗率 1-2 mm/min(无影响）
+        shanbeiParams[6]=10;//K霍尔顿下渗曲线方程(无影响）
+        shanbeiParams[7]=10;//B反映下渗能力在透水面积上的分布特性(无影响）
+        shanbeiParams[8]=0.6;//CS 为地面径流消退系数
+        shanbeiParams[9]=3;//L汇流滞时（时段数）
         shanbeiParams[10]=20;//计算初始土壤含水量时，用到的前期天数
         shanbeiParams[11]=1;
         int L = (int) shanbeiParams[9];
-        //洪水过程推演
+        String sheetName = "FB-0.9,cs-0.99";
+        preREData = ExcelTool.readExcel("D:\\tth_system\\end\\file\\陕北-DATA.xlsx","楼庄子蒸发降雨");
+        historyRData = ExcelTool.readExcel("D:\\tth_system\\end\\file\\陕北-DATA.xlsx","楼庄子前期雨量");
+        historyFData = ExcelTool.readExcel("D:\\tth_system\\end\\file\\陕北-DATA.xlsx","前期径流");
+//        洪水过程推演
         try {
             shanbeiModel.InputData(shanbeiParams,preREData,historyRData);
         } catch (IOException e) {
@@ -66,12 +70,18 @@ public class ModelParamCalibration {
         //洪水过程对比
         preData=new double[preREData.length-L];
         hisData=new double[preREData.length-L];
+        for (int i = 0; i < preData.length; i++) {
+            preData[i]=shanbeiModel.Q[i+L];
+        }
+        for (int i = 0; i < preData.length; i++) {
+            hisData[i]=(double) historyFData[i+L][1];
+        }
         Object[][] results =new Object[hisData.length][2];
         for (int i = 0; i < hisData.length; i++) {
             results[i][0]=hisData[i];
             results[i][1]=preData[i];
         }
-        ExcelTool.writeObjectExcel("D:\\tth_system\\end\\file\\手动率定结果.xlsx","3号桥",results);
+        ExcelTool.writeObjectExcel("D:\\tth_system\\end\\file\\手动率定结果.xlsx",sheetName,results);
     }
     public static Object[][]ShanBeiCalibration(Double data) throws IOException {
         Area=data;
@@ -83,14 +93,14 @@ public class ModelParamCalibration {
 
         // 定义模型各参数的有效范围
         Interval[] regionIntervals = new Interval[]{
-                new Interval(0.1, 1),
-                new Interval(60, 80),
-                new Interval(0.5, 1),
-                new Interval(18, 30),
-                new Interval(60, 120),
-                new Interval(0.1, 3),
-                new Interval(1, 5),
-                new Interval(0.1, 1),
+                new Interval(0.8, 1),
+                new Interval(80, 80),
+                new Interval(1, 1),
+                new Interval(30, 30),
+                new Interval(60, 60),
+                new Interval(3, 3),
+                new Interval(5, 5),
+                new Interval(0.98, 1),
                 new Interval(1, 5),
         };
 
@@ -101,7 +111,7 @@ public class ModelParamCalibration {
         PSO pso = new PSO(domain);
 
         // 运行算法并存储结果
-        PSOResult result = pso.Execute(100, 1000);
+        PSOResult result = pso.Execute(2000, 400);
 
         // 输出结果
         System.out.println(result);
