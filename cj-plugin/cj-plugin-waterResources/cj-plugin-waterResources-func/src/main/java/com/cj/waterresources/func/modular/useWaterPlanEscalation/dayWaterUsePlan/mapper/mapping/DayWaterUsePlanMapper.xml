@@ -16,5 +16,24 @@
             and DEL = 0
         </where>
     </select>
-
+    <select id="getWaterNeedDetail" resultType="java.util.Map">
+        with dayUseWater as
+                 (select 'day'                                useWaterPlan,
+                         a.AREA,
+                         a.UNIT_NAME                          unit,
+                         to_char(b.V)                         v,
+                         to_char(b.RECORD_TIME, 'yyyy-mm-dd') tm
+                  from USE_WATER_MANAGEMENT a,
+                       DAY_WATER_USE_PLAN b
+                  where to_char(b.RECORD_TIME, 'yyyy-mm-dd') >= to_char(#{startTime}, 'yyyy-mm-dd')
+                    and to_char(b.RECORD_TIME, 'yyyy-mm-dd') &lt;= to_char(#{endTime}, 'yyyy-mm-dd')
+                    and a.P_ID = b.ID
+                    and a.DEL = 0
+                    and a.DEL = 0
+                    and a.USE_WATER_PLAN = '日用水计划')
+        select *
+        from dayUseWater
+        where (area, unit, tm) in
+              (select area, unit, max(tm) from dayUseWater group by area, unit)
+    </select>
 </mapper>

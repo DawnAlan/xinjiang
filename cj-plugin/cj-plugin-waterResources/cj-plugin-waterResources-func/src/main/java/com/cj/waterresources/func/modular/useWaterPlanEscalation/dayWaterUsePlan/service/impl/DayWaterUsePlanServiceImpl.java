@@ -5,6 +5,7 @@ import com.cj.common.model.RestResponse;
 import com.cj.common.util.UUIDUtils;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.bean.res.SelectInfoByIrrigationNameListRes;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.service.IrrigatedPlatformDataInfoService;
+import com.cj.model.func.modular.watertransfer.entity.Waterdemand;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.dayWaterUsePlan.bean.req.DayWaterUsePlanSelectReq;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.dayWaterUsePlan.mapper.DayWaterUsePlanMapper;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.dayWaterUsePlan.entity.DayWaterUsePlan;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -73,5 +75,11 @@ public class DayWaterUsePlanServiceImpl extends ServiceImpl<DayWaterUsePlanMappe
             return RestResponse.no("暂无数据");
         }
     }
+
+    @Override
+    public List getWaterNeedDetail(Date startTime, Date endTime) {
+        return baseMapper.getWaterNeedDetail(startTime, endTime);
+    }
+
 }
 

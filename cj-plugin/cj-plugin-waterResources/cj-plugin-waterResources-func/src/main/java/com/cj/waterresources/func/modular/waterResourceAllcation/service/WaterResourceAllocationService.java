@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.cj.common.model.RestResponse;
 import com.cj.waterresources.func.modular.waterResourceAllcation.bean.dto.IncomingWaterForecastDto;
 import com.cj.waterresources.func.modular.waterResourceAllcation.bean.req.WaterResourceAllocationAddReq;
+import com.cj.waterresources.func.modular.waterResourceAllcation.bean.req.WaterResourceAllocationQueryReq;
 import com.cj.waterresources.func.modular.waterResourceAllcation.entity.WaterResourceAllocation;
 
 import java.util.List;
@@ -16,10 +17,15 @@ import java.util.List;
  */
 public interface WaterResourceAllocationService extends IService<WaterResourceAllocation> {
 
-    RestResponse<List<IncomingWaterForecastDto>> getIncomingWaterForecastListByTime(String startTime, String endTime);
+    RestResponse<List<IncomingWaterForecastDto>> getIncomingWaterForecastListByTime(String startTime, String endTime, Integer bucketType);
 
     RestResponse generativeModel(WaterResourceAllocationAddReq req);
 
 
+    RestResponse getAllocationPage(WaterResourceAllocationQueryReq req);
+
+    RestResponse delById(String id);
+
+    RestResponse compare(String idA, String idB);
 }
 

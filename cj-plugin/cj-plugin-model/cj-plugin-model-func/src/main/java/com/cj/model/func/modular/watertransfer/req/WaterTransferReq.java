@@ -43,7 +43,7 @@ public class WaterTransferReq {
     //来水预报
     private Map<String, List<DataInflowPrevent>> data;
     //需水计划
-    private Map<String, List<Waterdemand>> waterDemandData;
+    private  List<Waterdemand> waterDemandData;
 
     private String typeName;
 }
