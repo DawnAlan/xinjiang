@@ -47,11 +47,13 @@ public class WaterStorageSchedulingTthController{
     @ApiOperationSupport(order = 2)
     @ApiOperation("新增")
     @PostMapping("/add")
-    public RestResponse add(@RequestBody  WaterStorageSchedulingTth waterStorageSchedulingTth) {
-        waterStorageSchedulingTth.setCreateTime(new Date());
-        waterStorageSchedulingTth.setDel(0);
-        waterStorageSchedulingTth.setId(UUIDUtils.getUUID());
-        boolean save = waterStorageSchedulingTthService.save(waterStorageSchedulingTth);
+    public RestResponse add(@RequestBody  List<WaterStorageSchedulingTth> waterStorageSchedulingTthList) {
+        waterStorageSchedulingTthList.forEach(waterStorageSchedulingTth->{
+            waterStorageSchedulingTth.setCreateTime(new Date());
+            waterStorageSchedulingTth.setDel(0);
+            waterStorageSchedulingTth.setId(UUIDUtils.getUUID());
+        });
+        boolean save = waterStorageSchedulingTthService.saveBatch(waterStorageSchedulingTthList);
         if(save){
             return RestResponse.ok("添加成功");
         }else {

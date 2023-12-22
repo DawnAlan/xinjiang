@@ -48,11 +48,14 @@ public class WaterStorageSchedulingLzzController {
     @ApiOperationSupport(order = 2)
     @ApiOperation("新增")
     @PostMapping("/add")
-    public RestResponse add(@RequestBody WaterStorageSchedulingLzz waterStorageSchedulingLzz) {
-        waterStorageSchedulingLzz.setCreateTime(new Date());
-        waterStorageSchedulingLzz.setDel(0);
-        waterStorageSchedulingLzz.setId(UUIDUtils.getUUID());
-        boolean save = waterStorageSchedulingLzzService.save(waterStorageSchedulingLzz);
+    public RestResponse add(@RequestBody List<WaterStorageSchedulingLzz> waterStorageSchedulingLzzList) {
+        waterStorageSchedulingLzzList.forEach(waterStorageSchedulingLzz->{
+            waterStorageSchedulingLzz.setCreateTime(new Date());
+            waterStorageSchedulingLzz.setDel(0);
+            waterStorageSchedulingLzz.setId(UUIDUtils.getUUID());
+        });
+
+        boolean save = waterStorageSchedulingLzzService.saveBatch(waterStorageSchedulingLzzList);
         if(save){
             return RestResponse.ok("添加成功");
         }else {

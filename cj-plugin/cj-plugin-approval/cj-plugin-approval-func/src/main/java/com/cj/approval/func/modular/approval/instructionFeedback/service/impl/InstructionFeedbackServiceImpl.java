@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -47,6 +48,7 @@ public class InstructionFeedbackServiceImpl extends ServiceImpl<InstructionFeedb
         instructionFeedback.setId(UUIDUtils.getUUID());
         //当前用户
         instructionFeedback.setFeedbackBy("");
+        instructionFeedback.setFeedbackTime(new Date());
         boolean save = this.save(instructionFeedback);
         if(save){
             boolean update = instructionViewingService.lambdaUpdate().set(InstructionViewing::getViewStatus, instructionFeedback.getFeedbackStatus()).eq(InstructionViewing::getId, instructionFeedback.getInstructionViewId()).update();
