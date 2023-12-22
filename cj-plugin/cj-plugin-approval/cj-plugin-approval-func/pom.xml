@@ -36,14 +36,35 @@
             <artifactId>spring-boot-starter-websocket</artifactId>
             <version>2.7.12</version>
         </dependency>
+        <!-- Poi-tl Word 模板引擎-->
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-thymeleaf</artifactId>
-            <version>2.7.12</version>
+            <groupId>com.deepoove</groupId>
+            <artifactId>poi-tl</artifactId>
+            <version>1.9.1</version>
         </dependency>
         <dependency>
             <groupId>com.cj</groupId>
             <artifactId>cj-plugin-sys-api</artifactId>
+        </dependency>
+        <!--minio上传文件客户端-->
+        <dependency>
+            <groupId>io.minio</groupId>
+            <artifactId>minio</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.13.0</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+            <version>4.4.9</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
         </dependency>
     </dependencies>
 </project>

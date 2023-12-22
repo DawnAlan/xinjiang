@@ -27,6 +27,10 @@ public class ApprovalManagement extends Model<ApprovalManagement> {
     @ApiModelProperty(value = "调度单位")
     private String dispatchingUnit;
 
+    //调度单位ID
+    @ApiModelProperty(value = "调度单位ID")
+    private String dispatchingUnitId;
+
     //调度目标
     @ApiModelProperty(value = "调度目标")
     private String dispatchingObjectives;
@@ -55,8 +59,8 @@ public class ApprovalManagement extends Model<ApprovalManagement> {
     @ApiModelProperty(value = "完成时间")
     private Date completeTime;
 
-    //指令状态(1-未开始 2-开始 3-进行中 4-已完成)
-    @ApiModelProperty(value = "指令状态(1-未开始 2-开始 3-进行中 4-已完成)")
+    //指令状态(1-未开始 2-进行中 3-已完成)
+    @ApiModelProperty(value = "指令状态(1-未开始 2-进行中 3-已完成)")
     private Integer instructionStatus;
 
     //关联指令
@@ -82,5 +86,9 @@ public class ApprovalManagement extends Model<ApprovalManagement> {
     //逻辑删除(0-正常 1-删除)
     @ApiModelProperty(value = "逻辑删除(0-正常 1-删除)")
     private Integer del;
+
+    //指令单
+    @ApiModelProperty(value = "指令单")
+    private String fileAddress;
 }
 

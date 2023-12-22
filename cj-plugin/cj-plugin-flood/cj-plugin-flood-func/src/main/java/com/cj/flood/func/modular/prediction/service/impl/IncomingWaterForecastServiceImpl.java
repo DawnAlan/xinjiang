@@ -434,17 +434,17 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                     }else {
                         view.put("3号桥",null);
                     }
-                    IncomingWaterForecastViewDto lzzEntryStation = getIncomingWaterForecastViewDto(floods, "楼庄子进库站");
+                    IncomingWaterForecastViewDto lzzEntryStation = getIncomingWaterForecastViewDto(floods, "楼庄子");
                     if(null != lzzEntryStation){
-                        view.put("楼庄子进库站",lzzEntryStation);
+                        view.put("楼庄子",lzzEntryStation);
                     }else {
-                        view.put("楼庄子进库站",null);
+                        view.put("楼庄子",null);
                     }
-                    IncomingWaterForecastViewDto tthEntryStation = getIncomingWaterForecastViewDto(floods, "头屯河进库站");
+                    IncomingWaterForecastViewDto tthEntryStation = getIncomingWaterForecastViewDto(floods, "楼头区间");
                     if(null != tthEntryStation){
-                        view.put("头屯河进库站",tthEntryStation);
+                        view.put("楼头区间",tthEntryStation);
                     }else {
-                        view.put("头屯河进库站",null);
+                        view.put("楼头区间",null);
                     }
                     res.setView(view);
                     return RestResponse.ok(res);
@@ -465,7 +465,7 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
         List<Flood> threeBridge = floods.stream().filter(t -> t.getLocation().equals(station)).collect(Collectors.toList());
         if(null != threeBridge && threeBridge.size() > 0) {
             IncomingWaterForecastViewDto incomingWaterForecastViewDto = new IncomingWaterForecastViewDto();
-            List<Flood> threeBridgeFloodPeak = threeBridge.stream().filter(t -> t.getPeakIndex() != 0).collect(Collectors.toList());
+            List<Flood> threeBridgeFloodPeak = threeBridge.stream().filter(t -> null != t.getPeakIndex() && t.getPeakIndex() != 0).collect(Collectors.toList());
             if(null != threeBridgeFloodPeak && threeBridgeFloodPeak.size() >0){
                 Map<Integer, FloodPeakDto> floodPeak = new HashMap<>();
                 Map<Integer, List<Flood>> threeBridgeCollect = threeBridgeFloodPeak.stream().collect(Collectors.groupingBy(Flood::getPeakIndex));

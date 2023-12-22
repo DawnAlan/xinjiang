@@ -3,165 +3,129 @@ package com.cj.approval.func.core.utils;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.stereotype.Component;
 
 import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
+import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * WebSocket的操作类
  */
+@ServerEndpoint("/websocket/{sid}")
 @Component
 @Slf4j
-/**
- * html页面与之关联的接口
- * var reqUrl = "http://localhost:8081/websocket/" + cid;
- * socket = new WebSocket(reqUrl.replace("http", "ws"));
- */
-@ServerEndpoint("/websocket/{sid}")
 public class WebSocketServer {
+    //静态变量，用来记录当前在线连接数。应该把它设计成线程安全的。
+    private static int onlineCount = 0;
+    //concurrent包的线程安全Set，用来存放每个客户端对应的MyWebSocket对象。
+    private static CopyOnWriteArraySet<WebSocketServer> webSocketSet = new CopyOnWriteArraySet<WebSocketServer>();
 
-    /**
-     * 静态变量，用来记录当前在线连接数，线程安全的类。
-     */
-    private static AtomicInteger onlineSessionClientCount = new AtomicInteger(0);
-
-    /**
-     * 存放所有在线的客户端
-     */
-    private static Map<String, Session> onlineSessionClientMap = new ConcurrentHashMap<>();
-
-    /**
-     * 连接sid和连接会话
-     */
-    private String sid;
+    //与某个客户端的连接会话，需要通过它来给客户端发送数据
     private Session session;
 
+    //接收sid
+    private String sid="";
+
     /**
-     * 连接建立成功调用的方法。由前端<code>new WebSocket</code>触发
-     *
-     * @param sid     每次页面建立连接时传入到服务端的id，比如用户id等。可以自定义。
-     * @param session 与某个客户端的连接会话，需要通过它来给客户端发送消息
-     */
+     * 连接建立成功调用的方法*/
     @OnOpen
-    public void onOpen(@PathParam("sid") String sid, Session session) {
-        /**
-         * session.getId()：当前session会话会自动生成一个id，从0开始累加的。
-         */
-        log.info("连接建立中 ==> session_id = {}， sid = {}", session.getId(), sid);
-        //加入 Map中。将页面的sid和session绑定或者session.getId()与session
-        //onlineSessionIdClientMap.put(session.getId(), session);
-        onlineSessionClientMap.put(sid, session);
-
-        //在线数加1
-        onlineSessionClientCount.incrementAndGet();
-        this.sid = sid;
+    public void onOpen(Session session, @PathParam("sid") String sid) {
         this.session = session;
-        sendToOne(sid, "连接成功");
-        log.info("连接建立成功，当前在线数为：{} ==> 开始监听新连接：session_id = {}， sid = {},。", onlineSessionClientCount, session.getId(), sid);
-    }
-
-    /**
-     * 连接关闭调用的方法。由前端<code>socket.close()</code>触发
-     *
-     * @param sid
-     * @param session
-     */
-    @OnClose
-    public void onClose(@PathParam("sid") String sid, Session session) {
-        //onlineSessionIdClientMap.remove(session.getId());
-        // 从 Map中移除
-        onlineSessionClientMap.remove(sid);
-
-        //在线数减1
-        onlineSessionClientCount.decrementAndGet();
-        log.info("连接关闭成功，当前在线数为：{} ==> 关闭该连接信息：session_id = {}， sid = {},。", onlineSessionClientCount, session.getId(), sid);
-    }
-
-    /**
-     * 收到客户端消息后调用的方法。由前端<code>socket.send</code>触发
-     * * 当服务端执行toSession.getAsyncRemote().sendText(xxx)后，前端的socket.onmessage得到监听。
-     *
-     * @param message
-     * @param session
-     */
-    @OnMessage
-    public void onMessage(String message, Session session) {
-        /**
-         * html界面传递来得数据格式，可以自定义.
-         * {"sid":"user-1","message":"hello websocket"}
-         */
-        JSONObject jsonObject = JSON.parseObject(message);
-        String toSid = jsonObject.getString("sid");
-        String msg = jsonObject.getString("message");
-        log.info("服务端收到客户端消息 ==> fromSid = {}, toSid = {}, message = {}", sid, toSid, message);
-
-        /**
-         * 模拟约定：如果未指定sid信息，则群发，否则就单独发送
-         */
-        if (toSid == null || toSid == "" || "".equalsIgnoreCase(toSid)) {
-            sendToAll(msg);
-        } else {
-            sendToOne(toSid, msg);
+        webSocketSet.add(this);     //加入set中
+        addOnlineCount();           //在线数加1
+        log.info("有新窗口开始监听:"+sid+",当前在线人数为" + getOnlineCount());
+        this.sid=sid;
+        try {
+            sendMessage("连接成功");
+        } catch (IOException e) {
+            log.error("websocket IO异常");
         }
     }
 
     /**
-     * 发生错误调用的方法
+     * 连接关闭调用的方法
+     */
+    @OnClose
+    public void onClose() {
+        webSocketSet.remove(this);  //从set中删除
+        subOnlineCount();           //在线数减1
+        log.info("有一连接关闭！当前在线人数为" + getOnlineCount());
+    }
+
+    /**
+     * 收到客户端消息后调用的方法
+     *
+     * @param message 客户端发送过来的消息*/
+    @OnMessage
+    public void onMessage(String message, Session session) {
+        log.info("收到来自窗口"+sid+"的信息:"+message);
+        //群发消息
+        for (WebSocketServer item : webSocketSet) {
+            try {
+                item.sendMessage(message);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
      *
      * @param session
      * @param error
      */
     @OnError
     public void onError(Session session, Throwable error) {
-        log.error("WebSocket发生错误，错误信息为：" + error.getMessage());
+        log.error("发生错误");
         error.printStackTrace();
     }
 
     /**
-     * 群发消息
-     *
-     * @param message 消息
+     * 实现服务器主动推送
      */
-    private void sendToAll(String message) {
-        // 遍历在线map集合
-        onlineSessionClientMap.forEach((onlineSid, toSession) -> {
-            // 排除掉自己
-            if (!sid.equalsIgnoreCase(onlineSid)) {
-                log.info("服务端给客户端群发消息 ==> sid = {}, toSid = {}, message = {}", sid, onlineSid, message);
-                toSession.getAsyncRemote().sendText(message);
-            }
-        });
+    public void sendMessage(String message) throws IOException {
+        this.session.getBasicRemote().sendText(message);
     }
 
     /**
-     * 指定发送消息
-     *
-     * @param toSid
-     * @param message
-     */
-    private void sendToOne(String toSid, String message) {
-        // 通过sid查询map中是否存在
-        Session toSession = onlineSessionClientMap.get(toSid);
-        if (toSession == null) {
-            log.error("服务端给客户端发送消息 ==> toSid = {} 不存在, message = {}", toSid, message);
-            return;
+     * 群发自定义消息
+     * */
+    public static void sendInfo(String message,@PathParam("sid") String sid) throws IOException {
+        log.info("推送消息到窗口"+sid+"，推送内容:"+message);
+        for (WebSocketServer item : webSocketSet) {
+            try {
+                //这里可以设定只推送给这个sid的，为null则全部推送
+                if(sid==null) {
+                    item.sendMessage(message);
+                }else if(item.sid.equals(sid)){
+                    item.sendMessage(message);
+                }
+            } catch (IOException e) {
+                continue;
+            }
         }
-        // 异步发送
-        log.info("服务端给客户端发送消息 ==> toSid = {}, message = {}", toSid, message);
-        toSession.getAsyncRemote().sendText(message);
-        /*
-        // 同步发送
-        try {
-            toSession.getBasicRemote().sendText(message);
-        } catch (IOException e) {
-            log.error("发送消息失败，WebSocket IO异常");
-            e.printStackTrace();
-        }*/
     }
 
+    public static synchronized int getOnlineCount() {
+        return onlineCount;
+    }
+
+    public static synchronized void addOnlineCount() {
+        WebSocketServer.onlineCount++;
+    }
+
+    public static synchronized void subOnlineCount() {
+        WebSocketServer.onlineCount--;
+    }
+
+    public static CopyOnWriteArraySet<WebSocketServer> getWebSocketSet() {
+        return webSocketSet;
+    }
 }

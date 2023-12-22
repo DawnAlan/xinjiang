@@ -279,9 +279,8 @@ public class ExcelTool {
 				}
 				else if(type == CellType.BOOLEAN)output[i][j] = cell.getBooleanCellValue();
 				else if(type == CellType.BLANK)output[i][j] = null;
-				else if(type == CellType.FORMULA)output[i][j] = cell.getNumericCellValue();
+				else if(type == CellType.FORMULA)output[i][j] = cell.getCellFormula();
 				else if(type == CellType.ERROR)output[i][j] = null;
-
 			}
 		}
 		return output;

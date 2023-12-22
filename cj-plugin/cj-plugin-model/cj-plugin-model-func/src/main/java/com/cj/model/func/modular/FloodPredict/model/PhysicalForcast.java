@@ -357,9 +357,9 @@ public class PhysicalForcast {
             }
         }
         for (int i = 0; i < rainSum.length-1; i++) {
-            result += rainSum[i][0]+":"+df.format((double) rainSum[i][1]*100)+"%"+",";
+            result += rainSum[i][0]+":"+df.format((double) rainSum[i][1]*100)+",";
         }
-        result += rainSum[rainSum.length-1][0]+":"+df.format((double) rainSum[rainSum.length-1][1]*100)+"%";
+        result += rainSum[rainSum.length-1][0]+":"+df.format((double) rainSum[rainSum.length-1][1]*100);
 
         return result;
     }
@@ -408,7 +408,7 @@ public class PhysicalForcast {
             }
              double Sum = snowFlow+preFlow+shanbeiFlow;
             DecimalFormat df = new DecimalFormat("#.##");
-            result += "降水:"+ df.format(shanbeiFlow/Sum*100)+"%,"+"融雪:"+df.format(snowFlow/Sum*100)+"%,"+"地下水:"+df.format(preFlow/Sum*100)+"%";
+            result += "降水:"+ df.format(shanbeiFlow/Sum*100)+","+"融雪:"+df.format(snowFlow/Sum*100)+","+"地下水:"+df.format(preFlow/Sum*100);
         }
         else {
             for (int i = 0; i < Q_shanbei.length; i++) {
@@ -422,16 +422,16 @@ public class PhysicalForcast {
                 if (year==year2){
                     Date time3 = PreFlow.get(i).getDates();
                     int month = getSpecificDate(time3).get("月");
-                    if (month>=1&&month<=4){
+                    if (month>=1&&month<=5){
                         preFlowSum = preFlowSum + PreFlow.get(i).getFlow();
                         preFlowNum++;
                     }
-                    preFlow = preFlowSum/preFlowNum;
+                    preFlow = preFlowSum/preFlowNum*Q_shanbei.length;
                 }
             }
             double Sum = preFlow+shanbeiFlow;
             DecimalFormat df = new DecimalFormat("#.##");
-            result += "降水:"+ df.format(shanbeiFlow/Sum*100)+"%,"+"地下水:"+df.format(preFlow/Sum*100)+"%";
+            result += "降水:"+ df.format(shanbeiFlow/Sum*99.5)+","+"融雪:"+df.format(preFlow/Sum*99.5)+","+"地下水:"+0.05;
         }
         return result;
     }

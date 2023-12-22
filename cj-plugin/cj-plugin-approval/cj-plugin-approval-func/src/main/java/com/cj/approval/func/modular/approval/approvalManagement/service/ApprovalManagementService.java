@@ -5,7 +5,11 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.cj.approval.func.modular.approval.approvalManagement.bean.req.SelectListReq;
 import com.cj.approval.func.modular.approval.approvalManagement.entity.ApprovalManagement;
 import com.cj.common.model.RestResponse;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -25,6 +29,12 @@ public interface ApprovalManagementService extends IService<ApprovalManagement> 
     RestResponse<IPage<ApprovalManagement>> selectList(SelectListReq req);
 
     RestResponse<List<ApprovalManagement>> selectByIds(String ids);
+
+    void thymeleafExport(HttpServletResponse response, String id);
+
+    void testView(HttpServletResponse response);
+
+    void downFile(HttpServletResponse response, String id);
 
     RestResponse getOrgList();
 }
