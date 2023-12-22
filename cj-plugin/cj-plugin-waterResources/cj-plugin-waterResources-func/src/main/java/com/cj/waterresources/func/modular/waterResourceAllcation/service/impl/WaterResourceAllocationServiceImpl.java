@@ -18,8 +18,11 @@ import com.cj.model.func.core.util.MultipartFileUtil;
 import com.cj.model.func.modular.curve.service.CurveService;
 import com.cj.model.func.modular.entity.Flood;
 import com.cj.model.func.modular.watertransfer.entity.DataInflowPrevent;
+import com.cj.model.func.modular.watertransfer.entity.Excel2;
 import com.cj.model.func.modular.watertransfer.entity.Waterdemand;
 import com.cj.model.func.modular.watertransfer.function.OutResult;
+import com.cj.model.func.modular.watertransfer.function.WaterResourceAssessment;
+import com.cj.model.func.modular.watertransfer.req.AppraiseReq;
 import com.cj.model.func.modular.watertransfer.req.WaterTransferReq;
 import com.cj.model.func.modular.watertransfer.res.ResOption;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.dayWaterUsePlan.service.DayWaterUsePlanService;
@@ -32,6 +35,8 @@ import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePla
 import com.cj.waterresources.func.modular.waterResourceAllcation.bean.dto.IncomingWaterForecastDto;
 import com.cj.waterresources.func.modular.waterResourceAllcation.bean.req.WaterResourceAllocationAddReq;
 import com.cj.waterresources.func.modular.waterResourceAllcation.bean.req.WaterResourceAllocationQueryReq;
+import com.cj.waterresources.func.modular.waterResourceAllcation.bean.res.WaterAllocationComparisonSelectionRes;
+import com.cj.waterresources.func.modular.waterResourceAllcation.entity.AllocationDisplayData;
 import com.cj.waterresources.func.modular.waterResourceAllcation.entity.IncomingWaterForecast;
 import com.cj.waterresources.func.modular.waterResourceAllcation.mapper.WaterResourceAllocationMapper;
 import com.cj.waterresources.func.modular.waterResourceAllcation.entity.WaterResourceAllocation;
@@ -128,20 +133,8 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
         waterResourceAllocation.setCreateTime(now);
 
         WaterTransferReq waterTransferReq = new WaterTransferReq();
-        String inflowDataAddress = req.getInflowDataAddress();
-        String[] split = inflowDataAddress.split("/");
-        String[] split1 = split[split.length - 1].split("\\.");
-        String jsonString;
-        InputStream getPredictionInputStream = minioUtils.getObject("tth", inflowDataAddress);
-        try {
-            MultipartFile multipartFile = MultipartFileUtil.inputStreamToMultipartFile(getPredictionInputStream, split1[0]);
-            List<Flood> floods = ExcelUtils.importExcel(multipartFile, Flood.class);
-            jsonString = JSONObject.toJSONString(floods);
-            getPredictionInputStream.close();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        List<DataInflowPrevent> dataInflowPrevents = JSONObject.parseArray(jsonString, DataInflowPrevent.class);
+        List<Flood> floods = getListFromMinio(req.getInflowDataAddress(), Flood.class);
+        List<DataInflowPrevent> dataInflowPrevents = JSONObject.parseArray(JSONObject.toJSONString(floods), DataInflowPrevent.class);
         List<DataInflowPrevent> lzzEntryStation = dataInflowPrevents.stream().filter(t -> t.getLocation().equals("楼庄子进库站")).collect(Collectors.toList());
         List<DataInflowPrevent> interval = dataInflowPrevents.stream().filter(t -> t.getLocation().equals("楼头区间")).collect(Collectors.toList());
         Map<String, List<DataInflowPrevent>> data = new HashMap<>();
@@ -167,11 +160,13 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
             throw new RuntimeException(e);
         }
         String displayDataPath = calculator.stream().filter(n -> n.getName().equals("表1")).findFirst().get().getPath();
+        String displayDataPathMinio = DateUtil.format(now, "yyyyMMdd/HH/mm/ss/") + displayDataPath.substring(displayDataPath.lastIndexOf(File.separator) + 1);
         String customDataPath = calculator.stream().filter(n -> n.getName().equals("配水详情")).findFirst().get().getPath();
-        minioUtils.putObject("tth", DateUtil.format(now, "yyyyMMdd/HH/mm/ss/") + displayDataPath.substring(displayDataPath.lastIndexOf(File.separator) + 1), displayDataPath);
-        minioUtils.putObject("tth", DateUtil.format(now, "yyyyMMdd/HH/mm/ss/") + customDataPath.substring(displayDataPath.lastIndexOf(File.separator) + 1), customDataPath);
-        waterResourceAllocation.setAllocationDataDisplayAddress(displayDataPath);
-        waterResourceAllocation.setAllocationDataCustomAddress(customDataPath);
+        String customDataPathMinio = DateUtil.format(now, "yyyyMMdd/HH/mm/ss/") + customDataPath.substring(customDataPath.lastIndexOf(File.separator) + 1);
+        minioUtils.putObject("tth", displayDataPathMinio, displayDataPath);
+        minioUtils.putObject("tth", customDataPathMinio, customDataPath);
+        waterResourceAllocation.setAllocationDataDisplayAddress(displayDataPathMinio);
+        waterResourceAllocation.setAllocationDataCustomAddress(customDataPathMinio);
 
         boolean save = this.save(waterResourceAllocation);
         if (save) {
@@ -202,11 +197,92 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
         return RestResponse.ok();
     }
 
+    @SneakyThrows
     @Override
     public RestResponse compare(String idA, String idB) {
+        WaterAllocationComparisonSelectionRes waterAllocationComparisonSelectionRes = new WaterAllocationComparisonSelectionRes();
         WaterResourceAllocation waterResourceAllocationA = baseMapper.selectById(idA);
         WaterResourceAllocation waterResourceAllocationB = baseMapper.selectById(idB);
-        return RestResponse.ok();
+        AppraiseReq appraiseReqA = getCompareAppraise(waterResourceAllocationA);
+        AppraiseReq appraiseReqB = getCompareAppraise(waterResourceAllocationB);
+        waterAllocationComparisonSelectionRes.setAppraise(new WaterResourceAssessment().WaterResourceAssessment(appraiseReqA, appraiseReqB));
+        waterAllocationComparisonSelectionRes.setWaterRatio(getWaterRatio(appraiseReqA.getExcel2Data(), appraiseReqB.getExcel2Data()));
+        waterAllocationComparisonSelectionRes.setWaterStatistics(getWaterStatistics(waterResourceAllocationA, waterResourceAllocationB));
+        return RestResponse.ok(waterAllocationComparisonSelectionRes);
+    }
+
+    private List<WaterAllocationComparisonSelectionRes.WaterRatioDTO> getWaterRatio(List<Excel2> dataA, List<Excel2> dataB) {
+        List<String> stationsA = dataA.stream().map(n -> n.getStationType() + ":" + n.getStationName()).distinct().collect(Collectors.toList());
+        List<String> stationsB = dataB.stream().map(n -> n.getStationType() + ":" + n.getStationName()).distinct().collect(Collectors.toList());
+        stationsA.addAll(stationsB);
+        stationsA = stationsA.stream().distinct().collect(Collectors.toList());
+        List<WaterAllocationComparisonSelectionRes.WaterRatioDTO> waterRatioDTOS = new ArrayList<>();
+        for (String station : stationsA) {
+            WaterAllocationComparisonSelectionRes.WaterRatioDTO waterRatioDTO = new WaterAllocationComparisonSelectionRes.WaterRatioDTO();
+            waterRatioDTO.setArea(station.split(":")[0]);
+            waterRatioDTO.setUnit(station.split(":")[1]);
+            List<Double> proportions = new ArrayList<>();
+            List<Double> waterLacks = new ArrayList<>();
+            proportions.add(dataA.stream().filter(n -> (n.getStationType() + ":" + n.getStationName()).equals(station)).max(Comparator.comparing(Excel2::getProportion)).orElse(new Excel2()).getProportion());
+            proportions.add(dataB.stream().filter(n -> (n.getStationType() + ":" + n.getStationName()).equals(station)).max(Comparator.comparing(Excel2::getProportion)).orElse(new Excel2()).getProportion());
+            waterLacks.add(dataA.stream().filter(n -> (n.getStationType() + ":" + n.getStationName()).equals(station)).min(Comparator.comparing(Excel2::getWaterLack)).orElse(new Excel2()).getWaterLack());
+            waterLacks.add(dataB.stream().filter(n -> (n.getStationType() + ":" + n.getStationName()).equals(station)).min(Comparator.comparing(Excel2::getWaterLack)).orElse(new Excel2()).getWaterLack());
+            waterRatioDTO.setProportion(proportions);
+            waterRatioDTO.setWaterLack(waterLacks);
+            waterRatioDTOS.add(waterRatioDTO);
+        }
+        return waterRatioDTOS;
+    }
+
+    private WaterAllocationComparisonSelectionRes.WaterStatisticsDTO getWaterStatistics(WaterResourceAllocation waterResourceAllocationA, WaterResourceAllocation waterResourceAllocationB) {
+        List<AllocationDisplayData> allocationDisplayDataA = getListFromMinio(waterResourceAllocationA.getAllocationDataDisplayAddress(), AllocationDisplayData.class);
+        List<AllocationDisplayData> allocationDisplayDataB = getListFromMinio(waterResourceAllocationB.getAllocationDataDisplayAddress(), AllocationDisplayData.class);
+        WaterAllocationComparisonSelectionRes.WaterStatisticsDTO waterStatisticsDTO = new WaterAllocationComparisonSelectionRes.WaterStatisticsDTO();
+        List<Double> ecologyProportion = new ArrayList<>();
+        ecologyProportion.add(allocationDisplayDataA.stream().mapToDouble(AllocationDisplayData::getEcologyProportion).sum());
+        ecologyProportion.add(allocationDisplayDataB.stream().mapToDouble(AllocationDisplayData::getEcologyProportion).sum());
+
+        List<Double> cityProportion = new ArrayList<>();
+        cityProportion.add(allocationDisplayDataA.stream().mapToDouble(AllocationDisplayData::getCityProportion).sum());
+        cityProportion.add(allocationDisplayDataB.stream().mapToDouble(AllocationDisplayData::getCityProportion).sum());
+
+        List<Double> industryProportion = new ArrayList<>();
+        industryProportion.add(allocationDisplayDataA.stream().mapToDouble(AllocationDisplayData::getIndustryProportion).sum());
+        industryProportion.add(allocationDisplayDataB.stream().mapToDouble(AllocationDisplayData::getIndustryProportion).sum());
+
+        List<Double> irrigateProportion = new ArrayList<>();
+        irrigateProportion.add(allocationDisplayDataA.stream().mapToDouble(AllocationDisplayData::getIrrigateProportion).sum());
+        irrigateProportion.add(allocationDisplayDataB.stream().mapToDouble(AllocationDisplayData::getIrrigateProportion).sum());
+
+        List<Double> greeningProportion = new ArrayList<>();
+        greeningProportion.add(allocationDisplayDataA.stream().mapToDouble(AllocationDisplayData::getGreeningProportion).sum());
+        greeningProportion.add(allocationDisplayDataB.stream().mapToDouble(AllocationDisplayData::getGreeningProportion).sum());
+
+        waterStatisticsDTO.setEcologyProportion(ecologyProportion);
+        waterStatisticsDTO.setCityProportion(cityProportion);
+        waterStatisticsDTO.setIndustryProportion(industryProportion);
+        waterStatisticsDTO.setIrrigateProportion(irrigateProportion);
+        waterStatisticsDTO.setGreeningProportion(greeningProportion);
+        return waterStatisticsDTO;
+    }
+
+    private AppraiseReq getCompareAppraise(WaterResourceAllocation waterResourceAllocation) {
+        AppraiseReq appraiseReq = new AppraiseReq();
+        appraiseReq.setPeriod(waterResourceAllocation.getBucketType().toString());
+        appraiseReq.setId(waterResourceAllocation.getWaterDistributionType());
+        appraiseReq.setStartTime(waterResourceAllocation.getWaterDistributionStartTime());
+        appraiseReq.setEndTime(waterResourceAllocation.getWaterDistributionEndTime());
+        appraiseReq.setExcel2Data(getListFromMinio(waterResourceAllocation.getAllocationDataCustomAddress(), Excel2.class));
+        return appraiseReq;
+    }
+
+    @SneakyThrows
+    private List getListFromMinio(String minioPath, Class clazz) {
+        String[] split = minioPath.split("/");
+        String[] split1 = split[split.length - 1].split("\\.");
+        InputStream is = minioUtils.getObject("tth", minioPath);
+        MultipartFile multipartFile = MultipartFileUtil.inputStreamToMultipartFile(is, split1[0]);
+        return ExcelUtils.importExcel(multipartFile, clazz);
     }
 
     //year  month  tenDays day
@@ -271,7 +347,7 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
 
     private List<Waterdemand> waterNeedTenDays(Date date) {
         List<Waterdemand> demands = new ArrayList<>();
-        QueryWrapper<TenDayWaterUsePlan> lqw = new QueryWrapper<TenDayWaterUsePlan>();
+        QueryWrapper<TenDayWaterUsePlan> lqw = new QueryWrapper<>();
         lqw.eq("del", 0).eq("year", DateUtil.year(date)).eq("month", DateUtil.month(date) + 1);
         lqw.select("sum(WATER_DEMAND_FOR_THIS_MONTH) as DEMAND, IRRIGATED_AREA, USE_WATER_USER, YEAR, MONTH, TEN_DAYS");
         lqw.groupBy("IRRIGATED_AREA, USE_WATER_USER, YEAR, MONTH, TEN_DAYS");
