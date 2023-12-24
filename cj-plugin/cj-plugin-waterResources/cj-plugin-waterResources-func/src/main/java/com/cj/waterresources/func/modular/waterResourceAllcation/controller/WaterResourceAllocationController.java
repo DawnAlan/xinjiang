@@ -53,7 +53,7 @@ public class WaterResourceAllocationController {
 
     @ApiOperationSupport(order = 3)
     @ApiOperation("分页查询调度方案")
-    @GetMapping("/getAllocationPage")
+    @PostMapping("/getAllocationPage")
     public RestResponse getAllocationPage(@RequestBody WaterResourceAllocationQueryReq req) {
         return waterResourceAllocationService.getAllocationPage(req);
     }
