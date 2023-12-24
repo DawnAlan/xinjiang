@@ -1,7 +1,9 @@
 package com.cj.waterresources.func.modular.waterResourceAllcation.entity;
 
 import java.util.Date;
+
 import com.baomidou.mybatisplus.extension.activerecord.Model;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -50,5 +52,17 @@ public class WaterResourceAllocation extends Model<WaterResourceAllocation> {
     private String AllocationDataCustomAddress;
     //大屏用数据
     private String AllocationDataDisplayAddress;
+    //楼庄子汛限水位
+    private Double floodWaterLevelLzz;
+    //头屯河汛限水位
+    private Double floodWaterLevelTth;
+    //楼庄子起调水位
+    private Double levelBeginLzz;
+    //头屯河起调水位
+    private Double levelBeginTth;
+    //楼庄子期末水位
+    private Double levelEndLzz;
+    //头屯河期末水位
+    private Double levelEndTth;
 }
 

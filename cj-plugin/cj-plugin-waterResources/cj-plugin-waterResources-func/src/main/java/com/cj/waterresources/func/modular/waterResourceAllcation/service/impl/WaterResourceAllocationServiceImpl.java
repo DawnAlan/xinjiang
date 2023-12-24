@@ -180,7 +180,14 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
     public RestResponse getAllocationPage(WaterResourceAllocationQueryReq req) {
         Page<WaterResourceAllocation> page = new Page<>(req.getPageNo(), req.getPageSize());
         LambdaQueryWrapper<WaterResourceAllocation> wrapper = Wrappers.lambdaQuery();
-        wrapper.like(WaterResourceAllocation::getSchemeName, req.getPlanName());
+        wrapper.eq(WaterResourceAllocation::getDel, 0);
+        if (StringUtils.hasText(req.getPlanName())) {
+            wrapper.like(WaterResourceAllocation::getSchemeName, req.getPlanName());
+        }
+        if (req.getDateTime() != null) {
+            wrapper.le(WaterResourceAllocation::getWaterDistributionStartTime, req.getDateTime())
+                    .ge(WaterResourceAllocation::getWaterDistributionEndTime, req.getDateTime());
+        }
         return RestResponse.ok(baseMapper.selectPage(page, wrapper));
     }
 
