@@ -5,6 +5,8 @@ import com.cj.common.model.RestResponse;
 import com.cj.common.util.UUIDUtils;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.entity.IrrigatedPlatformDataInfo;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.service.IrrigatedPlatformDataInfoService;
+import com.cj.waterresources.func.modular.quotaStatisticsManagement.dayWaterBalance.service.DayWaterBalanceService;
+import com.cj.waterresources.func.modular.quotaStatisticsManagement.tenDaysWaterBalance.service.TenDaysWaterBalanceService;
 import com.cj.waterresources.func.modular.trendsTable.entity.TrendsTableParam;
 import com.cj.waterresources.func.modular.trendsTable.service.TrendsTableParamService;
 import com.cj.waterresources.func.modular.waterPrice.paymentWaterFees.entity.PaymentWaterFees;
@@ -66,6 +68,12 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
 
     @Autowired
     private IrrigatedPlatformDataInfoService irrigatedPlatformDataInfoService;
+
+    @Autowired
+    private DayWaterBalanceService dayWaterBalanceService;
+
+    @Autowired
+    private TenDaysWaterBalanceService tenDaysWaterBalanceService;
 
 
 
@@ -508,7 +516,18 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                 }
                 boolean b1 = waterFeeStatisticsTotalService.updateBatchById(waterFeeStatisticsTotalList);
                 if (b1) {
-                    return RestResponse.ok("添加成功");
+                    RestResponse add = tenDaysWaterBalanceService.add(waterFeeStatisticsTotalList);
+                    if(add.getCode()==200){
+                        Integer day = Integer.valueOf(waterFeeStatisticsDetails.get(0).getStatisticsDate().substring(3, 5));
+                        RestResponse add1 = dayWaterBalanceService.add(waterFeeStatisticsTotalList, day);
+                        if(add1.getCode()==200){
+                            return RestResponse.ok("添加成功");
+                        }else {
+                            return RestResponse.no("添加失败");
+                        }
+                    }else {
+                        return RestResponse.no("添加失败");
+                    }
                 }else {
                     return RestResponse.no("添加失败");
                 }
@@ -881,7 +900,18 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                 }
                 boolean b1 = waterFeeStatisticsTotalService.saveBatch(waterFeeStatisticsTotalList);
                 if (b1) {
-                    return RestResponse.ok("添加成功");
+                    RestResponse add = tenDaysWaterBalanceService.add(waterFeeStatisticsTotalList);
+                    if(add.getCode()==200){
+                        Integer day = Integer.valueOf(waterFeeStatisticsDetails.get(0).getStatisticsDate().substring(3, 5));
+                        RestResponse add1 = dayWaterBalanceService.add(waterFeeStatisticsTotalList, day);
+                        if(add1.getCode()==200){
+                            return RestResponse.ok("添加成功");
+                        }else {
+                            return RestResponse.no("添加失败");
+                        }
+                    }else {
+                        return RestResponse.no("添加失败");
+                    }
                 }else {
                     return RestResponse.no("添加失败");
                 }
@@ -931,6 +961,7 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                 for(WaterFeeStatisticsDetails t:waterFeeStatisticsDetails){
                     if(!list.stream().map(TotalIdToStation::getTotalId).collect(Collectors.toList()).contains(t.getTableHeadId())){
                         total+=t.getV()==null?0.0:t.getV();
+                        System.out.println(t.getTableHeadId());
                     }
                 }
                 TrendsTableParam one = trendsTableParamService.lambdaQuery().eq(TrendsTableParam::getPId, "0").eq(TrendsTableParam::getUseType,2).in(TrendsTableParam::getId, collect).one();
@@ -979,8 +1010,10 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                 Double aDouble = totaDetailslList.stream().filter(t -> t.getTableHeadId().equals(total.getTableHeadId()) && t.getV()!=null).map(WaterFeeStatisticsDetails::getV).reduce(Double::sum).orElse(0.00);
                 waterFeeStatisticsTotal.setUpdateTime(new Date());
                 BeanUtils.copyProperties(total,waterFeeStatisticsTotal);
+                //
+                waterFeeStatisticsTotal.setAmountTo(aDouble);
                 //本旬水量
-                waterFeeStatisticsTotal.setCurrentWaterVolume(aDouble);
+                waterFeeStatisticsTotal.setCurrentWaterVolume((waterFeeStatisticsTotal.getAmountTo()==null?0.0:waterFeeStatisticsTotal.getAmountTo())*60*60*24);
                 Map<String, Object> jisuan = jisuan(tempObj.getYear(), tempObj.getMonth(), tempObj.getTenDays());
                 WaterFeeStatisticsTotal one = waterFeeStatisticsTotalService.lambdaQuery().eq(WaterFeeStatisticsTotal::getYear, jisuan.get("year")).
                         eq(WaterFeeStatisticsTotal::getMonth, jisuan.get("month")).
@@ -1333,7 +1366,18 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
             }
             boolean b1 = waterFeeStatisticsTotalService.updateBatchById(waterFeeStatisticsTotalList);
             if (b1) {
-                return RestResponse.ok("更新成功");
+                RestResponse add = tenDaysWaterBalanceService.add(waterFeeStatisticsTotalList);
+                if(add.getCode()==200){
+                    Integer day = Integer.valueOf(waterFeeStatisticsDetails.get(0).getStatisticsDate().substring(3, 5));
+                    RestResponse add1 = dayWaterBalanceService.add(waterFeeStatisticsTotalList, day);
+                    if(add1.getCode()==200){
+                        return RestResponse.ok("添加成功");
+                    }else {
+                        return RestResponse.no("添加失败");
+                    }
+                }else {
+                    return RestResponse.no("添加失败");
+                }
             }else {
                 return RestResponse.no("更新失败");
             }

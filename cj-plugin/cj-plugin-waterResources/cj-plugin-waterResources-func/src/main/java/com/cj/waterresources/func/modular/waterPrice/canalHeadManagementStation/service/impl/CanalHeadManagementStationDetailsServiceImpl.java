@@ -58,14 +58,21 @@ public class CanalHeadManagementStationDetailsServiceImpl extends ServiceImpl<Ca
         String industryTableId = lanternCanalTrendsTableList.stream().filter(t -> t.getParamName().equals("工业供水") && t.getPId().equals("0")).map(TrendsTableParam::getId).collect(Collectors.toList()).get(0);
         String industryTotalTableId = lanternCanalTrendsTableList.stream().filter(t -> t.getPId().equals(industryTableId) && t.getParamName().equals("合计")).map(TrendsTableParam::getId).collect(Collectors.toList()).get(0);
 
-        WaterFeeStatisticsDetails total = lanternCanalInfoList.stream().filter(t -> t.getTableHeadId().equals(totalTableId)).collect(Collectors.toList()).get(0);
-        WaterFeeStatisticsDetails agriculture = lanternCanalInfoList.stream().filter(t -> t.getTableHeadId().equals(agricultureTotalTableId)).collect(Collectors.toList()).get(0);
-        WaterFeeStatisticsDetails green = lanternCanalInfoList.stream().filter(t -> t.getTableHeadId().equals(greenTotalTableId)).collect(Collectors.toList()).get(0);
-        WaterFeeStatisticsDetails industry = lanternCanalInfoList.stream().filter(t -> t.getTableHeadId().equals(industryTotalTableId)).collect(Collectors.toList()).get(0);
-        resultMap.put("totalValue", total.getV());
-        resultMap.put("agricultureValue", agriculture.getV());
-        resultMap.put("greenValue", green.getV());
-        resultMap.put("industryValue", industry.getV());
+        if(null != lanternCanalInfoList && lanternCanalInfoList.size()>0){
+            WaterFeeStatisticsDetails total = lanternCanalInfoList.stream().filter(t -> t.getTableHeadId().equals(totalTableId)&&t.getV()!=null).collect(Collectors.toList()).get(0);
+            WaterFeeStatisticsDetails agriculture = lanternCanalInfoList.stream().filter(t -> t.getTableHeadId().equals(agricultureTotalTableId)&&t.getV()!=null).collect(Collectors.toList()).get(0);
+            WaterFeeStatisticsDetails green = lanternCanalInfoList.stream().filter(t -> t.getTableHeadId().equals(greenTotalTableId)&&t.getV()!=null).collect(Collectors.toList()).get(0);
+            WaterFeeStatisticsDetails industry = lanternCanalInfoList.stream().filter(t -> t.getTableHeadId().equals(industryTotalTableId)&&t.getV()!=null).collect(Collectors.toList()).get(0);
+            resultMap.put("totalValue", total.getV());
+            resultMap.put("agricultureValue", agriculture.getV());
+            resultMap.put("greenValue", green.getV());
+            resultMap.put("industryValue", industry.getV());
+        }else {
+            resultMap.put("totalValue", 0.0);
+            resultMap.put("agricultureValue", 0.0);
+            resultMap.put("greenValue", 0.0);
+            resultMap.put("industryValue", 0.0);
+        }
         return resultMap;
     }
 
