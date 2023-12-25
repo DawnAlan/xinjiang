@@ -36,5 +36,10 @@ public class LzzRainfallStationServiceImpl extends ServiceImpl<LzzRainfallStatio
         }
         return null;
     }
+
+    @Override
+    public List<LzzRainfallStation> selectYesterday(String name, String time) {
+        return this.baseMapper.selectYesterday(name, time);
+    }
 }
 

@@ -214,9 +214,15 @@ public class MachineForcast {
                 t = i ;
             }
         }
+
         peakFloodXlsx[0][6] = peakflood;//洪峰
         peakFloodXlsx[0][7] = predict[t][0];//洪峰时间
         peakFloodXlsx[0][12]=judgingYear(peakFloodXlsx,pvo);//洪水等级
+        for (int i = 1; i < peakFloodXlsx.length; i++) {
+            peakFloodXlsx[i][6] = peakFloodXlsx[0][6];
+            peakFloodXlsx[i][7] = peakFloodXlsx[0][7];
+            peakFloodXlsx[i][12]=peakFloodXlsx[0][12];
+        }
         return peakFloodXlsx;
     }
 
@@ -291,7 +297,7 @@ public class MachineForcast {
         //水位流量关系
         double[] waterLevel=new double[predict.length];
         for (int i = 0; i < predict.length; i++) {
-            waterLevel[i]=(double) predict[i][1]*10+900;//这里用水位流量曲线
+            waterLevel[i]=(double) predict[i][1]*0.1+900;//这里用水位流量曲线
         }
         return waterLevel;
     }

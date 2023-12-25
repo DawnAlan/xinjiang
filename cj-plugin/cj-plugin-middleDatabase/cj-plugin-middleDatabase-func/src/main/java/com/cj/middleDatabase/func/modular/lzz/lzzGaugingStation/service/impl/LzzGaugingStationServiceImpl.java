@@ -37,5 +37,10 @@ public class LzzGaugingStationServiceImpl extends ServiceImpl<LzzGaugingStationM
         }
         return null;
     }
+
+    @Override
+    public LzzGaugingStation selectInfoByNameAndTime(String time, String name) {
+        return this.baseMapper.selectInfoByNameAndTime(time,name);
+    }
 }
 

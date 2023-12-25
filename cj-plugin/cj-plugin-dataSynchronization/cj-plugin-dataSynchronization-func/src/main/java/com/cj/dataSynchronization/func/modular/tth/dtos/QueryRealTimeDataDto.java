@@ -69,7 +69,7 @@ public class QueryRealTimeDataDto implements Serializable {
     private Double VOLTAGE;
     private String SQ_DOWN_LEVEL;
     private String LOCATION_TYPE;
-    private String SQ_CAPACITY;
+    private Double SQ_CAPACITY;
     private String SELF_CODE;
     private String QX_DIRECTION;
     private String WARN_STATE;

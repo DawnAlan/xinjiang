@@ -142,7 +142,7 @@ public class TimeUtils {
 		Date[][] dates1 = new Date[len][1];
 		Calendar now = Calendar.getInstance();
 		now.setTime(startDate);
-		now.add(Calendar.HOUR_OF_DAY, 2);
+		now.add(Calendar.HOUR_OF_DAY, 0);
 		startDate = now.getTime();
 		if(day == 10){
 			DateIndex index = TimeUtils.getDateIndex(startDate);

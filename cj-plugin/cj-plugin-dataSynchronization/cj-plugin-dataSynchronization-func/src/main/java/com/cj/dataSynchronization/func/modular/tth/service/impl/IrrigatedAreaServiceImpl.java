@@ -192,6 +192,7 @@ public class IrrigatedAreaServiceImpl implements IrrigatedAreaService {
                     info.setId(dto.getMONITOR_NAME()+"-"+sdf.parse(dto.getMONITOR_TIME()).getTime());
                     info.setMonitorId(dto.getID());
                     info.setWaterDaily(dto.getWATER_DAILY());
+                    info.setSqCapacity(dto.getSQ_CAPACITY());
                     info.setYesterdayAvgFlow(dto.getYESTERDAY_AVG_FLOW());
                     info.setMonitorName(dto.getMONITOR_NAME());
                     info.setSqTotalFlow(dto.getSQ_TOTAL_FLOW());

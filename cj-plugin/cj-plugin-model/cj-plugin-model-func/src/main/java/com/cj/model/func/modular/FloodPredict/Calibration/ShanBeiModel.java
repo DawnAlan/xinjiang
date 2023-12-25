@@ -85,7 +85,7 @@ public class ShanBeiModel {
     /// 计算初始土壤含水量时，用到的日雨量 mm
     double[] PreImpact_P;
 
-    public void InputData(double[] param, Object[][] input,Object[][] predata) throws IOException {
+    public ShanBeiModel InputData(double[] param, Object[][] input,Object[][] predata)  {
         Area = param[0];
         FB = param[1]; //不透水面积的比例，透水面积比例为1-FB
         WM = param[2]; //张力水蓄水容量，或最大蓄水量 60-80mm
@@ -125,12 +125,11 @@ public class ShanBeiModel {
         for (int i = 0; i < PreImpactdays; i++) {
             PreImpact_P[i] = Double.parseDouble(predata[i][1].toString());
         }
-
-
+        return this;
     }
 
     /// 土壤初始含水量计算
-    public void InitialMoistureContentCalculation() {
+    public ShanBeiModel InitialMoistureContentCalculation() {
         // 计算初始含水量W0
 
         double Wt_1 = 0; // 前一天的土壤含水量,最开始的时候（20天前）假定其为0；
@@ -147,10 +146,11 @@ public class ShanBeiModel {
         W0 = Wt;
 
 //        W0 = 10;//这里是直接定义的初始含水量
+        return this;
     }
 
     /// 基于陕北模型的长流计算 假定流域各点下渗能力一致
-    public void RunoffYieldCalculation_UniformInfiltration() {
+    public ShanBeiModel RunoffYieldCalculation_UniformInfiltration() {
         // 初始假设W，来推求下渗过程和蓄水过程
 
         // 已知初始含水量W0,推求其在霍尔顿下渗曲线方程中的对应点（W[0], f[0], Time[0]）
@@ -229,7 +229,7 @@ public class ShanBeiModel {
 
                 //再次计算
 
-                //f[j + 1] = fm - K * (TempW2 - fc * Time[j + 1]);//用这个算f越算越大
+//                f[j + 1] = fm - K * (TempW2 - fc * Time[j + 1]);//用这个算f越算越大
                 f[j + 1] = fc + (fm - fc) * Math.exp(-K * Time[j + 1]);
 
                 if (f[j + 1] > fm) {
@@ -271,11 +271,11 @@ public class ShanBeiModel {
             R[j] = R1[j] * FB + R2[j] * (1 - FB);// 单位mm/h
             I[j] = R1[j] / 1000 / 3600 * FB * Area * 1000000 + R2[j] / 1000 / 3600 * (1 - FB) * Area * 1000000;//  Area单位是km2
         }
-
+        return this;
     }
 
     /// 基于陕北模型的长流计算 假定流域各点下渗能力一致
-    public void RunoffYieldCalculation_UniformInfiltration2() {
+    public ShanBeiModel RunoffYieldCalculation_UniformInfiltration2() {
         // 初始假设f，来推求下渗过程和蓄水过程
         // 已知初始含水量W0,推求其在霍尔顿下渗曲线方程中的对应点（W[0], f[0], Time[0]）
         double TempW = 0;
@@ -393,14 +393,14 @@ public class ShanBeiModel {
             I[j] = R1[j] / 1000 / 3600 * FB * Area * 1000000 + R2[j] / 1000 / 3600 * (1 - FB) * Area * 1000000;//  Area单位是km2
         }
 
-
+        return this;
     }
 
     // 前一种不考虑流域下渗能力分布不均时，由于流域面积很大，降雨与下渗前度的大小关系对结果的影响很大，有时候没径流，有时候产生很大径流
     // 还有就是下渗曲线对结果的影响很大，几个参数稍微调整都会对结果产生较大的影响。尤其是K
     // 初始假设W，来推求下渗过程和蓄水过程  并考虑流域不同点下渗能力的不同
     // 已知初始含水量W0,推求其在霍尔顿下渗曲线方程中的对应点（W[0], f[0], Time[0]）
-    public void RunoffYieldCalculation_UnevenInfiltration() {
+    public ShanBeiModel RunoffYieldCalculation_UnevenInfiltration() {
         double TempW = 0;
         double Tempf = 0;
         double BeginTime = 0;
@@ -546,11 +546,11 @@ public class ShanBeiModel {
             R[j] = R1[j] * FB + R2[j] * (1 - FB);// 单位mm/h
             I[j] = R1[j] / 1000 / 3600 * FB * Area * 1000000 + R2[j] / 1000 / 3600 * (1 - FB) * Area * 1000000;//  Area单位是km2
         }
-
+        return this;
     }
 
     // 汇流计算
-    public void ConfluenceCalculation() {
+    public ShanBeiModel ConfluenceCalculation() {
         for (int j = 0; j < NumPeriod; j++) {
 
             if (j < L) {
@@ -566,7 +566,7 @@ public class ShanBeiModel {
             Object[]Q_shanbei=new Object[NumPeriod];
             Q_shanbei[j]=Q[j];
         }
-
+        return this;
     }
 
 }

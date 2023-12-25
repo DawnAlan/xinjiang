@@ -1,5 +1,6 @@
 package com.cj.model.func.modular.FloodPredict.utils;
 
+import com.cj.model.func.modular.FloodPredict.entity.PredictInputData;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -101,6 +102,30 @@ public class ExcelTool {
 		}
 	}
 
+	/**
+	 * 把List<PredictInputData>格式写表格方便查看
+	 * @param path
+	 * @param sheetName
+	 * @param inputDataList
+	 * @throws IOException
+	 * @throws InvalidFormatException
+	 */
+	public static void writeListPredictListExcel(String path, String sheetName,List<PredictInputData> inputDataList) throws IOException, InvalidFormatException {
+		Object[][] inputData = new Object[inputDataList.size()+1][5];
+		inputData[0][0]="站点";
+		inputData[0][1]="日期";
+		inputData[0][2]="径流";
+		inputData[0][3]="温度";
+		inputData[0][4]="降水";
+		for (int i = 1; i <inputDataList.size() ; i++) {
+			inputData[i][0]=inputDataList.get(i).getRainStation();
+			inputData[i][1]=inputDataList.get(i).getDates();
+			inputData[i][2]=inputDataList.get(i).getFlow();
+			inputData[i][3]=inputDataList.get(i).getTemperature();
+			inputData[i][4]=inputDataList.get(i).getRainfall();
+		}
+		writeObjectExcel(path,sheetName,inputData);
+	}
 	public static void writeList2DoubleExcel(String path, String sheetName, List<List<Double>> data) throws IOException, InvalidFormatException {
 		XSSFWorkbook workbook = new XSSFWorkbook();
 		XSSFSheet sheet = workbook.createSheet();

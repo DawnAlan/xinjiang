@@ -1,6 +1,7 @@
 package com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.entity;
 
 import com.baomidou.mybatisplus.extension.activerecord.Model;
+import javafx.beans.binding.DoubleExpression;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -69,5 +70,7 @@ public class IrrigatedPlatformDataInfo extends Model<IrrigatedPlatformDataInfo> 
     private Double gdTotalFlow;
 
     private String monitorId;
+
+    private Double sqCapacity;
 }
 

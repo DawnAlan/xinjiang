@@ -26,5 +26,8 @@ public interface LzzRainfallStationMapper extends BaseMapper<LzzRainfallStation>
     @Select("SELECT * FROM LZZ_RAINFALL_STATION WHERE TREE_ID = #{id} AND TO_CHAR(TIME,'YYYY-MM-DD') BETWEEN #{startTime} AND #{endTime}")
     List<LzzRainfallStation> selectInfoByCondition3(@Param("id")String id,@Param("startTime")String startTime, @Param("endTime")String endTime);
 
+    @Select("SELECT * FROM LZZ_RAINFALL_STATION WHERE STATION_NAME = #{name} AND TO_CHAR(TIME,'YYYY-MM-DD') = #{time}")
+    List<LzzRainfallStation> selectYesterday(@Param("name")String name, @Param("time")String time);
+
 }
 

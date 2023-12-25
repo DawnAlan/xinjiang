@@ -102,7 +102,7 @@ public class SnowMeltModel {
             temxParam.setSheetName("模型参数");
             paramList.add(temxParam);
             results.setParamxlsx(paramList);
-//            ExcelTool.writeListExcel("D:\\tth_system\\end\\file\\"+ Option + pvo.getNetClass()+"-PARAM.xlsx", Option, paramResult);
+//            ExcelTool.writeListExcel("D:\\204\\2.头屯河\\径流预报数据文件\\"+ Option + pvo.getNetClass()+"-PARAM.xlsx", Option, paramResult);
             //最大最小值写入
             TemporaryXlsx temxMaxmin=new TemporaryXlsx();
             List<TemporaryXlsx> maxminList=new ArrayList<>();
@@ -113,7 +113,7 @@ public class SnowMeltModel {
             temxMaxmin.setSheetName("最大最小值");
             maxminList.add(temxMaxmin);
             results.setMaxminxlsx(maxminList);
-//            ExcelTool.writeDoubleExcel("D:\\tth_system\\end\\file\\"+ Option +"最大最小值.xlsx", Option, maxmin);
+//            ExcelTool.writeDoubleExcel("D:\\204\\2.头屯河\\径流预报数据文件\\"+ Option +"最大最小值.xlsx", Option, maxmin);
 
 
             //分解后数据储存
@@ -129,9 +129,9 @@ public class SnowMeltModel {
 //        System.out.println("实测\t\t\t预报");
 //        System.out.println("-------------------------");
         //最终数据输出
-        for(int i = 0; i < outputNumber; i++){
-            System.out.printf(String.format("%-10.3f %-10.3f\n ",reaResult[i][0], (double)de_result[i+1][1]));
-        }
+//        for(int i = 0; i < outputNumber; i++){
+//            System.out.printf(String.format("%-10.3f %-10.3f\n ",reaResult[i][0], (double)de_result[i+1][1]));
+//        }
 
         longResult[0][0]="时间";
         longResult[0][1]="实测流量";
@@ -192,7 +192,7 @@ public class SnowMeltModel {
 //        System.out.println("均方差\t平均相对误差\t一致性系数\t合格率");
 //        System.out.println("-------------------------");
 //        System.out.printf(" %-10.3f %-10.3f %-10.3f %-10.3f", rmse_test,mre_test,dc_test,qr_test);
-//        ExcelTool.writeObjectExcel("D:\\tth_system\\end\\file\\"+"融雪模型"+pvo.getNetClass()+"-RESULT.xlsx", Option, longResult);
+//        ExcelTool.writeObjectExcel("D:\\204\\2.头屯河\\径流预报数据文件\\"+"融雪模型"+pvo.getNetClass()+"-RESULT.xlsx", Option, longResult);
         return result;
     }
     public Object[][] Forcast(Object[][] inputTemp,  ForcastInputParam param ) throws IOException, InvalidFormatException, ParseException {

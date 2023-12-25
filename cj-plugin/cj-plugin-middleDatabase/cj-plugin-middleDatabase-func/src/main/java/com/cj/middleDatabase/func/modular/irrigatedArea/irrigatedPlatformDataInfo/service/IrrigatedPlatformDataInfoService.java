@@ -18,5 +18,9 @@ public interface IrrigatedPlatformDataInfoService extends IService<IrrigatedPlat
 
     List<IrrigatedPlatformDataInfo> selectInfoByCondition(String id,String time,String startTime,String endTime);
     IrrigatedPlatformDataInfo selectOneByCondition(String name,String time);
+
+    IrrigatedPlatformDataInfo selectOneByCondition1(String name,String time);
+
+    List<IrrigatedPlatformDataInfo> selectOneByCondition2(String name,String time);
 }
 

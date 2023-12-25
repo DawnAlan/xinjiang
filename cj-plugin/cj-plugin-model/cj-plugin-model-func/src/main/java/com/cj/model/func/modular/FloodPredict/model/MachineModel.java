@@ -95,9 +95,12 @@ public class MachineModel {
             ModelSaveEntity results = longForecast.LongTermForecast(pvo, false, true, input, maxminOld, para);
 
             for (int i = 0; i < results.getParams().size(); i++) {
-                paramdim1.add(Double.parseDouble(results.getParams().get(i).getParamDim1())) ;
+                paramdim1.add(Double.parseDouble(results.getParams().get(i).getParamDim1()));
                 paramdim2.add(Double.parseDouble(results.getParams().get(i).getParamDim2()));
                 paramdim3.add(Double.parseDouble(results.getParams().get(i).getParamDim3()));
+                if (results.getParams().get(i).getValue().isNaN()){
+                    results.getParams().get(i).setValue(1.0);
+                }
                 paramvalue.add(results.getParams().get(i).getValue());
             }
             paramResult.add(paramdim1);
@@ -124,7 +127,7 @@ public class MachineModel {
                 temxParam.setSheetName("模型参数");
                 paramList.add(temxParam);
                 results.setParamxlsx(paramList);
-//                ExcelTool.writeListExcel("D:\\tth_system\\end\\file\\"+ Option + pvo.getNetClass()+"-PARAM.xlsx", Option, paramResult);
+//                ExcelTool.writeListExcel("D:\\204\\2.头屯河\\径流预报数据文件\\"+ Option + pvo.getNetClass()+"-PARAM.xlsx", Option, paramResult);
                 //最大最小值写入
                 TemporaryXlsx temxMaxmin=new TemporaryXlsx();
                 List<TemporaryXlsx> maxminList=new ArrayList<>();
@@ -135,7 +138,7 @@ public class MachineModel {
                 temxMaxmin.setSheetName("最大最小值");
                 maxminList.add(temxMaxmin);
                 results.setMaxminxlsx(maxminList);
-//                ExcelTool.writeDoubleExcel("D:\\tth_system\\end\\file\\"+ Option +"最大最小值.xlsx", Option, maxmin);
+//                ExcelTool.writeDoubleExcel("D:\\204\\2.头屯河\\径流预报数据文件\\"+ Option +"最大最小值.xlsx", Option, maxmin);
             }
 
             //分解后数据储存
@@ -221,7 +224,7 @@ public class MachineModel {
 //        System.out.println("均方差\t平均相对误差\t一致性系数\t合格率");
 //        System.out.println("----------------------------------");
 //        System.out.printf(" %-10.3f %-10.3f %-10.3f %-10.3f", rmse_test,mre_test,dc_test,qr_test);
-//        ExcelTool.writeObjectExcel("D:\\tth_system\\end\\file\\"+pvo.getNetClass()+"-RESULT.xlsx", Option, longResult);
+//        ExcelTool.writeObjectExcel("D:\\204\\2.头屯河\\径流预报数据文件\\"+pvo.getNetClass()+"-RESULT.xlsx", Option, longResult);
         return result;
         }
 

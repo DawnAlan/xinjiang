@@ -18,5 +18,7 @@ public interface LzzRainfallStationService extends IService<LzzRainfallStation> 
 
     List<LzzRainfallStation> selectInfoByCondition(String id,String time,String startTime,String endTime);
 
+    List<LzzRainfallStation> selectYesterday(String name,String time);
+
 }
 
