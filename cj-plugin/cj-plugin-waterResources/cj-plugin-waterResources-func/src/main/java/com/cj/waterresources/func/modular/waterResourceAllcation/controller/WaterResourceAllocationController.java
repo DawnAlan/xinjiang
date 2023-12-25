@@ -1,9 +1,11 @@
 package com.cj.waterresources.func.modular.waterResourceAllcation.controller;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.cj.common.model.RestResponse;
 import com.cj.waterresources.func.modular.waterResourceAllcation.bean.dto.IncomingWaterForecastDto;
 import com.cj.waterresources.func.modular.waterResourceAllcation.bean.req.WaterResourceAllocationAddReq;
 import com.cj.waterresources.func.modular.waterResourceAllcation.bean.req.WaterResourceAllocationQueryReq;
+import com.cj.waterresources.func.modular.waterResourceAllcation.bean.res.WaterAllocationComparisonSelectionRes;
 import com.cj.waterresources.func.modular.waterResourceAllcation.entity.WaterResourceAllocation;
 import com.cj.waterresources.func.modular.waterResourceAllcation.service.WaterResourceAllocationService;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
@@ -54,7 +56,7 @@ public class WaterResourceAllocationController {
     @ApiOperationSupport(order = 3)
     @ApiOperation("分页查询调度方案")
     @PostMapping("/getAllocationPage")
-    public RestResponse getAllocationPage(@RequestBody WaterResourceAllocationQueryReq req) {
+    public RestResponse<IPage<WaterResourceAllocation>> getAllocationPage(@RequestBody WaterResourceAllocationQueryReq req) {
         return waterResourceAllocationService.getAllocationPage(req);
     }
 
@@ -76,7 +78,7 @@ public class WaterResourceAllocationController {
     @ApiOperationSupport(order = 3)
     @ApiOperation("调度方案对比")
     @PostMapping("/compare")
-    public RestResponse compare(@RequestParam String idA, @RequestParam String idB) {
+    public RestResponse<WaterAllocationComparisonSelectionRes> compare(@RequestParam String idA, @RequestParam String idB) {
         return waterResourceAllocationService.compare(idA, idB);
     }
 }

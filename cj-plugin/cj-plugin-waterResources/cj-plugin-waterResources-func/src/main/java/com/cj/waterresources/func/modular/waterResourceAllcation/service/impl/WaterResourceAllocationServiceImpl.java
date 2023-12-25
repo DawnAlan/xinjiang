@@ -5,6 +5,7 @@ import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -177,7 +178,7 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
     }
 
     @Override
-    public RestResponse getAllocationPage(WaterResourceAllocationQueryReq req) {
+    public RestResponse<IPage<WaterResourceAllocation>> getAllocationPage(WaterResourceAllocationQueryReq req) {
         Page<WaterResourceAllocation> page = new Page<>(req.getPageNo(), req.getPageSize());
         LambdaQueryWrapper<WaterResourceAllocation> wrapper = Wrappers.lambdaQuery();
         wrapper.eq(WaterResourceAllocation::getDel, 0);
@@ -206,7 +207,7 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
 
     @SneakyThrows
     @Override
-    public RestResponse compare(String idA, String idB) {
+    public RestResponse<WaterAllocationComparisonSelectionRes> compare(String idA, String idB) {
         WaterAllocationComparisonSelectionRes waterAllocationComparisonSelectionRes = new WaterAllocationComparisonSelectionRes();
         WaterResourceAllocation waterResourceAllocationA = baseMapper.selectById(idA);
         WaterResourceAllocation waterResourceAllocationB = baseMapper.selectById(idB);
