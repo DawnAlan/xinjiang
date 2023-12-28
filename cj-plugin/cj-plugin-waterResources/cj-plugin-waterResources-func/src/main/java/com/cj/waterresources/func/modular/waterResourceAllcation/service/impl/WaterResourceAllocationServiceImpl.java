@@ -136,7 +136,7 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
         WaterTransferReq waterTransferReq = new WaterTransferReq();
         List<Flood> floods = getListFromMinio(req.getInflowDataAddress(), Flood.class);
         List<DataInflowPrevent> dataInflowPrevents = JSONObject.parseArray(JSONObject.toJSONString(floods), DataInflowPrevent.class);
-        List<DataInflowPrevent> lzzEntryStation = dataInflowPrevents.stream().filter(t -> t.getLocation().equals("楼庄子进库站")).collect(Collectors.toList());
+        List<DataInflowPrevent> lzzEntryStation = dataInflowPrevents.stream().filter(t -> t.getLocation().equals("楼庄子")).collect(Collectors.toList());
         List<DataInflowPrevent> interval = dataInflowPrevents.stream().filter(t -> t.getLocation().equals("楼头区间")).collect(Collectors.toList());
         Map<String, List<DataInflowPrevent>> data = new HashMap<>();
         data.put("lzz", lzzEntryStation);
