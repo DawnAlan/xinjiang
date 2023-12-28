@@ -12,13 +12,15 @@ public class WaterStorageOverviewRes {
     @ApiModelProperty(value = "水库名")
     private String waterStorageName;
     @ApiModelProperty(value = "水位")
-    private double waterLevel;
+    private Double waterLevel;
     @ApiModelProperty(value = "入库流量")
-    private double inFlow;
+    private Double inFlow;
     @ApiModelProperty(value = "出库流量")
-    private double outFlow;
+    private Double outFlow;
     @ApiModelProperty(value = "库容")
-    private double storageCapacity;
-    @ApiModelProperty(value = "拦蓄水量")
-    private double waterRetentionCapacity;
+    private Double storageCapacity;
+    @ApiModelProperty(value = "昨日拦蓄洪量")
+    private Double yesterdayFloodRetentionCapacity;
+    @ApiModelProperty(value = "累计拦蓄洪量")
+    private Double yearFloodRetentionCapacity;
 }
