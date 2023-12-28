@@ -57,40 +57,47 @@ public class ApprovalManagementController{
     }
 
     @ApiOperationSupport(order = 4)
-    @ApiOperation("查询列表")
+    @ApiOperation("指令审批")
     @PostMapping("/select")
     public RestResponse<IPage<ApprovalManagement>> select(@RequestBody SelectListReq req) {
         return approvalManagementService.selectList(req);
     }
 
     @ApiOperationSupport(order = 5)
+    @ApiOperation("指令反馈")
+    @PostMapping("/selectFinishList")
+    public RestResponse<IPage<ApprovalManagement>> selectFinishList(@RequestBody SelectListReq req) {
+        return approvalManagementService.selectFinishList(req);
+    }
+
+    @ApiOperationSupport(order = 6)
     @ApiOperation("查询详情")
     @GetMapping("/selectByIds")
     public RestResponse<List<ApprovalManagement>> selectByIds(@RequestParam("ids") String ids) {
         return approvalManagementService.selectByIds(ids);
     }
 
-    @ApiOperationSupport(order = 6)
+    @ApiOperationSupport(order = 7)
     @ApiOperation("获取组织")
     @GetMapping("/getOrgList")
     public RestResponse getOrgList() {
         return approvalManagementService.getOrgList();
     }
 
-    @ApiOperationSupport(order = 7)
+    @ApiOperationSupport(order = 8)
     @ApiOperation("预览调度指令单")
     @GetMapping("/thymeleafExport")
     public void thymeleafExport(HttpServletResponse response,@RequestParam("id") String id) {
          approvalManagementService.thymeleafExport(response,id);
     }
 
-    @ApiOperationSupport(order = 8)
+    @ApiOperationSupport(order = 9)
     @ApiOperation("下载调度指令单")
     @GetMapping("/downFile")
     public void downFile(HttpServletResponse response,@RequestParam("id") String id) {
         approvalManagementService.downFile(response,id);
     }
-    @ApiOperationSupport(order = 9)
+    @ApiOperationSupport(order = 10)
     @ApiOperation("测试预览")
     @GetMapping("/testView")
     public void testView(HttpServletResponse response) {

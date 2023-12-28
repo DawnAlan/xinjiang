@@ -28,4 +28,10 @@ public class FloodControlOperationAddReq implements Serializable {
 
     @ApiModelProperty(value = "头屯河模型精度(0.05~0.2)")
     private double Step2;
+
+    @ApiModelProperty(value = "楼庄子各月份汛限水位，共12个")
+    private double[] limitLevelsLzz;
+
+    @ApiModelProperty(value = "头屯河各月份汛限水位，共12个")
+    private double[] limitLevelsTth;
 }

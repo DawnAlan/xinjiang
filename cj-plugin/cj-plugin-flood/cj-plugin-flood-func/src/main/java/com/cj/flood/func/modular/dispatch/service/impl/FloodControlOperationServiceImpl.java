@@ -6,6 +6,8 @@ import cn.hutool.extra.spring.SpringUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.cj.auth.core.pojo.SaBaseLoginUser;
+import com.cj.auth.core.util.StpLoginUserUtil;
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.ExcelUtils;
 import com.cj.common.util.UUIDUtils;
@@ -31,6 +33,7 @@ import com.cj.model.func.modular.entity.Flood;
 import io.minio.ObjectWriteResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -92,8 +95,10 @@ public class FloodControlOperationServiceImpl extends ServiceImpl<FloodControlOp
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public RestResponse add(FloodControlOperationAddReq req) {
         try {
+            SaBaseLoginUser saBaseLoginUser = StpLoginUserUtil.getLoginUser();
             String incomingWaterForecastId = req.getIncomingWaterForecastId();
             IncomingWaterForecast incomingWaterForecast = incomingWaterForecastService.getById(incomingWaterForecastId);
             incomingWaterForecast.setProgrammeName(sdf.format(new Date())+incomingWaterForecast.getProgrammeName());
@@ -105,18 +110,24 @@ public class FloodControlOperationServiceImpl extends ServiceImpl<FloodControlOp
             regularScheduling.setCreateTime(new Date());
             regularScheduling.setSchemeName(incomingWaterForecast.getProgrammeName()+"-常规调度");
             regularScheduling.setForecastingSchemeId(incomingWaterForecastId);
+            regularScheduling.setStatus(1);
+            regularScheduling.setCreateBy(saBaseLoginUser.getName());
             //最小拦蓄
             FloodControlOperation minimumContainment =  new FloodControlOperation();
             minimumContainment.setId(UUIDUtils.getUUID());
             minimumContainment.setCreateTime(new Date());
             minimumContainment.setSchemeName(incomingWaterForecast.getProgrammeName()+"-最小拦蓄");
             minimumContainment.setForecastingSchemeId(incomingWaterForecastId);
+            minimumContainment.setStatus(1);
+            minimumContainment.setCreateBy(saBaseLoginUser.getName());
             //最大削峰
             FloodControlOperation maximumPeakShaving =  new FloodControlOperation();
             maximumPeakShaving.setId(UUIDUtils.getUUID());
             maximumPeakShaving.setCreateTime(new Date());
             maximumPeakShaving.setSchemeName(incomingWaterForecast.getProgrammeName()+"-最大削峰");
             maximumPeakShaving.setForecastingSchemeId(incomingWaterForecastId);
+            maximumPeakShaving.setStatus(1);
+            maximumPeakShaving.setCreateBy(saBaseLoginUser.getName());
             //加入结果列表
             result.add(regularScheduling);
             result.add(minimumContainment);
@@ -160,6 +171,8 @@ public class FloodControlOperationServiceImpl extends ServiceImpl<FloodControlOp
                         paramReq.setH2_end(req.getH2_end());
                         paramReq.setStep1(req.getStep1());
                         paramReq.setStep2(req.getStep2());
+                        paramReq.setLimitLevels_lzz(req.getLimitLevelsLzz());
+                        paramReq.setLimitLevels_tth(req.getLimitLevelsTth());
                         List<ResOption> calculator = Cascade.calculator(paramReq);
                         for(ResOption resOption : calculator){
                             String path = resOption.getPath();
@@ -171,7 +184,7 @@ public class FloodControlOperationServiceImpl extends ServiceImpl<FloodControlOp
                             String ss = DateUtil.format(date, "ss");
                             ObjectWriteResponse objectWriteResponse = minioUtils.putObject("tth", yyyyMMdd+"/"+hh+"/"+mm+"/"+ss+"/"+ UUID.fastUUID().toString(true)+"/"+pathSplit[pathSplit.length-1], path);
                             String object = objectWriteResponse.object();
-                            floodControlOperationService.lambdaUpdate().set(FloodControlOperation::getModelResultAddress,object).eq(FloodControlOperation::getSchemeName,resOption.getName()).update();
+                            floodControlOperationService.lambdaUpdate().set(FloodControlOperation::getStatus,2).set(FloodControlOperation::getModelResultAddress,object).eq(FloodControlOperation::getSchemeName,resOption.getName()).update();
                         }
                         tth.close();
                         System.out.println(calculator.size());
@@ -192,6 +205,7 @@ public class FloodControlOperationServiceImpl extends ServiceImpl<FloodControlOp
         }
     }
   /* @Override
+   @Transactional(rollbackFor = Exception.class)
    public RestResponse add(FloodControlOperationAddReq req) {
        try {
            String incomingWaterForecastId = req.getIncomingWaterForecastId();
@@ -205,18 +219,21 @@ public class FloodControlOperationServiceImpl extends ServiceImpl<FloodControlOp
            regularScheduling.setCreateTime(new Date());
            regularScheduling.setSchemeName(incomingWaterForecast.getProgrammeName()+"-常规调度");
            regularScheduling.setForecastingSchemeId(incomingWaterForecastId);
+           regularScheduling.setStatus(1);
            //最小拦蓄
            FloodControlOperation minimumContainment =  new FloodControlOperation();
            minimumContainment.setId(UUIDUtils.getUUID());
            minimumContainment.setCreateTime(new Date());
            minimumContainment.setSchemeName(incomingWaterForecast.getProgrammeName()+"-最小拦蓄");
            minimumContainment.setForecastingSchemeId(incomingWaterForecastId);
+           minimumContainment.setStatus(1);
            //最大削峰
            FloodControlOperation maximumPeakShaving =  new FloodControlOperation();
            maximumPeakShaving.setId(UUIDUtils.getUUID());
            maximumPeakShaving.setCreateTime(new Date());
            maximumPeakShaving.setSchemeName(incomingWaterForecast.getProgrammeName()+"-最大削峰");
            maximumPeakShaving.setForecastingSchemeId(incomingWaterForecastId);
+           maximumPeakShaving.setStatus(1);
            //加入结果列表
            result.add(regularScheduling);
            result.add(minimumContainment);
@@ -258,6 +275,8 @@ public class FloodControlOperationServiceImpl extends ServiceImpl<FloodControlOp
                    paramReq.setH2_end(req.getH2_end());
                    paramReq.setStep1(req.getStep1());
                    paramReq.setStep2(req.getStep2());
+                   paramReq.setLimitLevels_lzz(req.getLimitLevelsLzz());
+                   paramReq.setLimitLevels_tth(req.getLimitLevelsTth());
                    List<ResOption> calculator = Cascade.calculator(paramReq);
                    for(ResOption resOption : calculator){
                        String path = resOption.getPath();
@@ -269,14 +288,15 @@ public class FloodControlOperationServiceImpl extends ServiceImpl<FloodControlOp
                        String ss = DateUtil.format(date, "ss");
                        ObjectWriteResponse objectWriteResponse = minioUtils.putObject("tth", yyyyMMdd+"/"+hh+"/"+mm+"/"+ss+"/"+ UUID.fastUUID().toString(true)+"/"+pathSplit[pathSplit.length-1], path);
                        String object = objectWriteResponse.object();
-                       this.lambdaUpdate().set(FloodControlOperation::getModelResultAddress,object).eq(FloodControlOperation::getSchemeName,resOption.getName()).update();
+                       this.lambdaUpdate().set(FloodControlOperation::getStatus,2).set(FloodControlOperation::getModelResultAddress,object).eq(FloodControlOperation::getSchemeName,resOption.getName()).update();
                    }
                    tth.close();
                    System.out.println(calculator.size());
+                   return RestResponse.ok("防洪调度生成成功");
                }catch (Exception e){
                    e.printStackTrace();
+                   return RestResponse.no("防洪调度生成失败");
                }
-               return RestResponse.ok("防洪调度生成成功");
            }else {
                return RestResponse.no("防洪调度生成失败");
            }
@@ -284,8 +304,7 @@ public class FloodControlOperationServiceImpl extends ServiceImpl<FloodControlOp
            e.printStackTrace();
            return RestResponse.no("防洪调度生成错误");
        }
-   }
-*/
+   }*/
     @Override
     public RestResponse<IPage<FloodControlOperationListRes>> selectList(FloodControlOperationListReq req) {
         try {

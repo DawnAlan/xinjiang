@@ -37,6 +37,8 @@ public class ModelOfTTH {
     double[][] LQ_Curve2;
     double[][] LQ_Curve3;
 
+    double[] LimitLevels;
+
     @Getter
     List<Date> Time = new ArrayList<>();
     List<Double> Q_Input = new ArrayList<>();
@@ -149,6 +151,8 @@ public class ModelOfTTH {
         HeightVolume = GetV(HeightLevel);
         DesignVolume = GetV(DesignLevel);
         ProofVolume = GetV(ProofLevel);
+
+        LimitLevels= reqFloodPrevent.getLimitLevels_tth();
     }
 
 
@@ -175,6 +179,7 @@ public class ModelOfTTH {
         List<Double> V_list=new ArrayList<>();
 
         for (int i = 0; i < Q_Input.size(); i++) {
+            UpdateLimitLevel(Time.get(i));
             double beginH;
             double endH;
             double Q_in = Q_Input.get(i);
@@ -314,9 +319,12 @@ public class ModelOfTTH {
         List<List<List<Double>>> Result =new ArrayList<>();
         List<List<List<Double>>> option_temp =new ArrayList<>();
         for (int i = 0; i < Q_Input.size()-1; i++) {
+            UpdateLimitLevel(Time.get(i));
             Result=OneStage(Result);
+            System.out.println(i+1);
         }
 
+        UpdateLimitLevel(Time.get(Time.size()-1));
         double Q_in = Q_Input.get(Q_Input.size()-1);
         for (int i = 0; i < Result.size(); i++) {
             List<List<Double>> option = new ArrayList<>(Result.get(i));
@@ -405,9 +413,12 @@ public class ModelOfTTH {
         List<List<List<Double>>> Result =new ArrayList<>();
         List<List<List<Double>>> option_temp =new ArrayList<>();
         for (int i = 0; i < Q_Input.size()-1; i++) {
+            UpdateLimitLevel(Time.get(i));
             Result=OneStage(Result);
+            System.out.println(i+1);
         }
 
+        UpdateLimitLevel(Time.get(Time.size()-1));
         double Q_in = Q_Input.get(Q_Input.size()-1);
         for (int i = 0; i < Result.size(); i++) {
             List<List<Double>> option = new ArrayList<>(Result.get(i));
@@ -997,4 +1008,65 @@ public class ModelOfTTH {
             Q_Input.add(BigDecimal.valueOf(qIn).setScale(2, RoundingMode.HALF_UP).doubleValue());
         }
     }
+
+    public void UpdateLimitLevel(Date time){
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(time);
+        int month = calendar.get(Calendar.MONTH);
+        switch (month){
+            case 0:
+                LimitLevel=LimitLevels[0];
+                LimitVolume = GetV(LimitLevel);
+                break;
+            case 1:
+                LimitLevel=LimitLevels[1];
+                LimitVolume = GetV(LimitLevel);
+                break;
+            case 2:
+                LimitLevel=LimitLevels[2];
+                LimitVolume = GetV(LimitLevel);
+                break;
+            case 3:
+                LimitLevel=LimitLevels[3];
+                LimitVolume = GetV(LimitLevel);
+                break;
+            case 4:
+                LimitLevel=LimitLevels[4];
+                LimitVolume = GetV(LimitLevel);
+                break;
+            case 5:
+                LimitLevel=LimitLevels[5];
+                LimitVolume = GetV(LimitLevel);
+                break;
+            case 6:
+                LimitLevel=LimitLevels[6];
+                LimitVolume = GetV(LimitLevel);
+                break;
+            case 7:
+                LimitLevel=LimitLevels[7];
+                LimitVolume = GetV(LimitLevel);
+                break;
+            case 8:
+                LimitLevel=LimitLevels[8];
+                LimitVolume = GetV(LimitLevel);
+                break;
+            case 9:
+                LimitLevel=LimitLevels[9];
+                LimitVolume = GetV(LimitLevel);
+                break;
+            case 10:
+                LimitLevel=LimitLevels[10];
+                LimitVolume = GetV(LimitLevel);
+                break;
+            case 11:
+                LimitLevel=LimitLevels[11];
+                LimitVolume = GetV(LimitLevel);
+                break;
+        }
+    }
+
+    public void SetEndH(double H){
+        H_end=H;
+    }
+
 }

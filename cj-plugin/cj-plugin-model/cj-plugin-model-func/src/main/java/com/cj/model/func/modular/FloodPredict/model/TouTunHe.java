@@ -33,8 +33,8 @@ public class TouTunHe {
             ForcastInputParamNew paramForcastInputParamNew = new ForcastInputParamNew();
             paramForcastInputParamNew.setModelType(1);//3为场次
             SimpleDateFormat sFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            paramForcastInputParamNew.setPredictionTime(sFormat.parse("2024-01-31 19:00:00"));
-            paramForcastInputParamNew.setPeriodTimeType(2);//1为月，2为旬，3为日，4为小时
+            paramForcastInputParamNew.setPredictionTime(sFormat.parse("2023-12-28 19:00:00"));
+            paramForcastInputParamNew.setPeriodTimeType(1);//1为月，2为旬，3为日，4为小时
             paramForcastInputParamNew.setPeriodTimeStep(1);//预报步长
             paramForcastInputParamNew.setPeriodTimeNum(6);//预报数量
             paramForcastInputParamNew=objectToList(paramForcastInputParamNew);//读取表格

@@ -20,16 +20,23 @@ public class Cascade {
 
     private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-        public static List<ResOption> calculator(ReqFloodPrevent reqFloodPrevent) throws Exception {
+    public static List<ResOption> calculator(ReqFloodPrevent reqFloodPrevent) throws Exception {
         ModelOfLZZ modelOfLZZ = new ModelOfLZZ(reqFloodPrevent);
         ModelOfTTH modelOfTTH = new ModelOfTTH(reqFloodPrevent);
 
         List<List<Double>> LZZ_op1=modelOfLZZ.Calculate_S1();
+
+        double endH_lzz = LZZ_op1.get(2).get(LZZ_op1.get(2).size()-1);
+        modelOfLZZ.SetEndH(endH_lzz);
+
+
         List<List<Double>> LZZ_op2=modelOfLZZ.MinLevel();
         List<List<Double>> LZZ_op3=modelOfLZZ.MinDischarge();
 
         modelOfTTH.setQ_Input(LZZ_op1.get(3));
         List<List<Double>> TTH_op1=modelOfTTH.Calculate_S2();
+        double endH_tth = TTH_op1.get(2).get(TTH_op1.get(2).size()-1);
+        modelOfTTH.SetEndH(endH_tth);
 
         modelOfTTH.setQ_Input(LZZ_op2.get(3));
         List<List<Double>> TTH_op2=modelOfTTH.MinLevel();

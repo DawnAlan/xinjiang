@@ -27,6 +27,7 @@ public interface ApprovalManagementService extends IService<ApprovalManagement> 
     RestResponse update(ApprovalManagement approvalManagement);
 
     RestResponse<IPage<ApprovalManagement>> selectList(SelectListReq req);
+    RestResponse<IPage<ApprovalManagement>> selectFinishList(SelectListReq req);
 
     RestResponse<List<ApprovalManagement>> selectByIds(String ids);
 

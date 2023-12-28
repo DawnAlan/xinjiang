@@ -80,7 +80,9 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
         approvalManagement.setId(UUIDUtils.getUUID());
         approvalManagement.setDel(0);
         approvalManagement.setCreateTime(new Date());
-        approvalManagement.setApprovalStatus(1);
+        if(approvalManagement.getApprovalStatus()==null){
+            approvalManagement.setApprovalStatus(1);
+        }
         approvalManagement.setInstructionStatus(1);
         approvalManagement.setCreateBy(saBaseLoginUser.getName());
         approvalManagement.setLssuedBy(saBaseLoginUser.getName());
@@ -136,6 +138,9 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
     public RestResponse update(ApprovalManagement approvalManagement) {
         SaBaseLoginUser saBaseLoginUser = StpLoginUserUtil.getLoginUser();
         String approvalTemp= (String) redisUtil.get("approvalManagement_"+approvalManagement.getId());
+        if(StringUtils.isNotEmpty(approvalTemp)&&approvalTemp.contains(saBaseLoginUser.getId())){
+            return RestResponse.no("当前用户已审批，请勿再审批");
+        }
         if(StringUtils.isEmpty(approvalTemp)){
             redisUtil.set("approvalManagement_"+approvalManagement.getId(),saBaseLoginUser.getId());
         }else {
@@ -145,17 +150,19 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
         ApprovalManagement byId = this.getById(approvalManagement.getId());
         if(byId.getApprovedById().equals(approval)){
             approvalManagement.setApprovalStatus(2);
+        }else {
+            approvalManagement.setApprovalStatus(1);
         }
         boolean b = this.updateById(approvalManagement);
         if(b){
             try {
-                if(approvalManagement.getApprovalStatus()==2){
-                    if(!approvalManagement.getInstructionType().equals("水库调水")){
-                        String[] lssuedById = approvalManagement.getLssuedById().split(",");
+                if(byId.getApprovalStatus()==2){
+                    if(!byId.getInstructionType().equals("水库调水")){
+                        String[] lssuedById = byId.getLssuedById().split(",");
                         for(String s:lssuedById){
                             WebSocketServer.sendInfo("您创建的指令已审批",s);
                         }
-                        String[] split = approvalManagement.getRecipientId().split(",");
+                        String[] split = byId.getRecipientId().split(",");
                         for(String s:split){
                             JSONObject userByIdWithoutException = sysUserApi.getUserByIdWithoutException(s);
                             String orgName = (String) userByIdWithoutException.get("orgName");
@@ -164,12 +171,11 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
                             WebSocketServer.sendInfo("您有一条待执行的指令,"+one.getId(),s);
                         }
                     }else {
-                        String[] lssuedById = approvalManagement.getLssuedById().split(",");
+                        String[] lssuedById = byId.getLssuedById().split(",");
                         for(String s:lssuedById){
                             WebSocketServer.sendInfo("您创建的指令已审批",s);
                         }
                     }
-
                 }
             }catch (Exception e){
                 e.printStackTrace();
@@ -188,6 +194,20 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
         IPage<ApprovalManagement> page = this.lambdaQuery().
                 between(req.getStartTime() !=null && req.getEndTime()!=null,ApprovalManagement::getCreateTime, req.getStartTime(),req.getEndTime()).
                 eq(StringUtils.isNotEmpty(req.getInstructionType()),ApprovalManagement::getInstructionType, req.getInstructionType()).
+                eq(ApprovalManagement::getDel, 0).page(p);
+        if(page.getTotal()>0){
+            return RestResponse.ok(page);
+        }else {
+            return RestResponse.no("暂无数据");
+        }
+    }
+
+    @Override
+    public RestResponse<IPage<ApprovalManagement>> selectFinishList(SelectListReq req) {
+        IPage<ApprovalManagement> p = new Page<>(req.getPageNum(),req.getPageSize());
+        IPage<ApprovalManagement> page = this.lambdaQuery().
+                between(req.getStartTime() !=null && req.getEndTime()!=null,ApprovalManagement::getCreateTime, req.getStartTime(),req.getEndTime()).
+                eq(StringUtils.isNotEmpty(req.getInstructionType()),ApprovalManagement::getInstructionType, req.getInstructionType()).eq(ApprovalManagement::getApprovalStatus,2).
                 eq(ApprovalManagement::getDel, 0).page(p);
         if(page.getTotal()>0){
             return RestResponse.ok(page);
@@ -304,8 +324,12 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
     @Override
     public RestResponse getOrgList() {
         List<Tree<String>> trees = sysOrgApi.orgTreeSelector();
-
         return RestResponse.ok(trees);
+    }
+
+    public static void main(String[] args) {
+        String s= "123,456";
+        System.out.println(s.contains("123"));
     }
 }
 

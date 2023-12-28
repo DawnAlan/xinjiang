@@ -59,5 +59,17 @@ public class FloodControlOperationController {
         return floodControlOperationService.containmentCalculator(ids);
     }
 
+    @ApiOperationSupport(order = 5)
+    @ApiOperation("删除")
+    @GetMapping("/delete")
+    public RestResponse delete(@RequestParam(value = "id") String id) {
+        boolean b = floodControlOperationService.removeById(id);
+        if(b) {
+            return RestResponse.ok();
+        }else {
+            return RestResponse.no("error");
+        }
+    }
+
 }
 

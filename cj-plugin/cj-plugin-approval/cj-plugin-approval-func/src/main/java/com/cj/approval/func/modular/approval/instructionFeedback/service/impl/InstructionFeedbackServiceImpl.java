@@ -45,6 +45,10 @@ public class InstructionFeedbackServiceImpl extends ServiceImpl<InstructionFeedb
     @Override
     @Transactional(rollbackFor = Exception.class)
     public RestResponse add(InstructionFeedback instructionFeedback) {
+        InstructionViewing byId = instructionViewingService.getById(instructionFeedback.getInstructionViewId());
+        if(byId.getInstructionStatus()==4){
+            return RestResponse.no("已反馈完成，请勿重复提交");
+        }
         SaBaseLoginUser saBaseLoginUser = StpLoginUserUtil.getLoginUser();
         instructionFeedback.setId(UUIDUtils.getUUID());
         //当前用户

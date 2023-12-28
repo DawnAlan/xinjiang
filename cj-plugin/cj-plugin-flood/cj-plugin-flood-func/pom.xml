@@ -24,10 +24,6 @@
                     <artifactId>commons-math3</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>com.github.wendykierp</groupId>
-                    <artifactId>JTransforms</artifactId>
-                </exclusion>
-                <exclusion>
                     <groupId>tw.edu.ntu.csie</groupId>
                     <artifactId>libsvm</artifactId>
                 </exclusion>
@@ -52,6 +48,10 @@
         <dependency>
             <groupId>com.cj</groupId>
             <artifactId>cj-plugin-flood-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.cj</groupId>
+            <artifactId>cj-plugin-auth-api</artifactId>
         </dependency>
     </dependencies>
 </project>

@@ -447,35 +447,6 @@ public class DataUtils {
 			piece.setTemperature(input.get(i).getTemperature().doubleValue());
 			resultMid.add(piece);
 		}
-//		List<PredictInputData> result = new ArrayList<>();
-//		PredictInputData resultData = new PredictInputData();
-//		Date dateStart = input.get(0).getTime();
-//		Date dateEnd = input.get(input.size()-1).getTime();
-//		LocalDate localDate1 = dateStart.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-//		LocalDate localDate2 = dateEnd.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-//		// 计算相差天数并返回
-//		long duration =  Duration.between(localDate1.atStartOfDay(), localDate2.atStartOfDay()).toHours();
-//		int n = Math.toIntExact(duration);
-//		for (int i = 0; i < n; i++) {
-//			resultData.setRainStation(resultMid.get(0).getRainStation());
-//			resultData.setDates(dateStart);
-//			for (int j = 0; j < resultMid.size(); j++) {
-//				Boolean dateCompare = DateCompare(resultMid.get(j).getDates(),dateStart,"小时");
-//				if (dateCompare){
-//					resultData.setRainfall(resultMid.get(j).getRainfall());
-//					resultData.setTemperature(resultMid.get(j).getTemperature());
-//				}else {
-//					resultData.setRainfall(0.0);
-//					resultData.setTemperature(0.0);
-//				}
-//			}
-//			// 将 Calendar 的日期加一小时
-//			Calendar calendar = Calendar.getInstance();
-//			calendar.setTime(dateStart);
-//			calendar.add(Calendar.HOUR_OF_DAY, 1);
-//			dateStart = calendar.getTime();
-//			result.add(resultData);
-//		}
 		return resultMid;
 	}
 

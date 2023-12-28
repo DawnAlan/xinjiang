@@ -6,6 +6,8 @@ import cn.hutool.extra.spring.SpringUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.cj.auth.core.pojo.SaBaseLoginUser;
+import com.cj.auth.core.util.StpLoginUserUtil;
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.ExcelUtils;
 import com.cj.common.util.UUIDUtils;
@@ -44,6 +46,8 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
+
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
@@ -71,9 +75,11 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
     @Autowired
     private IrrigatedPlatformDataInfoService irrigatedPlatformDataInfoService;
 
-    /*@Override
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public RestResponse add(IncomingWaterForecastAddReq req) {
         try {
+            SaBaseLoginUser saBaseLoginUser = StpLoginUserUtil.getLoginUser();
             IncomingWaterForecast incomingWaterForecast = req.getIncomingWaterForecast();
             incomingWaterForecast.setId(UUIDUtils.getUUID());
             incomingWaterForecast.setCreateTime(new Date());
@@ -109,6 +115,8 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                 Date targetDate = calendar.getTime();
                 incomingWaterForecast.setEndTime(targetDate);
             }
+            incomingWaterForecast.setStatus(1);
+            incomingWaterForecast.setCreateBy(saBaseLoginUser.getName());
             boolean save = this.save(incomingWaterForecast);
             ExecutorService pool = Executors.newSingleThreadExecutor();
             pool.submit(new Runnable() {
@@ -161,7 +169,7 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                         String ss = DateUtil.format(date, "ss");
                         ObjectWriteResponse objectWriteResponse = minioUtils.putObject("tth", yyyyMMdd+"/"+hh+"/"+mm+"/"+ss+"/"+ UUID.fastUUID().toString(true)+"/"+split[split.length-1], fileAddress);
                         String object = objectWriteResponse.object();
-                        incomingWaterForecastService.lambdaUpdate().set(IncomingWaterForecast::getModelResultAddress,object).eq(IncomingWaterForecast::getId,incomingWaterForecast.getId()).update();
+                        incomingWaterForecastService.lambdaUpdate().set(IncomingWaterForecast::getStatus,2).set(IncomingWaterForecast::getModelResultAddress,object).eq(IncomingWaterForecast::getId,incomingWaterForecast.getId()).update();
                     }catch (Exception e) {
                         e.printStackTrace();
                         log.error("-------------------------------------------error-------------------------------------------");
@@ -178,9 +186,9 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
             e.printStackTrace();
             return RestResponse.no(e.getMessage());
         }
-    }*/
+    }
 
-    @Override
+   /* @Override
     public RestResponse add(IncomingWaterForecastAddReq req) {
         try {
             IncomingWaterForecast incomingWaterForecast = req.getIncomingWaterForecast();
@@ -218,6 +226,7 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                 Date targetDate = calendar.getTime();
                 incomingWaterForecast.setEndTime(targetDate);
             }
+            incomingWaterForecast.setStatus(1);
             boolean save = this.save(incomingWaterForecast);
             if(save){
                 try {
@@ -261,7 +270,9 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                     String ss = DateUtil.format(date, "ss");
                     ObjectWriteResponse objectWriteResponse = minioUtils.putObject("tth", yyyyMMdd+"/"+hh+"/"+mm+"/"+ss+"/"+ UUID.fastUUID().toString(true)+"/"+split[split.length-1], fileAddress);
                     String object = objectWriteResponse.object();
-                    incomingWaterForecastService.lambdaUpdate().set(IncomingWaterForecast::getModelResultAddress,object).eq(IncomingWaterForecast::getId,incomingWaterForecast.getId()).update();
+                    incomingWaterForecastService.lambdaUpdate().set(IncomingWaterForecast::getStatus,2).
+                            set(IncomingWaterForecast::getModelResultAddress,object).
+                            eq(IncomingWaterForecast::getId,incomingWaterForecast.getId()).update();
                 }catch (Exception e) {
                     e.printStackTrace();
                     log.error("-------------------------------------------error-------------------------------------------");
@@ -275,7 +286,7 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
             e.printStackTrace();
             return RestResponse.no(e.getMessage());
         }
-    }
+    }*/
 
     @Override
     public RestResponse delete(String id) {
@@ -293,6 +304,7 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public RestResponse update(IncomingWaterForecast incomingWaterForecast) {
         try {
             if(incomingWaterForecast.getPeriodTimeType()==1){
@@ -402,6 +414,7 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
             IPage<IncomingWaterForecast> page = this.lambdaQuery().eq(StringUtils.isNotEmpty(req.getProgrammeName()), IncomingWaterForecast::getProgrammeName, req.getProgrammeName()).
                     eq(req.getPeriodTimeType() != null, IncomingWaterForecast::getPeriodTimeType, req.getPeriodTimeType()).
                     eq(StringUtils.isNotEmpty(req.getCreateBy()),IncomingWaterForecast::getCreateBy,req.getCreateBy()).
+                    eq(req.getModelType() != null, IncomingWaterForecast::getModelType,req.getModelType()).
                     eq(req.getPredictionTime() != null, IncomingWaterForecast::getPredictionTime, req.getPredictionTime()).page(incomingWaterForecastPage);
             if(page.getSize()>0){
                 return RestResponse.ok(page);
@@ -495,24 +508,28 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
             Flood flood = threeBridge.get(0);
             List<IncomingWaterForecastKVDto> qCause = new ArrayList<>();
             String qCauseValue = flood.getQCause();
-            String[] qCauseSplit = qCauseValue.split(",");
-            for(String qCauseSplitTemp : qCauseSplit){
-                IncomingWaterForecastKVDto dto = new IncomingWaterForecastKVDto();
-                String[] split2 = qCauseSplitTemp.split(":");
-                dto.setName(split2[0]);
-                dto.setValue(Double.parseDouble(split2[1]));
-                qCause.add(dto);
+            if(StringUtils.isNotEmpty(qCauseValue)){
+                String[] qCauseSplit = qCauseValue.split(",");
+                for(String qCauseSplitTemp : qCauseSplit){
+                    IncomingWaterForecastKVDto dto = new IncomingWaterForecastKVDto();
+                    String[] split2 = qCauseSplitTemp.split(":");
+                    dto.setName(split2[0]);
+                    dto.setValue(Double.parseDouble(split2[1]));
+                    qCause.add(dto);
+                }
             }
             incomingWaterForecastViewDto.setQCause(qCause);
             List<IncomingWaterForecastKVDto> qComposition = new ArrayList<>();
             String qCompositionValue = flood.getQComposition();
-            String[] qCompositionSplit = qCompositionValue.split(",");
-            for(String qCompositionSplitTemp : qCompositionSplit){
-                IncomingWaterForecastKVDto dto = new IncomingWaterForecastKVDto();
-                String[] split2 = qCompositionSplitTemp.split(":");
-                dto.setName(split2[0]);
-                dto.setValue(Double.parseDouble(split2[1]));
-                qComposition.add(dto);
+            if(StringUtils.isNotEmpty(qCompositionValue)){
+                String[] qCompositionSplit = qCompositionValue.split(",");
+                for(String qCompositionSplitTemp : qCompositionSplit){
+                    IncomingWaterForecastKVDto dto = new IncomingWaterForecastKVDto();
+                    String[] split2 = qCompositionSplitTemp.split(":");
+                    dto.setName(split2[0]);
+                    dto.setValue(Double.parseDouble(split2[1]));
+                    qComposition.add(dto);
+                }
             }
             incomingWaterForecastViewDto.setQComposition(qComposition);
             return incomingWaterForecastViewDto;
