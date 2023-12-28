@@ -30,11 +30,23 @@ public class InstructionViewingController{
     @Autowired
     private InstructionViewingService instructionViewingService;
 
-    @ApiOperationSupport(order = 5)
+    @ApiOperationSupport(order = 1)
     @ApiOperation("通过指令id查询列表")
     @GetMapping("/selectListByInstructionId")
     public RestResponse<List<InstructionViewing>> selectListByInstructionId(@RequestParam("id") String id) {
         return instructionViewingService.selectListByInstructionId(id);
+    }
+
+    @ApiOperationSupport(order = 2)
+    @ApiOperation("修改阅读状态")
+    @GetMapping("/updateRedsStatus")
+    public RestResponse updateRedsStatus(@RequestParam("id") String id) {
+        boolean update = instructionViewingService.lambdaUpdate().set(InstructionViewing::getViewStatus, 1).eq(InstructionViewing::getId, id).update();
+        if(update){
+            return RestResponse.ok();
+        }else {
+            return RestResponse.no("error");
+        }
     }
 
 }

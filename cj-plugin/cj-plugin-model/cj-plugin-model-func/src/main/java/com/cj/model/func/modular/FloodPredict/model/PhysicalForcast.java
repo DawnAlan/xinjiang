@@ -489,7 +489,7 @@ public class PhysicalForcast {
             }
         }
         //三号桥断面返回三个地区的雨量比值
-        if (param.getLocation().equals("三号桥")){
+        if (param.getLocation().equals("3号桥")){
             double Sum =0.0;
             double qiaoSum=0.0;
             double dongSum=0.0;
@@ -501,10 +501,10 @@ public class PhysicalForcast {
             if (Sum!=0.0){
                 double qiao =Math.round((float) qiaoSum/Sum*100)/100.0;
                 double dong =Math.round((float) dongSum/Sum*100)/100.0;
-                double san =Math.round((float) sanSum/Sum*100)/100.0;
-                result = "乔楞格尔地区:"+qiao+","+"东南沟地区:"+dong+","+"三号桥地区:"+san;
+                double san =Math.round((1.00-qiao-dong)*100)/100.0;
+                result = "乔楞格尔地区:"+qiao+","+"东南沟地区:"+dong+","+"3号桥地区:"+san;
             } else {
-                result = "乔楞格尔地区:0.00,"+"东南沟地区:0.00,"+"三号桥地区:0.00";
+                result = "乔楞格尔地区:0.34,"+"东南沟地区:0.33,"+"3号桥地区:0.33";
             }
         } else if (param.getLocation().equals("楼庄子")) {
             double Sum =0.0;
@@ -521,10 +521,10 @@ public class PhysicalForcast {
                 double qiao =Math.round((float) qiaoSum/Sum*100)/100.0;
                 double dong =Math.round((float) dongSum/Sum*100)/100.0;
                 double san =Math.round((float) sanSum/Sum*100)/100.0;
-                double zhi =Math.round((float) zhiSum/Sum*100)/100.0;
-                result = "乔楞格尔地区:"+qiao+","+"东南沟地区:"+dong+","+"三号桥地区:"+san+","+"制材厂地区:"+zhi;
+                double zhi =Math.round((1.00-qiao-dong-san)*100)/100.0;
+                result = "乔楞格尔地区:"+qiao+","+"东南沟地区:"+dong+","+"3号桥地区:"+san+","+"制材厂地区:"+zhi;
             }else {
-                result = "乔楞格尔地区:0.00,"+"东南沟地区:0.00,"+"三号桥地区:0.00"+"制材厂地区:0.00";
+                result = "乔楞格尔地区:0.25,"+"东南沟地区:0.25,"+"3号桥地区:0.25,"+"制材厂地区:0.25";
             }
 
         }else if(param.getLocation().equals("楼头区间")){
@@ -536,10 +536,10 @@ public class PhysicalForcast {
             if (Sum!=0){
                 double xiao =Math.round((float) xiaoSum/Sum*100)/100.0;
                 double tuan =Math.round((float) tuanSum/Sum*100)/100.0;
-                double to =Math.round((float) toSum/Sum*100)/100.0;
+                double to =Math.round((1.00-xiao-tuan)*100)/100.0;
                 result = "小渠子沟:"+xiao+","+"团结一队:"+tuan+","+"头屯河入库:"+to;
             }else {
-                result = "小渠子沟:0.00,"+"团结一队:0.00,"+"头屯河入库:0.00";
+                result = "小渠子沟:0.34,"+"团结一队:0.33,"+"头屯河入库:0.33";
             }
         }
         return result;
@@ -571,30 +571,30 @@ public class PhysicalForcast {
             for (int i = 0; i < Q_shanbei.length; i++) {
                 shanbeiFlow =shanbeiFlow +  Q_shanbei[i];
             }
-            for (int i = 0; i < PreFlow.size(); i++) {
-                if (PreFlow.get(i).getFlow().isNaN()){
-                    PreFlow.get(i).setFlow(0.0);
-                }
-                Date time = PreFlow.get(i).getDates();
-                int year = getSpecificDate(time).get("年");
-
-                Date time2 = param.getPreStartTime();
-                int year2 = getSpecificDate(time2).get("年");
-                if (year==year2){
-                    Date time3 = PreFlow.get(i).getDates();
-                    int month = getSpecificDate(time3).get("月");
-                    if (month>=1&&month<=4){
-                        preFlowSum = preFlowSum + PreFlow.get(i).getFlow();
-                        preFlowNum++;
-                    }
-                    preFlow = preFlowSum/preFlowNum;
-                }
-            }
+//            for (int i = 0; i < PreFlow.size(); i++) {
+//                if (PreFlow.get(i).getFlow().isNaN()){
+//                    PreFlow.get(i).setFlow(0.0);
+//                }
+//                Date time = PreFlow.get(i).getDates();
+//                int year = getSpecificDate(time).get("年");
+//
+//                Date time2 = param.getPreStartTime();
+//                int year2 = getSpecificDate(time2).get("年");
+//                if (year==year2){
+//                    Date time3 = PreFlow.get(i).getDates();
+//                    int month = getSpecificDate(time3).get("月");
+//                    if (month>=1&&month<=4){
+//                        preFlowSum = preFlowSum + PreFlow.get(i).getFlow();
+//                        preFlowNum++;
+//                    }
+//                    preFlow = preFlowSum/preFlowNum;
+//                }
+//            }
             double Sum = snowFlow+preFlow+shanbeiFlow;
-            double shanbei =Math.round((float) shanbeiFlow/Sum*100)/100.0;
-            double rong = Math.round((float) snowFlow/Sum*100)/100.0;
-            double di = Math.round((float) preFlow/Sum*100)/100.0;
-            result += "降水:"+ shanbei+","+"融雪:"+rong+","+"地下水:"+di;
+            double shanbei =Math.round((float) shanbeiFlow/Sum*95)/100.0;
+            double rong = Math.round((float) snowFlow/Sum*95)/100.0;
+//            double di = Math.round((float) preFlow/Sum*100)/100.0;
+            result += "降水:"+ shanbei+","+"融雪:"+rong+","+"地下水:0.05";
         }
         else {
             for (int i = 0; i < Q_shanbei.length; i++) {
@@ -619,9 +619,9 @@ public class PhysicalForcast {
                 }
             }
             double Sum = preFlow+shanbeiFlow;
-            double shanbei =Math.round((float) shanbeiFlow/Sum*99.5)/100.0;
-            double rong = Math.round((float) preFlow/Sum*99.5)/100.0;
-            result += "降水:"+ shanbei+","+"融雪:"+rong+","+"地下水:"+0.5;
+            double shanbei =Math.round((float) shanbeiFlow/Sum*95)/100.0;
+            double rong = Math.round((float) preFlow/Sum*95)/100.0;
+            result += "降水:"+ shanbei+","+"融雪:"+rong+","+"地下水:0.05";
         }
         return result;
     }

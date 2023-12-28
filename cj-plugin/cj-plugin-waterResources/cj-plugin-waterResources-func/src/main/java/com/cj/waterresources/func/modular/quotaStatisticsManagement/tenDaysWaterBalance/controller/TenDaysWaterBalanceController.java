@@ -1,6 +1,18 @@
 package com.cj.waterresources.func.modular.quotaStatisticsManagement.tenDaysWaterBalance.controller;
 
+import com.cj.common.model.RestResponse;
+import com.cj.waterresources.func.modular.quotaStatisticsManagement.tenDaysWaterBalance.bean.req.TenDaysWaterBalanceSelectListReq;
+import com.cj.waterresources.func.modular.quotaStatisticsManagement.tenDaysWaterBalance.entity.TenDaysWaterBalance;
+import com.cj.waterresources.func.modular.quotaStatisticsManagement.tenDaysWaterBalance.service.TenDaysWaterBalanceService;
+import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
+import com.github.xiaoymin.knife4j.annotations.ApiSupport;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 
 /**
@@ -9,9 +21,22 @@ import org.springframework.web.bind.annotation.*;
  * @author makejava
  * @since 2023-12-22 18:40:01
  */
+@Api(tags = "旬水量平衡")
+@ApiSupport(author = "LEO-LUOXU", order = 1)
 @RestController
+@Validated
 @RequestMapping("tenDaysWaterBalance")
 public class TenDaysWaterBalanceController{
 
+
+    @Autowired
+    private TenDaysWaterBalanceService tenDaysWaterBalanceService;
+
+    @ApiOperationSupport(order = 1)
+    @ApiOperation("查询列表")
+    @PostMapping("/selectList")
+    public RestResponse<List<TenDaysWaterBalance>> selectList(@RequestBody TenDaysWaterBalanceSelectListReq req) {
+        return tenDaysWaterBalanceService.selectList(req);
+    }
 }
 

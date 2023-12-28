@@ -1,7 +1,8 @@
 package com.cj.model.func.modular.FloodPredict.model;
 
+
 import org.apache.commons.math3.complex.Complex;
-import edu.emory.mathcs.jtransforms.fft.DoubleFFT_1D;
+
 
 import java.util.Arrays;
 /**
@@ -37,7 +38,7 @@ public class VMD {
 //    }
     public static double[][] vmd (double[] signal, int K) {
         //初始参数一般不做修改，如果分解拟合度较差，可以选择缩小alpha值
-        int alpha = 100;
+        int alpha = 10;
         double tau = 0;
         int DC = 0;
         int init = 1;
@@ -339,6 +340,24 @@ public class VMD {
         for (int i = 0; i < K; i++) {
             System.arraycopy(ou[i], 0, vmd_output[i], 0, save_T);
         }
+
+        //判断所有列是否全部为0
+        boolean isAllZero = true;
+        int row = 0; // 要判断的行索引
+        for (int col = 0; col < vmd_output[row].length; col++) {
+            if (vmd_output[row][col] != 0.0) {
+                isAllZero = false;
+                break; // 如果有一个元素不为0，则可以跳出循环
+            }
+        }
+        if (isAllZero) {
+            for (int i = 0; i < vmd_output.length ; i++) {
+                for (int col = 0; col < vmd_output[row].length; col++) {
+                    vmd_output[i][col] = signal[col]/K;
+                }
+            }
+
+        }
         return vmd_output;
     }
 
@@ -356,7 +375,6 @@ public class VMD {
         int n = array.length;
         int shift = (n + 1) / 2;
         Complex[] shifted = new Complex[n];
-
         System.arraycopy(array, shift, shifted, 0, n - shift);
         System.arraycopy(array, 0, shifted, n - shift, shift);
 
@@ -437,6 +455,7 @@ public class VMD {
                 result[i][j] = sum;
             }
         }
+
         return result;
     }
 }

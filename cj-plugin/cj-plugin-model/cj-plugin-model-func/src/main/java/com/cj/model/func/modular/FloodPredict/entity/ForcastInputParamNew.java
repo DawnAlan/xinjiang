@@ -3,6 +3,7 @@ package com.cj.model.func.modular.FloodPredict.entity;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 public class ForcastInputParamNew {
@@ -21,5 +22,7 @@ public class ForcastInputParamNew {
     private LzzHydrologyParam lzzHydrologyParam;
     //灌区实时雨量站信息
     private IrrigatedHydrologyParam irrigatedHydrologyParam;
+    //预报雨量
+    private List<RainFallDto> rainFallDtos;
 
 }

@@ -62,15 +62,35 @@ public class ExcelTool {
 		}
 	}
 	public static void writeObjectExcel(String path, String sheetName, Object[][] data) throws IOException, InvalidFormatException {
-		XSSFWorkbook workbook = new XSSFWorkbook();
+		XSSFWorkbook workbook = null;
+
+		// 检查文件是否存在
 		File file = new File(path);
-		//如果文件存在则续写
-		if (file.exists()){
-			FileInputStream fis = new FileInputStream(path);
-			workbook = new XSSFWorkbook(fis);
+		if(file.exists()) {
+			try {
+				FileInputStream fis = new FileInputStream(path);
+				workbook = new XSSFWorkbook(fis);
+				fis.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		} else {
+			// 创建一个新的工作表
+			workbook = new XSSFWorkbook();
 		}
-//		XSSFWorkbook workbook = new XSSFWorkbook();
-		XSSFSheet sheet = workbook.getSheet(sheetName);
+
+		assert workbook != null;
+		boolean sheetExists = false;
+		int sheetIndex = workbook.getSheetIndex(sheetName);
+		if (sheetIndex != -1) {
+			sheetExists = true;
+		}
+		XSSFSheet sheet;
+		if (sheetExists){
+			sheet = workbook.getSheet(sheetName);
+		}else {
+			sheet = workbook.createSheet(sheetName);
+		}
 		CellStyle cellStyle = workbook.createCellStyle();
 		cellStyle.setDataFormat(workbook.getCreationHelper().createDataFormat().getFormat("yyyy-mm-dd hh:mm:ss"));
 // 先判断工作簿是否存在，不存在则创建，存在则清空

@@ -163,7 +163,10 @@ public class IrrigationQuotaServiceImpl extends ServiceImpl<IrrigationQuotaMappe
     public RestResponse<List<IrrigationQuota>> selectList(IrrigationQuotaListReq req) {
         List<IrrigationQuota> list = this.lambdaQuery().eq(req.getYear() != null, IrrigationQuota::getYear, req.getYear()).
                 eq(StringUtils.isNotEmpty(req.getCropType()), IrrigationQuota::getCropType, req.getCropType()).
-                eq(StringUtils.isNotEmpty(req.getWaterUser()), IrrigationQuota::getWaterUser, req.getWaterUser()).list();
+                eq(StringUtils.isNotEmpty(req.getStation()),IrrigationQuota::getStation,req.getStation()).
+                eq(StringUtils.isNotEmpty(req.getWaterUser()), IrrigationQuota::getWaterUser, req.getWaterUser()).
+                eq(IrrigationQuota::getDel,0).
+                list();
         if(null!=list && list.size()>0) {
             return RestResponse.ok(list);
         }else {

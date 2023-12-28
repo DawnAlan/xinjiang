@@ -1,24 +1,18 @@
 package com.cj.approval.func.core.utils;
 
-import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONObject;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.stereotype.Component;
 
 import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * WebSocket的操作类
  */
-@ServerEndpoint("/websocket/{sid}")
+@ServerEndpoint(value = "/msg/{sid}",subprotocols = {"protocol"})
 @Component
 @Slf4j
 public class WebSocketServer {

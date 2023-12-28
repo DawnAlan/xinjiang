@@ -24,8 +24,8 @@
                     <artifactId>commons-math3</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>com.github.rwl</groupId>
-                    <artifactId>jtransforms</artifactId>
+                    <groupId>com.github.wendykierp</groupId>
+                    <artifactId>JTransforms</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>tw.edu.ntu.csie</groupId>

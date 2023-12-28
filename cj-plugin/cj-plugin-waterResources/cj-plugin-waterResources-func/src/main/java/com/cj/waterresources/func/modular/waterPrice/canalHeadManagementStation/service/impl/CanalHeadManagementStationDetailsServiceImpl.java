@@ -3,6 +3,8 @@ package com.cj.waterresources.func.modular.waterPrice.canalHeadManagementStation
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.UUIDUtils;
+import com.cj.waterresources.func.modular.quotaStatisticsManagement.dayWaterBalance.service.DayWaterBalanceService;
+import com.cj.waterresources.func.modular.quotaStatisticsManagement.tenDaysWaterBalance.service.TenDaysWaterBalanceService;
 import com.cj.waterresources.func.modular.trendsTable.entity.TrendsTableParam;
 import com.cj.waterresources.func.modular.trendsTable.service.TrendsTableParamService;
 import com.cj.waterresources.func.modular.waterPrice.canalHeadManagementStation.entity.CanalHeadManagementStationTotal;
@@ -41,6 +43,11 @@ public class CanalHeadManagementStationDetailsServiceImpl extends ServiceImpl<Ca
     @Autowired
     private WaterDistributionRatioService waterDistributionRatioService;
 
+    @Autowired
+    private DayWaterBalanceService dayWaterBalanceService;
+
+    @Autowired
+    private TenDaysWaterBalanceService tenDaysWaterBalanceService;
 
     @Override
     public  Map<String,Double> getLanternCanalInfoByDate(String date) {
@@ -408,12 +415,12 @@ public class CanalHeadManagementStationDetailsServiceImpl extends ServiceImpl<Ca
                             eq(CanalHeadManagementStationTotal::getYear, jisuan.get("year")).
                             eq(CanalHeadManagementStationTotal::getMonth, jisuan.get("month")).
                             eq(CanalHeadManagementStationTotal::getTenDays, jisuan.get("tenDays")).
-                            eq(CanalHeadManagementStationTotal::getCode, 1).one();
+                            eq(CanalHeadManagementStationTotal::getCode, "1").one();
                     CanalHeadManagementStationTotal lastYear = canalHeadManagementStationTotalService.lambdaQuery().
                             eq(CanalHeadManagementStationTotal::getYear, canalHeadManagementStationDetails.getYear()-1).
                             eq(CanalHeadManagementStationTotal::getMonth, canalHeadManagementStationDetails.getMonth()).
                             eq(CanalHeadManagementStationTotal::getTenDays, canalHeadManagementStationDetails.getTenDays()).
-                            eq(CanalHeadManagementStationTotal::getCode, 1).one();
+                            eq(CanalHeadManagementStationTotal::getCode, "1").one();
                     CanalHeadManagementStationTotal total1 = new CanalHeadManagementStationTotal();
                     total1.setId(UUIDUtils.getUUID());
                     total1.setDel(0);

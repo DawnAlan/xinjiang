@@ -16,5 +16,7 @@ public interface InstructionViewingService extends IService<InstructionViewing> 
 
     RestResponse<List<InstructionViewing>> selectListByInstructionId(String instructionId);
 
+    RestResponse updateInstructionStatus(String instructionId);
+
 }
 

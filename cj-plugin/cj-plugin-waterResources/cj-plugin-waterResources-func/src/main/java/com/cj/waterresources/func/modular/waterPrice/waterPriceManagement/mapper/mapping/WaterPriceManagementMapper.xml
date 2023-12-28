@@ -23,7 +23,7 @@
             <if test="req.station !=null and req.station != ''">
                 AND STATION = #{req.station}
             </if>
-            AND DEL = 0
+            AND DEL = 0 AND STATION != '渠首管理站'
         </where>
     </select>
 

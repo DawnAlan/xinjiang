@@ -15,4 +15,10 @@ public class PredictionProcessDto implements Serializable {
     @ApiModelProperty(value = "来水过程\\入库流量")
     private Double preQ;
 
+    @ApiModelProperty(value = "水位")
+    private Double waterLevel;
+
+    @ApiModelProperty(value = "库容")
+    private Double capacity;
+
 }

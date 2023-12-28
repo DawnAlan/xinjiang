@@ -26,6 +26,10 @@ public class IrrigationQuota extends Model<IrrigationQuota> {
     @ApiModelProperty(value = "用水户")
     private String waterUser;
 
+    //管理站
+    @ApiModelProperty(value = "管理站")
+    private String station;
+
     //作物类型
     @ApiModelProperty(value = "作物类型")
     private String cropType;

@@ -16,4 +16,8 @@ public class IrrigationQuotaListReq {
     //作物类型
     @ApiModelProperty(value = "作物类型")
     private String cropType;
+
+    @ApiModelProperty(value = "管理站")
+    private String station;
+
 }

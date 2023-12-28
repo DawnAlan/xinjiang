@@ -17,7 +17,7 @@
             <if test="req.paymentStartTime !=null and req.paymentEndTime != null">
                 AND PAYMENT_TIME BETWEEN  #{req.paymentStartTime} AND #{req.paymentEndTime}
             </if>
-            AND DEL = 0
+            AND DEL = 0 AND STATION != '渠首管理站'
         </where>
         ORDER BY CREATE_TIME DESC
     </select>

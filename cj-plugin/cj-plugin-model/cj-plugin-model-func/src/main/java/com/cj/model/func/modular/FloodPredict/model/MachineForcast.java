@@ -244,7 +244,7 @@ public class MachineForcast {
                 waterSum += water[i];
             }
             waterSum = waterSum/10000;
-            if (pvo.getForecastDuanmian().equals("三号桥")||pvo.getForecastDuanmian().equals("楼庄子")){
+            if (pvo.getForecastDuanmian().equals("3号桥")||pvo.getForecastDuanmian().equals("楼庄子")){
                 if (waterSum >=2.476){
                     result = "丰水年";
                 }

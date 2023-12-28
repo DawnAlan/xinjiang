@@ -2,6 +2,7 @@ package com.cj.flood.func.modular.prediction.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.cj.common.model.RestResponse;
+import com.cj.flood.func.modular.prediction.bean.req.IncomingWaterForecastAddReq;
 import com.cj.flood.func.modular.prediction.bean.req.IncomingWaterForecastListReq;
 import com.cj.flood.func.modular.prediction.entity.IncomingWaterForecast;
 import com.cj.flood.func.modular.prediction.service.IncomingWaterForecastService;
@@ -26,8 +27,8 @@ public class IncomingWaterForecastController {
     @ApiOperationSupport(order = 1)
     @ApiOperation("新增")
     @PostMapping("/add")
-    public RestResponse add(@RequestBody IncomingWaterForecast incomingWaterForecast) {
-        return incomingWaterForecastService.add(incomingWaterForecast);
+    public RestResponse add(@RequestBody IncomingWaterForecastAddReq req) {
+        return incomingWaterForecastService.add(req);
     }
 
     @ApiOperationSupport(order = 2)

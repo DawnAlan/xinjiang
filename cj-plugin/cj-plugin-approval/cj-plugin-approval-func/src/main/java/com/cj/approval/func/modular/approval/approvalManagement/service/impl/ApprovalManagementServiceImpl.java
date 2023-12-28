@@ -3,20 +3,25 @@ package com.cj.approval.func.modular.approval.approvalManagement.service.impl;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.lang.UUID;
 import cn.hutool.core.lang.tree.Tree;
+import cn.hutool.json.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cj.approval.func.core.utils.MinioUtils;
+import com.cj.approval.func.core.utils.WebSocketServer;
 import com.cj.approval.func.modular.approval.approvalManagement.bean.req.SelectListReq;
 import com.cj.approval.func.modular.approval.approvalManagement.mapper.ApprovalManagementMapper;
 import com.cj.approval.func.modular.approval.approvalManagement.entity.ApprovalManagement;
 import com.cj.approval.func.modular.approval.approvalManagement.service.ApprovalManagementService;
 import com.cj.approval.func.modular.approval.instructionViewing.entity.InstructionViewing;
 import com.cj.approval.func.modular.approval.instructionViewing.service.InstructionViewingService;
+import com.cj.auth.core.pojo.SaBaseLoginUser;
+import com.cj.auth.core.util.StpLoginUserUtil;
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.RedisUtil;
 import com.cj.common.util.UUIDUtils;
 import com.cj.sys.api.SysOrgApi;
+import com.cj.sys.api.SysUserApi;
 import com.deepoove.poi.XWPFTemplate;
 import io.minio.ObjectWriteResponse;
 import org.apache.commons.compress.utils.IOUtils;
@@ -26,6 +31,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -50,6 +56,9 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
     private SysOrgApi sysOrgApi;
 
     @Autowired
+    private SysUserApi sysUserApi;
+
+    @Autowired
     private InstructionViewingService instructionViewingService;
 
     @Autowired
@@ -67,11 +76,15 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
     @Override
     @Transactional(rollbackFor = Exception.class)
     public RestResponse add(ApprovalManagement approvalManagement) {
+        SaBaseLoginUser saBaseLoginUser = StpLoginUserUtil.getLoginUser();
         approvalManagement.setId(UUIDUtils.getUUID());
         approvalManagement.setDel(0);
         approvalManagement.setCreateTime(new Date());
         approvalManagement.setApprovalStatus(1);
         approvalManagement.setInstructionStatus(1);
+        approvalManagement.setCreateBy(saBaseLoginUser.getName());
+        approvalManagement.setLssuedBy(saBaseLoginUser.getName());
+        approvalManagement.setLssuedById(saBaseLoginUser.getId());
         boolean save = this.save(approvalManagement);
         if(save){
             List<InstructionViewing> instructionViewingList = new ArrayList<>();
@@ -87,6 +100,17 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
             }
             boolean b = instructionViewingService.saveBatch(instructionViewingList);
             if(b){
+                try {
+                    String[] approvedById = approvalManagement.getApprovedById().split(",");
+                    for (String s:approvedById){
+                        WebSocketServer.sendInfo("您有一条待审批的指令",s);
+                    }
+                }catch (Exception e){
+                    e.printStackTrace();
+                    TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                    return RestResponse.no("send msg fail");
+                }
+
                 return RestResponse.ok();
             }else {
                 return RestResponse.no("error");
@@ -110,8 +134,48 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
     @Override
     @Transactional(rollbackFor = Exception.class)
     public RestResponse update(ApprovalManagement approvalManagement) {
+        SaBaseLoginUser saBaseLoginUser = StpLoginUserUtil.getLoginUser();
+        String approvalTemp= (String) redisUtil.get("approvalManagement_"+approvalManagement.getId());
+        if(StringUtils.isEmpty(approvalTemp)){
+            redisUtil.set("approvalManagement_"+approvalManagement.getId(),saBaseLoginUser.getId());
+        }else {
+            redisUtil.set("approvalManagement_"+approvalManagement.getId(),approvalTemp+","+saBaseLoginUser.getId());
+        }
+        String approval= (String) redisUtil.get("approvalManagement_"+approvalManagement.getId());
+        ApprovalManagement byId = this.getById(approvalManagement.getId());
+        if(byId.getApprovedById().equals(approval)){
+            approvalManagement.setApprovalStatus(2);
+        }
         boolean b = this.updateById(approvalManagement);
         if(b){
+            try {
+                if(approvalManagement.getApprovalStatus()==2){
+                    if(!approvalManagement.getInstructionType().equals("水库调水")){
+                        String[] lssuedById = approvalManagement.getLssuedById().split(",");
+                        for(String s:lssuedById){
+                            WebSocketServer.sendInfo("您创建的指令已审批",s);
+                        }
+                        String[] split = approvalManagement.getRecipientId().split(",");
+                        for(String s:split){
+                            JSONObject userByIdWithoutException = sysUserApi.getUserByIdWithoutException(s);
+                            String orgName = (String) userByIdWithoutException.get("orgName");
+                            InstructionViewing one = instructionViewingService.lambdaQuery().eq(InstructionViewing::getInstructionId, approvalManagement.getId()).
+                                    eq(InstructionViewing::getUnit, orgName).one();
+                            WebSocketServer.sendInfo("您有一条待执行的指令,"+one.getId(),s);
+                        }
+                    }else {
+                        String[] lssuedById = approvalManagement.getLssuedById().split(",");
+                        for(String s:lssuedById){
+                            WebSocketServer.sendInfo("您创建的指令已审批",s);
+                        }
+                    }
+
+                }
+            }catch (Exception e){
+                e.printStackTrace();
+                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                return RestResponse.no("send msg fail");
+            }
             return RestResponse.ok();
         }else{
             return RestResponse.no("error");

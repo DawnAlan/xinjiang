@@ -64,24 +64,24 @@ public class FloodControlOperationServiceImpl extends ServiceImpl<FloodControlOp
     public RestResponse<Map<String,List<PredictionProcessDto>>> selectDetails(String id) {
         try {
             Map<String,List<PredictionProcessDto>> results = new LinkedHashMap<>();
-            IncomingWaterForecast incomingWaterForecast = incomingWaterForecastService.getById(id);
-            String modelResultAddress = incomingWaterForecast.getModelResultAddress();
+            FloodControlOperation floodControlOperation = this.getById(id);
+            String modelResultAddress = floodControlOperation.getModelResultAddress();
             InputStream tth = minioUtils.getObject("tth", modelResultAddress);
             String[] split = modelResultAddress.split("\\\\");
             String[] split1 = split[split.length - 1].split("\\.");
             MultipartFile multipartFile = MultipartFileUtil.inputStreamToMultipartFile(tth, split1[0]);
-            List<Flood> floods = ExcelUtils.importExcel(multipartFile, Flood.class);
-            List<PredictionProcessDto> interval = getPredictions(floods,"楼头区间");
+            List<Option> floods = ExcelUtils.importExcel(multipartFile, Option.class);
+            List<PredictionProcessDto> interval = getPredictions(floods,"头屯河");
             if(null != interval){
-                results.put("楼头区间",interval);
+                results.put("头屯河",interval);
             }else {
-                results.put("楼头区间",null);
+                results.put("头屯河",null);
             }
-            List<PredictionProcessDto> lzzEntryStation  = getPredictions(floods,"楼庄子进库站");
+            List<PredictionProcessDto> lzzEntryStation  = getPredictions(floods,"楼庄子");
             if(null != lzzEntryStation){
-                results.put("楼庄子进库站",lzzEntryStation);
+                results.put("楼庄子",lzzEntryStation);
             }else {
-                results.put("楼庄子进库站",null);
+                results.put("楼庄子",null);
             }
             tth.close();
            return RestResponse.ok(results);
@@ -331,6 +331,8 @@ public class FloodControlOperationServiceImpl extends ServiceImpl<FloodControlOp
             //过程详情
             Map<String, Map<String, Map<String, List<Object>>>> stringMapMap3 = ProcessDetail.ProcessDetailCalculator(options);
             result.put("过程详情",stringMapMap3);
+            Map<String, Map<String, Map<String, String>>> stringMapMap4 = OverTimes.OverTimesCalculator(options);
+            result.put("测站总览累计",stringMapMap4);
 
             return RestResponse.ok(result);
         }catch (Exception e){
@@ -339,14 +341,16 @@ public class FloodControlOperationServiceImpl extends ServiceImpl<FloodControlOp
         }
     }
 
-    public List<PredictionProcessDto> getPredictions(List<Flood> floods, String station){
-        List<Flood> floodList = floods.stream().filter(t -> t.getLocation().equals(station)).collect(Collectors.toList());
+    public List<PredictionProcessDto> getPredictions(List<Option> floods, String station){
+        List<Option> floodList = floods.stream().filter(t -> t.getName().equals(station)).collect(Collectors.toList());
         if(null != floodList && floodList.size() > 0) {
             List<PredictionProcessDto> predictionProcess = new ArrayList<>();
-            for (Flood flood : floodList) {
+            for (Option flood : floodList) {
                 PredictionProcessDto predictionProcessDto = new PredictionProcessDto();
-                predictionProcessDto.setPreQ(flood.getPreQ());
+                predictionProcessDto.setPreQ(flood.getQ1());
                 predictionProcessDto.setTime(flood.getTime());
+                predictionProcessDto.setWaterLevel(flood.getH2());
+                predictionProcessDto.setCapacity(flood.getV());
                 predictionProcess.add(predictionProcessDto);
             }
             return predictionProcess;

@@ -1,35 +1,40 @@
 package com.cj.model.func.modular.FloodPredict.Calibration;
 
+import com.cj.model.func.modular.FloodPredict.entity.ForcastInputParamNew;
+import com.cj.model.func.modular.FloodPredict.entity.PredictInputData;
+import com.cj.model.func.modular.FloodPredict.entity.RainFallDto;
 import com.cj.model.func.modular.FloodPredict.model.PhysicalForcast;
 import com.cj.model.func.modular.FloodPredict.utils.DataUtils;
 import com.cj.model.func.modular.FloodPredict.utils.ExcelTool;
+import com.cj.model.func.modular.FloodPredict.utils.TimeUtils;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.*;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.Date;
 
 import static com.cj.model.func.modular.FloodPredict.model.PhysicalForcast.floodLevel;
+import static com.cj.model.func.modular.FloodPredict.model.TouTunHe.rainPredict;
+import static com.cj.model.func.modular.FloodPredict.utils.DataUtils.emptyProcessing;
+import static com.cj.model.func.modular.FloodPredict.utils.DataUtils.preRainHourToDay;
 
 public class Test {
 
 
     public static void main(String[] args) throws ParseException, IOException, InvalidFormatException {
-
-        Object[][] test = ExcelTool.readExcel("D:\\204\\2.头屯河\\Test.xlsx","test");
-        List<Object[][]> resultlist = PhysicalForcast.selectPeakFlood(test);
-        String level = floodLevel(test);
-        Object[][] result = resultlist.get(0);
-        Object[][] resultNature = resultlist.get(1);
-        ExcelTool.writeObjectExcel("D:\\204\\2.头屯河\\Test.xlsx","result",result);
-        ExcelTool.writeObjectExcel("D:\\204\\2.头屯河\\Test.xlsx","resultNature",resultNature);
+        //模型参数输入设置
+        ForcastInputParamNew paramForcastInputParamNew = new ForcastInputParamNew();
+        paramForcastInputParamNew.setModelType(3);//3为场次
+        SimpleDateFormat sFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        paramForcastInputParamNew.setPredictionTime(sFormat.parse("2023-12-31 19:00:00"));
+        Date startDate = paramForcastInputParamNew.getPredictionTime();
+        Date[][] dates;
+        dates = TimeUtils.getMonthDateList(startDate,10, 1);
+        int a =0;
     }
 }
 

@@ -48,12 +48,28 @@ public class ApprovalManagement extends Model<ApprovalManagement> {
     private Integer approvalStatus;
 
     //下发人
-    @ApiModelProperty(value = "下发人")
+    @ApiModelProperty(value = "制定人")
     private String lssuedBy;
+
+    //下发人ID
+    @ApiModelProperty(value = "制定人ID")
+    private String lssuedById;
 
     //审批人
     @ApiModelProperty(value = "审批人")
     private String approvedBy;
+
+    //审批人ID
+    @ApiModelProperty(value = "审批人ID")
+    private String approvedById;
+
+    //接收人
+    @ApiModelProperty(value = "接收人")
+    private String recipient;
+
+    //接收人ID
+    @ApiModelProperty(value = "接收人ID")
+    private String recipientId;
 
     //完成时间
     @ApiModelProperty(value = "完成时间")

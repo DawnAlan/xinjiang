@@ -31,13 +31,14 @@ public class TouTunHe {
         try {
             //模型参数输入设置
             ForcastInputParamNew paramForcastInputParamNew = new ForcastInputParamNew();
-            paramForcastInputParamNew.setModelType(3);//3为场次
+            paramForcastInputParamNew.setModelType(1);//3为场次
             SimpleDateFormat sFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            paramForcastInputParamNew.setPredictionTime(sFormat.parse("2022-07-01 00:00:00"));
-            paramForcastInputParamNew.setPeriodTimeType(4);//1为月，2为旬，3为日，4为小时
+            paramForcastInputParamNew.setPredictionTime(sFormat.parse("2024-01-31 19:00:00"));
+            paramForcastInputParamNew.setPeriodTimeType(2);//1为月，2为旬，3为日，4为小时
             paramForcastInputParamNew.setPeriodTimeStep(1);//预报步长
             paramForcastInputParamNew.setPeriodTimeNum(6);//预报数量
             paramForcastInputParamNew=objectToList(paramForcastInputParamNew);//读取表格
+
             //模型输出
             TemporaryXlsx result = new TemporaryXlsx();
             result= getFloodList(paramForcastInputParamNew);
@@ -55,7 +56,9 @@ public class TouTunHe {
      * @throws InvalidFormatException
      */
     public static TemporaryXlsx getFloodList(ForcastInputParamNew paramForcastInputParamNew) throws IOException, ParseException, InvalidFormatException {
+        List<RainFallDto> rainPre = rainPredict(paramForcastInputParamNew);
         paramForcastInputParamNew = emptyProcessing(paramForcastInputParamNew);//异常值处理
+        paramForcastInputParamNew.setRainFallDtos(rainPre);
         ForcastInputParam param = new ForcastInputParam();
         TemporaryXlsx temporaryXlsx;
        //模型类型
@@ -91,9 +94,9 @@ public class TouTunHe {
         Flood_Lzz = getOneStationFlood(LZZDATA,param,"楼庄子");
         //三号桥
         List<List<PredictInputData>> SHQDATA;
-        SHQDATA=OneStationList(paramForcastInputParamNew,"三号桥");
+        SHQDATA=OneStationList(paramForcastInputParamNew,"3号桥");
         Object[][] Flood_Three;
-        Flood_Three = getOneStationFlood(SHQDATA,param,"三号桥");
+        Flood_Three = getOneStationFlood(SHQDATA,param,"3号桥");
         //区间
         Object[][] Flood_qj;
         List<List<PredictInputData>> QJDATA;
@@ -160,14 +163,17 @@ public class TouTunHe {
     public static  List<List<PredictInputData>> OneStationList(ForcastInputParamNew paramNew, String StationName)
             throws IOException, InvalidFormatException, ParseException {
         List<List<PredictInputData>> result = new ArrayList<>();
-        if (StationName.equals("三号桥")){
+        if (StationName.equals("3号桥")){
             //三号桥历史径流日尺度
             List<PredictInputData> THQ = DataUtils.lzzDataConversion(paramNew).get(0);
             THQ = AddRAndT(THQ, paramNew);
             result.add(THQ);
-            List<List<PredictInputData>> integration = LzzRainIntegration(paramNew);//整合雨量站数据转为模型所需类型
-            result.add(integration.get(0));
-            result.add(integration.get(1));
+            if (paramNew.getModelType()==3)//场次洪水
+            {
+                List<List<PredictInputData>> integration = LzzRainIntegration(paramNew);//整合雨量站数据转为模型所需类型
+                result.add(integration.get(0));
+                result.add(integration.get(1));
+            }
         }
         if (StationName.equals("楼头区间")){
             //楼庄子出库日径流
@@ -175,23 +181,27 @@ public class TouTunHe {
             List<PredictInputData> QJ = Scaling(LZZIN);
             QJ =AddRAndT(QJ, paramNew);
             result.add(QJ);
-            //获得上游雨量站的温度
-            List<List<PredictInputData>> integration = LzzRainIntegration(paramNew);
-            List<PredictInputData> Temperature = integration.get(0);
-            //添加到区间的数据中
-            List<List<PredictInputData>> QJRain = IrrigateRainIntegration(paramNew);
-            for (int i = 0; i < QJRain.get(0).size(); i++) {
-                double T = Temperature.get(i).getTemperature();
-                QJRain.get(0).get(i).setTemperature(T);
+            if (paramNew.getModelType()==3)
+            {
+                //获得上游雨量站的温度
+                List<List<PredictInputData>> integration = LzzRainIntegration(paramNew);
+                List<PredictInputData> Temperature = integration.get(0);
+                //添加到区间的数据中
+                List<List<PredictInputData>> QJRain = IrrigateRainIntegration(paramNew);
+                for (int i = 0; i < QJRain.get(0).size(); i++) {
+                    double T = Temperature.get(i).getTemperature();
+                    QJRain.get(0).get(i).setTemperature(T);
+                }
+                //后续更改，目前直接等同于上游的降水情况
+                if (QJRain.get(0).size()==360){
+                    result.add(QJRain.get(0));
+                    result.add(QJRain.get(1));
+                }else {
+                    result.add(integration.get(0));
+                    result.add(integration.get(1));
+                }
             }
-            //后续更改，目前直接等同于上游的降水情况
-            if (QJRain.get(0).size()==360){
-                result.add(QJRain.get(0));
-                result.add(QJRain.get(1));
-            }else {
-                result.add(integration.get(0));
-                result.add(integration.get(1));
-            }
+
         }
 
         if (StationName.equals("楼庄子")){
@@ -199,9 +209,12 @@ public class TouTunHe {
             List<PredictInputData> LZZ = DataUtils.lzzDataConversion(paramNew).get(1);
             LZZ = AddRAndT(LZZ, paramNew);
             result.add(LZZ);
-            List<List<PredictInputData>> integration = LzzRainIntegration(paramNew);
-            result.add(integration.get(0));
-            result.add(integration.get(1));
+            if (paramNew.getModelType()==3)
+            {
+                List<List<PredictInputData>> integration = LzzRainIntegration(paramNew);
+                result.add(integration.get(0));
+                result.add(integration.get(1));
+            }
         }
         return result;
     }
@@ -260,9 +273,7 @@ public class TouTunHe {
         if (year >= 2023){
             Object[][] Input=new Object[historyInput.length + preliminaryData.length][historyInput[0].length];
             for (int i = 0; i < historyInput.length; i++) {
-                for (int j = 0; j < historyInput[0].length; j++) {
-                    Input[i][j]=historyInput[i][j];
-                }
+                System.arraycopy(historyInput[i], 0, Input[i], 0, historyInput[0].length);
             }
             for (int i = historyInput.length; i < historyInput.length + preliminaryData.length; i++) {
                 for (int j = 0; j < historyInput[0].length; j++) {
@@ -276,6 +287,7 @@ public class TouTunHe {
                     Input[i][j]=preliminaryData[i - historyInput.length][j];
                 }
             }
+            ExcelTool.writeObjectExcel("D:\\tth_system\\end\\file\\test.xlsx","test",Input);
             return Input;
         }else {
             Date dateEnd = (Date) historyInput[historyInput.length-1][0];
@@ -301,13 +313,19 @@ public class TouTunHe {
                     System.arraycopy(historyInput[i], 0, Input[i], 0, 2);
                 }
             }
-            ExcelTool.writeObjectExcel("D:\\tth_system\\end\\file\\test.xlsx","test",Input);
+
             return Input;
         }
 
     }
 
-    public static  ForcastInputParamNew objectToList ( ForcastInputParamNew input) throws IOException {
+    /**
+     * 读取表格赋予初始值
+     * @param input
+     * @return
+     * @throws IOException
+     */
+    public static  ForcastInputParamNew objectToList (ForcastInputParamNew input) throws IOException {
     ForcastInputParamNew result = new ForcastInputParamNew();
     result.setModelType(input.getModelType());
     result.setPredictionTime(input.getPredictionTime());
@@ -756,4 +774,110 @@ public class TouTunHe {
     result.setIrrigatedHydrologyParam(qjParam);
     return result;
 }
+
+    /**
+     * 预报雨量赋值
+     * @param input
+     * @return
+     */
+    public static List<RainFallDto> rainPredict (ForcastInputParamNew input){
+        List<RainFallDto> result = new ArrayList<>();
+        RainFallDto rainFallDto = new RainFallDto();
+        Date dateNew = new Date();
+        Date dateStart = input.getPredictionTime();
+        int start_end = input.getPeriodTimeStep()*input.getPeriodTimeNum();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(dateStart);
+        calendar.add(Calendar.HOUR_OF_DAY, start_end);
+        Date dateEnd = calendar.getTime();
+        int length = duration(dateNew,dateEnd,"小时");
+        for (int i = 0; i < length; i++) {
+            rainFallDto = new RainFallDto();
+            rainFallDto.setArea("喀什沟自动雨量站");
+            rainFallDto.setRainFall(i*0.03);
+            rainFallDto.setDate(String.valueOf(dateNew));
+            result.add(rainFallDto);
+            rainFallDto = new RainFallDto();
+            rainFallDto.setArea("黑沟自动雨量站");
+            rainFallDto.setRainFall(i*0.03);
+            rainFallDto.setDate(String.valueOf(dateNew));
+            result.add(rainFallDto);
+            rainFallDto = new RainFallDto();
+            rainFallDto.setArea("煤矿沟自动雨量站");
+            rainFallDto.setRainFall(i*0.03);
+            rainFallDto.setDate(String.valueOf(dateNew));
+            result.add(rainFallDto);
+            rainFallDto = new RainFallDto();
+            rainFallDto.setArea("无名沟自动雨量站");
+            rainFallDto.setRainFall(i*0.03);
+            rainFallDto.setDate(String.valueOf(dateNew));
+            result.add(rainFallDto);
+            rainFallDto = new RainFallDto();
+            rainFallDto.setArea("加普沙自动雨量站");
+            rainFallDto.setRainFall(i*0.03);
+            rainFallDto.setDate(String.valueOf(dateNew));
+            result.add(rainFallDto);
+            rainFallDto = new RainFallDto();
+            rainFallDto.setArea("宰尔德自动雨量站");
+            rainFallDto.setRainFall(i*0.03);
+            rainFallDto.setDate(String.valueOf(dateNew));
+            result.add(rainFallDto);
+            rainFallDto = new RainFallDto();
+            rainFallDto.setArea("东南沟自动雨量站");
+            rainFallDto.setRainFall(i*0.03);
+            rainFallDto.setDate(String.valueOf(dateNew));
+            result.add(rainFallDto);
+            rainFallDto = new RainFallDto();
+            rainFallDto.setArea("八一林场自动雨量站");
+            rainFallDto.setRainFall(i*0.03);
+            rainFallDto.setDate(String.valueOf(dateNew));
+            result.add(rainFallDto);
+            rainFallDto = new RainFallDto();
+            rainFallDto.setArea("萨尔达万自动雨量站");
+            rainFallDto.setRainFall(i*0.03);
+            rainFallDto.setDate(String.valueOf(dateNew));
+            result.add(rainFallDto);
+            rainFallDto = new RainFallDto();
+            rainFallDto.setArea("制材厂自动雨量站");
+            rainFallDto.setRainFall(i*0.03);
+            rainFallDto.setDate(String.valueOf(dateNew));
+            result.add(rainFallDto);
+            rainFallDto = new RainFallDto();
+            rainFallDto.setArea("小渠子雨量站");
+            rainFallDto.setRainFall(i*0.03);
+            rainFallDto.setDate(String.valueOf(dateNew));
+            result.add(rainFallDto);
+            rainFallDto = new RainFallDto();
+            rainFallDto.setArea("团结一队雨量站");
+            rainFallDto.setRainFall(i*0.03);
+            rainFallDto.setDate(String.valueOf(dateNew));
+            result.add(rainFallDto);
+            rainFallDto = new RainFallDto();
+            rainFallDto.setArea("头屯河水库雨量站");
+            rainFallDto.setRainFall(i*0.03);
+            rainFallDto.setDate(String.valueOf(dateNew));
+            result.add(rainFallDto);
+            calendar.setTime(dateNew);
+            calendar.add(Calendar.HOUR_OF_DAY, 1);
+            dateNew = calendar.getTime();
+        }
+        List<String> stationName =new ArrayList<>();
+        List<RainFallDto> resultSort =new ArrayList<>();
+        if(result.size()>0){
+            for (int i = 0; i < 13; i++) //后续更改，目前写死为13个雨量站
+            {
+                stationName.add(result.get(i).getArea());
+            }
+            RainFallDto rainFallDto1 = new RainFallDto();
+            for (int i = 0; i < 13; i++) {
+                for (RainFallDto fallDto : result) {
+                    if (fallDto.getArea().equals(stationName.get(i))) {
+                        rainFallDto1 = fallDto;
+                        resultSort.add(rainFallDto1);
+                    }
+                }
+            }
+        }
+        return resultSort;
+    }
 }

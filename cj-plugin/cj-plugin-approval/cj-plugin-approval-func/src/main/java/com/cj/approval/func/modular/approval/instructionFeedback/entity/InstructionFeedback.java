@@ -42,5 +42,11 @@ public class InstructionFeedback extends Model<InstructionFeedback> {
     //执行人员
     @ApiModelProperty(value = "执行人员")
     private String executive;
+
+    @ApiModelProperty(value = "接收人")
+    private String recipient;
+
+    @ApiModelProperty(value = "接收人ID")
+    private String recipientId;
 }
 

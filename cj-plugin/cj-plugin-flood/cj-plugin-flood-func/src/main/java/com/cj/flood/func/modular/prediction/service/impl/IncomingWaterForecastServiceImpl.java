@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.ExcelUtils;
 import com.cj.common.util.UUIDUtils;
+import com.cj.flood.func.modular.prediction.bean.req.IncomingWaterForecastAddReq;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.entity.IrrigatedPlatformDataInfo;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.service.IrrigatedPlatformDataInfoService;
 import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.entity.LzzGaugingStation;
@@ -70,9 +71,10 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
     @Autowired
     private IrrigatedPlatformDataInfoService irrigatedPlatformDataInfoService;
 
-    @Override
-    public RestResponse add(IncomingWaterForecast incomingWaterForecast) {
+    /*@Override
+    public RestResponse add(IncomingWaterForecastAddReq req) {
         try {
+            IncomingWaterForecast incomingWaterForecast = req.getIncomingWaterForecast();
             incomingWaterForecast.setId(UUIDUtils.getUUID());
             incomingWaterForecast.setCreateTime(new Date());
             if(incomingWaterForecast.getPeriodTimeType()==1){
@@ -176,11 +178,12 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
             e.printStackTrace();
             return RestResponse.no(e.getMessage());
         }
-    }
+    }*/
 
-   /* @Override
-    public RestResponse add(IncomingWaterForecast incomingWaterForecast) {
+    @Override
+    public RestResponse add(IncomingWaterForecastAddReq req) {
         try {
+            IncomingWaterForecast incomingWaterForecast = req.getIncomingWaterForecast();
             incomingWaterForecast.setId(UUIDUtils.getUUID());
             incomingWaterForecast.setCreateTime(new Date());
             if(incomingWaterForecast.getPeriodTimeType()==1){
@@ -272,7 +275,7 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
             e.printStackTrace();
             return RestResponse.no(e.getMessage());
         }
-    }*/
+    }
 
     @Override
     public RestResponse delete(String id) {

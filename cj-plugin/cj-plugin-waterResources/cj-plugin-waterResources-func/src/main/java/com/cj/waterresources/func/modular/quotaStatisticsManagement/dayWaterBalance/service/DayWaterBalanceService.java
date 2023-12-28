@@ -4,6 +4,9 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.cj.common.model.RestResponse;
 import com.cj.waterresources.func.modular.quotaStatisticsManagement.dayWaterBalance.bean.req.DayWaterBalanceSelectListReq;
 import com.cj.waterresources.func.modular.quotaStatisticsManagement.dayWaterBalance.entity.DayWaterBalance;
+import com.cj.waterresources.func.modular.waterPrice.canalHeadManagementStation.entity.CanalHeadManagementStationDetails;
+import com.cj.waterresources.func.modular.waterPrice.canalHeadManagementStation.entity.CanalHeadManagementStationTotal;
+import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.entity.WaterFeeStatisticsDetails;
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.entity.WaterFeeStatisticsTotal;
 
 import java.util.List;
@@ -18,8 +21,8 @@ public interface DayWaterBalanceService extends IService<DayWaterBalance> {
 
     RestResponse<List<DayWaterBalance>> selectList(DayWaterBalanceSelectListReq req);
 
-    RestResponse addFirst(List<WaterFeeStatisticsTotal> totalList,Integer day);
-    RestResponse add(List<WaterFeeStatisticsTotal> totalList,Integer day);
+    RestResponse addFirst(List<WaterFeeStatisticsDetails> detailsList, Integer day);
+    RestResponse update(List<WaterFeeStatisticsDetails> detailsList,Integer day);
 
 }
 

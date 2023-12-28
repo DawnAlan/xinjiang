@@ -85,22 +85,24 @@ public class TimeUtils {
 	 * @param startDate 开始时间（延长至基础数据）
 	 * @param len 预见期的长度
 	 * @param outputNum
-	 * @return 除去基础数据日期的所有日期
+	 * @return 从预报开始日期月初开始返回
 	 */
 	public static Date[][] getMonthDateList(Date startDate,int len,int outputNum) {
 		Date[][] dates = new Date[len][outputNum];
+		int day = DataUtils.getSpecificDate(startDate).get("日");
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(startDate);
+		cal.add(Calendar.DAY_OF_MONTH,-day+1);
+		startDate=cal.getTime();
 		for(int i = 0; i < len; i++){
 			for(int j = 0; j < outputNum; j++){
 				if(i == 0){
 					if(j == 0){
-						Calendar cal = Calendar.getInstance();
 						cal.setTime(startDate);
-//						cal.add(Calendar.MONTH,3);
-						cal.add(Calendar.MONTH,0);//从预报数据的第一个日期开始
 						dates[i][j]=cal.getTime();
 					}
 				}else{
-					Calendar cal = Calendar.getInstance();
+
 					cal.setTime(dates[i-1][j]);
 					cal.add(Calendar.MONTH,1);
 					dates[i][j]=cal.getTime();
@@ -139,10 +141,8 @@ public class TimeUtils {
 	
 	public static Date[][] getDateList(Date startDate,int len, int day, int hours, int outptuNum){
 		Date[][] dates = new Date[len][outptuNum];
-		Date[][] dates1 = new Date[len][1];
 		Calendar now = Calendar.getInstance();
 		now.setTime(startDate);
-		now.add(Calendar.HOUR_OF_DAY, 0);
 		startDate = now.getTime();
 		if(day == 10){
 			DateIndex index = TimeUtils.getDateIndex(startDate);
@@ -187,24 +187,6 @@ public class TimeUtils {
 						}
 					}
 					
-				}
-			}
-		}
-		
-		//得到预见期内的所有日期
-		for (int i = 0; i < dates.length; i++) {
-			int[] days= {28,29,30,31};
-			Calendar cal=Calendar.getInstance();
-			cal.setTime(dates[i][0]);
-			int day0=cal.get(Calendar.DAY_OF_MONTH);
-			Calendar cal1=Calendar.getInstance();
-			for (int k = 0; k < days.length; k++) {
-				Long l=days[k]*24*60*60*1000L+dates[i][0].getTime();
-				Date t0=new Date(l);
-				cal1.setTime(t0);
-				int day1=cal1.get(Calendar.DAY_OF_MONTH);
-				if(day0==day1) {
-					dates1[i][0]=t0;
 				}
 			}
 		}
