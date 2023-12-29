@@ -10,7 +10,7 @@ import java.util.Date;
 public class WaterResourceAllocationQueryReq implements Serializable {
 
     @ApiModelProperty(value = "模型类型")
-    private String modelType;
+    private Integer bucketType;
 
     @ApiModelProperty(value = "方案名称")
     private String planName;

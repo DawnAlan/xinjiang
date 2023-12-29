@@ -40,7 +40,7 @@ public class WaterResourceHomePageService {
                 .eq(WaterFeeStatisticsTotal::getTenDays, getTenDays(dateTime))
                 .gt(WaterFeeStatisticsTotal::getUnpaidWaterFees, 0)
                 .count();
-        return RestResponse.ok(new OverviewRes(1, 2, unpaidCount.intValue(), 4, 5, 6));
+        return RestResponse.ok(new OverviewRes(null, null, unpaidCount.intValue(), null, null, null));
     }
 
     public RestResponse<List<WaterSituationRes>> waterSituation(Date dateTime) {

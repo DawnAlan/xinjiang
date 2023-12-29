@@ -104,20 +104,20 @@ public class InputWay {
             }
             data1.put(nameGreenQushou[x], demandGreenQushou[x]);
         }
-        double[] demand_bagang = setDataYearCity(waterDemandData, "八钢", "八钢工业");
-        double n1 = getDataMonthPlan(waterDemandData, "八钢", "八钢工业");
+        double[] demand_bagang = setDataYearCity(waterDemandData, "月水量(万m³)", "八钢工业");
+        double n1 = getDataMonthPlan(waterDemandData, "水量", "八钢工业");
         if (n1 != -100) {
             demand_bagang[monthNum] = n1;
         }
 
-        double[] demand_hongyan = setDataYearCity(waterDemandData, "红岩", "红岩城市");
-        double n2 = getDataMonthPlan(waterDemandData, "红岩", "红岩城市");
+        double[] demand_hongyan = setDataYearCity(waterDemandData, "月水量", "红岩");
+        double n2 = getDataMonthPlan(waterDemandData, "水量", "红岩");
         if (n2 != -100) {
             demand_hongyan[monthNum] = n2;
         }
 
-        double[] demand_lzz = setDataYearCity(waterDemandData, "楼庄子水厂", "楼庄子水厂");
-        double n3 = getDataMonthPlan(waterDemandData, "楼庄子水厂", "楼庄子水厂");
+        double[] demand_lzz = setDataYearCity(waterDemandData, "月水量", "楼庄子水厂");
+        double n3 = getDataMonthPlan(waterDemandData, "水量", "楼庄子水厂");
         if (n3 != -100) {
             demand_lzz[monthNum] = n3;
         }
@@ -219,10 +219,15 @@ public class InputWay {
             data1.put(nameIndustryQushou[x], demandIndustryQushou[x]);
         }
 
-        double[] demand_bagang = setDataMonth(waterDemandData, "八钢", "八钢工业");
-        double[] demand_hongyan = setDataMonth(waterDemandData, "红岩", "红岩城市");
-        double[] demand_lzz = setDataMonth(waterDemandData, "楼庄子水厂", "楼庄子水厂");
 
+        double[] demand_bagang = new double[3];
+        double[] demand_hongyan= new double[3];
+        double[] demand_lzz =new double[3];
+        for (int i=0;i<demand_bagang.length;i++){
+            demand_bagang[i]=getDataMonthPlan(waterDemandData, "水量", "八钢工业")/3;
+            demand_hongyan[i]=getDataMonthPlan(waterDemandData, "水量", "红岩")/3;
+            demand_lzz[i]=getDataMonthPlan(waterDemandData, "水量", "楼庄子水厂")/3;
+        }
         data1.put("八钢", demand_bagang);
         data1.put("红岩", demand_hongyan);
         data1.put("楼庄子水厂", demand_lzz);

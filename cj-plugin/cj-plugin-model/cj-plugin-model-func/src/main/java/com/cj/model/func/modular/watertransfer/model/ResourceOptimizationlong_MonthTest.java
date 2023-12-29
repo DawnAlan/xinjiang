@@ -518,7 +518,7 @@ public class ResourceOptimizationlong_MonthTest {
             }
         }
         for (int x = 0; x < period; x++) {
-            double sup = waterSupply_all[x];
+            double sup = waterdemand_all[x];
             double eco = minoutflow[x] * delatT * monthday[x] / 1e4;
             double all_num = eco + sup;
 
