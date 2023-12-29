@@ -12,7 +12,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 /**
  * WebSocket的操作类
  */
-@ServerEndpoint(value = "/msg/{sid}",subprotocols = {"protocol"})
+@ServerEndpoint(value = "/msg/{sid}")
 @Component
 @Slf4j
 public class WebSocketServer {

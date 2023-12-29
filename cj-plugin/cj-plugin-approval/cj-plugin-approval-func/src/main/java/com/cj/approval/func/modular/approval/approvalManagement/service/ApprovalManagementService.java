@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.cj.approval.func.modular.approval.approvalManagement.bean.req.SelectListReq;
 import com.cj.approval.func.modular.approval.approvalManagement.entity.ApprovalManagement;
+import com.cj.auth.core.pojo.SaBaseLoginUser;
 import com.cj.common.model.RestResponse;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -38,5 +39,7 @@ public interface ApprovalManagementService extends IService<ApprovalManagement> 
     void downFile(HttpServletResponse response, String id);
 
     RestResponse getOrgList();
+
+    RestResponse<SaBaseLoginUser> getUserInfo();
 }
 

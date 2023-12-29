@@ -10,6 +10,7 @@ import com.cj.common.model.RestResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -45,16 +46,17 @@ public class InstructionViewingServiceImpl extends ServiceImpl<InstructionViewin
             }
         }
         if(flag){
-            boolean update = approvalManagementService.lambdaUpdate().set(ApprovalManagement::getInstructionStatus, 3).eq(ApprovalManagement::getId, instructionId).update();
+            boolean update = approvalManagementService.lambdaUpdate().set(ApprovalManagement::getCompleteTime,new Date()).
+                    set(ApprovalManagement::getInstructionStatus, 3).eq(ApprovalManagement::getId, instructionId).update();
             if(update){
-                return RestResponse.ok();
+                return RestResponse.ok("123");
             }else {
                 return RestResponse.no("error");
             }
         }else {
             boolean update = approvalManagementService.lambdaUpdate().set(ApprovalManagement::getInstructionStatus, 2).eq(ApprovalManagement::getId, instructionId).update();
             if(update){
-                return RestResponse.ok();
+                return RestResponse.ok("123");
             }else {
                 return RestResponse.no("error");
             }

@@ -7,6 +7,7 @@ import com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQu
 import com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuota.mapper.IrrigationQuotaMapper;
 import com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuota.entity.IrrigationQuota;
 import com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuota.service.IrrigationQuotaService;
+import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.entity.YearWaterUsePlanCrop;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +25,12 @@ public class IrrigationQuotaServiceImpl extends ServiceImpl<IrrigationQuotaMappe
 
     @Override
     public RestResponse add(IrrigationQuota irrigationQuota) {
+        List<IrrigationQuota> list = this.lambdaQuery().eq(IrrigationQuota::getWaterUser, irrigationQuota.getWaterUser()).
+                eq(IrrigationQuota::getStation, irrigationQuota.getStation()).
+                eq(IrrigationQuota::getIrrigationCrop, irrigationQuota.getIrrigationCrop()).list();
+        if(null!= list && list.size()>0){
+            return RestResponse.no("该作物已存在，请勿重复添加");
+        }
         irrigationQuota.setId(UUIDUtils.getUUID());
         irrigationQuota.setCreateTime(new Date());
         irrigationQuota.setDel(0);

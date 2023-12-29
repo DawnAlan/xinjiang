@@ -81,8 +81,11 @@ public class MonthWaterUsePlanServiceImpl extends ServiceImpl<MonthWaterUsePlanM
 
     @Override
     public RestResponse<List<MonthWaterUsePlan>> selectList(MonthWaterUsePlanSelectListReq req) {
-        List<MonthWaterUsePlan> list = this.lambdaQuery().eq(StringUtils.isNotEmpty(req.getArea()), MonthWaterUsePlan::getArea, req.getArea()).
-                eq(req.getYear() != null, MonthWaterUsePlan::getYear, req.getYear()).eq(MonthWaterUsePlan::getDel, 0).list();
+        List<MonthWaterUsePlan> list = this.lambdaQuery().
+                eq(StringUtils.isNotEmpty(req.getArea()), MonthWaterUsePlan::getArea, req.getArea()).
+                eq(req.getYear() != null, MonthWaterUsePlan::getYear, req.getYear()).
+                eq(req.getMonth() != null,MonthWaterUsePlan::getMonth,req.getMonth()).
+                eq(MonthWaterUsePlan::getDel, 0).list();
         if(list.size()>0){
             return RestResponse.ok(list);
         }else {

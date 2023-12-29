@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
 
 
@@ -41,7 +42,8 @@ public class InstructionViewingController{
     @ApiOperation("修改阅读状态")
     @GetMapping("/updateRedsStatus")
     public RestResponse updateRedsStatus(@RequestParam("id") String id) {
-        boolean update = instructionViewingService.lambdaUpdate().set(InstructionViewing::getViewStatus, 1).eq(InstructionViewing::getId, id).update();
+        boolean update = instructionViewingService.lambdaUpdate().set(InstructionViewing::getReadTime,new Date()).
+                set(InstructionViewing::getViewStatus, 1).eq(InstructionViewing::getId, id).update();
         if(update){
             return RestResponse.ok();
         }else {

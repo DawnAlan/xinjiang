@@ -103,5 +103,12 @@ public class ApprovalManagementController{
     public void testView(HttpServletResponse response) {
         approvalManagementService.testView(response);
     }
+
+    @ApiOperationSupport(order = 11)
+    @ApiOperation("获取用户信息")
+    @GetMapping("/getUserInfo")
+    public RestResponse getUserInfo() {
+        return approvalManagementService.getUserInfo();
+    }
 }
 

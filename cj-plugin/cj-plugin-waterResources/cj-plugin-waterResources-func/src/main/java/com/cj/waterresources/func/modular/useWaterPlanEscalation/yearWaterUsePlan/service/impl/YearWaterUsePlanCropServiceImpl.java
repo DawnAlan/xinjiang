@@ -146,6 +146,12 @@ public class YearWaterUsePlanCropServiceImpl extends ServiceImpl<YearWaterUsePla
 
     @Override
     public RestResponse add(YearWaterUsePlanCrop yearWaterUsePlanCrop) {
+        List<YearWaterUsePlanCrop> list = this.lambdaQuery().eq(YearWaterUsePlanCrop::getArea, yearWaterUsePlanCrop.getArea()).
+                eq(YearWaterUsePlanCrop::getUnit, yearWaterUsePlanCrop.getUnit()).
+                eq(YearWaterUsePlanCrop::getIrrigatedCrop, yearWaterUsePlanCrop.getIrrigatedCrop()).list();
+        if(null!= list && list.size()>0){
+            return RestResponse.no("该作物已存在，请勿重复添加");
+        }
         yearWaterUsePlanCrop.setId(UUIDUtils.getUUID());
         yearWaterUsePlanCrop.setDel(0);
         yearWaterUsePlanCrop.setCreateTime(new Date());

@@ -90,14 +90,15 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
         boolean save = this.save(approvalManagement);
         if(save){
             List<InstructionViewing> instructionViewingList = new ArrayList<>();
-            String[] split = approvalManagement.getDispatchingUnit().split(",");
+            String[] split = approvalManagement.getDispatchingUnitId().split(",");
             for(String s:split){
                 InstructionViewing instructionViewing = new InstructionViewing();
                 instructionViewing.setId(UUIDUtils.getUUID());
                 instructionViewing.setInstructionId(approvalManagement.getId());
                 instructionViewing.setInstructionStatus(1);
                 instructionViewing.setViewStatus(2);
-                instructionViewing.setUnit(s);
+                instructionViewing.setUnitId(s);
+                instructionViewing.setUnit(sysOrgApi.getNameById(s));
                 instructionViewingList.add(instructionViewing);
             }
             boolean b = instructionViewingService.saveBatch(instructionViewingList);
@@ -156,22 +157,23 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
         boolean b = this.updateById(approvalManagement);
         if(b){
             try {
-                if(byId.getApprovalStatus()==2){
-                    if(!byId.getInstructionType().equals("水库调水")){
-                        String[] lssuedById = byId.getLssuedById().split(",");
+                ApprovalManagement byId1 = this.getById(approvalManagement.getId());
+                if(byId1.getApprovalStatus()==2){
+                    if(!byId1.getInstructionType().equals("水库调水")){
+                        String[] lssuedById = byId1.getLssuedById().split(",");
                         for(String s:lssuedById){
                             WebSocketServer.sendInfo("您创建的指令已审批",s);
                         }
-                        String[] split = byId.getRecipientId().split(",");
+                        String[] split = byId1.getRecipientId().split(",");
                         for(String s:split){
                             JSONObject userByIdWithoutException = sysUserApi.getUserByIdWithoutException(s);
-                            String orgName = (String) userByIdWithoutException.get("orgName");
+                            String orgId = (String) userByIdWithoutException.get("orgId");
                             InstructionViewing one = instructionViewingService.lambdaQuery().eq(InstructionViewing::getInstructionId, approvalManagement.getId()).
-                                    eq(InstructionViewing::getUnit, orgName).one();
+                                    eq(InstructionViewing::getUnitId, orgId).one();
                             WebSocketServer.sendInfo("您有一条待执行的指令,"+one.getId(),s);
                         }
                     }else {
-                        String[] lssuedById = byId.getLssuedById().split(",");
+                        String[] lssuedById = byId1.getLssuedById().split(",");
                         for(String s:lssuedById){
                             WebSocketServer.sendInfo("您创建的指令已审批",s);
                         }
@@ -325,6 +327,12 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
     public RestResponse getOrgList() {
         List<Tree<String>> trees = sysOrgApi.orgTreeSelector();
         return RestResponse.ok(trees);
+    }
+
+    @Override
+    public RestResponse<SaBaseLoginUser> getUserInfo() {
+        SaBaseLoginUser saBaseLoginUser = StpLoginUserUtil.getLoginUser();
+        return RestResponse.ok(saBaseLoginUser);
     }
 
     public static void main(String[] args) {

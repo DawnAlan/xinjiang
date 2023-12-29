@@ -27,6 +27,10 @@ public class InstructionViewing extends Model<InstructionViewing> {
     @ApiModelProperty(value = "单位")
     private String unit;
 
+    //单位ID
+    @ApiModelProperty(value = "单位ID")
+    private String unitId;
+
     //查阅状态(1-已阅读 2-未阅读)
     @ApiModelProperty(value = "查阅状态(1-已阅读 2-未阅读)")
     private Integer viewStatus;

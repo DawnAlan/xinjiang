@@ -81,12 +81,12 @@ public class Containment {
             peakShave_tth.put(key,c_tth);
 
             //计算方案评价
-            double maxH_lzz = FindMax(Qout_lzz);
-            double maxQ_lzz = FindMax(H_lzz);
+            double maxH_lzz = FindMax(H_lzz);
+            double maxQ_lzz = FindMax(Qout_lzz);
 
             double maxQin = FindMax(Qin_tth);
-            double maxH_tth = FindMax(Qout_tth);
-            double maxQ_tth = FindMax(H_tth);
+            double maxH_tth = FindMax(H_tth);
+            double maxQ_tth = FindMax(Qout_tth);
             String str="楼庄子最大出库流量为"+maxQ_lzz+"立方米/秒,最大坝前水位为"+maxH_lzz+"米；" +
                        "头屯河最大入库流量为"+maxQin+"立方米/秒，最大出库流量为"+maxQ_tth+"立方米/秒,最大坝前水位为"+maxH_tth+"米。";
             Opinion.put(key,str);

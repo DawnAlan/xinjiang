@@ -7,6 +7,7 @@ import com.cj.waterresources.func.modular.useWaterPlanEscalation.tenDaysWaterUse
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.tenDaysWaterUsePlan.mapper.TenDayWaterUsePlanMapper;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.tenDaysWaterUsePlan.entity.TenDayWaterUsePlan;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.tenDaysWaterUsePlan.service.TenDayWaterUsePlanService;
+import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.entity.YearWaterUsePlanCrop;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -41,6 +42,12 @@ public class TenDayWaterUsePlanServiceImpl extends ServiceImpl<TenDayWaterUsePla
 
     @Override
     public RestResponse add(TenDayWaterUsePlan tenDayWaterUsePlan) {
+        List<TenDayWaterUsePlan> list = this.lambdaQuery().eq(TenDayWaterUsePlan::getIrrigatedArea, tenDayWaterUsePlan.getIrrigatedArea()).
+                eq(TenDayWaterUsePlan::getUseWaterUser, tenDayWaterUsePlan.getUseWaterUser()).
+                eq(TenDayWaterUsePlan::getIrrigatedCrop, tenDayWaterUsePlan.getIrrigatedCrop()).list();
+        if(null!= list && list.size()>0){
+            return RestResponse.no("该作物已存在，请勿重复添加");
+        }
         tenDayWaterUsePlan.setId(UUIDUtils.getUUID());
         tenDayWaterUsePlan.setDel(0);
         tenDayWaterUsePlan.setCreateTime(new Date());

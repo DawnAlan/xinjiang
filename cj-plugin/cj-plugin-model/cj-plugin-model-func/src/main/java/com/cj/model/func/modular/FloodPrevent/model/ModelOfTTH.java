@@ -275,17 +275,20 @@ public class ModelOfTTH {
 
                 H_Limit= H_Limit_S2(beginH,Q_in,minQ);
                 //判断能否回落到汛限水位
-                if(H_Limit[0]>LimitLevel){
-                    Q_max = Math.min(120,GetQ1(beginH));
-                    endH =OnceBalance1(beginH,Q_in,Q_max);
-                    Q_1 = Math.min(120,GetQ1((beginH+endH)/2));
+                if(LimitLevel>=H_Limit[0]&&LimitLevel<=H_Limit[1]){
+                    endH=LimitLevel;
+                    Q_out=OnceBalance2(beginH,Q_in,endH);
+                    Q_1 = Math.min(Q_out,GetQ1((beginH+endH)/2));
                     Q_2 = 0;
                     Q_3 = 0;
-                    Q_out=Q_1+Q_2+Q_3;
-                    endH=OnceBalance1(beginH,Q_in,Q_out);
-                }
-                else{
-                    endH=LimitLevel;
+                }else if(LimitLevel<H_Limit[0]){
+                    endH=H_Limit[0];
+                    Q_out=OnceBalance2(beginH,Q_in,endH);
+                    Q_1 = Math.min(Q_out,GetQ1((beginH+endH)/2));
+                    Q_2 = 0;
+                    Q_3 = 0;
+                }else {
+                    endH=H_Limit[1];
                     Q_out=OnceBalance2(beginH,Q_in,endH);
                     Q_1 = Math.min(Q_out,GetQ1((beginH+endH)/2));
                     Q_2 = 0;

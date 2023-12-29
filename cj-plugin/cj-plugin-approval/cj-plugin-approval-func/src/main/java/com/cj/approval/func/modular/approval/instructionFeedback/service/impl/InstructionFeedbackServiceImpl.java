@@ -1,6 +1,7 @@
 package com.cj.approval.func.modular.approval.instructionFeedback.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.cj.approval.func.core.utils.WebSocketServer;
 import com.cj.approval.func.modular.approval.approvalManagement.entity.ApprovalManagement;
 import com.cj.approval.func.modular.approval.approvalManagement.service.ApprovalManagementService;
 import com.cj.approval.func.modular.approval.instructionFeedback.mapper.InstructionFeedbackMapper;
@@ -15,6 +16,7 @@ import com.cj.common.util.UUIDUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import java.util.Date;
 import java.util.List;
@@ -56,8 +58,19 @@ public class InstructionFeedbackServiceImpl extends ServiceImpl<InstructionFeedb
         instructionFeedback.setFeedbackTime(new Date());
         boolean save = this.save(instructionFeedback);
         if(save){
-            boolean update = instructionViewingService.lambdaUpdate().set(InstructionViewing::getInstructionStatus, instructionFeedback.getFeedbackStatus()).eq(InstructionViewing::getId, instructionFeedback.getInstructionViewId()).update();
+            boolean update = instructionViewingService.lambdaUpdate().set(instructionFeedback.getFeedbackStatus()==4,InstructionViewing::getCompleteTime,new Date()).
+                    set(InstructionViewing::getInstructionStatus, instructionFeedback.getFeedbackStatus()).eq(InstructionViewing::getId, instructionFeedback.getInstructionViewId()).update();
             if(update){
+                try {
+                    String[] split = instructionFeedback.getRecipientId().split(",");
+                    for (String s : split){
+                        WebSocketServer.sendInfo(instructionFeedback.getFeedbackBy()+"已反馈",s);
+                    }
+                }catch (Exception e){
+                    e.printStackTrace();
+                    TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                    return RestResponse.no("send msg fail");
+                }
                 return instructionViewingService.updateInstructionStatus(instructionViewingService.getById(instructionFeedback.getInstructionViewId()).getInstructionId());
             }else {
                 return RestResponse.no("error");
