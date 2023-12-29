@@ -15,6 +15,9 @@ public class ViewModelReq implements Serializable {
     @ApiModelProperty(value = "方案名称")
     private String allocationDataCustomAddress;
 
+    @ApiModelProperty(value = "display方案名称")
+    private String allocationDataDisplayAddress;
+
     //配水开始时间
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat("yyyy-MM-dd HH:mm:ss")

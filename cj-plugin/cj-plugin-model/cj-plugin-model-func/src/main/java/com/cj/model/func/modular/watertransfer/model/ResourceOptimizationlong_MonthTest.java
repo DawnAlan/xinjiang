@@ -517,11 +517,12 @@ public class ResourceOptimizationlong_MonthTest {
                 }
             }
         }
+        double[]allwater=new double[period];
         for (int x = 0; x < period; x++) {
-            double sup = waterdemand_all[x];
+            double sup = waterSupply_all[x];
             double eco = minoutflow[x] * delatT * monthday[x] / 1e4;
             double all_num = eco + sup;
-
+            allwater[x]=all_num;
             proportion[0][x] = (eco) / (all_num);
             proportion[1][x] = (waterSupply[0][x] + waterSupply[1][x]) / (all_num);
             proportion[2][x] = (waterSupply[2][x]) / (all_num);
@@ -762,6 +763,9 @@ public class ResourceOptimizationlong_MonthTest {
         waterTransfer.setWaterDemandIndustry(waterDemandIndustry);
         waterTransfer.setWaterDemand3(waterdemand3);
         waterTransfer.setWaterDemand4(waterdemand4);
+
+        waterTransfer.setAllWater(allwater);
+
         result.add(waterTransfer);
         return result;
     }

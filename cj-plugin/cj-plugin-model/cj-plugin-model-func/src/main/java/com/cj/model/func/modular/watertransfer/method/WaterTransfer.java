@@ -38,7 +38,15 @@ public class WaterTransfer {
     private double [][]waterSupply3;
     private double [][]waterSupply4;
 
+    public double[] getAllWater() {
+        return allWater;
+    }
 
+    public void setAllWater(double[] allWater) {
+        this.allWater = allWater;
+    }
+
+    private double []allWater;
     //供水比例
     private double [][]proportion;
     //评价

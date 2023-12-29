@@ -47,4 +47,8 @@ public class AllocationDisplayData {
     private double greeningProportion;
     @Excel(name = "deltawater")
     private double deltaWater;
+    @Excel(name = "allwater")
+    private double allWater;
+    @Excel(name = "outFlowWater")
+    private double outFlowWater;
 }

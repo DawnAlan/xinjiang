@@ -81,6 +81,8 @@ public class OutResult {
             option.setIrrigate_Proportion(Out1.get(0).getProportion()[3][i]);
             option.setGreening_Proportion(Out1.get(0).getProportion()[4][i]);
             option.setDeltawater(Out1.get(0).getDeltawater()[0][i]);
+            option.setAllWater(Out1.get(0).getAllWater()[i]);
+            option.setOutFlowWater(Out1.get(0).getOutflow_water()[0][i]);
             option1.add(option);
         }
         for (int i = 0; i < Out1.get(0).getInflow()[0].length; i++) {
@@ -105,6 +107,8 @@ public class OutResult {
             option.setIrrigate_Proportion(Out1.get(0).getProportion()[3][i]);
             option.setGreening_Proportion(Out1.get(0).getProportion()[4][i]);
             option.setDeltawater(Out1.get(0).getDeltawater()[1][i]);
+            option.setAllWater(Out1.get(0).getAllWater()[i]);
+            option.setOutFlowWater(Out1.get(0).getOutflow_water()[1][i]);
             option1.add(option);
         }
 
@@ -161,7 +165,7 @@ public class OutResult {
                 else{
                     option.setStationName(Out1.get(0).getNameQushou()[x-1]);
                 }
-                option.setWater(Out1.get(0).getWaterSupplyIndustry()[0][i]);
+                option.setWater(Out1.get(0).getWaterSupplyIndustry()[x][i]);
                 option.setProportion(Out1.get(0).getProportionIndustry()[x][i]);
                 option.setWaterLack(Out1.get(0).getWaterDemandIndustry()[x][i]-Out1.get(0).getWaterSupplyIndustry()[x][i]);
                 option2.add(option);
@@ -319,6 +323,8 @@ public class OutResult {
         row0.createCell(17).setCellValue("IrrigateProportion");
         row0.createCell(18).setCellValue("GreeningProportion");
         row0.createCell(19).setCellValue("deltawater");
+        row0.createCell(20).setCellValue("allwater");
+        row0.createCell(21).setCellValue("outFlowWater");
 
         // 获取 CreationHelper 对象来帮助处理日期
         CreationHelper createHelper = workbook.getCreationHelper();
@@ -351,6 +357,9 @@ public class OutResult {
             row.createCell(17).setCellValue(line.getIrrigate_Proportion());
             row.createCell(18).setCellValue(line.getGreening_Proportion());
             row.createCell(19).setCellValue(line.getDeltawater());
+            row.createCell(20).setCellValue(line.getAllWater());
+            row.createCell(21).setCellValue(line.getOutFlowWater());
+
         }
         try {
             FileOutputStream fop = new FileOutputStream(path);

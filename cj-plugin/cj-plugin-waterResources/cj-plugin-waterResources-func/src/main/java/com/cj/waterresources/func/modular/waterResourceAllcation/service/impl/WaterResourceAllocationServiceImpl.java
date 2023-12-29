@@ -229,7 +229,6 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
 
     private static Map<String, List<String>> areaMap = new HashMap() {{
         put("lzz", Arrays.asList("楼庄子生活"));
-        put("tth", Arrays.asList());
         put("hongYan", Arrays.asList("红岩生活"));
         put("baGang", Arrays.asList("工业"));
         put("quShou", Arrays.asList("东干渠", "西干渠", "工业", "渠首绿化"));
@@ -299,6 +298,27 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
             viewModelResList.add(viewModelRes);
         });
 
+        List<AllocationDisplayData> displayDataList = getListFromMinio(req.getAllocationDataDisplayAddress(), AllocationDisplayData.class);
+        Map<String, Double> collect1 = displayDataList.stream().filter(n ->
+                        n.getTime().getTime() <= req.getWaterDistributionEndTime().getTime()
+                                && n.getTime().getTime() >= req.getWaterDistributionStartTime().getTime())
+                .collect(Collectors.groupingBy(n -> n.getStationName(),
+                        Collectors.summingDouble(AllocationDisplayData::getOutFlowWater)));
+        ViewModelRes viewModelLzzOut = new ViewModelRes();
+        ViewModelRes viewModelTth = new ViewModelRes();
+
+        viewModelLzzOut.setArea("lzzOut");
+        ViewModelRes.AreaDTO lzzOut = new ViewModelRes.AreaDTO();
+        lzzOut.setWater(collect1.get("楼庄子"));
+        viewModelLzzOut.setInfo(lzzOut);
+
+        ViewModelRes.AreaDTO tth = new ViewModelRes.AreaDTO();
+        tth.setWater(collect1.get("头屯河"));
+        viewModelTth.setArea("tth");
+        viewModelTth.setInfo(tth);
+
+        viewModelResList.add(viewModelLzzOut);
+        viewModelResList.add(viewModelTth);
         return RestResponse.ok(viewModelResList);
     }
 
@@ -345,24 +365,34 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
         List<AllocationDisplayData> allocationDisplayDataB = getListFromMinio(waterResourceAllocationB.getAllocationDataDisplayAddress(), AllocationDisplayData.class);
         WaterAllocationComparisonSelectionRes.WaterStatisticsDTO waterStatisticsDTO = new WaterAllocationComparisonSelectionRes.WaterStatisticsDTO();
         List<Double> ecologyProportion = new ArrayList<>();
-        ecologyProportion.add(allocationDisplayDataA.stream().mapToDouble(AllocationDisplayData::getEcologyProportion).sum());
-        ecologyProportion.add(allocationDisplayDataB.stream().mapToDouble(AllocationDisplayData::getEcologyProportion).sum());
+        ecologyProportion.add(allocationDisplayDataA.stream().mapToDouble(n -> n.getEcologyProportion() * n.getAllWater()).sum() /
+                allocationDisplayDataA.stream().mapToDouble(AllocationDisplayData::getAllWater).sum());
+        ecologyProportion.add(allocationDisplayDataB.stream().mapToDouble(n -> n.getEcologyProportion() * n.getAllWater()).sum() /
+                allocationDisplayDataB.stream().mapToDouble(AllocationDisplayData::getAllWater).sum());
 
         List<Double> cityProportion = new ArrayList<>();
-        cityProportion.add(allocationDisplayDataA.stream().mapToDouble(AllocationDisplayData::getCityProportion).sum());
-        cityProportion.add(allocationDisplayDataB.stream().mapToDouble(AllocationDisplayData::getCityProportion).sum());
+        cityProportion.add(allocationDisplayDataA.stream().mapToDouble(n -> n.getCityProportion() * n.getAllWater()).sum() /
+                allocationDisplayDataA.stream().mapToDouble(AllocationDisplayData::getAllWater).sum());
+        cityProportion.add(allocationDisplayDataB.stream().mapToDouble(n -> n.getCityProportion() * n.getAllWater()).sum() /
+                allocationDisplayDataB.stream().mapToDouble(AllocationDisplayData::getAllWater).sum());
 
         List<Double> industryProportion = new ArrayList<>();
-        industryProportion.add(allocationDisplayDataA.stream().mapToDouble(AllocationDisplayData::getIndustryProportion).sum());
-        industryProportion.add(allocationDisplayDataB.stream().mapToDouble(AllocationDisplayData::getIndustryProportion).sum());
+        industryProportion.add(allocationDisplayDataA.stream().mapToDouble(n -> n.getIndustryProportion() * n.getAllWater()).sum() /
+                allocationDisplayDataA.stream().mapToDouble(AllocationDisplayData::getAllWater).sum());
+        industryProportion.add(allocationDisplayDataB.stream().mapToDouble(n -> n.getIndustryProportion() * n.getAllWater()).sum() /
+                allocationDisplayDataB.stream().mapToDouble(AllocationDisplayData::getAllWater).sum());
 
         List<Double> irrigateProportion = new ArrayList<>();
-        irrigateProportion.add(allocationDisplayDataA.stream().mapToDouble(AllocationDisplayData::getIrrigateProportion).sum());
-        irrigateProportion.add(allocationDisplayDataB.stream().mapToDouble(AllocationDisplayData::getIrrigateProportion).sum());
+        irrigateProportion.add(allocationDisplayDataA.stream().mapToDouble(n -> n.getIrrigateProportion() * n.getAllWater()).sum() /
+                allocationDisplayDataA.stream().mapToDouble(AllocationDisplayData::getAllWater).sum());
+        irrigateProportion.add(allocationDisplayDataB.stream().mapToDouble(n -> n.getIrrigateProportion() * n.getAllWater()).sum() /
+                allocationDisplayDataB.stream().mapToDouble(AllocationDisplayData::getAllWater).sum());
 
         List<Double> greeningProportion = new ArrayList<>();
-        greeningProportion.add(allocationDisplayDataA.stream().mapToDouble(AllocationDisplayData::getGreeningProportion).sum());
-        greeningProportion.add(allocationDisplayDataB.stream().mapToDouble(AllocationDisplayData::getGreeningProportion).sum());
+        greeningProportion.add(allocationDisplayDataA.stream().mapToDouble(n -> n.getGreeningProportion() * n.getAllWater()).sum() /
+                allocationDisplayDataA.stream().mapToDouble(AllocationDisplayData::getAllWater).sum());
+        greeningProportion.add(allocationDisplayDataB.stream().mapToDouble(n -> n.getGreeningProportion() * n.getAllWater()).sum() /
+                allocationDisplayDataB.stream().mapToDouble(AllocationDisplayData::getAllWater).sum());
 
         waterStatisticsDTO.setEcologyProportion(ecologyProportion);
         waterStatisticsDTO.setCityProportion(cityProportion);
