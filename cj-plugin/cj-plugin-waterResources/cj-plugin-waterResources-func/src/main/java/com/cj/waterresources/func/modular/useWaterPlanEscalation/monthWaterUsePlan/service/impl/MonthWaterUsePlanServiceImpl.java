@@ -26,7 +26,9 @@ public class MonthWaterUsePlanServiceImpl extends ServiceImpl<MonthWaterUsePlanM
     public RestResponse add(MonthWaterUsePlan monthWaterUsePlan) {
         List<MonthWaterUsePlan> list = this.lambdaQuery().eq(MonthWaterUsePlan::getYear, monthWaterUsePlan.getYear()).
                 eq(MonthWaterUsePlan::getMonth, monthWaterUsePlan.getMonth()).
-                eq(MonthWaterUsePlan::getArea, monthWaterUsePlan.getArea()).eq(MonthWaterUsePlan::getUnit, monthWaterUsePlan.getUnit()).list();
+                eq(MonthWaterUsePlan::getArea, monthWaterUsePlan.getArea()).
+                eq(MonthWaterUsePlan::getDel,0).
+                eq(MonthWaterUsePlan::getUnit, monthWaterUsePlan.getUnit()).list();
         if(null != list && list.size()>0){
             return RestResponse.no("请勿重复添加单位");
         }

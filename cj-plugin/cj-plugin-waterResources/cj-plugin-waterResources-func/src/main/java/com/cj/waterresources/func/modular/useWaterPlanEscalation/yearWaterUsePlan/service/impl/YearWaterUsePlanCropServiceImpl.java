@@ -3,6 +3,7 @@ package com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePl
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.UUIDUtils;
+import com.cj.waterresources.func.modular.useWaterPlanEscalation.tenDaysWaterUsePlan.entity.TenDayWaterUsePlan;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.req.CropSelectListReq;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.entity.YearWaterUsePlanCrop;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.mapper.YearWaterUsePlanCropMapper;
@@ -148,6 +149,7 @@ public class YearWaterUsePlanCropServiceImpl extends ServiceImpl<YearWaterUsePla
     public RestResponse add(YearWaterUsePlanCrop yearWaterUsePlanCrop) {
         List<YearWaterUsePlanCrop> list = this.lambdaQuery().eq(YearWaterUsePlanCrop::getArea, yearWaterUsePlanCrop.getArea()).
                 eq(YearWaterUsePlanCrop::getUnit, yearWaterUsePlanCrop.getUnit()).
+                eq(YearWaterUsePlanCrop::getDel,0).
                 eq(YearWaterUsePlanCrop::getIrrigatedCrop, yearWaterUsePlanCrop.getIrrigatedCrop()).list();
         if(null!= list && list.size()>0){
             return RestResponse.no("该作物已存在，请勿重复添加");

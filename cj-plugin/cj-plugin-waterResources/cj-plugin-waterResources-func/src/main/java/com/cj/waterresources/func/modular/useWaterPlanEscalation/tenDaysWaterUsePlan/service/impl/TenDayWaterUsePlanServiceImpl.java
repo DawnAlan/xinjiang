@@ -3,6 +3,7 @@ package com.cj.waterresources.func.modular.useWaterPlanEscalation.tenDaysWaterUs
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.UUIDUtils;
+import com.cj.waterresources.func.modular.useWaterPlanEscalation.monthWaterUsePlan.entity.MonthWaterUsePlan;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.tenDaysWaterUsePlan.bean.req.TenDayWaterUsePlanSelectReq;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.tenDaysWaterUsePlan.mapper.TenDayWaterUsePlanMapper;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.tenDaysWaterUsePlan.entity.TenDayWaterUsePlan;
@@ -44,6 +45,7 @@ public class TenDayWaterUsePlanServiceImpl extends ServiceImpl<TenDayWaterUsePla
     public RestResponse add(TenDayWaterUsePlan tenDayWaterUsePlan) {
         List<TenDayWaterUsePlan> list = this.lambdaQuery().eq(TenDayWaterUsePlan::getIrrigatedArea, tenDayWaterUsePlan.getIrrigatedArea()).
                 eq(TenDayWaterUsePlan::getUseWaterUser, tenDayWaterUsePlan.getUseWaterUser()).
+                eq(TenDayWaterUsePlan::getDel,0).
                 eq(TenDayWaterUsePlan::getIrrigatedCrop, tenDayWaterUsePlan.getIrrigatedCrop()).list();
         if(null!= list && list.size()>0){
             return RestResponse.no("该作物已存在，请勿重复添加");
