@@ -507,7 +507,7 @@ public class ResourceOptimizationlong_TendaysTest
             }
         }
         for (int x=0;x<period;x++){
-            double sup=waterSupply_all[x];
+            double sup=waterdemand_all[x];
             double eco=minOutflow*delatT*daynum[x]/1e4;
             double  all_num=eco+sup;
 

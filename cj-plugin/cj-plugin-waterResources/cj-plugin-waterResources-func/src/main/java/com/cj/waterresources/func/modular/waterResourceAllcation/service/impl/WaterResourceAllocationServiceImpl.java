@@ -34,8 +34,10 @@ import com.cj.waterresources.func.modular.useWaterPlanEscalation.tenDaysWaterUse
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.entity.YearWaterUsePlanTrunkCanal;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.service.YearWaterUsePlanTrunkCanalService;
 import com.cj.waterresources.func.modular.waterResourceAllcation.bean.dto.IncomingWaterForecastDto;
+import com.cj.waterresources.func.modular.waterResourceAllcation.bean.req.ViewModelReq;
 import com.cj.waterresources.func.modular.waterResourceAllcation.bean.req.WaterResourceAllocationAddReq;
 import com.cj.waterresources.func.modular.waterResourceAllcation.bean.req.WaterResourceAllocationQueryReq;
+import com.cj.waterresources.func.modular.waterResourceAllcation.bean.res.ViewModelRes;
 import com.cj.waterresources.func.modular.waterResourceAllcation.bean.res.WaterAllocationComparisonSelectionRes;
 import com.cj.waterresources.func.modular.waterResourceAllcation.entity.AllocationDisplayData;
 import com.cj.waterresources.func.modular.waterResourceAllcation.entity.IncomingWaterForecast;
@@ -55,6 +57,7 @@ import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * 水资源调配模型表(WaterResourceAllocation)表服务实现类
@@ -135,6 +138,8 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
 
         WaterTransferReq waterTransferReq = new WaterTransferReq();
         List<Flood> floods = getListFromMinio(req.getInflowDataAddress(), Flood.class);
+        floods = floods.stream().filter(f -> f.getTime().getTime() <= req.getWaterDistributionEndTime().getTime()
+                && f.getTime().getTime() >= req.getWaterDistributionStartTime().getTime()).collect(Collectors.toList());
         List<DataInflowPrevent> dataInflowPrevents = JSONObject.parseArray(JSONObject.toJSONString(floods), DataInflowPrevent.class);
         List<DataInflowPrevent> lzzEntryStation = dataInflowPrevents.stream().filter(t -> t.getLocation().equals("楼庄子")).collect(Collectors.toList());
         List<DataInflowPrevent> interval = dataInflowPrevents.stream().filter(t -> t.getLocation().equals("楼头区间")).collect(Collectors.toList());
@@ -171,7 +176,7 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
 
         boolean save = this.save(waterResourceAllocation);
         if (save) {
-            return RestResponse.ok("水资源调配生成成功");
+            return RestResponse.ok(waterResourceAllocation);
         } else {
             return RestResponse.no("水资源调配生成失败");
         }
@@ -182,6 +187,9 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
         Page<WaterResourceAllocation> page = new Page<>(req.getPageNo(), req.getPageSize());
         LambdaQueryWrapper<WaterResourceAllocation> wrapper = Wrappers.lambdaQuery();
         wrapper.eq(WaterResourceAllocation::getDel, 0);
+        if (req.getBucketType() != null) {
+            wrapper.eq(WaterResourceAllocation::getBucketType, req.getBucketType());
+        }
         if (StringUtils.hasText(req.getPlanName())) {
             wrapper.like(WaterResourceAllocation::getSchemeName, req.getPlanName());
         }
@@ -217,6 +225,96 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
         waterAllocationComparisonSelectionRes.setWaterRatio(getWaterRatio(appraiseReqA.getExcel2Data(), appraiseReqB.getExcel2Data()));
         waterAllocationComparisonSelectionRes.setWaterStatistics(getWaterStatistics(waterResourceAllocationA, waterResourceAllocationB));
         return RestResponse.ok(waterAllocationComparisonSelectionRes);
+    }
+
+    private static Map<String, List<String>> areaMap = new HashMap() {{
+        put("lzz", Arrays.asList("楼庄子生活"));
+        put("tth", Arrays.asList());
+        put("hongYan", Arrays.asList("红岩生活"));
+        put("baGang", Arrays.asList("工业"));
+        put("quShou", Arrays.asList("东干渠", "西干渠", "工业", "渠首绿化"));
+        put("heDong", Arrays.asList("河东绿化", "总东干渠"));
+        put("heXi", Arrays.asList("河西绿化", "总西干渠"));
+    }};
+
+    private static Map<String, List<String>> includeUnit = new HashMap() {{
+        put("baGang", Arrays.asList("八钢工业用水"));
+    }};
+
+    private static Map<String, List<String>> excludeUnit = new HashMap() {{
+        put("quShou", Arrays.asList("八钢工业用水"));
+    }};
+
+    private static Map<String, Map<String, List<String>>> unitMap = new HashMap() {{
+        put("irrigate", new HashMap() {{
+            put("quShou", Arrays.asList("东干渠", "西干渠"));
+            put("heDong", Arrays.asList("总东干渠"));
+            put("heXi", Arrays.asList("总西干渠"));
+        }});
+        put("industry", new HashMap() {{
+            put("quShou", Arrays.asList("工业"));
+        }});
+        put("green", new HashMap() {{
+            put("quShou", Arrays.asList("渠首绿化"));
+            put("heDong", Arrays.asList("河东绿化"));
+            put("heXi", Arrays.asList("河西绿化"));
+        }});
+    }};
+
+    @Override
+    public RestResponse<List<ViewModelRes>> viewModel(ViewModelReq req) {
+        List<ViewModelRes> viewModelResList = new ArrayList<>();
+        List<Excel2> excelList = getListFromMinio(req.getAllocationDataCustomAddress(), Excel2.class);
+        Map<String, Double> collect = excelList.stream().filter(n ->
+                        n.getTime().getTime() <= req.getWaterDistributionEndTime().getTime()
+                                && n.getTime().getTime() >= req.getWaterDistributionStartTime().getTime())
+                .collect(Collectors.groupingBy(n -> n.getStationType() + ":" + n.getStationName(),
+                        Collectors.summingDouble(Excel2::getWater)));
+        areaMap.forEach((k, v) -> {
+            ViewModelRes viewModelRes = new ViewModelRes();
+            viewModelRes.setArea(k);
+            ViewModelRes.AreaDTO areaDTO = new ViewModelRes.AreaDTO();
+            areaDTO.setWater(getStream(collect, k, v).mapToDouble(n -> n.getValue()).sum());
+
+            unitMap.forEach((unitK, unitV) -> {
+                if (unitV.containsKey(k)) {
+                    List<ViewModelRes.AreaDTO.UnitsDTO> unitsDTOList = new ArrayList<>();
+                    getStream(collect, k, v).filter(n -> unitV.get(k).contains(n.getKey().split(":")[0]))
+                            .forEach(n -> {
+                                ViewModelRes.AreaDTO.UnitsDTO unitsDTO = new ViewModelRes.AreaDTO.UnitsDTO();
+                                unitsDTO.setWater(n.getValue());
+                                unitsDTO.setUnit(n.getKey().split(":")[1]);
+                                unitsDTOList.add(unitsDTO);
+                            });
+                    if (areaDTO.getData() != null) {
+                        areaDTO.getData().put(unitK, unitsDTOList);
+                    } else {
+                        areaDTO.setData(new HashMap() {{
+                            put(unitK, unitsDTOList);
+                        }});
+                    }
+                }
+            });
+            viewModelRes.setInfo(areaDTO);
+            viewModelResList.add(viewModelRes);
+        });
+
+        return RestResponse.ok(viewModelResList);
+    }
+
+    private Stream<Map.Entry<String, Double>> getStream(Map<String, Double> collect, String k, List<String> v) {
+        return collect.entrySet().stream()
+                .filter(n -> {
+                    String[] station = n.getKey().split(":");
+                    boolean b = v.contains(station[0]);
+                    if (includeUnit.containsKey(k)) {
+                        b = b && includeUnit.get(k).contains(station[1]);
+                    }
+                    if (excludeUnit.containsKey(k)) {
+                        b = b && !excludeUnit.get(k).contains(station[1]);
+                    }
+                    return b;
+                });
     }
 
     private List<WaterAllocationComparisonSelectionRes.WaterRatioDTO> getWaterRatio(List<Excel2> dataA, List<Excel2> dataB) {

@@ -37,7 +37,7 @@ public class FloodHomePageService {
     private static final String PATTERN_MINUTE_OF_DAY = "yyyy-MM-dd HH:mm";
 
     public RestResponse<OverviewRes> overview(Date dateTime) {
-        return RestResponse.ok(new OverviewRes(1, 2, 3));
+        return RestResponse.ok(new OverviewRes(null, null, null));
     }
 
     public RestResponse<List<WaterRainRes>> rainfall(Date dateTime) {

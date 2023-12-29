@@ -3,8 +3,10 @@ package com.cj.waterresources.func.modular.waterResourceAllcation.controller;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.cj.common.model.RestResponse;
 import com.cj.waterresources.func.modular.waterResourceAllcation.bean.dto.IncomingWaterForecastDto;
+import com.cj.waterresources.func.modular.waterResourceAllcation.bean.req.ViewModelReq;
 import com.cj.waterresources.func.modular.waterResourceAllcation.bean.req.WaterResourceAllocationAddReq;
 import com.cj.waterresources.func.modular.waterResourceAllcation.bean.req.WaterResourceAllocationQueryReq;
+import com.cj.waterresources.func.modular.waterResourceAllcation.bean.res.ViewModelRes;
 import com.cj.waterresources.func.modular.waterResourceAllcation.bean.res.WaterAllocationComparisonSelectionRes;
 import com.cj.waterresources.func.modular.waterResourceAllcation.entity.WaterResourceAllocation;
 import com.cj.waterresources.func.modular.waterResourceAllcation.service.WaterResourceAllocationService;
@@ -54,13 +56,20 @@ public class WaterResourceAllocationController {
     }
 
     @ApiOperationSupport(order = 3)
+    @ApiOperation("模型预览")
+    @PostMapping("/viewModel")
+    public RestResponse<List<ViewModelRes>> viewModel(@RequestBody ViewModelReq req) {
+        return waterResourceAllocationService.viewModel(req);
+    }
+
+    @ApiOperationSupport(order = 4)
     @ApiOperation("分页查询调度方案")
     @PostMapping("/getAllocationPage")
     public RestResponse<IPage<WaterResourceAllocation>> getAllocationPage(@RequestBody WaterResourceAllocationQueryReq req) {
         return waterResourceAllocationService.getAllocationPage(req);
     }
 
-    @ApiOperationSupport(order = 3)
+    @ApiOperationSupport(order = 5)
     @ApiOperation("修改调度方案")
     @PostMapping("/update")
     public RestResponse update(@RequestParam WaterResourceAllocation allocation) {
@@ -68,14 +77,14 @@ public class WaterResourceAllocationController {
         return RestResponse.ok();
     }
 
-    @ApiOperationSupport(order = 3)
+    @ApiOperationSupport(order = 6)
     @ApiOperation("删除调度方案")
     @PostMapping("/delById")
     public RestResponse delById(@RequestParam String id) {
         return waterResourceAllocationService.delById(id);
     }
 
-    @ApiOperationSupport(order = 3)
+    @ApiOperationSupport(order = 7)
     @ApiOperation("调度方案对比")
     @PostMapping("/compare")
     public RestResponse<WaterAllocationComparisonSelectionRes> compare(@RequestParam String idA, @RequestParam String idB) {
