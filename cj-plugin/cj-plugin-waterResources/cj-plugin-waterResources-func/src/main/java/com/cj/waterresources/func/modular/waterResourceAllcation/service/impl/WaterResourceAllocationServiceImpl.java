@@ -230,28 +230,20 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
     private static Map<String, List<String>> areaMap = new HashMap() {{
         put("lzz", Arrays.asList("楼庄子生活"));
         put("hongYan", Arrays.asList("红岩生活"));
-        put("baGang", Arrays.asList("工业"));
-        put("quShou", Arrays.asList("东干渠", "西干渠", "工业", "渠首绿化"));
-        put("heDong", Arrays.asList("河东绿化", "总东干渠"));
-        put("heXi", Arrays.asList("河西绿化", "总西干渠"));
-    }};
-
-    private static Map<String, List<String>> includeUnit = new HashMap() {{
-        put("baGang", Arrays.asList("八钢工业用水"));
-    }};
-
-    private static Map<String, List<String>> excludeUnit = new HashMap() {{
-        put("quShou", Arrays.asList("八钢工业用水"));
+        put("baGang", Arrays.asList("八钢工业"));
+        put("quShou", Arrays.asList("渠首灌溉", "渠首绿化", "渠首工业"));
+        put("heDong", Arrays.asList("河东绿化", "东干渠灌溉"));
+        put("heXi", Arrays.asList("河西绿化", "西干渠灌溉"));
     }};
 
     private static Map<String, Map<String, List<String>>> unitMap = new HashMap() {{
         put("irrigate", new HashMap() {{
-            put("quShou", Arrays.asList("东干渠", "西干渠"));
-            put("heDong", Arrays.asList("总东干渠"));
-            put("heXi", Arrays.asList("总西干渠"));
+            put("quShou", Arrays.asList("渠首灌溉"));
+            put("heDong", Arrays.asList("东干渠灌溉"));
+            put("heXi", Arrays.asList("西干渠灌溉"));
         }});
         put("industry", new HashMap() {{
-            put("quShou", Arrays.asList("工业"));
+            put("quShou", Arrays.asList("渠首工业"));
         }});
         put("green", new HashMap() {{
             put("quShou", Arrays.asList("渠首绿化"));
@@ -266,19 +258,22 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
         List<Excel2> excelList = getListFromMinio(req.getAllocationDataCustomAddress(), Excel2.class);
         Map<String, Double> collect = excelList.stream().filter(n ->
                         n.getTime().getTime() <= req.getWaterDistributionEndTime().getTime()
-                                && n.getTime().getTime() >= req.getWaterDistributionStartTime().getTime())
+                                && n.getTime().getTime() >= req.getWaterDistributionStartTime().getTime()
+                                && !n.getStationType().equals("总东干渠")
+                                && !n.getStationType().equals("总西干渠"))
                 .collect(Collectors.groupingBy(n -> n.getStationType() + ":" + n.getStationName(),
                         Collectors.summingDouble(Excel2::getWater)));
         areaMap.forEach((k, v) -> {
             ViewModelRes viewModelRes = new ViewModelRes();
             viewModelRes.setArea(k);
             ViewModelRes.AreaDTO areaDTO = new ViewModelRes.AreaDTO();
-            areaDTO.setWater(getStream(collect, k, v).mapToDouble(n -> n.getValue()).sum());
+            areaDTO.setWater(collect.entrySet().stream().filter(n -> v.contains(n.getKey().split(":")[0])).mapToDouble(n -> n.getValue()).sum());
 
             unitMap.forEach((unitK, unitV) -> {
                 if (unitV.containsKey(k)) {
                     List<ViewModelRes.AreaDTO.UnitsDTO> unitsDTOList = new ArrayList<>();
-                    getStream(collect, k, v).filter(n -> unitV.get(k).contains(n.getKey().split(":")[0]))
+                    collect.entrySet().stream().filter(n -> v.contains(n.getKey().split(":")[0]))
+                            .filter(n -> unitV.get(k).contains(n.getKey().split(":")[0]))
                             .forEach(n -> {
                                 ViewModelRes.AreaDTO.UnitsDTO unitsDTO = new ViewModelRes.AreaDTO.UnitsDTO();
                                 unitsDTO.setWater(n.getValue());
@@ -320,21 +315,6 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
         viewModelResList.add(viewModelLzzOut);
         viewModelResList.add(viewModelTth);
         return RestResponse.ok(viewModelResList);
-    }
-
-    private Stream<Map.Entry<String, Double>> getStream(Map<String, Double> collect, String k, List<String> v) {
-        return collect.entrySet().stream()
-                .filter(n -> {
-                    String[] station = n.getKey().split(":");
-                    boolean b = v.contains(station[0]);
-                    if (includeUnit.containsKey(k)) {
-                        b = b && includeUnit.get(k).contains(station[1]);
-                    }
-                    if (excludeUnit.containsKey(k)) {
-                        b = b && !excludeUnit.get(k).contains(station[1]);
-                    }
-                    return b;
-                });
     }
 
     private List<WaterAllocationComparisonSelectionRes.WaterRatioDTO> getWaterRatio(List<Excel2> dataA, List<Excel2> dataB) {

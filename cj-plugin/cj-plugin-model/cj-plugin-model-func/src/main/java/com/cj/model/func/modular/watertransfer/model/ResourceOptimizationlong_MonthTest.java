@@ -748,6 +748,8 @@ public class ResourceOptimizationlong_MonthTest {
         waterTransfer.setNameEast(nameEast);
         waterTransfer.setNameGreenWest(nameGreenWest);
         waterTransfer.setNameGreenEast(nameGreenEast);
+        waterTransfer.setNameAgricultureEast(nameAgricultureEast);
+        waterTransfer.setNameAgricultureQushou(nameAgricultureQushou);
 
         //各站点供水比例
         waterTransfer.setProportionGreenEast(proportionGreenEast);
@@ -939,7 +941,8 @@ public class ResourceOptimizationlong_MonthTest {
                         //水库2可供水量
                         water_Supply_tth[t] = (watershortage_allQ[t]) * (delatT * monthday[t]) / 1e4 - water_shortage1[m][t];
                     }
-                    if (outflow_term[m][t] <= minoutflow[t]) {
+                    if (outflow_term[m][t] <= minoutflow[t])
+                    {
                         if (id == 1 || id == 3) {
                             if (t == 2 - num || t == 3 - num || t == 4 - num || t == 8 - num || t == 9 - num) {
                                 fitness1 += 10 * (minoutflow[t] + watershortage_allQ[t] - outflow_term[m][t]) * (delatT * monthday[t]) / 1e4;
@@ -970,7 +973,7 @@ public class ResourceOptimizationlong_MonthTest {
         //缺水时供水比例
 
         //供水量
-        if (id == 1 || id == 3) {
+//        if (id == 1 || id == 3) {
             for (int t = 0; t < period; t++) {
                 if (water_Supply_tth[t] >= waterDemand[1][t] + waterDemand[2][t] + waterDemand[3][t] + waterDemand[4][t]) {
                     waterSupply[1][t] = waterDemand[1][t];
@@ -981,8 +984,8 @@ public class ResourceOptimizationlong_MonthTest {
                 if (water_Supply_tth[t] >= waterDemand[1][t] + waterDemand[2][t] && water_Supply_tth[t] < waterDemand[1][t] + waterDemand[2][t] + waterDemand[3][t] + waterDemand[4][t]) {
                     waterSupply[1][t] = waterDemand[1][t];
                     waterSupply[2][t] = waterDemand[2][t];
-                    waterSupply[3][t] = 0.5 * (water_Supply_tth[t] - (waterDemand[1][t] + waterDemand[2][t]));
-                    waterSupply[4][t] = 0.5 * (water_Supply_tth[t] - (waterDemand[1][t] + waterDemand[2][t]));
+                    waterSupply[3][t] = waterDemand[3][t]  * (water_Supply_tth[t] - (waterDemand[1][t] + waterDemand[2][t]))/(waterDemand[3][t] + waterDemand[4][t]);
+                    waterSupply[4][t] = waterDemand[4][t] * (water_Supply_tth[t] - (waterDemand[1][t] + waterDemand[2][t]))/(waterDemand[3][t] + waterDemand[4][t]);
                     if (waterSupply[3][t] <= 0) {
                         waterSupply[3][t] = 0;
                     }
@@ -1004,69 +1007,69 @@ public class ResourceOptimizationlong_MonthTest {
                 }
 //
             }
-        }
-        if (id == 2) {
-            for (int t = 0; t < period; t++) {
-                if (water_Supply_tth[t] >= waterDemand[1][t] + waterDemand[2][t] + waterDemand[3][t] + waterDemand[4][t]) {
-                    waterSupply[1][t] = waterDemand[1][t];
-                    waterSupply[2][t] = waterDemand[2][t];
-                    waterSupply[3][t] = waterDemand[3][t];
-                    waterSupply[4][t] = waterDemand[4][t];
-                }
-                if (water_Supply_tth[t] >= 0.8 * (waterDemand[1][t] + waterDemand[2][t] + waterDemand[3][t] + waterDemand[4][t])
-                        && water_Supply_tth[t] < waterDemand[1][t] + waterDemand[2][t] + waterDemand[3][t] + waterDemand[4][t]) {
-                    waterSupply[1][t] = 0.9 * waterDemand[1][t];
-                    waterSupply[2][t] = 0.9 * waterDemand[2][t];
-                    waterSupply[3][t] = 0.5 * (water_Supply_tth[t] - (waterSupply[1][t] + waterSupply[2][t]));
-                    waterSupply[4][t] = 0.5 * (water_Supply_tth[t] - (waterSupply[1][t] + waterSupply[2][t]));
-                    if (waterSupply[3][t] <= 0) {
-                        waterSupply[3][t] = 0;
-                    }
-                    if (waterSupply[4][t] <= 0) {
-                        waterSupply[4][t] = 0;
-                    }
-                }
-                if (water_Supply_tth[t] >= 0.5 * (waterDemand[1][t] + waterDemand[2][t] + waterDemand[3][t] + waterDemand[4][t])
-                        && water_Supply_tth[t] < 0.8 * (waterDemand[1][t] + waterDemand[2][t] + waterDemand[3][t] + waterDemand[4][t])) {
-                    waterSupply[1][t] = 0.7 * waterDemand[1][t];
-                    waterSupply[2][t] = 0.7 * waterDemand[2][t];
-                    waterSupply[3][t] = 0.5 * (water_Supply_tth[t] - (waterSupply[1][t] + waterSupply[2][t]));
-                    waterSupply[4][t] = 0.5 * (water_Supply_tth[t] - (waterSupply[1][t] + waterSupply[2][t]));
-                    if (waterSupply[3][t] <= 0) {
-                        waterSupply[3][t] = 0;
-                    }
-                    if (waterSupply[4][t] <= 0) {
-                        waterSupply[4][t] = 0;
-                    }
-                }
-                if (water_Supply_tth[t] >= 0.2 * (waterDemand[1][t] + waterDemand[2][t] + waterDemand[3][t] + waterDemand[4][t])
-                        && water_Supply_tth[t] < 0.5 * (waterDemand[1][t] + waterDemand[2][t] + waterDemand[3][t] + waterDemand[4][t])) {
-                    waterSupply[1][t] = 0.4 * waterDemand[1][t];
-                    waterSupply[2][t] = 0.4 * waterDemand[2][t];
-                    waterSupply[3][t] = 0.5 * (water_Supply_tth[t] - (waterSupply[1][t] + waterSupply[2][t]));
-                    waterSupply[4][t] = 0.5 * (water_Supply_tth[t] - (waterSupply[1][t] + waterSupply[2][t]));
-                    if (waterSupply[3][t] <= 0) {
-                        waterSupply[3][t] = 0;
-                    }
-                    if (waterSupply[4][t] <= 0) {
-                        waterSupply[4][t] = 0;
-                    }
-                }
-                if (water_Supply_tth[t] < 0.2 * (waterDemand[1][t] + waterDemand[2][t] + waterDemand[3][t] + waterDemand[4][t])) {
-                    waterSupply[1][t] = 0.1 * waterDemand[1][t];
-                    waterSupply[2][t] = 0.1 * waterDemand[2][t];
-                    waterSupply[3][t] = 0.5 * (water_Supply_tth[t] - (waterSupply[1][t] + waterSupply[2][t]));
-                    waterSupply[4][t] = 0.5 * (water_Supply_tth[t] - (waterSupply[1][t] + waterSupply[2][t]));
-                    if (waterSupply[3][t] <= 0) {
-                        waterSupply[3][t] = 0;
-                    }
-                    if (waterSupply[4][t] <= 0) {
-                        waterSupply[4][t] = 0;
-                    }
-                }
-//
-            }
-        }
+//        }
+//        if (id == 2) {
+//            for (int t = 0; t < period; t++) {
+//                if (water_Supply_tth[t] >= waterDemand[1][t] + waterDemand[2][t] + waterDemand[3][t] + waterDemand[4][t]) {
+//                    waterSupply[1][t] = waterDemand[1][t];
+//                    waterSupply[2][t] = waterDemand[2][t];
+//                    waterSupply[3][t] = waterDemand[3][t];
+//                    waterSupply[4][t] = waterDemand[4][t];
+//                }
+//                if (water_Supply_tth[t] >= 0.8 * (waterDemand[1][t] + waterDemand[2][t] + waterDemand[3][t] + waterDemand[4][t])
+//                        && water_Supply_tth[t] < waterDemand[1][t] + waterDemand[2][t] + waterDemand[3][t] + waterDemand[4][t]) {
+//                    waterSupply[1][t] = 0.9 * waterDemand[1][t];
+//                    waterSupply[2][t] = 0.9 * waterDemand[2][t];
+//                    waterSupply[3][t] = 0.5 * (water_Supply_tth[t] - (waterSupply[1][t] + waterSupply[2][t]));
+//                    waterSupply[4][t] = 0.5 * (water_Supply_tth[t] - (waterSupply[1][t] + waterSupply[2][t]));
+//                    if (waterSupply[3][t] <= 0) {
+//                        waterSupply[3][t] = 0;
+//                    }
+//                    if (waterSupply[4][t] <= 0) {
+//                        waterSupply[4][t] = 0;
+//                    }
+//                }
+//                if (water_Supply_tth[t] >= 0.5 * (waterDemand[1][t] + waterDemand[2][t] + waterDemand[3][t] + waterDemand[4][t])
+//                        && water_Supply_tth[t] < 0.8 * (waterDemand[1][t] + waterDemand[2][t] + waterDemand[3][t] + waterDemand[4][t])) {
+//                    waterSupply[1][t] = 0.7 * waterDemand[1][t];
+//                    waterSupply[2][t] = 0.7 * waterDemand[2][t];
+//                    waterSupply[3][t] = 0.5 * (water_Supply_tth[t] - (waterSupply[1][t] + waterSupply[2][t]));
+//                    waterSupply[4][t] = 0.5 * (water_Supply_tth[t] - (waterSupply[1][t] + waterSupply[2][t]));
+//                    if (waterSupply[3][t] <= 0) {
+//                        waterSupply[3][t] = 0;
+//                    }
+//                    if (waterSupply[4][t] <= 0) {
+//                        waterSupply[4][t] = 0;
+//                    }
+//                }
+//                if (water_Supply_tth[t] >= 0.2 * (waterDemand[1][t] + waterDemand[2][t] + waterDemand[3][t] + waterDemand[4][t])
+//                        && water_Supply_tth[t] < 0.5 * (waterDemand[1][t] + waterDemand[2][t] + waterDemand[3][t] + waterDemand[4][t])) {
+//                    waterSupply[1][t] = 0.4 * waterDemand[1][t];
+//                    waterSupply[2][t] = 0.4 * waterDemand[2][t];
+//                    waterSupply[3][t] = 0.5 * (water_Supply_tth[t] - (waterSupply[1][t] + waterSupply[2][t]));
+//                    waterSupply[4][t] = 0.5 * (water_Supply_tth[t] - (waterSupply[1][t] + waterSupply[2][t]));
+//                    if (waterSupply[3][t] <= 0) {
+//                        waterSupply[3][t] = 0;
+//                    }
+//                    if (waterSupply[4][t] <= 0) {
+//                        waterSupply[4][t] = 0;
+//                    }
+//                }
+//                if (water_Supply_tth[t] < 0.2 * (waterDemand[1][t] + waterDemand[2][t] + waterDemand[3][t] + waterDemand[4][t])) {
+//                    waterSupply[1][t] = 0.1 * waterDemand[1][t];
+//                    waterSupply[2][t] = 0.1 * waterDemand[2][t];
+//                    waterSupply[3][t] = 0.5 * (water_Supply_tth[t] - (waterSupply[1][t] + waterSupply[2][t]));
+//                    waterSupply[4][t] = 0.5 * (water_Supply_tth[t] - (waterSupply[1][t] + waterSupply[2][t]));
+//                    if (waterSupply[3][t] <= 0) {
+//                        waterSupply[3][t] = 0;
+//                    }
+//                    if (waterSupply[4][t] <= 0) {
+//                        waterSupply[4][t] = 0;
+//                    }
+//                }
+////
+//            }
+//        }
         if (id == 2) {
             for (int m = 0; m < waterDemand.length; m++) {
                 for (int n = 0; n < period; n++) {

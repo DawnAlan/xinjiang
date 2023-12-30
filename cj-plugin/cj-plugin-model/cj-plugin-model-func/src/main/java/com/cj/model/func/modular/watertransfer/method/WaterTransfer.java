@@ -71,6 +71,24 @@ public class WaterTransfer {
     //绿化配水
     private double [][]waterDemandGreenEast;
 
+    public String[] getNameAgricultureQushou() {
+        return nameAgricultureQushou;
+    }
+
+    public void setNameAgricultureQushou(String[] nameAgricultureQushou) {
+        this.nameAgricultureQushou = nameAgricultureQushou;
+    }
+
+    public String[] getNameAgricultureEast() {
+        return nameAgricultureEast;
+    }
+
+    public void setNameAgricultureEast(String[] nameAgricultureEast) {
+        this.nameAgricultureEast = nameAgricultureEast;
+    }
+
+    private String [] nameAgricultureQushou;
+    private String [] nameAgricultureEast;
     public double[][] getWaterDemandGreenEast() {
         return waterDemandGreenEast;
     }

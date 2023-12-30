@@ -12,7 +12,7 @@ public class WaterStorageOverviewRes {
     @ApiModelProperty(value = "水库名")
     private String waterStorageName;
     @ApiModelProperty(value = "水位")
-    private Double waterLevel;
+    private String waterLevel;
     @ApiModelProperty(value = "入库流量")
     private Double inFlow;
     @ApiModelProperty(value = "出库流量")

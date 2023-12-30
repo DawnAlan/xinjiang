@@ -39,8 +39,8 @@ public class WaterResourceAssessment {
            String appraiseHy1=getStance(data1,"红岩生活");
            String appraiseHy2=getStance(data2,"红岩生活");
 
-           String appraiseIndustry1=getStance(data1,"工业");
-           String appraiseIndustry2=getStance(data2,"工业");
+           String appraiseIndustry1=getStance(data1,"八钢工业");
+           String appraiseIndustry2=getStance(data2,"八钢工业");
             //从供水比例比较
            if (proportion1>proportion2)
            {
@@ -96,10 +96,11 @@ public class WaterResourceAssessment {
         List<Double> proportion = new ArrayList<>();
         List<Double> waterLack = new ArrayList<>();
         String x=location;
-        if (location.equals("工业")){
+        if (location.equals("八钢工业"))
+        {
             for (int i = 0; i < data.size(); i++)
             {
-                if (data.get(i).getStationType().equals(location)&&data.get(i).getStationName().equals("八钢"))
+                if (data.get(i).getStationType().equals(location)&&data.get(i).getStationName().equals("八钢工业用水"))
                 {
                     x=data.get(i).getStationName();
                     proportion.add(data.get(i).getProportion()) ;
@@ -166,8 +167,13 @@ public class WaterResourceAssessment {
                 proportion1+= data1.get(i).getProportion();
                 waterLack1+= data1.get(i).getWaterLack();
             }
-            if (data1.get(i).getStationType().equals("工业"))
+            if (data1.get(i).getStationType().equals("八钢工业"))
             {
+                proportion1+= data1.get(i).getProportion();
+                waterLack1+= data1.get(i).getWaterLack();
+            }
+            if (data1.get(i).getStationType().equals("渠首工业"))
+                {
                 proportion1+= data1.get(i).getProportion();
                 waterLack1+= data1.get(i).getWaterLack();
             }

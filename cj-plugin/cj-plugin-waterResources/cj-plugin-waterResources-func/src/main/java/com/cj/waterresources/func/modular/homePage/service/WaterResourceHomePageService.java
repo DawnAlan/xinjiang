@@ -120,9 +120,9 @@ public class WaterResourceHomePageService {
 
         WaterStorageOverviewRes waterStorageOverviewResLzz = new WaterStorageOverviewRes();
         waterStorageOverviewResLzz.setWaterStorageName("楼庄子水库");
-        waterStorageOverviewResLzz.setWaterLevel(lzzCurrent == null ? null : lzzCurrent.getRelativeWaterLevel());
-        waterStorageOverviewResLzz.setInFlow(0.0);//
-        waterStorageOverviewResLzz.setOutFlow(0.0);//
+        waterStorageOverviewResLzz.setWaterLevel(lzzCurrent == null ? null : lzzCurrent.getRelativeWaterLevel() < 0 ? "数据异常" : lzzCurrent.getRelativeWaterLevel().toString());
+        waterStorageOverviewResLzz.setInFlow(null);//
+        waterStorageOverviewResLzz.setOutFlow(null);//
         waterStorageOverviewResLzz.setStorageCapacity(lzzCurrent == null ? null : lzzCurrent.getStorageCapacity());
         waterStorageOverviewResLzz.setYesterdayFloodRetentionCapacity(lzzCurrent == null ? null : floodRetentionCapacityList.get(floodRetentionCapacityList.size() - 1));
         waterStorageOverviewResLzz.setYearFloodRetentionCapacity(floodRetentionCapacityList.stream().mapToDouble(n -> n == null ? 0 : n).sum());
@@ -147,10 +147,10 @@ public class WaterResourceHomePageService {
 
         WaterStorageOverviewRes waterStorageOverviewResTth = new WaterStorageOverviewRes();
         waterStorageOverviewResTth.setWaterStorageName("头屯河水库");
-        waterStorageOverviewResTth.setWaterLevel(tth.get("头屯河水库水位").get().getAvgWaterLevel());
+        waterStorageOverviewResTth.setWaterLevel(tth.get("头屯河水库水位").get().getAvgWaterLevel().toString());
         waterStorageOverviewResTth.setInFlow(tth.get("入库流量").get().getSqMonitorFlow());
         waterStorageOverviewResTth.setOutFlow(tth.get("出库流量").get().getSqMonitorFlow());
-        waterStorageOverviewResTth.setStorageCapacity(tth.get("头屯河水库水位").get().getSqCapacity());//
+        waterStorageOverviewResTth.setStorageCapacity(tth.get("头屯河水库水位").get().getSqCapacity());
         waterStorageOverviewResTth.setYesterdayFloodRetentionCapacity(floodRetentionCapacityList.get(floodRetentionCapacityList.size() - 1));
         waterStorageOverviewResTth.setYearFloodRetentionCapacity(floodRetentionCapacityList.stream().mapToDouble(n -> n == null ? 0 : n).sum());
         return waterStorageOverviewResTth;

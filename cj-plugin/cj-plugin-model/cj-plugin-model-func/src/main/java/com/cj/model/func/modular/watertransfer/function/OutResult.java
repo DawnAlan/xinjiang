@@ -151,20 +151,25 @@ public class OutResult {
             option.setWaterLack(Out1.get(0).getWaterdemand()[1][i]-Out1.get(0).getWaterSupply()[1][i]);
             option2.add(option);
         }
-
-        for(int x=0;x<Out1.get(0).getNameQushou().length;x++)
+        for (int i = 0; i < Out1.get(0).getInflow()[0].length; i++) {
+            Option_Water option = new Option_Water();
+            option.setTime(Out1.get(0).getTime()[i]);
+            option.setTypeName(req.getTypeName());
+            option.setStationType("八钢工业");
+            option.setStationName("八钢工业用水");
+            option.setWater(Out1.get(0).getWaterSupplyIndustry()[0][i]);
+            option.setProportion(Out1.get(0).getProportionIndustry()[0][i]);
+            option.setWaterLack(Out1.get(0).getWaterDemandIndustry()[0][i]-Out1.get(0).getWaterSupplyIndustry()[0][i]);
+            option2.add(option);
+        }
+        for(int x=1;x<Out1.get(0).getNameQushou().length;x++)
         {
             for (int i = 0; i < Out1.get(0).getInflow()[0].length; i++) {
                 Option_Water option = new Option_Water();
                 option.setTime(Out1.get(0).getTime()[i]);
                 option.setTypeName(req.getTypeName());
-                option.setStationType("工业");
-                if (x==0){
-                    option.setStationName("八钢工业用水");
-                }
-                else{
-                    option.setStationName(Out1.get(0).getNameQushou()[x-1]);
-                }
+                option.setStationType("渠首工业");
+                option.setStationName(Out1.get(0).getNameQushou()[x-1]);
                 option.setWater(Out1.get(0).getWaterSupplyIndustry()[x][i]);
                 option.setProportion(Out1.get(0).getProportionIndustry()[x][i]);
                 option.setWaterLack(Out1.get(0).getWaterDemandIndustry()[x][i]-Out1.get(0).getWaterSupplyIndustry()[x][i]);
@@ -189,13 +194,14 @@ public class OutResult {
             option.setWaterLack(Out1.get(0).getWaterdemand()[3][i]-Out1.get(0).getWaterSupply()[3][i]);
             option2.add(option);
         }
-        for(int x=0;x<Out1.get(0).getNameWest().length;x++){
+        for(int x=1;x<Out1.get(0).getNameWest().length;x++)
+        {
             for (int i = 0; i < Out1.get(0).getInflow()[0].length; i++)
             {
                 Option_Water option = new Option_Water();
                 option.setTime(Out1.get(0).getTime()[i]);
                 option.setTypeName(req.getTypeName());
-                option.setStationType("西干渠");
+                option.setStationType("西干渠灌溉");
                 option.setStationName(Out1.get(0).getNameWest()[x]);
                 option.setWater(Out1.get(0).getWaterSupply3()[x][i]);
                 option.setProportion(Out1.get(0).getProportion3()[x][i]);
@@ -222,14 +228,14 @@ public class OutResult {
             option2.add(option);
         }
 
-        for (int x=0;x<Out1.get(0).getNameEast().length;x++)
+        for (int x=2;x<Out1.get(0).getNameEast().length-Out1.get(0).getNameAgricultureEast().length;x++)
         {
             for (int i = 0; i < Out1.get(0).getInflow()[0].length; i++)
             {
                 Option_Water option = new Option_Water();
                 option.setTime(Out1.get(0).getTime()[i]);
                 option.setTypeName(req.getTypeName());
-                option.setStationType("东干渠");
+                option.setStationType("渠首灌溉");
                 option.setStationName(Out1.get(0).getNameEast()[x]);
                 option.setWater(Out1.get(0).getWaterSupply4()[x][i]);
                 option.setProportion(Out1.get(0).getProportion4()[x][i]);
@@ -237,7 +243,21 @@ public class OutResult {
                 option2.add(option);
             }
         }
-
+        for (int x=2+Out1.get(0).getNameAgricultureQushou().length;x<Out1.get(0).getNameEast().length;x++)
+        {
+            for (int i = 0; i < Out1.get(0).getInflow()[0].length; i++)
+            {
+                Option_Water option = new Option_Water();
+                option.setTime(Out1.get(0).getTime()[i]);
+                option.setTypeName(req.getTypeName());
+                option.setStationType("东干渠灌溉");
+                option.setStationName(Out1.get(0).getNameEast()[x]);
+                option.setWater(Out1.get(0).getWaterSupply4()[x][i]);
+                option.setProportion(Out1.get(0).getProportion4()[x][i]);
+                option.setWaterLack(Out1.get(0).getWaterDemand4()[x][i]-Out1.get(0).getWaterSupply4()[x][i]);
+                option2.add(option);
+            }
+        }
         for(int x=0;x<Out1.get(0).getNameGreenQushou().length;x++)
         {
             for (int i = 0; i < Out1.get(0).getInflow()[0].length; i++)
