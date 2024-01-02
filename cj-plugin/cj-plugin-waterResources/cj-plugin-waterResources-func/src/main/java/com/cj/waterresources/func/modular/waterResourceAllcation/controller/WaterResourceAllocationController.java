@@ -72,9 +72,8 @@ public class WaterResourceAllocationController {
     @ApiOperationSupport(order = 5)
     @ApiOperation("修改调度方案")
     @PostMapping("/update")
-    public RestResponse update(@RequestParam WaterResourceAllocation allocation) {
-        waterResourceAllocationService.updateById(allocation);
-        return RestResponse.ok();
+    public RestResponse update(@RequestBody WaterResourceAllocation waterResourceAllocation) {
+        return waterResourceAllocationService.updateAllocation(waterResourceAllocation);
     }
 
     @ApiOperationSupport(order = 6)

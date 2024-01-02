@@ -136,43 +136,7 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
         waterResourceAllocation.setCreateBy(null);
         waterResourceAllocation.setCreateTime(now);
 
-        WaterTransferReq waterTransferReq = new WaterTransferReq();
-        List<Flood> floods = getListFromMinio(req.getInflowDataAddress(), Flood.class);
-        floods = floods.stream().filter(f -> f.getTime().getTime() <= req.getWaterDistributionEndTime().getTime()
-                && f.getTime().getTime() >= req.getWaterDistributionStartTime().getTime()).collect(Collectors.toList());
-        List<DataInflowPrevent> dataInflowPrevents = JSONObject.parseArray(JSONObject.toJSONString(floods), DataInflowPrevent.class);
-        List<DataInflowPrevent> lzzEntryStation = dataInflowPrevents.stream().filter(t -> t.getLocation().equals("楼庄子")).collect(Collectors.toList());
-        List<DataInflowPrevent> interval = dataInflowPrevents.stream().filter(t -> t.getLocation().equals("楼头区间")).collect(Collectors.toList());
-        Map<String, List<DataInflowPrevent>> data = new HashMap<>();
-        data.put("lzz", lzzEntryStation);
-        data.put("tth", interval);
-        waterTransferReq.setStartTime(req.getWaterDistributionStartTime());
-        waterTransferReq.setEndTime(req.getWaterDistributionEndTime());
-        waterTransferReq.setName(req.getWaterDistributionType());
-        waterTransferReq.setFloodWaterLevelLzz(req.getFloodWaterLevelLzz());
-        waterTransferReq.setFloodWaterLevelTth(req.getFloodWaterLevelTth());
-        waterTransferReq.setLevelBeginLzz(req.getLevelBeginLzz());
-        waterTransferReq.setLevelBeginTth(req.getLevelBeginTth());
-        waterTransferReq.setLevelEndLzz(req.getLevelEndLzz());
-        waterTransferReq.setLevelEndTth(req.getLevelEndTth());
-        waterTransferReq.setTimeCalStep(req.getBucketType());
-        waterTransferReq.setData(data);
-        waterTransferReq.setWaterDemandData(waterNeed(req.getWaterDistributionStartTime(), req.getWaterDistributionEndTime()));
-        waterTransferReq.setCurve(curveService.selectList());
-        List<ResOption> calculator;
-        try {
-            calculator = OutResult.calculator(waterTransferReq);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        String displayDataPath = calculator.stream().filter(n -> n.getName().equals("表1")).findFirst().get().getPath();
-        String displayDataPathMinio = DateUtil.format(now, "yyyyMMdd/HH/mm/ss/") + displayDataPath.substring(displayDataPath.lastIndexOf(File.separator) + 1);
-        String customDataPath = calculator.stream().filter(n -> n.getName().equals("配水详情")).findFirst().get().getPath();
-        String customDataPathMinio = DateUtil.format(now, "yyyyMMdd/HH/mm/ss/") + customDataPath.substring(customDataPath.lastIndexOf(File.separator) + 1);
-        minioUtils.putObject("tth", displayDataPathMinio, displayDataPath);
-        minioUtils.putObject("tth", customDataPathMinio, customDataPath);
-        waterResourceAllocation.setAllocationDataDisplayAddress(displayDataPathMinio);
-        waterResourceAllocation.setAllocationDataCustomAddress(customDataPathMinio);
+        doAllocation(waterResourceAllocation, now);
 
         boolean save = this.save(waterResourceAllocation);
         if (save) {
@@ -315,6 +279,62 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
         viewModelResList.add(viewModelLzzOut);
         viewModelResList.add(viewModelTth);
         return RestResponse.ok(viewModelResList);
+    }
+
+    @Override
+    public RestResponse updateAllocation(WaterResourceAllocation waterResourceAllocation) {
+        Date now = new Date();
+        waterResourceAllocation.setUpdateBy("");
+        waterResourceAllocation.setUpdateTime(now);
+        String customAddress = waterResourceAllocation.getAllocationDataCustomAddress();
+        String displayAddress = waterResourceAllocation.getAllocationDataDisplayAddress();
+
+        doAllocation(waterResourceAllocation, now);
+        updateById(waterResourceAllocation);
+        minioUtils.deleteObjectInfo("tth", customAddress);
+        minioUtils.deleteObjectInfo("tth", displayAddress);
+        return RestResponse.ok(waterResourceAllocation);
+    }
+
+    private WaterResourceAllocation doAllocation(WaterResourceAllocation allocation, Date dateTime) {
+        WaterTransferReq waterTransferReq = new WaterTransferReq();
+        List<Flood> floods = getListFromMinio(allocation.getInflowDataAddress(), Flood.class);
+        floods = floods.stream().filter(f -> f.getTime().getTime() <= allocation.getWaterDistributionEndTime().getTime()
+                && f.getTime().getTime() >= allocation.getWaterDistributionStartTime().getTime()).collect(Collectors.toList());
+        List<DataInflowPrevent> dataInflowPrevents = JSONObject.parseArray(JSONObject.toJSONString(floods), DataInflowPrevent.class);
+        List<DataInflowPrevent> lzzEntryStation = dataInflowPrevents.stream().filter(t -> t.getLocation().equals("楼庄子")).collect(Collectors.toList());
+        List<DataInflowPrevent> interval = dataInflowPrevents.stream().filter(t -> t.getLocation().equals("楼头区间")).collect(Collectors.toList());
+        Map<String, List<DataInflowPrevent>> data = new HashMap<>();
+        data.put("lzz", lzzEntryStation);
+        data.put("tth", interval);
+        waterTransferReq.setStartTime(allocation.getWaterDistributionStartTime());
+        waterTransferReq.setEndTime(allocation.getWaterDistributionEndTime());
+        waterTransferReq.setName(allocation.getWaterDistributionType());
+        waterTransferReq.setFloodWaterLevelLzz(allocation.getFloodWaterLevelLzz());
+        waterTransferReq.setFloodWaterLevelTth(allocation.getFloodWaterLevelTth());
+        waterTransferReq.setLevelBeginLzz(allocation.getLevelBeginLzz());
+        waterTransferReq.setLevelBeginTth(allocation.getLevelBeginTth());
+        waterTransferReq.setLevelEndLzz(allocation.getLevelEndLzz());
+        waterTransferReq.setLevelEndTth(allocation.getLevelEndTth());
+        waterTransferReq.setTimeCalStep(allocation.getBucketType());
+        waterTransferReq.setData(data);
+        waterTransferReq.setWaterDemandData(waterNeed(allocation.getWaterDistributionStartTime(), allocation.getWaterDistributionEndTime()));
+        waterTransferReq.setCurve(curveService.selectList());
+        List<ResOption> calculator;
+        try {
+            calculator = OutResult.calculator(waterTransferReq);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        String displayDataPath = calculator.stream().filter(n -> n.getName().equals("表1")).findFirst().get().getPath();
+        String displayDataPathMinio = DateUtil.format(dateTime, "yyyyMMdd/HH/mm/ss/") + displayDataPath.substring(displayDataPath.lastIndexOf(File.separator) + 1);
+        String customDataPath = calculator.stream().filter(n -> n.getName().equals("配水详情")).findFirst().get().getPath();
+        String customDataPathMinio = DateUtil.format(dateTime, "yyyyMMdd/HH/mm/ss/") + customDataPath.substring(customDataPath.lastIndexOf(File.separator) + 1);
+        minioUtils.putObject("tth", displayDataPathMinio, displayDataPath);
+        minioUtils.putObject("tth", customDataPathMinio, customDataPath);
+        allocation.setAllocationDataDisplayAddress(displayDataPathMinio);
+        allocation.setAllocationDataCustomAddress(customDataPathMinio);
+        return allocation;
     }
 
     private List<WaterAllocationComparisonSelectionRes.WaterRatioDTO> getWaterRatio(List<Excel2> dataA, List<Excel2> dataB) {

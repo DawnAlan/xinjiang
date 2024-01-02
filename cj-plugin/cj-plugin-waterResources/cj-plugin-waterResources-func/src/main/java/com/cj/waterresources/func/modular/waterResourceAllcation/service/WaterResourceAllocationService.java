@@ -31,5 +31,7 @@ public interface WaterResourceAllocationService extends IService<WaterResourceAl
     RestResponse compare(String idA, String idB);
 
     RestResponse<List<ViewModelRes>> viewModel(ViewModelReq id);
+
+    RestResponse updateAllocation(WaterResourceAllocation waterResourceAllocation);
 }
 
