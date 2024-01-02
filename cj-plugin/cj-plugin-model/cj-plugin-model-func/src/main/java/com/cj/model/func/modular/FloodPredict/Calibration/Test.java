@@ -1,26 +1,17 @@
 package com.cj.model.func.modular.FloodPredict.Calibration;
 
+import com.cj.model.func.modular.FloodPredict.entity.ForcastInputParam;
 import com.cj.model.func.modular.FloodPredict.entity.ForcastInputParamNew;
-import com.cj.model.func.modular.FloodPredict.entity.PredictInputData;
-import com.cj.model.func.modular.FloodPredict.entity.RainFallDto;
-import com.cj.model.func.modular.FloodPredict.model.PhysicalForcast;
-import com.cj.model.func.modular.FloodPredict.utils.DataUtils;
-import com.cj.model.func.modular.FloodPredict.utils.ExcelTool;
 import com.cj.model.func.modular.FloodPredict.utils.TimeUtils;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 
-import java.time.*;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
-import static com.cj.model.func.modular.FloodPredict.model.PhysicalForcast.floodLevel;
-import static com.cj.model.func.modular.FloodPredict.model.TouTunHe.rainPredict;
-import static com.cj.model.func.modular.FloodPredict.utils.DataUtils.emptyProcessing;
-import static com.cj.model.func.modular.FloodPredict.utils.DataUtils.preRainHourToDay;
+
+import static com.cj.model.func.modular.FloodPredict.utils.DataUtils.getSelectedData;
 
 public class Test {
 
@@ -30,10 +21,22 @@ public class Test {
         ForcastInputParamNew paramForcastInputParamNew = new ForcastInputParamNew();
         paramForcastInputParamNew.setModelType(3);//3为场次
         SimpleDateFormat sFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        paramForcastInputParamNew.setPredictionTime(sFormat.parse("2023-12-31 19:00:00"));
+        Date date =sFormat.parse("2023-04-30 19:00:00");
+        paramForcastInputParamNew.setPredictionTime(date);
         Date startDate = paramForcastInputParamNew.getPredictionTime();
         Date[][] dates;
-        dates = TimeUtils.getMonthDateList(startDate,10, 1);
+        dates = TimeUtils.getSelectMonthDateList(startDate,10);
+        List<Object[]> b = new ArrayList<>();
+        ForcastInputParam param = new ForcastInputParam();
+        param.setPeriod("日");
+        param.setPeriodStepNumber(100);
+        param.setPeriodStepSize(1);
+        param.setPreStartTime(date);
+        b=getSelectedData(param);
+        Object[] feng = b.get(0);
+        Date[] date1 = (Date[]) feng[0];
+        Date date2=date1[0];
+
         int a =0;
     }
 }

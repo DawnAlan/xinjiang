@@ -63,7 +63,7 @@ public class UseWaterManagementServiceImpl extends ServiceImpl<UseWaterManagemen
             useWaterManagement.setCreateTime(new Date());
             boolean save = this.save(useWaterManagement);
             if(save){
-                if(req.getUseWaterPlan().contains("年")){
+                /*if(req.getUseWaterPlan().contains("年")){
                     YearWaterUsePlanTrunkCanal yearWaterUsePlanTrunkCanal = new YearWaterUsePlanTrunkCanal();
                     yearWaterUsePlanTrunkCanal.setId(UUIDUtils.getUUID());
                     yearWaterUsePlanTrunkCanal.setUnitId(useWaterManagement.getId());
@@ -101,7 +101,7 @@ public class UseWaterManagementServiceImpl extends ServiceImpl<UseWaterManagemen
                         TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
                         return RestResponse.no("添加失败");
                     }
-                }
+                }*/
                 return RestResponse.ok("添加成功");
             }else {
                 TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();

@@ -1,5 +1,8 @@
 package com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.entity;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.extension.activerecord.Model;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -25,6 +28,7 @@ public class WaterFeeStatisticsDetails extends Model<WaterFeeStatisticsDetails> 
     private String tableHeadId;
 
     //值
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "值")
     private Double v;
 

@@ -161,10 +161,10 @@ public class FloodHomePageService {
 
         WaterStorageOverviewRes waterStorageOverviewResTth = new WaterStorageOverviewRes();
         waterStorageOverviewResTth.setWaterStorageName("头屯河水库");
-        waterStorageOverviewResTth.setWaterLevel(tth.size() == 0 ? null : tth.get("头屯河水库水位").get().getAvgWaterLevel().toString());
-        waterStorageOverviewResTth.setInFlow(tth.size() == 0 ? null : tth.get("入库流量").get().getSqMonitorFlow());
-        waterStorageOverviewResTth.setOutFlow(tth.size() == 0 ? null : tth.get("出库流量").get().getSqMonitorFlow());
-        waterStorageOverviewResTth.setStorageCapacity(tth.size() == 0 ? null : tth.get("头屯河水库水位").get().getSqCapacity());
+        waterStorageOverviewResTth.setWaterLevel( tth.get("头屯河水库水位").get().getAvgWaterLevel().toString());
+        waterStorageOverviewResTth.setInFlow(tth.get("入库流量").orElse(new IrrigatedPlatformDataInfo()).getSqMonitorFlow());
+        waterStorageOverviewResTth.setOutFlow(tth.get("出库流量").orElse(new IrrigatedPlatformDataInfo()).getSqMonitorFlow());
+        waterStorageOverviewResTth.setStorageCapacity(tth.get("头屯河水库水位").orElse(new IrrigatedPlatformDataInfo()).getSqCapacity());
         waterStorageOverviewResTth.setYesterdayFloodRetentionCapacity(floodRetentionCapacityList.size() == 0 ? null : floodRetentionCapacityList.get(floodRetentionCapacityList.size() - 1));
         waterStorageOverviewResTth.setYearFloodRetentionCapacity(floodRetentionCapacityList.size() == 0 ? null : floodRetentionCapacityList.stream().mapToDouble(n -> n == null ? 0 : n).sum());
         return waterStorageOverviewResTth;

@@ -1,6 +1,9 @@
 package com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.entity;
 
 import java.util.Date;
+
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.extension.activerecord.Model;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -38,146 +41,182 @@ public class YearWaterUsePlanCrop extends Model<YearWaterUsePlanCrop> {
     private String cropType;
 
     //灌溉面积
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "灌溉面积")
     private Double irrigatedArea;
 
     //灌溉定额
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "灌溉定额")
     private Double irrigatedQuota;
 
     //年灌溉次数
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "年灌溉次数")
     private Double yearIrrigatedCount;
 
     //需水量
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "需水量")
     private Double waterDemand;
 
     //四月-上旬
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "四月-上旬")
     private Double aprilEarlyOctober;
 
     //四月-中旬
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "四月-中旬")
     private Double aprilMidDay;
 
     //四月-下旬
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "四月-下旬")
     private Double aprilLaterOctober;
 
     //四月-合计
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "四月-合计")
     private Double aprilTotal;
 
     //五月-上旬
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "五月-上旬")
     private Double mayEarlyOctober;
 
     //五月-中旬
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "五月-中旬")
     private Double mayMidDay;
 
     //五月-下旬
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "五月-下旬")
     private Double mayLaterOctober;
 
     //五月-合计
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "月-合计")
     private Double mayTotal;
 
     //六月-上旬
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "六月-上旬")
     private Double juneEarlyOctober;
 
     //六月-中旬
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "六月-中旬")
     private Double juneMidDay;
 
     //六月-下旬
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "六月-下旬")
     private Double juneLaterOctober;
 
     //六月-合计
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "六月-合计")
     private Double juneTotal;
 
     //七月-上旬
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "七月-上旬")
     private Double julyEarlyOctober;
 
     //七月-中旬
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "七月-中旬")
     private Double julyMidDay;
 
     //七月-下旬
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "七月-下旬")
     private Double julyLaterOctober;
 
     //七月-合计
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "七月-合计")
     private Double julyTotal;
 
     //八月-上旬
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "八月-上旬")
     private Double augustEarlyOctober;
 
     //八月-中旬
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "八月-中旬")
     private Double augustMidDay;
 
     //八月-下旬
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "八月-下旬")
     private Double augustLaterOctober;
 
     //八月-合计
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "八月-合计")
     private Double augustTotal;
 
     //九月-上旬
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "九月-上旬")
     private Double septemberEarlyOctober;
 
     //九月-中旬
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "九月-中旬")
     private Double septemberMidDay;
 
     //九月-下旬
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "九月-下旬")
     private Double septemberLaterOctober;
 
     //九月-合计
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "九月-合计")
     private Double septemberTotal;
 
     //十月-上旬
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "十月-上旬")
     private Double octoberEarlyOctober;
 
     //十月-中旬
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "十月-中旬")
     private Double octoberMidDay;
 
     //十月-下旬
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "十月-下旬")
     private Double octoberLaterOctober;
 
     //十月-合计
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "十月-合计")
     private Double octoberTotal;
 
     //十一月-上旬
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "十一月-上旬")
     private Double novemberEarlyOctober;
 
     //十一月-中旬
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "十一月-中旬")
     private Double novemberMidDay;
 
     //十一月-下旬
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "十一月-下旬")
     private Double novemberLaterOctober;
 
     //十一月-合计
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "十一月-合计")
     private Double novemberTotal;
 

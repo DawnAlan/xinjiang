@@ -33,6 +33,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.web.multipart.MultipartFile;
+import sun.applet.Main;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
@@ -261,7 +263,7 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
                 redisUtil.set(year + ":wordNum", wordNum);
             }
             String fileName = "调度指令";
-            String filepath = this.getClass().getClassLoader().getResource("approvalManagement.docx").getPath();
+            String filepath = "D:\\tth_system\\end\\file\\approvalManagement.docx";
             // 通过 XWPFTemplate 编译文件并渲染数据到模板中
             XWPFTemplate template = XWPFTemplate.compile(filepath).render(
                     new HashMap<String, Object>() {{

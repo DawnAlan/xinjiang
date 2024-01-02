@@ -4,15 +4,10 @@ package com.cj.model.func.modular.FloodPredict.model;
 
 import com.cj.model.func.modular.FloodPredict.entity.ForcastInputParam;
 import com.cj.model.func.modular.FloodPredict.entity.PredictInputData;
-import com.cj.model.func.modular.FloodPredict.utils.ExcelTool;
 import com.cj.model.func.modular.FloodPredict.utils.TimeUtils;
 
 import java.io.IOException;
-import java.text.DecimalFormat;
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -656,7 +651,7 @@ public class PhysicalForcast {
         Object[][] result= new Object[shanBeiQ.length-10][2];
         //减去汇流滞时
         Date currentDate = param.getPreStartTime();
-        Date[][] dates = TimeUtils.getDateList(currentDate, shanBeiQ.length-10, 0, 1, 1);
+        Date[][] dates = TimeUtils.getSelectDateList(currentDate, shanBeiQ.length-10, 0, 1);
        //shanBeiq为实际预报的值
         double[] shanBeiq = new double[shanBeiQ.length-10];
         for (int i = L; i < shanBeiQ.length-10+L; i++) {

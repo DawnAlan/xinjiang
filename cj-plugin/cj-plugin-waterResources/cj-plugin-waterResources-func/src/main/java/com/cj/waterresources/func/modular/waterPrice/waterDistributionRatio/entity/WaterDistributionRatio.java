@@ -1,5 +1,7 @@
 package com.cj.waterresources.func.modular.waterPrice.waterDistributionRatio.entity;
 
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.extension.activerecord.Model;
 import lombok.Data;
 
@@ -26,6 +28,7 @@ public class WaterDistributionRatio extends Model<WaterDistributionRatio> {
     //表头ID
     private String tableBeadId;
     //配水值
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double v;
 }
 

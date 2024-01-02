@@ -17,6 +17,9 @@ import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
+import static com.cj.model.func.modular.FloodPredict.utils.TimeUtils.getDateList;
+import static com.cj.model.func.modular.FloodPredict.utils.TimeUtils.getMonthDateList;
+
 /**
  * 数据处理方法
  * 
@@ -1929,6 +1932,7 @@ public class DataUtils {
 			trainData[i][n+1] = dataList.get(1)[i+n-1];//预报径流
 		}
 
+
 		for (int i = b; i < a-n+1; i++) {
 			testData[i - b][0] = dataList.get(0)[i+n-1];//时间戳
 			for (int j = 0; j < n-1 ; j++) {
@@ -1937,11 +1941,13 @@ public class DataUtils {
 			testData[i - b][n] = dataList.get(2)[i];//平均流量
 			testData[i - b][n+1] = dataList.get(1)[i+n-1];//预报径流
 		}
+
 		if (isTest) {
 			return testData;
 		} else {
 			return trainData;
 		}
+
 	}
 
 	/**
@@ -2083,6 +2089,67 @@ public class DataUtils {
 		result.put("月",month);
 		result.put("日",day);
 		result.put("小时",hour);
+		return result;
+	}
+	/**
+	 * 获得丰水期和枯水期的预报开始时间和预报数量
+	 * @param param
+	 * @return result.get(0)丰水期
+	 * result.get(1)枯水期
+	 */
+	public static List<Object[]> getSelectedData(ForcastInputParam param){
+		List<Object[]> result = new ArrayList<>();
+		Object[] Feng = new Object[2];
+		Object[] Ku = new Object[2];
+		Date dateStart = param.getPreStartTime();
+		int number = param.getPeriodStepNumber()* param.getPeriodStepSize();
+		Date[][] date = new Date[number][1];
+		int fengNumber=0;
+		int kuNumber=0;
+		int month = 0;
+		switch (param.getPeriod()) {
+			case "月":
+				date = getMonthDateList(dateStart,number);
+				break;
+			case "旬":
+				date = getDateList(dateStart, number, 10, 0);
+				break;
+			case "日":
+				date = getDateList(dateStart, number, 1, 0);
+				break;
+		}
+		for (int i = 0; i < number; i++) {
+			month=getSpecificDate(date[i][0]).get("月");
+			if (month<=9&&month>=5){
+				fengNumber++;
+			}else {
+				kuNumber++;
+			}
+		}
+		month=getSpecificDate(date[0][0]).get("月");
+		if (month<=9&&month>=5){
+			Feng[0]=date[0];
+			for (int i = 0; i < number; i++) {
+				month=getSpecificDate(date[i][0]).get("月");
+				if (month==10){
+					Ku[0]=date[i];
+					break;
+				}
+			}
+		}else {
+			Ku[0]=date[0];
+			for (int i = 0; i < number; i++) {
+				month=getSpecificDate(date[i][0]).get("月");
+				if (month==5){
+					Feng[0]=date[i];
+					break;
+				}
+			}
+		}
+		Feng[1]=fengNumber;
+		Ku[1]=kuNumber;
+		result.add(Feng);
+		result.add(Ku);
 		return result;
 	}
 

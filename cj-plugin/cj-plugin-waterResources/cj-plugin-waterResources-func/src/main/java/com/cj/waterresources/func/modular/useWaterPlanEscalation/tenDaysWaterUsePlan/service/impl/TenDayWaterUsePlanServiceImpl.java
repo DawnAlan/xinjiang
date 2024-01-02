@@ -45,7 +45,7 @@ public class TenDayWaterUsePlanServiceImpl extends ServiceImpl<TenDayWaterUsePla
     public RestResponse add(TenDayWaterUsePlan tenDayWaterUsePlan) {
         List<TenDayWaterUsePlan> list = this.lambdaQuery().eq(TenDayWaterUsePlan::getIrrigatedArea, tenDayWaterUsePlan.getIrrigatedArea()).
                 eq(TenDayWaterUsePlan::getUseWaterUser, tenDayWaterUsePlan.getUseWaterUser()).
-                eq(TenDayWaterUsePlan::getDel,0).
+                eq(TenDayWaterUsePlan::getDel,0).eq(TenDayWaterUsePlan::getTenDays,tenDayWaterUsePlan.getTenDays()).
                 eq(TenDayWaterUsePlan::getIrrigatedCrop, tenDayWaterUsePlan.getIrrigatedCrop()).list();
         if(null!= list && list.size()>0){
             return RestResponse.no("该作物已存在，请勿重复添加");

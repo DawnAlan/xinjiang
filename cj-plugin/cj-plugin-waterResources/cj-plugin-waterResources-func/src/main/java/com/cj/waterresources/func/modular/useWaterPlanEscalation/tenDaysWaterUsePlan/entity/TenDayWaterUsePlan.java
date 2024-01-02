@@ -1,6 +1,9 @@
 package com.cj.waterresources.func.modular.useWaterPlanEscalation.tenDaysWaterUsePlan.entity;
 
 import java.util.Date;
+
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.extension.activerecord.Model;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -46,34 +49,42 @@ public class TenDayWaterUsePlan extends Model<TenDayWaterUsePlan> {
     private String irrigatedCrop;
 
     //计划灌溉总面积
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "计划灌溉总面积")
     private Double totalPlannedIrrigatedArea;
 
     //已播种面积
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "已播种面积")
     private Double sowedArea;
 
     //本旬计划灌溉面积
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "本旬计划灌溉面积")
     private Double plannedIrrigationAreaForThisMonth;
 
     //灌溉定额
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "灌溉定额")
     private Double irrigationQuota;
 
     //本旬计划灌溉
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "本旬计划灌溉")
     private Double irrigationPlanForThisWeek;
 
     //总灌溉次数
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "总灌溉次数")
     private Double totalIrrigationFrequency;
 
     //本旬计划灌水次
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "本旬计划灌水次")
     private Double plannedWateringTimesForThisMonth;
 
     //本旬需水量
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "本旬需水量")
     private Double waterDemandForThisMonth;
 

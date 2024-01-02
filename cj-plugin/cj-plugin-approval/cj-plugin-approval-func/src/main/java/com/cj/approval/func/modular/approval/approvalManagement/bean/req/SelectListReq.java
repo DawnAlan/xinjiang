@@ -12,12 +12,12 @@ import java.util.Date;
 @Data
 public class SelectListReq extends PageToolUtil implements Serializable {
 
-    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "开始时间")
     private Date startTime;
 
-    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "结束时间")
     private Date endTime;

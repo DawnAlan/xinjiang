@@ -1,24 +1,31 @@
 package com.cj.waterresources.func.modular.surfaceWater.generator.service;
 
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.cj.model.func.core.util.MinioUtils;
 import com.cj.waterresources.func.modular.surfaceWater.entity.QueryListReq;
 import com.cj.waterresources.func.modular.surfaceWater.entity.SurfaceWaterReq;
 import com.cj.waterresources.func.modular.surfaceWater.generator.domain.*;
 import com.cj.waterresources.func.modular.surfaceWater.generator.mapper.SurfaceWaterMapper;
 import com.cj.waterresources.func.modular.surfaceWater.vo.SurfaceWaterVo;
+import io.minio.ObjectWriteResponse;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -36,6 +43,9 @@ public class SurfaceWaterService extends ServiceImpl<SurfaceWaterMapper, Surface
     private final SurfaceWaterActualflowDetailService sactualflowDetailService;
     private final SurfaceWaterHydrologyDetailService hydrologyDetailService;
     private final SurfaceWaterWaterregimenDetailService waterregimenDetailService;
+
+    @Autowired
+    private MinioUtils minioUtils;
 
     public SurfaceWater add(MultipartFile file, SurfaceWaterReq surfaceWaterReq) {
         String filePath = uploadFile(file);
@@ -122,26 +132,26 @@ public class SurfaceWaterService extends ServiceImpl<SurfaceWaterMapper, Surface
     }
 
     private String uploadFile(MultipartFile multipartFile) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
-        String formattedDateTime = formatter.format(LocalDateTime.now());
-        String filePath = "C:/save/file"; // 替换为你想要保存文件的路径
-        String fileName = formattedDateTime + multipartFile.getOriginalFilename(); // 获取上传文件的文件名
-
-        File dest = new File(filePath + fileName); // 指定保存文件的路径和文件名
-        try (InputStream inputStream = multipartFile.getInputStream()) {
-            dest.createNewFile(); // 创建新文件
-            byte[] buffer = new byte[4096];
-            int bytesRead = -1;
-            OutputStream outputStream = new FileOutputStream(dest);
-            while ((bytesRead = inputStream.read(buffer)) != -1) {
-                outputStream.write(buffer, 0, bytesRead);
-            }
-            outputStream.close();
-            System.out.println("文件已成功保存到 " + filePath);
-        } catch (IOException e) {
-            System.out.println("保存文件时发生错误：" + e.getMessage());
+        try {
+            Date date = new Date();
+            String yyyyMMdd = DateUtil.format(date, "yyyyMMdd");
+            String hh = DateUtil.format(date, "HH");
+            String mm = DateUtil.format(date, "mm");
+            String ss = DateUtil.format(date, "ss");
+            String namePath =yyyyMMdd+"/"+hh+"/"+mm+"/"+ss+"/"+ cn.hutool.core.lang.UUID.fastUUID().toString(true) +multipartFile.getOriginalFilename().substring(multipartFile.getOriginalFilename().lastIndexOf("."));
+            ObjectWriteResponse objectWriteResponse = minioUtils.putObject("tth", namePath, multipartFile.getInputStream(), multipartFile.getContentType());
+            String object = objectWriteResponse.object();
+            return object;
+        }catch (Exception e){
+            e.printStackTrace();
+            return null;
         }
-        return fileName;
+    }
+
+    public void download(String id, HttpServletResponse response) {
+        //从minio下载
+        SurfaceWater surfaceWater = surfaceWaterMapper.selectById(id);
+        minioUtils.download("tth",surfaceWater.getFilePath(),response);
     }
 
 }

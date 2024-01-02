@@ -5,13 +5,16 @@ import com.cj.model.func.modular.FloodPredict.entity.*;
 import com.cj.model.func.modular.FloodPredict.utils.DataUtils;
 import com.cj.model.func.modular.FloodPredict.utils.MathUtils;
 import com.cj.model.func.modular.FloodPredict.utils.TimeUtils;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Date;
 
 
 public class LongForecast {
-    public ModelSaveEntity LongTermForecast(ParamsSetVO paramsSetVO, boolean isRealTime, boolean isHistory, Object[][] input, double[][] maxminOld, Object[][] para) {
+    public ModelSaveEntity LongTermForecast(ParamsSetVO paramsSetVO, boolean isRealTime, boolean isHistory, Object[][] input, double[][] maxminOld, Object[][] para) throws IOException, InvalidFormatException {
         //模型参数
        double[][] DNNpara = new double[para.length][para[0].length];
         if (isRealTime){
@@ -64,7 +67,6 @@ public class LongForecast {
         double[] meanFlowData;// 月平均流量
         double[] temperatureData;//温度
         double[] rainData;//降水
-
 
         //时间戳
         timeData = new double[input.length];
@@ -198,13 +200,13 @@ public class LongForecast {
         int outputNum = result[0].length;
         Date[][] dates;
         if (paramsSetVO.getForecastPeriod().equals("月")) {
-            dates = TimeUtils.getMonthDateList(startDate, result.length, 1);
+            dates = TimeUtils.getSelectMonthDateList(startDate, result.length);
         } else if (paramsSetVO.getForecastPeriod().equals("旬")) {
-            dates = TimeUtils.getDateList(startDate, result.length, 10, 0, outputNum);
+            dates = TimeUtils.getSelectDateList(startDate, result.length, 10, 0);
         } else if (paramsSetVO.getForecastPeriod().equals("日")) {
-            dates = TimeUtils.getDateList(startDate, result.length, 1, 0, outputNum);
+            dates = TimeUtils.getSelectDateList(startDate, result.length, 1, 0);
         } else {
-            dates = TimeUtils.getDateList(startDate, result.length, 0, 1, outputNum);
+            dates = TimeUtils.getSelectDateList(startDate, result.length, 0, 1);
         }
         List<TthResultEntity> resultList = new ArrayList();
         String inputIndex1 = DataUtils.array2String(paramsSetVO.getInputIndex());
@@ -295,8 +297,8 @@ public class LongForecast {
      * @param clusterMethod 聚类方法
      * @return 训练完成的神经网络
      */
-    private ModelSaveEntity trainPocess(double[][] trainData, double[][] testData, String clusterMethod, String trainModel, ParamsSetVO pvo, boolean isCascade)
-    {
+    private ModelSaveEntity trainPocess(double[][] trainData, double[][] testData, String clusterMethod, String trainModel, ParamsSetVO pvo, boolean isCascade) throws IOException, InvalidFormatException {
+
         TrainResult trainResult = new TrainResult();//检验的结果
         TrainResult trainResult1 = new TrainResult();//训练的结果
         List<TthResultEntity> resultList = new ArrayList();

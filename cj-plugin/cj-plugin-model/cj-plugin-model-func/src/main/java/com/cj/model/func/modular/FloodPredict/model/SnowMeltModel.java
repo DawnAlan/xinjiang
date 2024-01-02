@@ -261,7 +261,7 @@ public class SnowMeltModel {
 //        }
         return snowFlood;
     }
-    public  Object[][] RealTimeForcast(Object[][] input, ParamsSetVO pvo,  double[][] maxminOld,  Object[][] paraTemp) throws IOException{
+    public  Object[][] RealTimeForcast(Object[][] input, ParamsSetVO pvo,  double[][] maxminOld,  Object[][] paraTemp) throws IOException, InvalidFormatException {
         LongForecast longForecast = new LongForecast();
         boolean isRealtime=true;
         boolean isHistory=false;
@@ -270,7 +270,7 @@ public class SnowMeltModel {
         Date startDate = pvo.getPreStartTime();
         Date[][] dates;
         //预报期时间、流量赋值
-        dates = TimeUtils.getDateList(startDate, preNumber, 1, 0, 1);
+        dates = TimeUtils.getSelectDateList(startDate, preNumber, 1, 0);
 
         /**
          * 当前只实现了提供往前数据，下一天开始预报的功能；可二次开发实现隔天预报，需要判断dates！

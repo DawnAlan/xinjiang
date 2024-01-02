@@ -1,6 +1,9 @@
 package com.cj.waterresources.func.modular.useWaterPlanEscalation.monthWaterUsePlan.entity;
 
 import java.util.Date;
+
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.extension.activerecord.Model;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -22,14 +25,17 @@ public class MonthWaterUsePlan extends Model<MonthWaterUsePlan> {
     private String unit;
 
     //上旬
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "上旬")
     private Double earlyOctober;
 
     //中旬
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "中旬")
     private Double midDay;
 
     //下旬
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "下旬")
     private Double laterOctober;
 

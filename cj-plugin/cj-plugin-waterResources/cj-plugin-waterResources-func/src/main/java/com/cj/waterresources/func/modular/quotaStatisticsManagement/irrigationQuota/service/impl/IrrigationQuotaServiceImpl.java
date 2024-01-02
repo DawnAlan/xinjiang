@@ -26,7 +26,7 @@ public class IrrigationQuotaServiceImpl extends ServiceImpl<IrrigationQuotaMappe
     @Override
     public RestResponse add(IrrigationQuota irrigationQuota) {
         List<IrrigationQuota> list = this.lambdaQuery().eq(IrrigationQuota::getWaterUser, irrigationQuota.getWaterUser()).
-                eq(IrrigationQuota::getStation, irrigationQuota.getStation()).
+                eq(IrrigationQuota::getStation, irrigationQuota.getStation()).eq(IrrigationQuota::getYear,irrigationQuota.getYear()).
                 eq(IrrigationQuota::getIrrigationCrop, irrigationQuota.getIrrigationCrop()).list();
         if(null!= list && list.size()>0){
             return RestResponse.no("该作物已存在，请勿重复添加");

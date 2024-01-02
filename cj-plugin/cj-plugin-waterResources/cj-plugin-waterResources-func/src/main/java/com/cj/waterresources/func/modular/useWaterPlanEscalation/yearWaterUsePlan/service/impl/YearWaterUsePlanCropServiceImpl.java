@@ -133,6 +133,7 @@ public class YearWaterUsePlanCropServiceImpl extends ServiceImpl<YearWaterUsePla
                     set(YearWaterUsePlanTrunkCanal::getOctober, OctoberTotal).
                     set(YearWaterUsePlanTrunkCanal::getNovember, NovemberTotal).
                     set(YearWaterUsePlanTrunkCanal::getAmountCount,AprilTotal+MayTotal+JuneTotal+JulyTotal+AugustTotal+SeptemberTotal+OctoberTotal+NovemberTotal).
+                    eq(YearWaterUsePlanTrunkCanal::getYear,yearWaterUsePlanCrop.getYear()).
                     eq(YearWaterUsePlanTrunkCanal::getArea, yearWaterUsePlanCrop.getArea()).eq(YearWaterUsePlanTrunkCanal::getUnitId, yearWaterUsePlanCrop.getUnitId()).update();
             if(update){
                 return RestResponse.ok("更新成功");
@@ -149,7 +150,7 @@ public class YearWaterUsePlanCropServiceImpl extends ServiceImpl<YearWaterUsePla
     public RestResponse add(YearWaterUsePlanCrop yearWaterUsePlanCrop) {
         List<YearWaterUsePlanCrop> list = this.lambdaQuery().eq(YearWaterUsePlanCrop::getArea, yearWaterUsePlanCrop.getArea()).
                 eq(YearWaterUsePlanCrop::getUnit, yearWaterUsePlanCrop.getUnit()).
-                eq(YearWaterUsePlanCrop::getDel,0).
+                eq(YearWaterUsePlanCrop::getDel,0).eq(YearWaterUsePlanCrop::getYear,yearWaterUsePlanCrop.getYear()).
                 eq(YearWaterUsePlanCrop::getIrrigatedCrop, yearWaterUsePlanCrop.getIrrigatedCrop()).list();
         if(null!= list && list.size()>0){
             return RestResponse.no("该作物已存在，请勿重复添加");

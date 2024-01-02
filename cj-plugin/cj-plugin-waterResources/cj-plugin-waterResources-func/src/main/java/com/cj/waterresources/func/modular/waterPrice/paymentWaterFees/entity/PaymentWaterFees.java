@@ -61,5 +61,9 @@ public class PaymentWaterFees extends Model<PaymentWaterFees> {
     @ApiModelProperty(value = "水费类型")
     private String type;
 
+    //缴费年度
+    @ApiModelProperty(value = "缴费年度")
+    private Integer year;
+
 }
 

@@ -1,6 +1,9 @@
 package com.cj.waterresources.func.modular.waterStorageScheduling.waterStorageSchedulingLzz.entity;
 
 import java.util.Date;
+
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.extension.activerecord.Model;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -32,34 +35,42 @@ public class WaterStorageSchedulingLzz extends Model<WaterStorageSchedulingLzz> 
     private String tenDays;
 
     //入库水量
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "入库水量")
     private Double reservoirInflow;
 
     //调蓄水量-多余
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "调蓄水量-多余")
     private Double regulatingWaterStorageCapacitySurplus;
 
     //调蓄水量-不足
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "调蓄水量-不足")
     private Double regulatingWaterStorageCapacityInsuffcient;
 
     //蓄水量
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "蓄水量")
     private Double waterStorage;
 
     //供水量-合计
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "供水量-合计")
     private Double waterSupplyVolumeTotal;
 
     //水库需水量
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "水库需水量")
     private Double reservoirWaterDemand;
 
     //水厂需水量
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "水厂需水量")
     private Double waterPlantDemand;
 
     //蓄水位
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "蓄水位")
     private Double waterStorageLevel;
 

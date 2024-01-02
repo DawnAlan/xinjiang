@@ -29,7 +29,7 @@ import java.util.Arrays;
  * @return子序列 这个模型只返回了分解子序列的集合--u，其它两个可根据自己需求设置输出；其中行数K为分解层数，列数T为信号数
  */
 public class VMD {
-        public static void main(String[] args){
+        public static void main(String[] args)  {
         double[] signal=new double[]{1,2,3,4,5,6,7};
         int K=4;
         double[][] a =vmd(signal,K);

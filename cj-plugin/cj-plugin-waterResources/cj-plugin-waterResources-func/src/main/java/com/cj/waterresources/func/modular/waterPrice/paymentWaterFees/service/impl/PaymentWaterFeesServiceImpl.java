@@ -13,6 +13,7 @@ import com.cj.waterresources.func.modular.waterPrice.paymentWaterFees.entity.Pay
 import com.cj.waterresources.func.modular.waterPrice.paymentWaterFees.service.PaymentWaterFeesService;
 import org.springframework.stereotype.Service;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
@@ -25,6 +26,7 @@ import java.util.Date;
 public class PaymentWaterFeesServiceImpl extends ServiceImpl<PaymentWaterFeesMapper, PaymentWaterFees> implements PaymentWaterFeesService {
 
 
+    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
     @Override
     public RestResponse paymentWaterFeesAdd(PaymentWaterFeesAddReq req) {
@@ -39,6 +41,7 @@ public class PaymentWaterFeesServiceImpl extends ServiceImpl<PaymentWaterFeesMap
             paymentWaterFees.setPaymentAmount(req.getPaymentAmount());
             paymentWaterFees.setPaymentTime(req.getPaymentTime());
             paymentWaterFees.setType(req.getType());
+            paymentWaterFees.setYear(Integer.valueOf(sdf.format(req.getPaymentTime()).split("-")[0]));
             boolean save = this.save(paymentWaterFees);
             if(save){
                 return RestResponse.ok("新增成功");

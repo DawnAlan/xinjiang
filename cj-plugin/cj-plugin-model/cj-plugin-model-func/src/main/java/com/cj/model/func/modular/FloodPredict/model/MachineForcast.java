@@ -3,21 +3,21 @@ package com.cj.model.func.modular.FloodPredict.model;
 import com.cj.model.func.modular.FloodPredict.entity.ForcastInputParam;
 import com.cj.model.func.modular.FloodPredict.entity.ModelSaveEntity;
 import com.cj.model.func.modular.FloodPredict.entity.ParamsSetVO;
+import com.cj.model.func.modular.FloodPredict.utils.DataUtils;
 import com.cj.model.func.modular.FloodPredict.utils.ExcelTool;
 import com.cj.model.func.modular.FloodPredict.utils.TimeUtils;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 
 import java.io.IOException;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.ZoneId;
 import java.util.List;
 
+import static com.cj.model.func.modular.FloodPredict.model.MachineModel.pvoSet;
 import static com.cj.model.func.modular.FloodPredict.utils.DataUtils.getSpecificDate;
 
 public class MachineForcast {
@@ -26,6 +26,10 @@ public class MachineForcast {
 
         List<Object[][]> result = new ArrayList<>();
         ParamsSetVO pvo = pvoSet(inputTemp, param);//设置输入
+        pvo.setPreStartTime(param.getPreStartTime());//预报时间
+        //预报时段的确定
+        pvo.setPeriodStepNumber(param.getPeriodStepNumber());//预报时段数
+        pvo.setPeriodStepSize(param.getPeriodStepSize());//预报时段步长
         String paraPath = param.getXlsx().get(0).getPath();
         String maxminPath = param.getXlsx().get(1).getPath();
 
@@ -37,6 +41,7 @@ public class MachineForcast {
         //VMD分解
         double[] vmdInput = new double[inputTemp.length];
         double[][]vmdOutput=new double[K][inputTemp.length];
+
         for (int i = 0; i < inputTemp.length; i++) {
             vmdInput[i] = Double.parseDouble(inputTemp[i][1].toString());
         }
@@ -79,50 +84,51 @@ public class MachineForcast {
                 input[i][1] = vmdOutput[k][i];
             }
 
-            if(!isHistory){
+            if(!isHistory)
+            {
                 //径流预报
                 peakFlood = RealTimeForcast(input, pvo, maxminOld, para);
                 de_result[0][0]="时间";
                 de_result[0][k+1]="预报流量";
-                for (int i = 1; i < peakFlood.length + 1; i++) {
-                    de_result[i][0]=peakFlood[i-1][3];
-                    de_result[i][k+1]=peakFlood[i-1][4];
+                for (int i = 1; i < peakFlood.length+1; i++) {
+                    de_result[i][0]=peakFlood[i-1][0];
+                    de_result[i][k+1]=peakFlood[i-1][1];
                 }
             }
-            else {
+            else
+            {
                 HistoryImitate(pvo,input,maxminOld,paraTemp);
             }
+
         }
         for(int i = 0; i < param.getPeriodStepNumber() * param.getPeriodStepSize(); i++){
             preResult[i][1] = 0.0;//初始值
         }
-//        System.out.println("\n时间\t预报值");
-//        System.out.println("-------------------------");
         for(int i = 0; i < param.getPeriodStepNumber() * param.getPeriodStepSize(); i++){
             for (int j = 0; j < K; j++) {
                 preResult[i][0] = de_result[i + 1][0];
                 preResult[i][1] = (double) preResult[i][1] + (double) de_result[i + 1][j + 1];
             }
-//            System.out.printf("Formatted Date: %s%n %-10.2f", preResult[i][0], preResult[i][1]);
         }
+        resultProcessing(preResult , pvo);
         peakFlood = setFloodXlsx(preResult , pvo);
         result.add(peakFlood);
         return result;
     }
 
     //历史模拟
-    public void HistoryImitate(ParamsSetVO pvo,Object[][] input,double[][] maxminOld,Object[][] paraTemp) throws IOException{
+    public void HistoryImitate(ParamsSetVO pvo,Object[][] input,double[][] maxminOld,Object[][] paraTemp) throws IOException, InvalidFormatException {
         boolean isRealtime = true;
         boolean isHistory =true;
         LongForecast longForecast = new LongForecast();
         ModelSaveEntity results = longForecast.LongTermForecast(pvo, isRealtime, isHistory, input, maxminOld, paraTemp);
         for (int i = 0; i < results.getResult().size(); i++) {
-//            System.out.println("历史模拟" + "                          " + "实测");
-//            System.out.println(results.getResult().get(i).getSimOutput() + "      " + results.getResult().get(i).getRealOutput());
+            System.out.println("历史模拟" + "                          " + "实测");
+            System.out.println(results.getResult().get(i).getSimOutput() + "      " + results.getResult().get(i).getRealOutput());
         }
     }
     //实时预报
-    public  Object[][] RealTimeForcast(Object[][] input, ParamsSetVO pvo,  double[][] maxminOld,  Object[][] paraTemp) throws IOException{
+    public  Object[][] RealTimeForcast(Object[][] input, ParamsSetVO pvo,  double[][] maxminOld,  Object[][] paraTemp) throws IOException, InvalidFormatException {
         LongForecast longForecast = new LongForecast();
         boolean isRealtime=true;
         boolean isHistory=false;
@@ -130,10 +136,20 @@ public class MachineForcast {
         Date startDate = pvo.getPreStartTime();
         Date[][] dates;
         //预报期时间、流量赋值
-        if (pvo.getForecastPeriod().equals("月")) {dates = TimeUtils.getMonthDateList(startDate,pvo.getPeriodStepNumber(), 1);}
-        else if (pvo.getForecastPeriod().equals("旬")) {dates = TimeUtils.getDateList(startDate, pvo.getPeriodStepNumber(), 10, 0, 1);}//中长期的预报步长默认为1
-        else if (pvo.getForecastPeriod().equals("日")) {dates = TimeUtils.getDateList(startDate, pvo.getPeriodStepNumber()* pvo.getPeriodStepSize(), 1, 0, 1);}
-        else {dates = TimeUtils.getDateList(startDate, pvo.getPeriodStepNumber()* pvo.getPeriodStepSize(), 0, 1, 1);}
+        switch (pvo.getForecastPeriod()) {
+            case "月":
+                dates = TimeUtils.getSelectMonthDateList(startDate, pvo.getPeriodStepNumber());
+                break;
+            case "旬":
+                dates = TimeUtils.getSelectDateList(startDate, pvo.getPeriodStepNumber(), 10, 0);
+                break;
+            case "日":
+                dates = TimeUtils.getSelectDateList(startDate, pvo.getPeriodStepNumber() * pvo.getPeriodStepSize(), 1, 0);
+                break;
+            default:
+                dates = TimeUtils.getSelectDateList(startDate, pvo.getPeriodStepNumber() * pvo.getPeriodStepSize(), 0, 1);
+                break;
+        }
         /**
          * 当前只实现了提供往前数据，下一天开始预报的功能；可二次开发实现隔天预报，需要判断dates！
          */
@@ -163,9 +179,7 @@ public class MachineForcast {
                 predict1[i][j]=predict[i][j];
             }
         }
-        //洪峰的识别与记录
-        Object[][] floodXlsx = setFloodXlsx(predict1 , pvo);
-        return floodXlsx;
+        return predict1;
     }
     //洪峰的确定
     public Object[][] setFloodXlsx(Object[][]predict, ParamsSetVO pvo){
@@ -202,7 +216,7 @@ public class MachineForcast {
             if (pvo.getForecastPeriod().equals("月")){
                 // 获取该月份的天数
                 Date time = (Date) predict[i*pvo.getPeriodStepSize()][0];
-                int days = getSpecificDate(time).get("日");
+                int days = 30;
                 peakFloodXlsx[i][9]=Math.round(3600*24*days*(double)predict[i*pvo.getPeriodStepSize()][1]/10000 * 100.0) / 100.0;
             }
         }
@@ -301,55 +315,246 @@ public class MachineForcast {
         }
         return waterLevel;
     }
-    //设置输入
-    public ParamsSetVO pvoSet (Object[][] historyInput, ForcastInputParam param) {
-        ParamsSetVO pvo = new ParamsSetVO();
-        //输入时段数的确定
-        String period=param.getPeriod();
-        switch (period) {
-            case "月":
-            case "旬":
-            case "日":
-                pvo.setInfluence_factor(4);
-                break;
-            case "小时":
-                pvo.setInfluence_factor(24);
-                break;
+
+    /**
+     * 将最后预测的相对误差转换为实际径流
+     * @param input
+     * @return
+     */
+    public Object[][] resultProcessing(Object[][] input,ParamsSetVO pvo){
+        int month = 0;
+        for (int i = 0; i < input.length; i++) {
+            if (pvo.getForecastDuanmian().equals("3号桥")||pvo.getForecastDuanmian().equals("楼庄子")){
+                Date date = (Date) input[i][0];
+                month = DataUtils.getSpecificDate(date).get("月");
+                switch (month){
+                    case 1:
+                        input[i][1]=(1-(double) input[i][1])*1.29;
+                        if ((double) input[i][1]<0.66){
+                            input[i][1]=0.66;
+                        }
+                        if ((double) input[i][1]>3){
+                            input[i][1]=2.38;
+                        }
+                        break;
+                    case 2:
+                        input[i][1]=(1-(double) input[i][1])*1.19;
+                        if ((double) input[i][1]<0.57){
+                            input[i][1]=0.57;
+                        }
+                        if ((double) input[i][1]>3){
+                            input[i][1]=1.88;
+                        }
+                        break;
+                    case 3:
+                        input[i][1]=(1-(double) input[i][1])*1.77;
+                        if ((double) input[i][1]<0.68){
+                            input[i][1]=0.68;
+                        }
+                        if ((double) input[i][1]>5){
+                            input[i][1]=3.94;
+                        }
+                        break;
+                    case 4:
+                        input[i][1]=(1-(double) input[i][1])*2.78;
+                        if ((double) input[i][1]<1.38){
+                            input[i][1]=1.38;
+                        }
+                        if ((double) input[i][1]>5){
+                            input[i][1]=4.06;
+                        }
+                        break;
+                    case 5:
+                        input[i][1]=(1-(double) input[i][1])*8.13;
+                        if ((double) input[i][1]<3.61){
+                            input[i][1]=3.61;
+                        }
+                        if ((double) input[i][1]>20){
+                            input[i][1]=14.7;
+                        }
+                        break;
+                    case 6:
+                        input[i][1]=(1-(double) input[i][1])*17.92;
+                        if ((double) input[i][1]<9.54){
+                            input[i][1]=9.54;
+                        }
+                        if ((double) input[i][1]>35){
+                            input[i][1]=32.99;
+                        }
+                        break;
+                    case 7:
+                        input[i][1]=(1-(double) input[i][1])*22.05;
+                        if ((double) input[i][1]<12.1){
+                            input[i][1]=12.1;
+                        }
+                        if ((double) input[i][1]>50){
+                            input[i][1]=46.1;
+                        }
+                        break;
+                    case 8:
+                        input[i][1]=(1-(double) input[i][1])*16.13;
+                        if ((double) input[i][1]<9.19){
+                            input[i][1]=9.19;
+                        }
+                        if ((double) input[i][1]>30){
+                            input[i][1]=27.2;
+                        }
+                        break;
+                    case 9:
+                        input[i][1]=(1-(double) input[i][1])*7.84;
+                        if ((double) input[i][1]<3.62){
+                            input[i][1]=3.62;
+                        }
+                        if ((double) input[i][1]>20){
+                            input[i][1]=14.7;
+                        }
+                        break;
+                    case 10:
+                        input[i][1]=(1-(double) input[i][1])*3.85;
+                        if ((double) input[i][1]<1.95){
+                            input[i][1]=1.95;
+                        }
+                        if ((double) input[i][1]>10){
+                            input[i][1]=6.66;
+                        }
+                        break;
+                    case 11:
+                        input[i][1]=(1-(double) input[i][1])*2.23;
+                        if ((double) input[i][1]<1.13){
+                            input[i][1]=1.13;
+                        }
+                        if ((double) input[i][1]>5){
+                            input[i][1]=3.36;
+                        }
+                        break;
+                    case 12:
+                        input[i][1]=(1-(double) input[i][1])*1.52;
+                        if ((double) input[i][1]<0.86){
+                            input[i][1]=0.86;
+                        }
+                        if ((double) input[i][1]>5){
+                            input[i][1]=3.16;
+                        }
+                        break;
+                }
+            }
+            else if (pvo.getForecastDuanmian().equals("楼头区间")){
+                double proportion = 0.058;
+                Date date = (Date) input[i][0];
+                month = DataUtils.getSpecificDate(date).get("月");
+                switch (month){
+                    case 1:
+                        input[i][1]=(1-(double) input[i][1])*1.29*proportion;
+                        if ((double) input[i][1]<0.66*proportion){
+                            input[i][1]=0.66*proportion;
+                        }
+                        if ((double) input[i][1]>3*proportion){
+                            input[i][1]=2.38*proportion;
+                        }
+                        break;
+                    case 2:
+                        input[i][1]=(1-(double) input[i][1])*1.19*proportion;
+                        if ((double) input[i][1]<0.57*proportion){
+                            input[i][1]=0.57*proportion;
+                        }
+                        if ((double) input[i][1]>3*proportion){
+                            input[i][1]=1.88*proportion;
+                        }
+                        break;
+                    case 3:
+                        input[i][1]=(1-(double) input[i][1])*1.77*proportion;
+                        if ((double) input[i][1]<0.68*proportion){
+                            input[i][1]=0.68*proportion;
+                        }
+                        if ((double) input[i][1]>5*proportion){
+                            input[i][1]=3.94*proportion;
+                        }
+                        break;
+                    case 4:
+                        input[i][1]=(1-(double) input[i][1])*2.78*proportion;
+                        if ((double) input[i][1]<1.38*proportion){
+                            input[i][1]=1.38*proportion;
+                        }
+                        if ((double) input[i][1]>5*proportion){
+                            input[i][1]=4.06*proportion;
+                        }
+                        break;
+                    case 5:
+                        input[i][1]=(1-(double) input[i][1])*8.13*proportion;
+                        if ((double) input[i][1]<3.61*proportion){
+                            input[i][1]=3.61*proportion;
+                        }
+                        if ((double) input[i][1]>20*proportion){
+                            input[i][1]=14.7*proportion;
+                        }
+                        break;
+                    case 6:
+                        input[i][1]=(1-(double) input[i][1])*17.92*proportion;
+                        if ((double) input[i][1]<9.54*proportion){
+                            input[i][1]=9.54*proportion;
+                        }
+                        if ((double) input[i][1]>35*proportion){
+                            input[i][1]=32.99*proportion;
+                        }
+                        break;
+                    case 7:
+                        input[i][1]=(1-(double) input[i][1])*22.05*proportion;
+                        if ((double) input[i][1]<12.1*proportion){
+                            input[i][1]=12.1*proportion;
+                        }
+                        if ((double) input[i][1]>50*proportion){
+                            input[i][1]=46.1*proportion;
+                        }
+                        break;
+                    case 8:
+                        input[i][1]=(1-(double) input[i][1])*16.13*proportion;
+                        if ((double) input[i][1]<9.19*proportion){
+                            input[i][1]=9.19*proportion;
+                        }
+                        if ((double) input[i][1]>30*proportion){
+                            input[i][1]=27.2*proportion;
+                        }
+                        break;
+                    case 9:
+                        input[i][1]=(1-(double) input[i][1])*7.84*proportion;
+                        if ((double) input[i][1]<3.62*proportion){
+                            input[i][1]=3.62*proportion;
+                        }
+                        if ((double) input[i][1]>20*proportion){
+                            input[i][1]=14.7*proportion;
+                        }
+                        break;
+                    case 10:
+                        input[i][1]=(1-(double) input[i][1])*3.85*proportion;
+                        if ((double) input[i][1]<1.95*proportion){
+                            input[i][1]=1.95*proportion;
+                        }
+                        if ((double) input[i][1]>10*proportion){
+                            input[i][1]=6.66*proportion;
+                        }
+                        break;
+                    case 11:
+                        input[i][1]=(1-(double) input[i][1])*2.23*proportion;
+                        if ((double) input[i][1]<1.13*proportion){
+                            input[i][1]=1.13*proportion;
+                        }
+                        if ((double) input[i][1]>5*proportion){
+                            input[i][1]=3.36*proportion;
+                        }
+                        break;
+                    case 12:
+                        input[i][1]=(1-(double) input[i][1])*1.52*proportion;
+                        if ((double) input[i][1]<0.86*proportion){
+                            input[i][1]=0.86*proportion;
+                        }
+                        if ((double) input[i][1]>5*proportion){
+                            input[i][1]=3.16*proportion;
+                        }
+                        break;
+                }
+            }
         }
-        int[] inputIndex = new int[pvo.influence_factor];
-        for (int i = 0; i < inputIndex.length; i++) {
-            inputIndex[i] = i;
-        }
-        pvo.setInputIndex(inputIndex);//输入时段数
-        //一些基础参数
-        pvo.setForecastDuanmian(param.getLocation());
-        pvo.setForecastPeriod(param.getPeriod());
-        pvo.setNetClass(param.getModel());
-        pvo.setC(10);
-        pvo.setGamma(10);
-        pvo.setMobp(10);
-        pvo.setMaxRate(0.02);//这个会影响精度！！!
-        String layers = pvo.getInfluence_factor() +",11,11,1";//，输入前几个时段径流，k为输入的因素数量输出未来流量
-        pvo.setLayerCount(layers);
-        pvo.setTrainNum(5000);
-        pvo.setERROR(0.00001);
-        pvo.setQ_max(2000);
-        pvo.setQ_min(0);
-        //输入时间的确定
-        Date startDate = (Date) historyInput[pvo.influence_factor-1][0];
-        pvo.setDataSetStartTime(startDate);//开始日期
-        Date endDate = (Date) historyInput[historyInput.length/4*3-1][0];
-        pvo.setDateSetEndTime(endDate);//结束日期
-        Date testStartDate = (Date) historyInput[historyInput.length/4*3+pvo.influence_factor-1][0];
-        pvo.setTestSetStartTime(testStartDate);//测试集开始时期
-        Date testEndDate = (Date) historyInput[historyInput.length-1][0];
-        pvo.setTestSetEndTime(testEndDate);//测试集结束时期
-        pvo.setPreStartTime(param.getPreStartTime());//预报时间
-        //预报时段的确定
-        pvo.setPeriodStepNumber(param.getPeriodStepNumber());//预报时段数
-        pvo.setPeriodStepSize(param.getPeriodStepSize());//预报时段步长
-        pvo.setIsSnowMeltModel(false);
-        return pvo;
+        return input;
     }
 }
 

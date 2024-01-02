@@ -411,7 +411,7 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
     public RestResponse<IPage<IncomingWaterForecast>> selectList(IncomingWaterForecastListReq req) {
         try {
             IPage<IncomingWaterForecast> incomingWaterForecastPage = new Page<>(req.getPageNum(),req.getPageSize());
-            IPage<IncomingWaterForecast> page = this.lambdaQuery().eq(StringUtils.isNotEmpty(req.getProgrammeName()), IncomingWaterForecast::getProgrammeName, req.getProgrammeName()).
+            IPage<IncomingWaterForecast> page = this.lambdaQuery().like(StringUtils.isNotEmpty(req.getProgrammeName()), IncomingWaterForecast::getProgrammeName, req.getProgrammeName()).
                     eq(req.getPeriodTimeType() != null, IncomingWaterForecast::getPeriodTimeType, req.getPeriodTimeType()).
                     eq(StringUtils.isNotEmpty(req.getCreateBy()),IncomingWaterForecast::getCreateBy,req.getCreateBy()).
                     eq(req.getModelType() != null, IncomingWaterForecast::getModelType,req.getModelType()).

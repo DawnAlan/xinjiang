@@ -1,6 +1,9 @@
 package com.cj.waterresources.func.modular.waterSituationReportManagement.a3.zcc.entity;
 
 import java.util.Date;
+
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.extension.activerecord.Model;
 import lombok.Data;
 
@@ -21,6 +24,7 @@ public class DayWaterSituationStatisticsTableZcc extends Model<DayWaterSituation
     //表头ID
     private String tableHeadId;
     //值
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double v;
 }
 

@@ -15,6 +15,7 @@ import com.cj.middleDatabase.func.modular.lzz.lzzRainfallStation.entity.LzzRainf
 import com.cj.middleDatabase.func.modular.lzz.lzzRainfallStation.service.LzzRainfallStationService;
 import com.cj.middleDatabase.func.modular.lzz.storageCapacityCurve.entity.StorageCapacityCurve;
 import com.cj.middleDatabase.func.modular.lzz.storageCapacityCurve.service.StorageCapacityCurveService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -69,22 +70,18 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
                         station.setTime(paramDto.getTime());
                         station.setYear(String.valueOf(sdf.format(paramDto.getTime()).split("-")[0]));
                         station.setId(userPidParam.getName()+":"+paramDto.getTime().getTime());
-                    }else {
-                        station.setRainfall(null);
-                        station.setTime(time);
-                        station.setYear(String.valueOf(sdf.format(time).split("-")[0]));
                     }
                 }
                 if(userIdParam.getName().substring(userIdParam.getName().length()-2).contains("温度")){
                     ParamDto paramDto = lzzPlatformMapper.selectInfoByTime(userIdParam.getId(), sdf.format(time));
                     if(null != paramDto){
                         station.setTemperature(paramDto.getV());
-                    }else {
-                        station.setTemperature(null);
                     }
                 }
             }
-            rainfallStationList.add(station);
+            if(StringUtils.isNotEmpty(station.getId())){
+                rainfallStationList.add(station);
+            }
         }
         boolean b = lzzRainfallStationService.saveOrUpdateBatch(rainfallStationList);
         if(b){
@@ -121,25 +118,22 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
                     } else {
                         lzz.setStorageCapacity(0.00);
                     }
-                }else {
-                    lzz.setId("楼庄子库水位站:" + time.getTime());
-                    lzz.setGatherTime(time);
-                    lzz.setRelativeWaterLevel(null);
-                    lzz.setStorageCapacity(null);
                 }
             }
             if(userIdParam.getName().substring(userIdParam.getName().length()-2).contains("温度")){
                 ParamDto paramDto = lzzPlatformMapper.selectInfoByTime(userIdParam.getId(), sdf.format(time));
                 if(null != paramDto) {
                     lzz.setTemperature(paramDto.getV().doubleValue());
-                }else {
-                    lzz.setTemperature(null);
                 }
             }
         }
-        boolean b = lzzGaugingStationService.saveOrUpdate(lzz);
-        if(b){
-            return RestResponse.ok("ok");
+        if(StringUtils.isNotEmpty(lzz.getId())){
+            boolean b = lzzGaugingStationService.saveOrUpdate(lzz);
+            if(b){
+                return RestResponse.ok("ok");
+            }else {
+                return RestResponse.no("error");
+            }
         }else {
             return RestResponse.no("error");
         }
@@ -170,30 +164,24 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
                         gaugingStation.setRelativeWaterLevel(paramDto.getV().doubleValue());
                         gaugingStation.setId(gaugingStation.getStationName()+":"+paramDto.getTime().getTime());
                         gaugingStation.setGatherTime(paramDto.getTime());
-                    }else {
-                        gaugingStation.setRelativeWaterLevel(null);
-                        gaugingStation.setId(gaugingStation.getStationName()+":"+time.getTime());
-                        gaugingStation.setGatherTime(time);
                     }
                 }
                 if(userIdParam.getName().substring(userIdParam.getName().length()-2).contains("温度")){
                     ParamDto paramDto = lzzPlatformMapper.selectInfoByTime(userIdParam.getId(), sdf.format(time));
                     if(null != paramDto) {
                         gaugingStation.setTemperature(paramDto.getV().doubleValue());
-                    }else {
-                        gaugingStation.setTemperature(null);
                     }
                 }
                 if(userIdParam.getName().substring(userIdParam.getName().length()-2).contains("流量")){
                     ParamDto paramDto = lzzPlatformMapper.selectInfoByTime(userIdParam.getId(), sdf.format(time));
                     if(null != paramDto) {
                         gaugingStation.setFlow(paramDto.getV().doubleValue());
-                    }else {
-                        gaugingStation.setFlow(null);
                     }
                 }
             }
-            gaugingStationList.add(gaugingStation);
+            if(StringUtils.isNotEmpty(gaugingStation.getId())){
+                gaugingStationList.add(gaugingStation);
+            }
         }
         boolean b = lzzGaugingStationService.saveOrUpdateBatch(gaugingStationList);
         if(b){

@@ -81,10 +81,12 @@ public class TrendsTableParamServiceImpl extends ServiceImpl<TrendsTableParamMap
                 totalIdToStation.setName(param.getParamName());
                 totalIdToStationService.save(totalIdToStation);
             }
-            if(param.getUseType()==2){
+            if(!req.getParamName().equals("合计") && param.getUseType()==2){
                 if(StringUtils.isEmpty(req.getUseWaterType())){
                     throw new RuntimeException("请选择用水类型");
                 }
+            }
+            if(param.getUseType()==2 && !req.getParamName().equals("合计")){
                 WaterPriceManagement waterPriceManagement = new WaterPriceManagement();
                 waterPriceManagement.setUseWaterType(req.getUseWaterType());
                 waterPriceManagement.setId(param.getId());
@@ -189,7 +191,7 @@ public class TrendsTableParamServiceImpl extends ServiceImpl<TrendsTableParamMap
             if(byId.getParamName().equals(req.getParam().getParamName())){
                 if(req.getParam().getUseType()==2){
                     if(StringUtils.isNotEmpty(req.getUseWaterType())){
-                        boolean update = waterPriceManagementService.lambdaUpdate().set(WaterPriceManagement::getUseWaterType, req.getUseWaterType()).
+                        boolean update = waterPriceManagementService.lambdaUpdate().set(WaterPriceManagement::getUseWaterType, StringUtils.isEmpty(req.getUseWaterType())?null:req.getUseWaterType()).
                                 eq(WaterPriceManagement::getId, req.getParam().getId()).update();
                         if(update){
                             return RestResponse.ok("修改成功");
@@ -198,7 +200,14 @@ public class TrendsTableParamServiceImpl extends ServiceImpl<TrendsTableParamMap
                             return RestResponse.no("修改失败");
                         }
                     }else {
-                        return RestResponse.ok("修改成功");
+                        boolean update = waterPriceManagementService.lambdaUpdate().set(WaterPriceManagement::getUseWaterType, StringUtils.isEmpty(req.getUseWaterType())?null:req.getUseWaterType()).
+                                eq(WaterPriceManagement::getId, req.getParam().getId()).update();
+                        if(update){
+                            return RestResponse.ok("修改成功");
+                        }else {
+                            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                            return RestResponse.no("修改失败");
+                        }
                     }
                 }else {
                     return RestResponse.ok("修改成功");
@@ -218,7 +227,7 @@ public class TrendsTableParamServiceImpl extends ServiceImpl<TrendsTableParamMap
                             if(!req.getParam().getParamName().equals("合计")) {
                                 boolean update = waterPriceManagementService.lambdaUpdate().
                                         set(WaterPriceManagement::getUserName, req.getParam().getParamName()).
-                                        set(WaterPriceManagement::getUseWaterType, req.getUseWaterType()).
+                                        set(WaterPriceManagement::getUseWaterType,  StringUtils.isEmpty(req.getUseWaterType())?null:req.getUseWaterType()).
                                         eq(WaterPriceManagement::getId, req.getParam().getId()).update();
                                 if(update){
                                     return RestResponse.ok("修改成功");
@@ -233,7 +242,7 @@ public class TrendsTableParamServiceImpl extends ServiceImpl<TrendsTableParamMap
                                 }else {
                                     boolean update = waterPriceManagementService.lambdaUpdate().
                                             set(WaterPriceManagement::getUserName, req.getParam().getParamName()).
-                                            set(WaterPriceManagement::getUseWaterType, req.getUseWaterType()).
+                                            set(WaterPriceManagement::getUseWaterType,  StringUtils.isEmpty(req.getUseWaterType())?null:req.getUseWaterType()).
                                             eq(WaterPriceManagement::getId, req.getParam().getId()).update();
                                     if(update){
                                         return RestResponse.ok("修改成功");

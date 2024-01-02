@@ -1,6 +1,9 @@
 package com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hd.entity;
 
 import java.util.Date;
+
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.extension.activerecord.Model;
 import lombok.Data;
 
@@ -23,6 +26,7 @@ public class DayWaterSituationStatisticsTableHd extends Model<DayWaterSituationS
     //表头ID
     private String tableHeadId;
     //值
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double v;
 }
 

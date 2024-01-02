@@ -84,63 +84,145 @@ public class TimeUtils {
 	 * 
 	 * @param startDate 开始时间（延长至基础数据）
 	 * @param len 预见期的长度
-	 * @param outputNum
-	 * @return 从预报开始日期月初开始返回
+	 * @return 从预报开始日期月初开始返回相应枯水期或者丰水期的预报时间
 	 */
-	public static Date[][] getMonthDateList(Date startDate,int len,int outputNum) {
-		Date[][] dates = new Date[len][outputNum];
+	public static Date[][] getSelectMonthDateList(Date startDate, int len) {
+		Date[][] dates = new Date[len][1];
+		int day = DataUtils.getSpecificDate(startDate).get("日");
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(startDate);
+		cal.add(Calendar.DAY_OF_MONTH,-day+1);
+		startDate=cal.getTime();
+		int month = DataUtils.getSpecificDate(startDate).get("月");
+		if (month<=9&&month>=5){
+			int judgeMonth = 0;
+			for(int i = 0; i < len; i++){
+				judgeMonth = DataUtils.getSpecificDate(startDate).get("月");
+				cal.setTime(startDate);
+				dates[i][0]=cal.getTime();
+				cal.add(Calendar.MONTH,1);
+				startDate=cal.getTime();
+				if (judgeMonth==9){
+					cal.add(Calendar.MONTH,7);//后续更改，注意丰水期的时间
+					startDate = cal.getTime();
+				}
+			}
+		}
+		if (month<=4||month>=10){
+			int judgeMonth = 0;
+			for(int i = 0; i < len; i++){
+				judgeMonth = DataUtils.getSpecificDate(startDate).get("月");
+				cal.setTime(startDate);
+				dates[i][0]=cal.getTime();
+				cal.add(Calendar.MONTH,1);
+				startDate=cal.getTime();
+				if (judgeMonth==4){
+					cal.add(Calendar.MONTH,5);//后续更改，注意枯水期的时间
+					startDate = cal.getTime();
+				}
+			}
+		}
+		return dates;
+	}
+
+	
+	public static Date[][] getSelectDateList(Date startDate, int len, int day, int hours){
+		Date[][] dates = new Date[len][1];
+		Calendar now = Calendar.getInstance();
+		now.setTime(startDate);
+		startDate = now.getTime();
+		if(day == 10){
+			int month = DataUtils.getSpecificDate(startDate).get("月");
+			DateIndex outputIndex = TimeUtils.getDateIndex(startDate);
+			if (month<=9&&month>=5){
+				int judgeIndex = 0;
+				for(int i = 0; i < len; i++){
+					dates[i][0] = TimeUtils.getDateByIndexTenDay(outputIndex);
+					int year = DataUtils.getSpecificDate(dates[i][0]).get("年");
+					outputIndex = outputIndex.getNextDateIndex(36);
+					judgeIndex =outputIndex.getIndex();
+					if (judgeIndex==28){
+						outputIndex.setYear(year+1);
+						outputIndex.setIndex(13);
+					}
+				}
+			}
+			if (month<=4||month>=10){
+				int judgeIndex = 0;
+				for(int i = 0; i < len; i++){
+					dates[i][0] = TimeUtils.getDateByIndexTenDay(outputIndex);
+					outputIndex = outputIndex.getNextDateIndex(36);
+					judgeIndex =outputIndex.getIndex();
+					if (judgeIndex==13){
+						outputIndex.setIndex(28);
+					}
+				}
+			}
+		}
+		else{
+			int month = DataUtils.getSpecificDate(startDate).get("月");
+			if (month<=9&&month>=5){
+				int judgeMonth = 0;
+				for(int i = 0; i < len; i++){
+					now.setTime(startDate);
+					dates[i][0]=now.getTime();
+					now.add(Calendar.DAY_OF_YEAR, day);
+					now.add(Calendar.HOUR_OF_DAY, hours);
+					startDate=now.getTime();
+					judgeMonth = DataUtils.getSpecificDate(startDate).get("月");
+					if (judgeMonth==10){
+						now.add(Calendar.MONTH,7);//后续更改，注意丰水期的时间
+						int dayOfMonth = DataUtils.getSpecificDate(startDate).get("日");
+						now.add(Calendar.DAY_OF_MONTH,-dayOfMonth+1);
+						startDate = now.getTime();
+					}
+				}
+			}
+			if (month<=4||month>=10){
+				int judgeMonth = 0;
+				for(int i = 0; i < len; i++){
+					now.setTime(startDate);
+					dates[i][0]=now.getTime();
+					now.add(Calendar.DAY_OF_YEAR, day);
+					now.add(Calendar.HOUR_OF_DAY, hours);
+					startDate=now.getTime();
+					judgeMonth = DataUtils.getSpecificDate(startDate).get("月");
+					if (judgeMonth==5){
+						now.add(Calendar.MONTH,5);//后续更改，注意丰水期的时间
+						int dayOfMonth = DataUtils.getSpecificDate(startDate).get("日");
+						now.add(Calendar.DAY_OF_MONTH,-dayOfMonth+1);
+						startDate = now.getTime();
+					}
+				}
+			}
+		}
+		return dates;
+	}
+	/**中长期的月日期处理
+	 *
+	 * @param startDate 开始时间（延长至基础数据）
+	 * @param len 预见期的长度
+	 * @return 除去基础数据日期的所有日期
+	 */
+	public static Date[][] getMonthDateList(Date startDate,int len) {
+		Date[][] dates = new Date[len][1];
 		int day = DataUtils.getSpecificDate(startDate).get("日");
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(startDate);
 		cal.add(Calendar.DAY_OF_MONTH,-day+1);
 		startDate=cal.getTime();
 		for(int i = 0; i < len; i++){
-			for(int j = 0; j < outputNum; j++){
-				if(i == 0){
-					if(j == 0){
-						cal.setTime(startDate);
-						dates[i][j]=cal.getTime();
-					}
-				}else{
+			cal.setTime(startDate);
+			dates[i][0]=cal.getTime();
+			cal.add(Calendar.MONTH,1);
+			startDate = cal.getTime();
+		}
+		return dates;
+	}
 
-					cal.setTime(dates[i-1][j]);
-					cal.add(Calendar.MONTH,1);
-					dates[i][j]=cal.getTime();
-				}
-			}
-		}
-		return dates;
-	}
-	
-	/**
-	 *  得到从开始时间开始的预见期内的所有日期
-	 * @param startDate  开始时间
-	 * @param len 预见期的长度
-	 * @param outputNum
-	 * @return
-	 */
-	public static Date[][] getMonthDateList1(Date startDate,int len,int outputNum) {
-		Date[][] dates = new Date[len][outputNum];
-		for(int i = 0; i < len; i++){
-			for(int j = 0; j < outputNum; j++){
-				if(i == 0){
-					if(j == 0){
-						
-						 dates[i][j]=startDate;
-					}
-					}else{
-						 Calendar cal = Calendar.getInstance();
-						 cal.setTime(dates[i-1][j]);
-						 cal.add(Calendar.MONTH,1);
-						 dates[i][j]=cal.getTime();
-					}
-			}
-		}
-		return dates;
-	}
-	
-	public static Date[][] getDateList(Date startDate,int len, int day, int hours, int outptuNum){
-		Date[][] dates = new Date[len][outptuNum];
+
+	public static Date[][] getDateList(Date startDate,int len, int day, int hours){
+		Date[][] dates = new Date[len][1];
 		Calendar now = Calendar.getInstance();
 		now.setTime(startDate);
 		startDate = now.getTime();
@@ -148,51 +230,25 @@ public class TimeUtils {
 			DateIndex index = TimeUtils.getDateIndex(startDate);
 			DateIndex outputIndex = index;
 			for(int i = 0; i < len; i++){
-				for(int j = 0; j < outptuNum; j++){	
-					if(j == 0){
-						dates[i][j] = TimeUtils.getDateByIndexTenDay(outputIndex);
-					}else{
-						dates[i][j] = TimeUtils.getDateByIndexTenDay(TimeUtils.getDateIndex(dates[i][j - 1]).getNextDateIndex(36));		
-					}
-				}
+				dates[i][0] = TimeUtils.getDateByIndexTenDay(outputIndex);
 				outputIndex = outputIndex.getNextDateIndex(36);
 			}
 
-		}else{	
+		}else{
 			for(int i = 0; i < len; i++){
-				for(int j = 0; j < outptuNum; j++){
-					if(i == 0){
-						if(j == 0){
-							dates[i][j] = startDate;
-						}else{
-							Calendar rightNow = Calendar.getInstance();
-							rightNow.setTime(dates[i][j - 1]);
-							rightNow.add(Calendar.DAY_OF_YEAR, day);
-							rightNow.add(Calendar.HOUR_OF_DAY, hours);
-							dates[i][j] = rightNow.getTime();
-						}
-					}else{
-						if(j == 0){
-							Calendar rightNow = Calendar.getInstance();
-							rightNow.setTime(dates[i - 1][j]);
-							rightNow.add(Calendar.DAY_OF_YEAR, day);
-							rightNow.add(Calendar.HOUR_OF_DAY, hours);
-							dates[i][j] = rightNow.getTime();
-						}else{
-							Calendar rightNow = Calendar.getInstance();
-							rightNow.setTime(dates[i][j - 1]);
-							rightNow.add(Calendar.DAY_OF_YEAR, day);
-							rightNow.add(Calendar.HOUR_OF_DAY, hours);
-							dates[i][j] = rightNow.getTime();
-						}
-					}
-					
+				if(i == 0){
+					dates[i][0] = startDate;
+				}else{
+					Calendar rightNow = Calendar.getInstance();
+					rightNow.setTime(dates[i - 1][0]);
+					rightNow.add(Calendar.DAY_OF_YEAR, day);
+					rightNow.add(Calendar.HOUR_OF_DAY, hours);
+					dates[i][0] = rightNow.getTime();
 				}
 			}
 		}
 		return dates;
 	}
-	
 
 	
 	
