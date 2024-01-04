@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.cj.common.exception.CommonException;
 import com.cj.common.model.RestResponse;
 import com.cj.common.pojo.CommonResult;
 import com.cj.common.util.ExcelUtils;
@@ -490,6 +491,9 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
         List<Map<String, Object>> maps = tenDayWaterUsePlanService.getBaseMapper().selectMaps(lqw);
         for (int i = 0; i < maps.size(); i++) {
             Map<String, Object> tenDays = maps.get(i);
+            if (tenDays == null || tenDays.get("DEMAND") == null) {
+                throw new CommonException("旬需水计划数据异常");
+            }
             Waterdemand waterdemand = new Waterdemand();
             waterdemand.setUseWaterPlan("tenDays");
             waterdemand.setWaterDemendData(((BigDecimal) tenDays.get("DEMAND")).doubleValue());
