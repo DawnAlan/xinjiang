@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.cj.project.modular.fiducial.entity.FiducialPara;
 import com.cj.project.modular.fiducial.param.FiducialIdParam;
 import com.cj.project.modular.fiducial.param.FiducialParaAddParam;
-import com.cj.project.modular.fiducial.param.FiducialParaIdParam;
 
 import java.util.List;
 
@@ -39,9 +38,9 @@ public interface FiducialParaService extends IService<FiducialPara> {
      * @author Lb
      * @date  2023/09/04 19:57
      */
-    void delete(List<FiducialParaIdParam> fiducialParaIdParamList);
+    void delete(List<String> fiducialParaIdList);
 
-    void deleteByPoint(List<FiducialIdParam> fiducialIdParamList);
+    void deleteByPoint(List<String> fiducialIdList);
 
     /**
      * 获取考证参数集合

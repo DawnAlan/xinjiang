@@ -17,6 +17,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.validation.constraints.NotBlank;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -39,13 +40,8 @@ public class FiducialAddParam {
     @NotBlank(message = "instrumentType不能为空")
     private String instrumentType;
 
-    /** 测点编号 */
-    @ApiModelProperty(value = "测点编号", required = true, position = 3)
-    @NotBlank(message = "pointName不能为空")
-    private String pointName;
-
     /** 测点详情 */
     @ApiModelProperty(value = "测点详情", required = true, position = 4)
-    private Map<String, Object> detail;
+    private List<Map<String, Object>> detail;
 
 }

@@ -10,12 +10,10 @@ import org.springframework.transaction.annotation.Transactional;
 import com.cj.project.modular.fiducial.entity.FiducialPara;
 import com.cj.project.modular.fiducial.mapper.FiducialParaMapper;
 import com.cj.project.modular.fiducial.param.FiducialParaAddParam;
-import com.cj.project.modular.fiducial.param.FiducialParaIdParam;
 import com.cj.project.modular.fiducial.service.FiducialParaService;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * 考证参数表Service接口实现类
@@ -64,17 +62,16 @@ public class FiducialParaServiceImpl extends ServiceImpl<FiducialParaMapper, Fid
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void delete(List<FiducialParaIdParam> fiducialParaIdParamList) {
+    public void delete(List<String> fiducialParaIdList) {
         // 执行删除
-        this.removeByIds(CollStreamUtil.toList(fiducialParaIdParamList, FiducialParaIdParam::getId));
+        this.removeByIds(fiducialParaIdList);
     }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void deleteByPoint(List<FiducialIdParam> fiducialIdParamList) {
+    public void deleteByPoint(List<String> fiducialIdList) {
         // 执行删除
-        List<String> points = fiducialIdParamList.stream().map(FiducialIdParam::getId).collect(Collectors.toList());
-        this.remove(new QueryWrapper<FiducialPara>().lambda().in(FiducialPara::getPointId,points));
+        this.remove(new QueryWrapper<FiducialPara>().lambda().in(FiducialPara::getPointId,fiducialIdList));
     }
 
     @Override

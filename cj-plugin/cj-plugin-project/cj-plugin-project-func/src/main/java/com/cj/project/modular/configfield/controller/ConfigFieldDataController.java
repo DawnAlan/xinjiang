@@ -5,12 +5,12 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cj.common.annotation.CommonLog;
 import com.cj.common.pojo.CommonResult;
 import com.cj.common.pojo.CommonValidList;
-import com.cj.project.modular.configfield.entity.ConfigFieldFiducial;
-import com.cj.project.modular.configfield.param.ConfigFieldFiducialAddParam;
-import com.cj.project.modular.configfield.param.ConfigFieldFiducialEditParam;
-import com.cj.project.modular.configfield.param.ConfigFieldFiducialIdParam;
-import com.cj.project.modular.configfield.param.ConfigFieldFiducialPageParam;
-import com.cj.project.modular.configfield.service.ConfigFieldFiducialService;
+import com.cj.project.modular.configfield.entity.ConfigFieldData;
+import com.cj.project.modular.configfield.param.*;
+import com.cj.project.modular.configfield.result.ConfigFieldDataResult;
+import com.cj.project.modular.configfield.service.ConfigFieldDataGreatService;
+import com.cj.project.modular.configfield.service.ConfigFieldDataService;
+import com.cj.project.modular.configfield.service.ConfigFieldDataGreatService;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSupport;
 import io.swagger.annotations.Api;
@@ -24,12 +24,13 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Resource;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
+import java.util.List;
 
 /**
  * 数据字段配置控制器
  *
  * @author Lb
- * @date  2023/08/31 19:28
+ * @date  2023/11/08 15:28
  */
 @Api(tags = "数据字段配置控制器")
 @ApiSupport(author = "CJ_TEAM", order = 1)
@@ -38,81 +39,112 @@ import javax.validation.constraints.NotEmpty;
 public class ConfigFieldDataController {
 
     @Resource
-    private ConfigFieldFiducialService configFieldFiducialService;
+    private ConfigFieldDataService configFieldDataService;
+
+    @Resource
+    private ConfigFieldDataGreatService configFieldDataGreatService;
 
     /**
-     * 获取考证字段配置分页
+     * 获取数据字段配置
      *
      * @author Lb
-     * @date  2023/08/31 19:28
+     * @date 2023/11/08 15:28
      */
     @ApiOperationSupport(order = 1)
-    @ApiOperation("获取数据字段配置分页")
-    @GetMapping("/project/configfield/page")
-    public CommonResult<Page<ConfigFieldFiducial>> page(ConfigFieldFiducialPageParam configFieldFiducialPageParam) {
-        return CommonResult.data(configFieldFiducialService.page(configFieldFiducialPageParam));
+    @ApiOperation("获取数据字段配置")
+    @CommonLog("添加数据字段配置")
+    @GetMapping("/project/configField/data/get")
+    public CommonResult<List<ConfigFieldDataResult>> getList(ConfigFieldQueryParam configFieldQueryParam) {
+        return CommonResult.data(configFieldDataService.getList(configFieldQueryParam));
     }
 
     /**
-     * 添加考证字段配置
+     * 添加数据字段配置
      *
      * @author Lb
-     * @date  2023/08/31 19:28
+     * @date  2023/11/08 15:28
      */
     @ApiOperationSupport(order = 2)
-    @ApiOperation("添加考证字段配置")
-    @CommonLog("添加考证字段配置")
-    @SaCheckPermission("/project/configfield/add")
-    @PostMapping("/project/configfield/add")
-    public CommonResult<String> add(@RequestBody @Valid ConfigFieldFiducialAddParam configFieldFiducialAddParam) {
-        configFieldFiducialService.add(configFieldFiducialAddParam);
+    @ApiOperation("添加数据字段配置")
+    @CommonLog("添加数据字段配置")
+    @PostMapping("/project/configField/data/add")
+    public CommonResult<String> add(@RequestBody @Valid ConfigFieldDataAddParam configFieldDataAddParam) {
+        configFieldDataService.add(configFieldDataAddParam);
         return CommonResult.ok();
     }
 
     /**
-     * 编辑考证字段配置
+     * 编辑数据字段配置
      *
      * @author Lb
-     * @date  2023/08/31 19:28
+     * @date  2023/11/08 15:28
      */
     @ApiOperationSupport(order = 3)
-    @ApiOperation("编辑考证字段配置")
-    @CommonLog("编辑考证字段配置")
-    @SaCheckPermission("/project/configfield/edit")
-    @PostMapping("/project/configfield/edit")
-    public CommonResult<String> edit(@RequestBody @Valid ConfigFieldFiducialEditParam configFieldFiducialEditParam) {
-        configFieldFiducialService.edit(configFieldFiducialEditParam);
+    @ApiOperation("编辑数据字段配置")
+    @CommonLog("编辑数据字段配置")
+    @PostMapping("/project/configField/data/edit")
+    public CommonResult<String> edit(@RequestBody @Valid ConfigFieldDataEditParam configFieldDataEditParam) {
+        configFieldDataService.edit(configFieldDataEditParam);
         return CommonResult.ok();
     }
 
     /**
-     * 删除考证字段配置
+     * 删除数据字段配置
      *
      * @author Lb
-     * @date  2023/08/31 19:28
+     * @date  2023/11/08 15:28
      */
     @ApiOperationSupport(order = 4)
-    @ApiOperation("删除考证字段配置")
-    @CommonLog("删除考证字段配置")
-    @SaCheckPermission("/project/configfield/delete")
-    @PostMapping("/project/configfield/delete")
+    @ApiOperation("删除数据字段配置")
+    @CommonLog("删除数据字段配置")
+    @PostMapping("/project/configField/delete")
     public CommonResult<String> delete(@RequestBody @Valid @NotEmpty(message = "集合不能为空")
-                                                   CommonValidList<ConfigFieldFiducialIdParam> configFieldFiducialIdParamList) {
-        configFieldFiducialService.delete(configFieldFiducialIdParamList);
+                                                   CommonValidList<ConfigFieldIdParam> configFieldIdParamList) {
+        configFieldDataService.delete(configFieldIdParamList);
         return CommonResult.ok();
     }
 
     /**
-     * 获取考证字段配置详情
+     * 获取数据字段配置详情
      *
      * @author Lb
-     * @date  2023/08/31 19:28
+     * @date  2023/11/08 15:28
      */
     @ApiOperationSupport(order = 5)
-    @ApiOperation("获取考证字段配置详情")
-    @SaCheckPermission("/project/configfield/detail")
-    @GetMapping("/project/configfield/detail")
-    public CommonResult<ConfigFieldFiducial> detail(@Valid ConfigFieldFiducialIdParam configFieldFiducialIdParam) {
-        return CommonResult.data(configFieldFiducialService.detail(configFieldFiducialIdParam));
+    @ApiOperation("获取数据字段配置详情")
+    @GetMapping("/project/configField/data/detail")
+    public CommonResult<ConfigFieldData> detail(@Valid ConfigFieldIdParam configFieldIdParam) {
+        return CommonResult.data(configFieldDataService.detail(configFieldIdParam));
+    }
+
+    /**
+     * 创建数据字段配置
+     *
+     * @author Lb
+     * @date 2023/11/08 17:28
+     */
+    @ApiOperationSupport(order = 6)
+    @ApiOperation("创建数据字段配置")
+    @CommonLog("创建数据字段配置")
+    @SaCheckPermission("/project/configField/data/creat")
+    @GetMapping("/project/configField/data/creat")
+    public CommonResult<String> Create(String projectCode, String instrumentMetaType, String instrumentType) {
+        configFieldDataGreatService.Create(projectCode, instrumentMetaType, instrumentType);
+        return CommonResult.ok();
+    }
+
+    /**
+     * 批量更新数据字段配置
+     *
+     * @author : lb
+     * @date : 2023/11/08 17:28
+     */
+    @ApiOperationSupport(order = 7)
+    @ApiOperation("批量更新数据字段配置")
+    @CommonLog("批量更新数据字段配置")
+    @GetMapping("/project/configField/data/updateFields")
+    public CommonResult<String> UpdateFields(String projectCode, String instrumentType, String[] Fields,String isDisplay) {
+        configFieldDataGreatService.UpdateFieldDisplay(projectCode,instrumentType,Fields,isDisplay);
+        return CommonResult.ok();
     }
 }

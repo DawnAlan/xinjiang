@@ -33,15 +33,15 @@ import java.util.stream.Collectors;
 public class ConfigFieldFiducialServiceImpl extends ServiceImpl<ConfigFieldFiducialMapper, ConfigFieldFiducial> implements ConfigFieldFiducialService {
 
     @Override
-    public List<ConfigFieldFiducialResult> getList(ConfigFieldFiducialQueryParam configFieldFiducialQueryParam) {
+    public List<ConfigFieldFiducialResult> getList(ConfigFieldQueryParam configFieldQueryParam) {
         List<ConfigFieldFiducialResult> fieldFiducialResults = new ArrayList<>();
         //List
         QueryWrapper<ConfigFieldFiducial> queryWrapper = new QueryWrapper<>();
-        if(ObjectUtil.isNotEmpty(configFieldFiducialQueryParam.getProjectCode())) {
-            queryWrapper.lambda().eq(ConfigFieldFiducial::getProjectCode, configFieldFiducialQueryParam.getProjectCode());
+        if(ObjectUtil.isNotEmpty(configFieldQueryParam.getProjectCode())) {
+            queryWrapper.lambda().eq(ConfigFieldFiducial::getProjectCode, configFieldQueryParam.getProjectCode());
         }
-        if(ObjectUtil.isNotEmpty(configFieldFiducialQueryParam.getInstrumentType())) {
-            queryWrapper.lambda().eq(ConfigFieldFiducial::getInstrumentType, configFieldFiducialQueryParam.getInstrumentType());
+        if(ObjectUtil.isNotEmpty(configFieldQueryParam.getInstrumentType())) {
+            queryWrapper.lambda().eq(ConfigFieldFiducial::getInstrumentType, configFieldQueryParam.getInstrumentType());
         }
         queryWrapper.lambda().orderByAsc(ConfigFieldFiducial::getSortCode);
         List<ConfigFieldFiducial> configFieldFiducials = this.list(queryWrapper);
@@ -96,14 +96,14 @@ public class ConfigFieldFiducialServiceImpl extends ServiceImpl<ConfigFieldFiduc
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void delete(List<ConfigFieldFiducialIdParam> configFieldFiducialIdParamList) {
+    public void delete(List<ConfigFieldIdParam> configFieldIdParamList) {
         // 执行删除
-        this.removeByIds(CollStreamUtil.toList(configFieldFiducialIdParamList, ConfigFieldFiducialIdParam::getId));
+        this.removeByIds(CollStreamUtil.toList(configFieldIdParamList, ConfigFieldIdParam::getId));
     }
 
     @Override
-    public ConfigFieldFiducial detail(ConfigFieldFiducialIdParam configFieldFiducialIdParam) {
-        return this.queryEntity(configFieldFiducialIdParam.getId());
+    public ConfigFieldFiducial detail(ConfigFieldIdParam configFieldIdParam) {
+        return this.queryEntity(configFieldIdParam.getId());
     }
 
     @Override

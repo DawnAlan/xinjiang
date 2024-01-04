@@ -18,10 +18,10 @@ public interface ConfigFieldFiducialService extends IService<ConfigFieldFiducial
 
     /**
      * 查询仪器类型考证字段配置
-     * @param configFieldFiducialQueryParam
+     * @param configFieldQueryParam：项目仪器类型
      * @return
      */
-    List<ConfigFieldFiducialResult> getList(ConfigFieldFiducialQueryParam configFieldFiducialQueryParam);
+    List<ConfigFieldFiducialResult> getList(ConfigFieldQueryParam configFieldQueryParam);
 
     /**
      * 获取考证字段配置分页
@@ -53,7 +53,7 @@ public interface ConfigFieldFiducialService extends IService<ConfigFieldFiducial
      * @author Lb
      * @date  2023/08/31 19:28
      */
-    void delete(List<ConfigFieldFiducialIdParam> configFieldFiducialIdParamList);
+    void delete(List<ConfigFieldIdParam> configFieldIdParamList);
 
     /**
      * 获取考证字段配置详情
@@ -61,7 +61,7 @@ public interface ConfigFieldFiducialService extends IService<ConfigFieldFiducial
      * @author Lb
      * @date  2023/08/31 19:28
      */
-    ConfigFieldFiducial detail(ConfigFieldFiducialIdParam configFieldFiducialIdParam);
+    ConfigFieldFiducial detail(ConfigFieldIdParam configFieldIdParam);
 
     /**
      * 获取考证字段配置详情

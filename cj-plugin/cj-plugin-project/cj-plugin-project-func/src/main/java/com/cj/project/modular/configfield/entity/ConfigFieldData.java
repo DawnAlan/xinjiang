@@ -4,14 +4,12 @@ import com.baomidou.mybatisplus.annotation.*;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
-import java.math.BigDecimal;
-import java.util.Date;
 
 /**
- * 考证字段配置实体
+ * 数据配置管理实体
  *
  * @author Lb
- * @date  2023/08/31 19:28
+ * @date  2023/11/08 14:35
  **/
 @Getter
 @Setter
@@ -25,41 +23,41 @@ public class ConfigFieldData {
 
     /** 项目编号 */
     @ApiModelProperty(value = "项目编号", position = 2)
-    private String projectcode;
+    private String projectCode;
 
     /** 仪器类型 */
     @ApiModelProperty(value = "仪器类型", position = 3)
-    private String instrumenttype;
+    private String instrumentType;
 
     /** 平台仪器类型 */
     @ApiModelProperty(value = "平台仪器类型", position = 4)
-    private String instrumentmetatype;
+    private String instrumentMetaType;
 
     /** 字段释义 */
     @ApiModelProperty(value = "字段释义", position = 5)
-    private String fieldtext;
+    private String fieldText;
 
     /** 字段标识 */
     @ApiModelProperty(value = "字段标识", position = 6)
-    private String fieldkey;
+    private String fieldKey;
 
     /** 字段分类 */
     @ApiModelProperty(value = "字段分类", position = 7)
-    private String fconfig;
+    private String fieldConfig;
 
     /** 是否显示 */
     @ApiModelProperty(value = "是否显示", position = 8)
-    private String isdisplay;
+    private String isDispaly;
 
     /** 排序 */
     @ApiModelProperty(value = "排序", position = 9)
-    private Integer sortid;
+    private Integer sortCode;
 
     /** 字段类型 */
     @ApiModelProperty(value = "字段类型", position = 10)
-    private String systemtype;
+    private String systemType;
 
     /** 配置 */
     @ApiModelProperty(value = "配置", position = 11)
-    private String frontconfig;
+    private String extJson;
 }

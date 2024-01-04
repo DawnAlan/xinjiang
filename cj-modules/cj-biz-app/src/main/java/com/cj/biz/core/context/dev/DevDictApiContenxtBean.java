@@ -37,6 +37,14 @@ import java.util.Map;
     }
 
     @Override
+    public List<JSONObject> getDictByParentId(String parentId) {
+        String dictList = devDictFeign.getDictByParentId(parentId);
+        JSONArray jsonArray = new JSONArray(dictList);
+        List<JSONObject> resp = jsonArray.toList(JSONObject.class);
+        return resp;
+    }
+
+    @Override
     public List<JSONObject> getDictByName(String name)
     {
         String dictList = devDictFeign.getDictByName(name);

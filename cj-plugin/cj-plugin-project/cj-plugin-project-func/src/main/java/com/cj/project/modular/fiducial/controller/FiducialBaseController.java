@@ -93,8 +93,8 @@ public class FiducialBaseController {
     @CommonLog("删除测点考证")
     @PostMapping("/project/fiducial/base/delete")
     public CommonResult<String> delete(@RequestBody @Valid @NotEmpty(message = "集合不能为空")
-                                       CommonValidList<FiducialIdParam> fiducialIdParamList) {
-        fiducialBaseService.delete(fiducialIdParamList);
+                                       CommonValidList<String> fiducialIdList) {
+        fiducialBaseService.delete(fiducialIdList);
         return CommonResult.ok();
     }
 

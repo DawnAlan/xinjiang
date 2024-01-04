@@ -1,8 +1,11 @@
 package com.cj.project.modular.instruments.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
@@ -13,6 +16,8 @@ import lombok.Setter;
  **/
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @TableName("project_instruments")
 public class ProjectInstruments {
 
@@ -20,6 +25,12 @@ public class ProjectInstruments {
     @TableId
     @ApiModelProperty(value = "id", position = 1)
     private String id;
+
+    /** 父id */
+    @TableField(exist = false)
+    @JsonIgnore
+    @ApiModelProperty(value = "父id", position = 1)
+    private String parentId;
 
     /** 项目编号 */
     @ApiModelProperty(value = "项目编号", position = 2)
@@ -40,6 +51,10 @@ public class ProjectInstruments {
     /** 仪器编码 */
     @ApiModelProperty(value = "仪器编码", position = 6)
     private String instrumentCode;
+    /** 排序码 */
+
+    @ApiModelProperty(value = "排序码", position = 6)
+    private Integer sortCode;
 
     /** 设计埋设量 */
     @ApiModelProperty(value = "设计埋设量", position = 7)
@@ -48,4 +63,8 @@ public class ProjectInstruments {
     /** 别名关键词 */
     @ApiModelProperty(value = "别名关键词", position = 8)
     private String nameKeys;
+
+
+
+
 }

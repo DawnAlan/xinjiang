@@ -103,6 +103,10 @@ public class FiducialBaseEditParam {
     @ApiModelProperty(value = "仪器型号", position = 19, notes = "param_field")
     private String modelName;
 
+    /** 仪器量程 */
+    @ApiModelProperty(value = "仪器量程", position = 19, notes = "param_field")
+    private String instrumentSpan;
+
     /** 传感器名称 */
     @ApiModelProperty(value = "传感器名称", position = 20, notes = "param_field")
     private String sensorName;
