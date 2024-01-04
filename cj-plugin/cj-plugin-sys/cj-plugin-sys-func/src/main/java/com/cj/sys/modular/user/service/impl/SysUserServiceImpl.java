@@ -365,6 +365,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
     @Override
     public void resetPassword(SysUserIdParam sysUserIdParam) {
+        System.out.println(CommonCryptogramUtil.doHashValue(devConfigApi.getValueByKey(SYS_DEFAULT_PASSWORD_KEY)));
         this.update(new LambdaUpdateWrapper<SysUser>().eq(SysUser::getId,
                 sysUserIdParam.getId()).set(SysUser::getPassword,
                 CommonCryptogramUtil.doHashValue(devConfigApi.getValueByKey(SYS_DEFAULT_PASSWORD_KEY))));

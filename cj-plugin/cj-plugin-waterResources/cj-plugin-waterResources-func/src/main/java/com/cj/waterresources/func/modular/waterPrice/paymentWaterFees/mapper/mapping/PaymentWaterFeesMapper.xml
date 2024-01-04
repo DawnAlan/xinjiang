@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cj.waterresources.func.modular.waterPrice.paymentWaterFees.mapper.PaymentWaterFeesMapper">
+
+    <select id="paymentWaterFeesSelectList" resultType="com.cj.waterresources.func.modular.waterPrice.paymentWaterFees.bean.res.PaymentWaterFeesSelectListRes" parameterType="com.cj.waterresources.func.modular.waterPrice.paymentWaterFees.bean.req.PaymentWaterFeesSelectListReq">
+        SELECT ID,STATION,WATER_USER_NAME,PAYMENT_AMOUNT,TO_CHAR(PAYMENT_TIME,'YYYY-MM-DD') as PAYMENT_TIME,TYPE
+        FROM PAYMENT_WATER_FEES
+        <where>
+            <if test="req.station !=null and req.station != ''">
+                AND STATION = #{req.station}
+            </if>
+            <if test="req.waterUserName !=null and req.waterUserName != ''">
+                AND WATER_USER_NAME = #{req.waterUserName}
+            </if>
+            <if test="req.paymentStartTime !=null and req.paymentEndTime != null">
+                AND PAYMENT_TIME BETWEEN  #{req.paymentStartTime} AND #{req.paymentEndTime}
+            </if>
+            AND DEL = 0 AND STATION != '渠首管理站'
+        </where>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+</mapper>

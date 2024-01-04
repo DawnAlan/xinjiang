@@ -1,11 +1,9 @@
 package com.cj.model.func.modular.watertransfer.model;
 
-
-
-
 import com.cj.model.func.modular.FloodPrevent.entity.CurveParam;
 import com.cj.model.func.modular.watertransfer.entity.DataInflowPrevent;
 import com.cj.model.func.modular.watertransfer.method.FindValue;
+import com.cj.model.func.modular.watertransfer.method.InputWay;
 import com.cj.model.func.modular.watertransfer.method.Reservoir;
 import com.cj.model.func.modular.watertransfer.method.WaterTransfer;
 import com.cj.model.func.modular.watertransfer.req.WaterTransferReq;
@@ -32,12 +30,14 @@ public class ResourceOptimizationshort_DayTest
     private static int period=10;
     static double[] minoutflow = {0.74,0.74,0.74,1.48,1.48,1.48,1.48,1.48,1.48,0.74,0.74,0.74};
     static double minOutflow;
+    private Reservoir [] reservoirs;
+
     public ArrayList ResourceOptimizationshort_daysTest(WaterTransferReq waterTransferReq) throws Exception {
         //应用POA  进行水资源优化
         //设计调度时段  和   来水过程
         //配置水库
 
-        Reservoir []reservoirs = new Reservoir[2];
+
         setReservoir(waterTransferReq.getCurve(),reservoirs);
         if (waterTransferReq.getName()==1){
             waterTransferReq.setId(2);
@@ -70,17 +70,21 @@ public class ResourceOptimizationshort_DayTest
         int  monthNum=(int)monthday[date[1]-1];
         minOutflow=minoutflow[date[1]-1];
         daynum[2]=monthNum-20;
+        // 第几旬
+        int whichDecade=0;
         if (date[2]<=10)
         {
+            whichDecade=0;
             period=10-date[2]+1;
         }
         if (date[2]>10&&date[2]<=20)
         {
+            whichDecade=1;
             period=20-date[2]+1;
-
         }
         if (date[2]>20)
         {
+            whichDecade=2;
             period=monthNum-date[2]+1;
         }
 
@@ -96,59 +100,145 @@ public class ResourceOptimizationshort_DayTest
         double[] levelBegin = {waterTransferReq.getLevelBeginLzz(), waterTransferReq.getLevelBeginTth()};
         double[] levelEnd =  {waterTransferReq.getLevelEndLzz(), waterTransferReq.getLevelEndTth()};
          id= waterTransferReq.getId();
+        int calStep=(int)daynum[2];
 
-        double[][] waterDemand1= new double[5][period];
-        double [][]inflow1=new  double[2][period];
-        double[][]waterdemand31=new double[6][period];
-        double[][]waterdemand41=new double[9][period];
         Map<String, Object> data1 = new HashMap<>();
         double[][] inflow=new double[2][period];
 
         data1=SetInflow(waterTransferReq, waterTransferReq.getData(),86400);
         inflow[0]=(double[])data1.get("楼庄子流量");
         inflow[1]=(double[])data1.get("头屯河流量");
+
+        Map<String, Object> dataDemand = new HashMap<>();
+        Map<String, Object> dataMonth=new HashMap<>();
+        dataMonth=InputWay.setwaterdemandTendays(waterTransferReq,whichDecade,date[1]-1);
+        dataDemand= InputWay.setWaterdemandDay(waterTransferReq,dataMonth,xnum,(int)daynum[whichDecade],whichDecade);
+
+        String[]nameAgricultureEast=(String[]) dataDemand.get("河东灌溉站点名");
+        String[] nameAgricultureWest=(String[]) dataDemand.get("河西灌溉站点名");
+        String[]nameGreenEast=(String[]) dataDemand.get("河东绿化站点名");
+        String[]nameGreenWest=(String[]) dataDemand.get("河西绿化站点名");
+        String[]nameGreenQushou=(String[]) dataDemand.get("渠首绿化站点名");
+        String[]nameIndustryQushou=(String[]) dataDemand.get("渠首工业站点名");
+        String[]nameAgricultureQushou=(String[]) dataDemand.get("渠首农业站点名");
+
+        double[][] waterDemand1= new double[5][calStep];
+
+        double[][]waterdemand31=new double[1+nameAgricultureWest.length][calStep];
+        double[][]waterdemand41=new double[2+nameAgricultureQushou.length+nameAgricultureEast.length][calStep];
+
+
         double [][]waterDemand=new double[5][period];
 //        waterDemand=req.getWaterDemand_day();
 //        double [][]inflow=new   double[2][period];
-        double[][]waterdemand3=new double[6][period];
-        double[][]waterdemand4=new double[8][period];
-//        inflow1[0]=new double[]{3.352,2.861,2.78,0.981,2.617,3.352,3.352,3.148,3.376,3.434};
-//        inflow1[1]=new double[]{0,0,0,0,0,0,0,0,0,0};
-        waterDemand1[0]= new double[]{8,8,8,8,8,8,8,8,8,8};
-        waterDemand1[1]= new double[]{3.05,2.6,2.53,0.89,2.38,3.05,3.05,3.11,3.07,3.12};
-        waterDemand1[2]= new double[]{7.18,6.13,5.96,2.1,5.61,7.18,7.18,7.32,7.24,7.36};
+        double[][]waterdemand3=new double[1+nameAgricultureWest.length][period];
+        double[][]waterdemand4=new double[2+nameAgricultureQushou.length+nameAgricultureEast.length][period];
 
-        waterDemand1[3]= new double[]{13.71,11.7,11.37,4.01,10.7,13.71,13.71,13.98,13.81,14.05};
-        waterDemand1[4]= new double[]{13.71,11.7,11.37,4.01,10.7,13.71,13.71,13.98,13.81,14.05};
+        double [][]waterDemandIndustry1=new double[1+nameIndustryQushou.length][calStep];
+        double [][]waterDemandGreenWest1=new double[nameGreenWest.length][calStep];
+        double [][]waterDemandGreenEast1=new double[nameGreenEast.length][calStep];
+        double [][]waterDemandGreenQushou1=new double[nameGreenQushou.length][calStep];
+        //      八钢加渠首工业
+
+        for (int x=0;x<waterDemandIndustry1.length;x++)
+        {
+            if (x==0)
+            {
+                waterDemandIndustry1[0]=(double[]) dataDemand.get("八钢");
+            }
+            else
+            {
+                waterDemandIndustry1[x]=(double[]) dataDemand.get(nameIndustryQushou[x-1]);
+            }
+        }
+
+//      楼庄子水厂
+        waterDemand1[0]=(double[]) dataDemand.get("楼庄子水厂");
+//      红岩取水
+        waterDemand1[1]= (double[]) dataDemand.get("红岩");
+//      八钢加渠首工业
+        for (int t=0;t<waterDemandIndustry1[0].length;t++){
+            for (int x=0;x<waterDemandIndustry1.length;x++){
+                waterDemand1[2][t]+=waterDemandIndustry1[x][t];
+            }
+        }
+
+//       河西灌溉
+
+//       河西绿化细分
+        for (int x=0;x<nameGreenWest.length;x++)
+        {
+            waterDemandGreenWest1[x]= (double[]) dataDemand.get(nameGreenWest[x]);
+        }
+        for (int t=0;t<waterDemandGreenWest1[0].length;t++){
+            for (int x=0;x<waterDemandGreenWest1.length;x++){
+                waterdemand31[0][t]+=waterDemandGreenWest1[x][t];
+            }
+        }
+        for (int x=0;x<waterdemand31.length;x++)
+        {
+            if (x==0)
+            {
+
+            }
+            else
+            {
+                waterdemand31[x]= (double[]) dataDemand.get(nameAgricultureWest[x-1]);
+            }
+        }
+//       河东灌溉
+//       河东绿化细分
+        for (int x=0;x<nameGreenEast.length;x++)
+        {
+            waterDemandGreenEast1[x]= (double[]) dataDemand.get(nameGreenEast[x]);
+        }
+        for (int t=0;t<waterDemandGreenEast1[0].length;t++){
+            for (int x=0;x<waterDemandGreenEast1.length;x++){
+                waterdemand41[0][t]+=waterDemandGreenEast1[x][t];
+            }
+        }
+        //       渠首绿化细分
+        for (int x=0;x<nameGreenQushou.length;x++)
+        {
+            waterDemandGreenQushou1[x]= (double[]) dataDemand.get(nameGreenQushou[x]);
+        }
+        for (int t=0;t<waterDemandGreenQushou1[0].length;t++)
+        {
+            for (int x=0;x<waterDemandGreenQushou1.length;x++){
+                waterdemand41[1][t]+=waterDemandGreenQushou1[x][t];
+            }
+        }
+        for (int x=0;x<waterdemand41.length;x++)
+        {
+            if (x<2)
+            {
+
+            }
+            if (x>=2&&x<2+nameAgricultureQushou.length)
+            {
+                waterdemand41[x]= (double[]) dataDemand.get(nameAgricultureQushou[x-2]);
+            }
+            if (x>=2+nameAgricultureQushou.length){
+                waterdemand41[x]=(double[]) dataDemand.get(nameAgricultureEast[x-2-nameAgricultureQushou.length]);
+            }
+        }
+
+        for (int t=0;t<waterDemand1[0].length;t++){
+            for (int x=0;x<waterdemand31.length;x++){
+                waterDemand1[3][t]+=waterdemand31[x][t];
+            }
+        }
+        for (int t=0;t<waterDemand1[0].length;t++){
+            for (int x=0;x<waterdemand41.length;x++){
+                waterDemand1[4][t]+=waterdemand41[x][t];
+            }
+        }
 
 
-        waterdemand31[0]= new double[]{3.32,2.83,2.75,0.97,2.59,3.32,3.32,3.38,3.34,3.4};
-        waterdemand31[1]=new double[]{2.74,2.34,2.27,0.8,2.14,2.74,2.74,2.8,2.76,2.81};
-        waterdemand31[2]= new double[]{3.84,3.28,3.18,1.12,3,3.84,3.84,3.91,3.87,3.93};
-        waterdemand31[3]=new double[]{2.44,2.08,2.02,0.71,1.9,2.44,2.44,2.49,2.46,2.5};
-        waterdemand31[4]=new double[]{0.96,0.82,0.8,0.28,0.75,0.96,0.96,0.98,0.97,0.98};
-        waterdemand31[5]=new double[]{0.41,0.35,0.34,0.12,0.32,0.41,0.41,0.42,0.41,0.42};
-
-
-        waterdemand41[0]= new double[]{1.56,1.33,1.3,0.46,1.22,1.56,1.56,1.59,1.57,1.6};
-        //jihua1
-        waterdemand41[1]= new double[]{2.25,1.92,1.87,0.66,1.76,2.25,2.25,2.3,2.27,2.31};
-        waterdemand41[2]= new double[]{5.4,4.61,4.48,1.58,4.21,5.4,5.4,5.51,5.44,5.53};
-        waterdemand41[3]= new double[]{2.55,2.18,2.12,0.75,1.99,2.55,2.55,2.60,2.57,2.62};
-
-        waterdemand41[4]= new double[]{0.69,0.59,0.58,0.2,0.54,0.69,0.69,0.71,0.7,0.71};
-        waterdemand41[5]= new double[]{0.61,0.52,0.51,0.18,0.48,0.61,0.61,0.63,0.62,0.63};
-        waterdemand41[6]= new double[]{0.38,0.33,0.32,0.11,0.3,0.38,0.38,0.39,0.39,0.39};
-        waterdemand41[7]= new double[]{0.25,0.21,0.2,0.07,0.19,0.25,0.25,0.25,0.25,0.25};
-
-
-//        for (int x= xnum;x<period;x++){
-//
-//            inflow[0][x-xnum]=inflow1[0][x];
-//            inflow[1][x-xnum]=inflow1[1][x];
-//        }
-
-
+        double [][]waterDemandIndustry=new double[1+nameIndustryQushou.length][period];
+        double [][]waterDemandGreenWest=new double[nameGreenWest.length][period];
+        double [][]waterDemandGreenEast=new double[nameGreenEast.length][period];
+        double [][]waterDemandGreenQushou=new double[nameGreenQushou.length][period];
         for (int x= xnum;x<period+xnum;x++){
             waterDemand[0][x-xnum]=waterDemand1[0][x];
             waterDemand[1][x-xnum]=waterDemand1[1][x];
@@ -167,12 +257,27 @@ public class ResourceOptimizationshort_DayTest
                 waterdemand4[x1][x - xnum] = waterdemand41[x1][x];
             }
         }
-//        if (req.getInflow()!=null) {
-//            inflow = req.getInflow();
-//        }
-//        else {
-//            System.out.println("数据不足");
-//        }
+        for (int x1=0;x1<waterDemandIndustry.length;x1++) {
+            for (int x = xnum; x < period; x++) {
+                waterDemandIndustry[x1][x - xnum] = waterDemandIndustry1[x1][x];
+            }
+        }
+        for (int x1=0;x1<waterDemandGreenQushou.length;x1++) {
+            for (int x = xnum; x < period; x++) {
+                waterDemandGreenQushou[x1][x - xnum] = waterDemandGreenQushou1[x1][x];
+            }
+        }
+        for (int x1=0;x1<waterDemandGreenEast.length;x1++) {
+            for (int x = xnum; x < period; x++) {
+                waterDemandGreenEast[x1][x - xnum] = waterDemandGreenEast1[x1][x];
+            }
+        }
+        for (int x1=0;x1<waterDemandGreenWest.length;x1++) {
+            for (int x = xnum; x < period; x++) {
+                waterDemandGreenWest[x1][x - xnum] = waterDemandGreenWest1[x1][x];
+            }
+        }
+
         for (int r = 0; r < RNum; r++)
         {
             wl_term[r][0] = levelBegin[r];
@@ -186,7 +291,7 @@ public class ResourceOptimizationshort_DayTest
 
         //初始解模拟计算
         // 计算调度过程(模拟模型)用坝上水位为输入
-        double[] fit=calFit(id, waterTransferReq.getReservoirs(),period,wl_term,waterDemand,inflow)[0];
+        double[] fit=calFit(id, reservoirs,period,wl_term,waterDemand,inflow)[0];
 
         //下边是优化算法得参数配置、优化目标配置，罚函数配置、约束处理配置（下边是优化问题）
         //计算约束违反程度  以及  目标适应度
@@ -228,9 +333,9 @@ public class ResourceOptimizationshort_DayTest
                     for (int tt = 1; tt < period; tt++)
                     {
                         //初始  和  最终水位  不参与调整
-                        double maxLevel = waterTransferReq.getReservoirs()[n].levelFloodDesign;
+                        double maxLevel = reservoirs[n].levelFloodDesign;
 //                double maxLevel = reservoir.levelFloodCheck;
-                        double minLevel = waterTransferReq.getReservoirs()[n].levelDead;
+                        double minLevel = reservoirs[n].levelDead;
                         int wlNum = (int) ((maxLevel - minLevel) / discreteAccuracy + 1);//变量离散过程
 
                         for (int i = 0; i < wlNum; i++)//调用模拟模型计算
@@ -245,7 +350,7 @@ public class ResourceOptimizationshort_DayTest
 
                             wl_term[n][tt] = termWL;
 
-                            fitness_term = calFit(id, waterTransferReq.getReservoirs(),period,wl_term,waterDemand,inflow)[0];
+                            fitness_term = calFit(id, reservoirs,period,wl_term,waterDemand,inflow)[0];
 
                             if (compareAB(fitness_term, fitness_term_best) == -1)
                             {
@@ -264,14 +369,6 @@ public class ResourceOptimizationshort_DayTest
                         }
                     }
                 }
-
-
-//                System.out.println("第\t" + Bindex +
-//                        "\t次\t约束违反程度\t" + fitness_term_best[0] +
-//                        "\t供水缺额\t" + fitness_term_best[1] +
-//                        "\t供水缺额+惩罚\t" + fitness_term_best[2]
-//                );
-
 
             }
         }
@@ -289,9 +386,9 @@ public class ResourceOptimizationshort_DayTest
                     for (int tt = 1; tt < period; tt++)
                     {
                         //初始  和  最终水位  不参与调整
-                        double maxLevel = waterTransferReq.getReservoirs()[n].levelFloodDesign;
+                        double maxLevel = reservoirs[n].levelFloodDesign;
 //                double maxLevel = reservoir.levelFloodCheck;
-                        double minLevel = waterTransferReq.getReservoirs()[n].levelDead;
+                        double minLevel = reservoirs[n].levelDead;
                         int wlNum = (int) ((maxLevel - minLevel) / discreteAccuracy + 1);//变量离散过程
 
                         for (int i = 0; i < wlNum; i++)//调用模拟模型计算
@@ -306,7 +403,7 @@ public class ResourceOptimizationshort_DayTest
 
                             wl_term[n][tt] = termWL;
 
-                            fitness_term = calFit(id, waterTransferReq.getReservoirs(),period,wl_term,waterDemand,inflow)[0];
+                            fitness_term = calFit(id, reservoirs,period,wl_term,waterDemand,inflow)[0];
 
                             if (compareAB(fitness_term, fitness_term_best) == -1)
                             {
@@ -325,13 +422,6 @@ public class ResourceOptimizationshort_DayTest
                         }
                     }
                 }
-
-
-//                System.out.println("第\t" + Bindex +
-//                        "\t次\t约束违反程度\t" + fitness_term_best[0] +
-//                        "\t供水缺额\t" + fitness_term_best[1] +
-//                        "\t供水缺额+惩罚\t" + fitness_term_best[2]
-//                );
 
 
             }
@@ -369,24 +459,22 @@ public class ResourceOptimizationshort_DayTest
         double[][]preSupplyWater=new double[2][period];
         double[][]supply_water_two=new double[2][period];
 
-//        waterdemand3=req.getWaterDemand_east_day();
-//        waterdemand4=req.getWaterDemand_west_day();
 
         double[][]waterSupply3=new double[waterdemand3.length][period];
         double[][]waterSupply4=new double[waterdemand4.length][period];
         double[][] proportion = new double[5][period];
-        fitness_term = calFit(id, waterTransferReq.getReservoirs(),period,wl_term,waterDemand,inflow)[0];
-        outflow_term[0]= calFit(id, waterTransferReq.getReservoirs(),period,wl_term,waterDemand,inflow)[1];
-        outflow_term[1]= calFit(id, waterTransferReq.getReservoirs(),period,wl_term,waterDemand,inflow)[2];
-        water_shortage[0]=calFit(id, waterTransferReq.getReservoirs(),period,wl_term,waterDemand,inflow)[3];
-        water_shortage[1]=calFit(id, waterTransferReq.getReservoirs(),period,wl_term,waterDemand,inflow)[4];
-        inflow_toutunhe=calFit(id, waterTransferReq.getReservoirs(),period,wl_term,waterDemand,inflow)[5];
-        waterSupply[0]=calFit(id, waterTransferReq.getReservoirs(),period,wl_term,waterDemand,inflow)[6];
-        waterSupply[1]=calFit(id, waterTransferReq.getReservoirs(),period,wl_term,waterDemand,inflow)[7];
-        waterSupply[2]=calFit(id, waterTransferReq.getReservoirs(),period,wl_term,waterDemand,inflow)[8];
-        waterSupply[3]=calFit(id, waterTransferReq.getReservoirs(),period,wl_term,waterDemand,inflow)[9];
-        waterSupply[4]=calFit(id, waterTransferReq.getReservoirs(),period,wl_term,waterDemand,inflow)[10];
-         watersupply_lzz=calFit(id, waterTransferReq.getReservoirs(),period,wl_term,waterDemand,inflow)[11];
+        fitness_term = calFit(id, reservoirs,period,wl_term,waterDemand,inflow)[0];
+        outflow_term[0]= calFit(id, reservoirs,period,wl_term,waterDemand,inflow)[1];
+        outflow_term[1]= calFit(id, reservoirs,period,wl_term,waterDemand,inflow)[2];
+        water_shortage[0]=calFit(id, reservoirs,period,wl_term,waterDemand,inflow)[3];
+        water_shortage[1]=calFit(id, reservoirs,period,wl_term,waterDemand,inflow)[4];
+        inflow_toutunhe=calFit(id, reservoirs,period,wl_term,waterDemand,inflow)[5];
+        waterSupply[0]=calFit(id, reservoirs,period,wl_term,waterDemand,inflow)[6];
+        waterSupply[1]=calFit(id, reservoirs,period,wl_term,waterDemand,inflow)[7];
+        waterSupply[2]=calFit(id, reservoirs,period,wl_term,waterDemand,inflow)[8];
+        waterSupply[3]=calFit(id, reservoirs,period,wl_term,waterDemand,inflow)[9];
+        waterSupply[4]=calFit(id, reservoirs,period,wl_term,waterDemand,inflow)[10];
+         watersupply_lzz=calFit(id, reservoirs,period,wl_term,waterDemand,inflow)[11];
         DecimalFormat da=new DecimalFormat("#.00");
 
         for (int n1=0;n1<period;n1++){
@@ -401,24 +489,7 @@ public class ResourceOptimizationshort_DayTest
             ReservoirWatersupply[1][n1]=Double.parseDouble(da.format(waterSupply_all[n1]-waterSupply[0][n1]));
         }
 
-        for (int x=0;x<period;x++){
-            double sup=waterSupply_all[x];
-            double eco=minOutflow*delatT/1e4;
-            double  all_num=eco+sup;
 
-            proportion[0][x]=(eco)/(all_num);
-            proportion[1][x]=(waterSupply[0][x]+waterSupply[1][x])/(all_num);
-            proportion[2][x]=(waterSupply[2][x])/(all_num);
-            proportion[3][x]=0.75*(waterSupply[3][x]+waterSupply[4][x])/(all_num);
-            proportion[4][x]=0.25*(waterSupply[3][x]+waterSupply[4][x])/(all_num);
-
-            proportion[0][x]= Double.parseDouble(da.format(proportion[0][x]));
-            proportion[1][x]= Double.parseDouble(da.format(proportion[1][x]));
-            proportion[2][x]= Double.parseDouble(da.format(proportion[2][x]));
-            proportion[3][x]= Double.parseDouble(da.format(proportion[3][x]));
-            proportion[4][x]= Double.parseDouble(da.format(proportion[4][x]));
-
-        }
 
 
         DecimalFormat da1=new DecimalFormat("#.00");
@@ -445,23 +516,147 @@ public class ResourceOptimizationshort_DayTest
                 }
             }
         }
-//        System.out.println("最终结果\t约束违反程度\t" + fitness_term_best[0] +
-//                "\t供水缺额\t" + fitness_term_best[1] +
-//                "\t供水缺额+惩罚\t" + fitness_term_best[2]
-//        );
+        double[]allwater=new double[period];
 
+        for (int x=0;x<period;x++){
+            double sup=waterSupply_all[x];
+            double eco=minOutflow*delatT/1e4;
+            double  all_num=eco+sup;
+            allwater[x]=all_num;
 
-//        System.out.print("时段\t");
-//        System.out.print("初水位\t");
-//        System.out.print("末水位\t");
-//        System.out.print("来水\t");
-//        System.out.print("来水水量\t");
-//        System.out.print("下泄\t");
-//        System.out.print("出库水量\t");
-//        System.out.print("库容变化水量\t");
-//        System.out.print("供水计划\t");
-//        System.out.print("供水水量\t");
-//        System.out.println("供水缺额\t");
+            proportion[0][x] = (eco) / (all_num);
+            proportion[1][x] = (waterSupply[0][x] + waterSupply[1][x]) / (all_num);
+            proportion[2][x] = (waterSupply[2][x]) / (all_num);
+            proportion[4][x] =  (waterSupply3[0][x]+waterSupply4[0][x]+waterSupply4[1][x]) / (all_num);
+            proportion[3][x] =  1-proportion[0][x]-proportion[1][x]-proportion[2][x]-proportion[4][x];
+
+            proportion[0][x] = Double.parseDouble(da.format(proportion[0][x]));
+            proportion[1][x] = Double.parseDouble(da.format(proportion[1][x]));
+            proportion[2][x] = Double.parseDouble(da.format(proportion[2][x]));
+            proportion[3][x] = Double.parseDouble(da.format(proportion[3][x]));
+            proportion[4][x] = Double.parseDouble(da.format(proportion[4][x]));
+
+        }
+//        绿化配水
+        double[][]waterSupplyGreenEast=new double[nameGreenEast.length][period];
+        double[][]waterSupplyGreenWest=new double[nameGreenWest.length][period];
+        double[][]waterSupplyGreenQushou=new double[nameGreenQushou.length][period];
+//        工业配水
+        double[][]waterSupplyIndustry=new double[1+nameIndustryQushou.length][period];
+
+        for (int m=0;m<waterSupplyGreenEast.length;m++){
+            for (int n=0;n<period;n++){
+                if (waterdemand4[0][n]==0){
+                    waterSupplyGreenEast[m][n]=0;
+                }
+                else {
+                    waterSupplyGreenEast[m][n] = Double.parseDouble(da1.format((waterSupply4[0][n] / waterdemand4[0][n]) * waterDemandGreenEast[m][n]));
+                }
+            }
+        }
+        for (int m=0;m<waterSupplyGreenWest.length;m++){
+            for (int n=0;n<period;n++){
+                if (waterdemand3[0][n]==0){
+                    waterSupplyGreenWest[m][n]=0;
+                }
+                else {
+                    waterSupplyGreenWest[m][n] = Double.parseDouble(da1.format((waterSupply3[0][n] / waterdemand3[0][n]) * waterDemandGreenWest[m][n]));
+                }
+            }
+        }
+        for (int m=0;m<waterSupplyGreenQushou.length;m++){
+            for (int n=0;n<period;n++) {
+                if (waterdemand4[1][n] == 0) {
+                    waterSupplyGreenQushou[m][n] = 0;
+                }
+                else{
+                    waterSupplyGreenQushou[m][n] = Double.parseDouble(da1.format((waterSupply4[1][n] / waterdemand4[1][n]) * waterDemandGreenQushou[m][n]));
+                }
+            }
+        }
+//      工业配水
+        for (int m=0;m<waterDemandIndustry.length;m++){
+            for (int n=0;n<period;n++){
+                if (waterDemand[2][n]==0){
+                    waterSupplyIndustry[m][n]=0;
+                }
+                else {
+                    waterSupplyIndustry[m][n] = Double.parseDouble(da1.format((waterSupply[2][n] / waterDemand[2][n]) * waterDemandIndustry[m][n]));
+                }
+            }
+        }
+//        绿化配水比例
+        double[][]proportionGreenEast=new double[nameGreenEast.length][period];
+        double[][]proportionGreenWest=new double[nameGreenWest.length][period];
+        double[][]proportionGreenQushou=new double[nameGreenQushou.length][period];
+//        工业配水比例
+        double[][]proportionIndustry=new double[1+nameIndustryQushou.length][period];
+
+        double[][] proportion3 = new double[waterdemand3.length][period];
+        double[][] proportion4 = new double[waterdemand4.length][period];
+
+        for (int m = 0; m < waterdemand3.length; m++) {
+            for (int n = 0; n < period; n++) {
+                if (waterdemand3[m][n] == 0) {
+                    proportion3[m][n] = 1;
+                } else {
+                    proportion3[m][n] = Double.parseDouble(da1.format(waterSupply3[m][n] / waterdemand3[m][n]));
+                }
+            }
+        }
+        for (int m = 0; m < waterdemand4.length; m++) {
+            for (int n = 0; n < period; n++) {
+                if (waterdemand4[m][n] == 0) {
+                    proportion4[m][n] = 1;
+                } else {
+                    proportion4[m][n] = Double.parseDouble(da1.format(waterSupply4[m][n] / waterdemand4[m][n]));
+                }
+            }
+        }
+        for (int m=0;m<proportionGreenEast.length;m++){
+            for (int n=0;n<period;n++){
+                if (waterDemandGreenEast[m][n]==0)
+                {
+                    proportionGreenEast[m][n]=1;
+                }
+                else
+                {
+                    proportionGreenEast[m][n] = Double.parseDouble(da1.format(waterSupplyGreenEast[m][n]/ waterDemandGreenEast[m][n]));
+                }
+            }
+        }
+        for (int m=0;m<proportionGreenWest.length;m++){
+            for (int n=0;n<period;n++){
+                if (waterDemandGreenWest[m][n]==0){
+                    proportionGreenWest[m][n]=1;
+                }
+                else {
+                    proportionGreenWest[m][n] = Double.parseDouble(da1.format(waterSupplyGreenWest[m][n]/ waterDemandGreenWest[m][n]));
+                }
+            }
+        }
+
+        for (int m=0;m<proportionGreenQushou.length;m++){
+            for (int n=0;n<period;n++) {
+                if (waterDemandGreenQushou[m][n] == 0) {
+                    proportionGreenQushou[m][n] = 1;
+                }
+                else{
+                    proportionGreenQushou[m][n] = Double.parseDouble(da1.format(waterSupplyGreenQushou[m][n] / waterDemandGreenQushou[m][n]));
+                }
+            }
+        }
+
+        for (int m=0;m<proportionIndustry.length;m++){
+            for (int n=0;n<period;n++){
+                if (waterDemandIndustry[m][n]==0){
+                    proportionIndustry[m][n]=1;
+                }
+                else {
+                    proportionIndustry[m][n] = Double.parseDouble(da1.format(waterSupplyIndustry[m][n]/ waterDemandIndustry[m][n]));
+                }
+            }
+        }
         double[]capacity=new double[]{7374,2030};
 
 
@@ -471,15 +666,15 @@ public class ResourceOptimizationshort_DayTest
                 time1[t]=t+1;
                 levelbegin[r][t]=Double.parseDouble(da1.format(wl_term[r][t]));
                 levelend[r][t]=Double.parseDouble(da1.format(wl_term[r][t+1]));
-                endCapacity[r][t]=Double.parseDouble(da1.format(FindValue.FindV2ByV1(waterTransferReq.getReservoirs()[r].wlc_wl, waterTransferReq.getReservoirs()[r].wlc_c, wl_term[r][t+1])));
+                endCapacity[r][t]=Double.parseDouble(da1.format(FindValue.FindV2ByV1(reservoirs[r].wlc_wl, reservoirs[r].wlc_c, wl_term[r][t+1])));
                 capacity_proportion[r][t]=Double.parseDouble(da1.format(endCapacity[r][t]/capacity[r]));
                 if (r==0)
                 {
                     inflow_water[r][t]=Double.parseDouble(da1.format(inflow[r][t]*delatT/1e4));
                     outflow_water[r][t]=Double.parseDouble(da1.format(outflow_term[r][t]*delatT/1e4));
                     deltawater[r][t]=Double.parseDouble(da1.format((inflow[r][t]-outflow_term[r][t])*delatT/1e4));
-                    preSupplyWater[r][t]=Double.parseDouble(da1.format(inflow_water[r][t]+FindValue.FindV2ByV1(waterTransferReq.getReservoirs()[r].wlc_wl, waterTransferReq.getReservoirs()[r].wlc_c, wl_term[r][t])-
-                            FindValue.FindV2ByV1(waterTransferReq.getReservoirs()[r].wlc_wl, waterTransferReq.getReservoirs()[r].wlc_c, 1353.3)));
+                    preSupplyWater[r][t]=Double.parseDouble(da1.format(inflow_water[r][t]+FindValue.FindV2ByV1(reservoirs[r].wlc_wl, reservoirs[r].wlc_c, wl_term[r][t])-
+                            FindValue.FindV2ByV1(reservoirs[r].wlc_wl, reservoirs[r].wlc_c, 1353.3)));
                     inflowWater_supply[r][t]=inflow_water[r][t]-ReservoirWatersupply[r][t];
 
                 }
@@ -488,8 +683,8 @@ public class ResourceOptimizationshort_DayTest
                     inflowwater_toutunhe[t]=Double.parseDouble(da1.format(inflow_toutunhe[t]*delatT/1e4));
                     outflow_water[r][t]=Double.parseDouble(da1.format(outflow_term[r][t]*delatT/1e4));
                     deltawater[r][t]=Double.parseDouble(da1.format((inflow_toutunhe[t]-outflow_term[r][t])*delatT/1e4));
-                    preSupplyWater[r][t]=Double.parseDouble(da1.format(inflowwater_toutunhe[t]+FindValue.FindV2ByV1(waterTransferReq.getReservoirs()[r].wlc_wl, waterTransferReq.getReservoirs()[r].wlc_c, wl_term[r][t])-
-                            FindValue.FindV2ByV1(waterTransferReq.getReservoirs()[r].wlc_wl, waterTransferReq.getReservoirs()[r].wlc_c, 973)));
+                    preSupplyWater[r][t]=Double.parseDouble(da1.format(inflowwater_toutunhe[t]+FindValue.FindV2ByV1(reservoirs[r].wlc_wl, reservoirs[r].wlc_c, wl_term[r][t])-
+                            FindValue.FindV2ByV1(reservoirs[r].wlc_wl, reservoirs[r].wlc_c, 973)));
                     inflowWater_supply[r][t]=inflowwater_toutunhe[t]-ReservoirWatersupply[r][t];
 
                 }
@@ -497,10 +692,29 @@ public class ResourceOptimizationshort_DayTest
             }
 
         }
+
+        String[]nameEast=new String[2+nameAgricultureQushou.length+nameAgricultureEast.length];
+        nameEast[0]="河东绿化总用水";
+        nameEast[1]="渠首绿化总用水";
+        for (int x=2;x<nameEast.length;x++){
+            if (x<2+nameAgricultureQushou.length)
+            {
+                nameEast[x]=nameAgricultureQushou[x-2];
+            }
+            else
+            {
+                nameEast[x]=nameAgricultureEast[x-2-nameAgricultureQushou.length];
+            }
+        }
+        String[]nameWest=new String[1+nameAgricultureWest.length];
+        nameWest[0]="河西绿化总用水";
+        for (int x=1;x<nameWest.length;x++){
+            nameWest[x]=nameAgricultureWest[x-1];
+        }
         ArrayList<WaterTransfer> result = new ArrayList<>();
 
         WaterTransfer waterTransfer = new WaterTransfer();
-//        waterTransfer.setTime(time1);
+        waterTransfer.setTime((Date[])data1.get("时间"));
         waterTransfer.setLevelbegin(levelbegin);
         waterTransfer.setLevelend(levelend);
         waterTransfer.setInflow(inflow);
@@ -526,6 +740,37 @@ public class ResourceOptimizationshort_DayTest
         waterTransfer.setReservoirWatersupply(ReservoirWatersupply);
         waterTransfer.setInflowWater_supply(inflowWater_supply);
         waterTransfer.setSupply_water_two(supply_water_two);
+
+        waterTransfer.setWaterSupplyGreenEast(waterSupplyGreenEast);
+        waterTransfer.setWaterSupplyGreenWest(waterSupplyGreenWest);
+        waterTransfer.setWaterSupplyGreenQushou(waterSupplyGreenQushou);
+        waterTransfer.setWaterSupplyIndustry(waterSupplyIndustry);
+        waterTransfer.setNameGreenQushou(nameGreenQushou);
+        waterTransfer.setNameQushou(nameIndustryQushou);
+        waterTransfer.setNameWest(nameWest);
+        waterTransfer.setNameEast(nameEast);
+        waterTransfer.setNameGreenWest(nameGreenWest);
+        waterTransfer.setNameGreenEast(nameGreenEast);
+        waterTransfer.setNameAgricultureEast(nameAgricultureEast);
+        waterTransfer.setNameAgricultureQushou(nameAgricultureQushou);
+
+        //各站点供水比例
+        waterTransfer.setProportionGreenEast(proportionGreenEast);
+        waterTransfer.setProportionGreenWest(proportionGreenWest);
+        waterTransfer.setProportionGreenQushou(proportionGreenQushou);
+        waterTransfer.setProportionIndustry(proportionIndustry);
+        waterTransfer.setProportion3(proportion3);
+        waterTransfer.setProportion4(proportion4);
+        //各站点缺额
+        waterTransfer.setWaterDemandGreenEast(waterDemandGreenEast);
+        waterTransfer.setWaterDemandGreenWest(waterDemandGreenWest);
+        waterTransfer.setWaterDemandGreenQushou(waterDemandGreenQushou);
+        waterTransfer.setWaterDemandIndustry(waterDemandIndustry);
+        waterTransfer.setWaterDemand3(waterdemand3);
+        waterTransfer.setWaterDemand4(waterdemand4);
+
+        waterTransfer.setAllWater(allwater);
+
         result.add(waterTransfer);
         return  result;
     }
@@ -718,7 +963,7 @@ public class ResourceOptimizationshort_DayTest
         }
         //供水量
 
-        if (id==1||id==3){
+//        if (id==1||id==3){
             for (int t=0;t<period;t++)
             {
                 if (water_Supply_tth[t]>=waterDemand[1][t]+waterDemand[2][t]+waterDemand[3][t]+waterDemand[4][t])
@@ -731,8 +976,8 @@ public class ResourceOptimizationshort_DayTest
                 if (water_Supply_tth[t]>=waterDemand[1][t]+waterDemand[2][t]&&water_Supply_tth[t]<waterDemand[1][t]+waterDemand[2][t]+waterDemand[3][t]+waterDemand[4][t]){
                     waterSupply[1][t]= waterDemand[1][t];
                     waterSupply[2][t]= waterDemand[2][t];
-                    waterSupply[3][t]= 0.5*(water_Supply_tth[t]-(waterDemand[1][t]+waterDemand[2][t]));
-                    waterSupply[4][t]= 0.5*(water_Supply_tth[t]-(waterDemand[1][t]+waterDemand[2][t]));
+                    waterSupply[3][t] = waterDemand[3][t]  * (water_Supply_tth[t] - (waterDemand[1][t] + waterDemand[2][t]))/(waterDemand[3][t] + waterDemand[4][t]);
+                    waterSupply[4][t] = waterDemand[4][t] * (water_Supply_tth[t] - (waterDemand[1][t] + waterDemand[2][t]))/(waterDemand[3][t] + waterDemand[4][t]);
                     if (waterSupply[3][t]<=0){
                         waterSupply[3][t]=0;
                     }
@@ -754,72 +999,72 @@ public class ResourceOptimizationshort_DayTest
                 }
 //
             }
-        }
-        if (id==2){
-            for (int t=0;t<period;t++)
-            {
-                if (water_Supply_tth[t]>=waterDemand[1][t]+waterDemand[2][t]+waterDemand[3][t]+waterDemand[4][t])
-                {
-                    waterSupply[1][t]= waterDemand[1][t];
-                    waterSupply[2][t]= waterDemand[2][t];
-                    waterSupply[3][t]= waterDemand[3][t];
-                    waterSupply[4][t]= waterDemand[4][t];
-                }
-                if (water_Supply_tth[t]>=0.8*(waterDemand[1][t]+waterDemand[2][t]+waterDemand[3][t]+waterDemand[4][t])
-                        &&water_Supply_tth[t]<waterDemand[1][t]+waterDemand[2][t]+waterDemand[3][t]+waterDemand[4][t]){
-                    waterSupply[1][t]=0.9* waterDemand[1][t];
-                    waterSupply[2][t]=0.9* waterDemand[2][t];
-                    waterSupply[3][t]= 0.5*(water_Supply_tth[t]-(waterSupply[1][t]+waterSupply[2][t]));
-                    waterSupply[4][t]= 0.5*(water_Supply_tth[t]-(waterSupply[1][t]+waterSupply[2][t]));
-                    if (waterSupply[3][t]<=0){
-                        waterSupply[3][t]=0;
-                    }
-                    if (waterSupply[4][t]<=0){
-                        waterSupply[4][t]=0;
-                    }
-                }
-                if (water_Supply_tth[t]>=0.5*(waterDemand[1][t]+waterDemand[2][t]+waterDemand[3][t]+waterDemand[4][t])
-                        &&water_Supply_tth[t]<0.8*(waterDemand[1][t]+waterDemand[2][t]+waterDemand[3][t]+waterDemand[4][t])){
-                    waterSupply[1][t]= 0.7*waterDemand[1][t];
-                    waterSupply[2][t]=0.7* waterDemand[2][t];
-                    waterSupply[3][t]= 0.5*(water_Supply_tth[t]-(waterSupply[1][t]+waterSupply[2][t]));
-                    waterSupply[4][t]= 0.5*(water_Supply_tth[t]-(waterSupply[1][t]+waterSupply[2][t]));
-                    if (waterSupply[3][t]<=0){
-                        waterSupply[3][t]=0;
-                    }
-                    if (waterSupply[4][t]<=0){
-                        waterSupply[4][t]=0;
-                    }
-                }
-                if (water_Supply_tth[t]>=0.2*(waterDemand[1][t]+waterDemand[2][t]+waterDemand[3][t]+waterDemand[4][t])
-                        &&water_Supply_tth[t]<0.5*(waterDemand[1][t]+waterDemand[2][t]+waterDemand[3][t]+waterDemand[4][t])){
-                    waterSupply[1][t]= 0.4*waterDemand[1][t];
-                    waterSupply[2][t]=0.4* waterDemand[2][t];
-                    waterSupply[3][t]= 0.5*(water_Supply_tth[t]-(waterSupply[1][t]+waterSupply[2][t]));
-                    waterSupply[4][t]= 0.5*(water_Supply_tth[t]-(waterSupply[1][t]+waterSupply[2][t]));
-                    if (waterSupply[3][t]<=0){
-                        waterSupply[3][t]=0;
-                    }
-                    if (waterSupply[4][t]<=0){
-                        waterSupply[4][t]=0;
-                    }
-                }
-                if (water_Supply_tth[t]<0.2*(waterDemand[1][t]+waterDemand[2][t]+waterDemand[3][t]+waterDemand[4][t]))
-                {
-                    waterSupply[1][t]= 0.1*waterDemand[1][t];
-                    waterSupply[2][t]=0.1* waterDemand[2][t];
-                    waterSupply[3][t]= 0.5*(water_Supply_tth[t]-(waterSupply[1][t]+waterSupply[2][t]));
-                    waterSupply[4][t]= 0.5*(water_Supply_tth[t]-(waterSupply[1][t]+waterSupply[2][t]));
-                    if (waterSupply[3][t]<=0){
-                        waterSupply[3][t]=0;
-                    }
-                    if (waterSupply[4][t]<=0){
-                        waterSupply[4][t]=0;
-                    }
-                }
-//
-            }
-        }
+//        }
+//        if (id==2){
+//            for (int t=0;t<period;t++)
+//            {
+//                if (water_Supply_tth[t]>=waterDemand[1][t]+waterDemand[2][t]+waterDemand[3][t]+waterDemand[4][t])
+//                {
+//                    waterSupply[1][t]= waterDemand[1][t];
+//                    waterSupply[2][t]= waterDemand[2][t];
+//                    waterSupply[3][t]= waterDemand[3][t];
+//                    waterSupply[4][t]= waterDemand[4][t];
+//                }
+//                if (water_Supply_tth[t]>=0.8*(waterDemand[1][t]+waterDemand[2][t]+waterDemand[3][t]+waterDemand[4][t])
+//                        &&water_Supply_tth[t]<waterDemand[1][t]+waterDemand[2][t]+waterDemand[3][t]+waterDemand[4][t]){
+//                    waterSupply[1][t]=0.9* waterDemand[1][t];
+//                    waterSupply[2][t]=0.9* waterDemand[2][t];
+//                    waterSupply[3][t]= 0.5*(water_Supply_tth[t]-(waterSupply[1][t]+waterSupply[2][t]));
+//                    waterSupply[4][t]= 0.5*(water_Supply_tth[t]-(waterSupply[1][t]+waterSupply[2][t]));
+//                    if (waterSupply[3][t]<=0){
+//                        waterSupply[3][t]=0;
+//                    }
+//                    if (waterSupply[4][t]<=0){
+//                        waterSupply[4][t]=0;
+//                    }
+//                }
+//                if (water_Supply_tth[t]>=0.5*(waterDemand[1][t]+waterDemand[2][t]+waterDemand[3][t]+waterDemand[4][t])
+//                        &&water_Supply_tth[t]<0.8*(waterDemand[1][t]+waterDemand[2][t]+waterDemand[3][t]+waterDemand[4][t])){
+//                    waterSupply[1][t]= 0.7*waterDemand[1][t];
+//                    waterSupply[2][t]=0.7* waterDemand[2][t];
+//                    waterSupply[3][t]= 0.5*(water_Supply_tth[t]-(waterSupply[1][t]+waterSupply[2][t]));
+//                    waterSupply[4][t]= 0.5*(water_Supply_tth[t]-(waterSupply[1][t]+waterSupply[2][t]));
+//                    if (waterSupply[3][t]<=0){
+//                        waterSupply[3][t]=0;
+//                    }
+//                    if (waterSupply[4][t]<=0){
+//                        waterSupply[4][t]=0;
+//                    }
+//                }
+//                if (water_Supply_tth[t]>=0.2*(waterDemand[1][t]+waterDemand[2][t]+waterDemand[3][t]+waterDemand[4][t])
+//                        &&water_Supply_tth[t]<0.5*(waterDemand[1][t]+waterDemand[2][t]+waterDemand[3][t]+waterDemand[4][t])){
+//                    waterSupply[1][t]= 0.4*waterDemand[1][t];
+//                    waterSupply[2][t]=0.4* waterDemand[2][t];
+//                    waterSupply[3][t]= 0.5*(water_Supply_tth[t]-(waterSupply[1][t]+waterSupply[2][t]));
+//                    waterSupply[4][t]= 0.5*(water_Supply_tth[t]-(waterSupply[1][t]+waterSupply[2][t]));
+//                    if (waterSupply[3][t]<=0){
+//                        waterSupply[3][t]=0;
+//                    }
+//                    if (waterSupply[4][t]<=0){
+//                        waterSupply[4][t]=0;
+//                    }
+//                }
+//                if (water_Supply_tth[t]<0.2*(waterDemand[1][t]+waterDemand[2][t]+waterDemand[3][t]+waterDemand[4][t]))
+//                {
+//                    waterSupply[1][t]= 0.1*waterDemand[1][t];
+//                    waterSupply[2][t]=0.1* waterDemand[2][t];
+//                    waterSupply[3][t]= 0.5*(water_Supply_tth[t]-(waterSupply[1][t]+waterSupply[2][t]));
+//                    waterSupply[4][t]= 0.5*(water_Supply_tth[t]-(waterSupply[1][t]+waterSupply[2][t]));
+//                    if (waterSupply[3][t]<=0){
+//                        waterSupply[3][t]=0;
+//                    }
+//                    if (waterSupply[4][t]<=0){
+//                        waterSupply[4][t]=0;
+//                    }
+//                }
+////
+//            }
+//        }
 
         if (id==2){
             for (int m=0;m<waterDemand.length;m++)
@@ -847,13 +1092,14 @@ public class ResourceOptimizationshort_DayTest
     }
 
     public void setReservoir(List<CurveParam> data, Reservoir[] reservoir ){
-
+        this.reservoirs = new Reservoir[2];
+        this.reservoirs[0] = new Reservoir();
+        this.reservoirs[1] = new Reservoir();
         List<Double> capacity = new ArrayList<>();
         List<Double> level = new ArrayList<>();
         List<Double> outflow = new ArrayList<>();
         List<Double> outflow_level = new ArrayList<>();
-        reservoir[0] = new Reservoir();
-        reservoir[1] = new Reservoir();
+
 
 
         for (int i = 0; i < data.size(); i++) {
@@ -881,10 +1127,10 @@ public class ResourceOptimizationshort_DayTest
             wlob_ob[i]=outflow.get(i);
         }
 
-        reservoir[0].wlc_c=wlc_c;
-        reservoir[0].wlc_wl=wlc_wl;
-        reservoir[0].wlob_wl=wlob_wl;
-        reservoir[0].wlob_ob=wlob_ob;
+        this.reservoirs[0].wlc_c=wlc_c;
+        this.reservoirs[0].wlc_wl=wlc_wl;
+        this.reservoirs[0].wlob_wl=wlob_wl;
+        this.reservoirs[0].wlob_ob=wlob_ob;
 
 
         List<Double> capacity1 = new ArrayList<>();
@@ -916,28 +1162,28 @@ public class ResourceOptimizationshort_DayTest
             wlc_wl1[i] = level1.get(i);
             wlc_c1[i]=capacity1.get(i);
         }
-        reservoir[1].wlc_c=wlc_c1;
-        reservoir[1].wlc_wl=wlc_wl1;
-        reservoir[1].wlob_wl=wlob_wl1;
-        reservoir[1].wlob_ob=wlob_ob1;
+        this.reservoirs[1].wlc_c=wlc_c1;
+        this.reservoirs[1].wlc_wl=wlc_wl1;
+        this.reservoirs[1].wlob_wl=wlob_wl1;
+        this.reservoirs[1].wlob_ob=wlob_ob1;
 
-        reservoir[0].name = "楼庄子";
-        reservoir[0].levelFloodControl = 1394.5;
-        reservoir[0].levelNormal = 1394.5;
-        reservoir[0].levelFloodLimiting = 105;
-        reservoir[0].levelDead = 1353.3;
-        reservoir[0].outflowMin = 1.48;
-        reservoir[0].levelFloodDesign = 1397.41;
-        reservoir[0].levelFloodCheck = 1397.63;
+        this.reservoirs[0].name = "楼庄子";
+        this.reservoirs[0].levelFloodControl = 1394.5;
+        this.reservoirs[0].levelNormal = 1394.5;
+        this.reservoirs[0].levelFloodLimiting = 105;
+        this.reservoirs[0].levelDead = 1353.3;
+        this.reservoirs[0].outflowMin = 1.48;
+        this.reservoirs[0].levelFloodDesign = 1397.41;
+        this.reservoirs[0].levelFloodCheck = 1397.63;
 
-        reservoir[1].name = "头屯河";
-        reservoir[1].levelFloodControl = 987;
-        reservoir[1].levelNormal = 989.6;
-        reservoir[1].levelFloodLimiting = 105;
-        reservoir[1].levelDead = 975;
-        reservoir[1].outflowMin = 1.48;
-        reservoir[1].levelFloodDesign = 991.2;
-        reservoir[1].levelFloodCheck = 992.54;
+        this.reservoirs[1].name = "头屯河";
+        this.reservoirs[1].levelFloodControl = 987;
+        this.reservoirs[1].levelNormal = 989.6;
+        this.reservoirs[1].levelFloodLimiting = 105;
+        this.reservoirs[1].levelDead = 975;
+        this.reservoirs[1].outflowMin = 1.48;
+        this.reservoirs[1].levelFloodDesign = 991.2;
+        this.reservoirs[1].levelFloodCheck = 992.54;
     }
     public  Map<String, Object> SetInflow(WaterTransferReq waterTransferReq, Map<String,List<DataInflowPrevent>> DataInflowPrevent, int t)
     {
@@ -967,12 +1213,14 @@ public class ResourceOptimizationshort_DayTest
         }
         double[]inflowlzz=new double[inflow_lzz.size()];
         double[]inflowtth=new double[inflow_tth.size()];
+        Date[] time = new Date[inflow_tth.size()];
 
         for (int i=0;i<inflow_lzz.size();i++){
             inflowlzz[i]=inflow_lzz.get(i);
             inflowtth[i]=inflow_tth.get(i);
+            time[i] = Time.get(i);
         }
-        data1.put("时间",Time);
+        data1.put("时间",time);
         data1.put("楼庄子流量",inflowlzz);
         data1.put("头屯河流量",inflowtth);
         return data1;

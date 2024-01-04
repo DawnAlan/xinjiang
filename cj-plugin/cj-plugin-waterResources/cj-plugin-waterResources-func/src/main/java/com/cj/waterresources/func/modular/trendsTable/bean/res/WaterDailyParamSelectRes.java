@@ -1,5 +1,6 @@
 package com.cj.waterresources.func.modular.trendsTable.bean.res;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -19,6 +20,9 @@ public class WaterDailyParamSelectRes implements Serializable {
     private String isParent;
 
     private Integer orderNum;
+
+    @ApiModelProperty(value = "用水类型")
+    private String useWaterType;
 
     private List<WaterDailyParamSelectRes> children;
 }

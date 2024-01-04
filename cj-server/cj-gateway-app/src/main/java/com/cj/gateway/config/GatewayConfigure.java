@@ -87,8 +87,10 @@ public class GatewayConfigure {
             "/api/webapp/v2/api-docs",
             "/api/bizapp/v2/api-docs",
             "/api/waterapp/v2/api-docs",
+            "/api/inspectionapp/v2/api-docs",
             "/api/floodapp/v2/api-docs",
             "/api/datasynchronizationapp/v2/api-docs",
+            "/api/approvalapp/v2/api-docs",
 
             /* 认证相关 */
             "/api/webapp/auth/c/getPicCaptcha",
@@ -124,8 +126,7 @@ public class GatewayConfigure {
             /* actuator */
             "/actuator",
             "/actuator/**",
-
-
+            "/websocket/**",
             "**"
 
     };
@@ -137,7 +138,7 @@ public class GatewayConfigure {
             "/api/webapp/auth/session/**",
             "/api/webapp/auth/third/page",
             "/api/webapp/client/user/**",
-            "/api/webapp/sys/org/**",
+            //"/api/webapp/sys/org/**",
             "/api/webapp/sys/position/**",
             "/api/webapp/sys/button/**",
             "/api/webapp/sys/menu/**",

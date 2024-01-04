@@ -57,7 +57,7 @@ public class TrendsTableParam implements Serializable {
     private Integer useType;
 
     @ApiModelProperty(value = "分组")
-    private String grouping;
+    private String groupingGroup;
 
     @ApiModelProperty(value = "使用水库或站点")
     private String useStation;

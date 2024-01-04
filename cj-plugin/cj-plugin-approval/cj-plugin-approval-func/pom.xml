@@ -1,0 +1,72 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.cj</groupId>
+        <artifactId>cj-plugin-approval</artifactId>
+        <version>2.0.0</version>
+    </parent>
+
+    <artifactId>cj-plugin-approval-func</artifactId>
+    <packaging>jar</packaging>
+    <description>巡查管理功能插件func接口</description>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <dependencies>
+        <!-- 每个插件接口都要引入common -->
+        <dependency>
+            <groupId>com.cj</groupId>
+            <artifactId>cj-common</artifactId>
+        </dependency>
+
+        <!-- 引入登录鉴权接口，用于实现其登录所需逻辑 -->
+        <dependency>
+            <groupId>com.cj</groupId>
+            <artifactId>cj-plugin-auth-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.cj</groupId>
+            <artifactId>cj-plugin-sys-feign</artifactId>
+        </dependency>
+        <!--websocket-->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-websocket</artifactId>
+            <version>5.3.9</version>
+        </dependency>
+
+        <!-- Poi-tl Word 模板引擎-->
+        <dependency>
+            <groupId>com.deepoove</groupId>
+            <artifactId>poi-tl</artifactId>
+            <version>1.9.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.cj</groupId>
+            <artifactId>cj-plugin-sys-api</artifactId>
+        </dependency>
+        <!--minio上传文件客户端-->
+        <dependency>
+            <groupId>io.minio</groupId>
+            <artifactId>minio</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.13.0</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+            <version>4.4.9</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+        </dependency>
+    </dependencies>
+</project>

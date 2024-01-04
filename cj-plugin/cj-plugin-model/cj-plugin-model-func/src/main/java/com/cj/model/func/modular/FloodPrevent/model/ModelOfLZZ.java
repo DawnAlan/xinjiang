@@ -15,7 +15,7 @@ public class ModelOfLZZ {
     int T_Delta;
     double H_begin;
     double H_end;
-    double Step = 0.02;
+    double Step;
 
     double DeadLevel;
     double LimitLevel;
@@ -34,6 +34,8 @@ public class ModelOfLZZ {
     double[][] LV_Curve;
     double[][] LQ_Curve1;
     double[][] LQ_Curve2;
+
+    double[] LimitLevels;
 
     @Getter
     List<Date> Time =new ArrayList<>();
@@ -141,6 +143,8 @@ public class ModelOfLZZ {
         HeightVolume = GetV(HeightLevel);
         DesignVolume = GetV(DesignLevel);
         ProofVolume = GetV(ProofLevel);
+
+        LimitLevels= reqFloodPrevent.getLimitLevels_lzz();
     }
 
     //楼庄子常规调度
@@ -163,6 +167,7 @@ public class ModelOfLZZ {
         List<Double> V_list=new ArrayList<>();
 
         for (int i = 0; i < Q_Input.size(); i++) {
+            UpdateLimitLevel(Time.get(i));
             double beginH;
             double Q_in = Q_Input.get(i);
             double minQ = MinQ.get(i);
@@ -320,9 +325,11 @@ public class ModelOfLZZ {
         List<List<List<Double>>> Result =new ArrayList<>();
         List<List<List<Double>>> option_temp =new ArrayList<>();
         for (int i = 0; i < Q_Input.size()-1; i++) {
+            UpdateLimitLevel(Time.get(i));
             Result=OneStage(Result);
         }
 
+        UpdateLimitLevel(Time.get(Time.size()-1));
         double Q_in = Q_Input.get(Q_Input.size()-1);
         for (int i = 0; i < Result.size(); i++) {
             List<List<Double>> option = new ArrayList<>(Result.get(i));
@@ -412,9 +419,11 @@ public class ModelOfLZZ {
         List<List<List<Double>>> Result =new ArrayList<>();
         List<List<List<Double>>> option_temp =new ArrayList<>();
         for (int i = 0; i < Q_Input.size()-1; i++) {
+            UpdateLimitLevel(Time.get(i));
             Result=OneStage(Result);
         }
 
+        UpdateLimitLevel(Time.get(Time.size()-1));
         double Q_in = Q_Input.get(Q_Input.size()-1);
         for (int i = 0; i < Result.size(); i++) {
             List<List<Double>> option = new ArrayList<>(Result.get(i));
@@ -498,6 +507,9 @@ public class ModelOfLZZ {
 
         }
     }
+
+
+
     public List<List<List<Double>>> OneStage(List<List<List<Double>>> option_last){
         List<List<List<Double>>> option_final = new ArrayList<>();
         List<List<List<Double>>> option_temp = new ArrayList<>();
@@ -973,6 +985,66 @@ public class ModelOfLZZ {
             MaxQ1=LQ_Curve2[1][n-1]+(level-LQ_Curve2[0][n-1])*(LQ_Curve2[1][n]-LQ_Curve2[1][n-1])/(LQ_Curve2[0][n]-LQ_Curve2[0][n-1]);
         }
         return MaxQ1;
+    }
+
+    public void UpdateLimitLevel(Date time){
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(time);
+        int month = calendar.get(Calendar.MONTH);
+        switch (month){
+            case 0:
+                LimitLevel=LimitLevels[0];
+                LimitVolume = GetV(LimitLevel);
+                break;
+            case 1:
+                LimitLevel=LimitLevels[1];
+                LimitVolume = GetV(LimitLevel);
+                break;
+            case 2:
+                LimitLevel=LimitLevels[2];
+                LimitVolume = GetV(LimitLevel);
+                break;
+            case 3:
+                LimitLevel=LimitLevels[3];
+                LimitVolume = GetV(LimitLevel);
+                break;
+            case 4:
+                LimitLevel=LimitLevels[4];
+                LimitVolume = GetV(LimitLevel);
+                break;
+            case 5:
+                LimitLevel=LimitLevels[5];
+                LimitVolume = GetV(LimitLevel);
+                break;
+            case 6:
+                LimitLevel=LimitLevels[6];
+                LimitVolume = GetV(LimitLevel);
+                break;
+            case 7:
+                LimitLevel=LimitLevels[7];
+                LimitVolume = GetV(LimitLevel);
+                break;
+            case 8:
+                LimitLevel=LimitLevels[8];
+                LimitVolume = GetV(LimitLevel);
+                break;
+            case 9:
+                LimitLevel=LimitLevels[9];
+                LimitVolume = GetV(LimitLevel);
+                break;
+            case 10:
+                LimitLevel=LimitLevels[10];
+                LimitVolume = GetV(LimitLevel);
+                break;
+            case 11:
+                LimitLevel=LimitLevels[11];
+                LimitVolume = GetV(LimitLevel);
+                break;
+        }
+    }
+
+    public void SetEndH(double H){
+        H_end=H;
     }
 
 }

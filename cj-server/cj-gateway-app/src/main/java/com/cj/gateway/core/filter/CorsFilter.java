@@ -33,6 +33,10 @@ public class CorsFilter implements WebFilter {
 
     @Override
     public Mono<Void> filter(ServerWebExchange ctx, WebFilterChain chain) {
+        String upgrade = ctx.getRequest().getHeaders().getUpgrade();
+        if("websocket".equals(upgrade)){
+            return chain.filter(ctx);
+        }
         ServerHttpRequest request = ctx.getRequest();
         if (CorsUtils.isCorsRequest(request)) {
             ServerHttpResponse response = ctx.getResponse();
@@ -42,7 +46,7 @@ public class CorsFilter implements WebFilter {
             headers.add(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "");
             headers.add(HttpHeaders.ACCESS_CONTROL_ALLOW_CREDENTIALS, "false");
             headers.add(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, "*");
-            headers.add(HttpHeaders.ACCESS_CONTROL_MAX_AGE, "3600");
+            headers.add(HttpHeaders.ACCESS_CONTROL_MAX_AGE, "18000");
             if (request.getMethod() == HttpMethod.OPTIONS) {
                 response.setStatusCode(HttpStatus.OK);
                 return Mono.empty();

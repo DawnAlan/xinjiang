@@ -2,6 +2,7 @@ package com.cj.flood.func.modular.prediction.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.cj.common.model.RestResponse;
+import com.cj.flood.func.modular.prediction.bean.req.IncomingWaterForecastAddReq;
 import com.cj.flood.func.modular.prediction.bean.req.IncomingWaterForecastListReq;
 import com.cj.flood.func.modular.prediction.bean.res.IncomingWaterForecastDetailsRes;
 import com.cj.flood.func.modular.prediction.entity.IncomingWaterForecast;
@@ -16,7 +17,7 @@ import java.util.List;
 */
 public interface IncomingWaterForecastService extends IService<IncomingWaterForecast> {
 
-    RestResponse add(IncomingWaterForecast incomingWaterForecast);
+    RestResponse add(IncomingWaterForecastAddReq req);
 
     RestResponse delete(String id);
 

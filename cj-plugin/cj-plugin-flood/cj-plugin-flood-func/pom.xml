@@ -9,7 +9,6 @@
 
     <artifactId>cj-plugin-flood-func</artifactId>
     <packaging>jar</packaging>
-
     <dependencies>
         <!-- 每个插件接口都要引入common -->
         <dependency>
@@ -19,6 +18,28 @@
         <dependency>
             <groupId>com.cj</groupId>
             <artifactId>cj-plugin-model-func</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.commons</groupId>
+                    <artifactId>commons-math3</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>tw.edu.ntu.csie</groupId>
+                    <artifactId>libsvm</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>net.sourceforge.jexcelapi</groupId>
+                    <artifactId>jxl</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>javax.persistence</groupId>
+                    <artifactId>persistence-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>gov.nist.math</groupId>
+                    <artifactId>jama</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
@@ -27,6 +48,10 @@
         <dependency>
             <groupId>com.cj</groupId>
             <artifactId>cj-plugin-flood-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.cj</groupId>
+            <artifactId>cj-plugin-auth-api</artifactId>
         </dependency>
     </dependencies>
 </project>

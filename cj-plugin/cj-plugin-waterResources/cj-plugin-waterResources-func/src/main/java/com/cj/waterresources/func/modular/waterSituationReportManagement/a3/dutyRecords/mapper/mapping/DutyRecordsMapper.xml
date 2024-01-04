@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cj.waterresources.func.modular.waterSituationReportManagement.a3.dutyRecords.mapper.DutyRecordsMapper">
+
+    <select id="selectListByParam" parameterType="com.cj.waterresources.func.modular.waterSituationReportManagement.a3.dutyRecords.bean.req.DutyRecordsSelectListReq" resultType="com.cj.waterresources.func.modular.waterSituationReportManagement.a3.dutyRecords.entity.DutyRecords">
+        select * from DUTY_RECORDS
+        <where>
+            <if test="req.recordTime != null">
+                and TO_CHAR(RECORD_TIME,'YYYY-MM-DD') = #{req.recordTime}
+            </if>
+            <if test="req.station != null and req.station != ''">
+                and STATION = #{req.station}
+            </if>
+            and del = 0
+        </where>
+    </select>
+
+</mapper>

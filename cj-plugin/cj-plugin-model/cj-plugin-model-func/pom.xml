@@ -12,6 +12,41 @@
 
 
     <dependencies>
+        <!--这里导入了包 -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-math3</artifactId>
+            <version>3.6.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.wendykierp</groupId>
+            <artifactId>JTransforms</artifactId>
+            <version>3.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>tw.edu.ntu.csie</groupId>
+            <artifactId>libsvm</artifactId>
+            <version>3.17</version>
+        </dependency>
+
+        <dependency>
+            <groupId>net.sourceforge.jexcelapi</groupId>
+            <artifactId>jxl</artifactId>
+            <version>2.6.12</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.persistence</groupId>
+            <artifactId>persistence-api</artifactId>
+            <version>1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>gov.nist.math</groupId>
+            <artifactId>jama</artifactId>
+            <version>1.0.3</version>
+        </dependency>
+
         <!-- 每个插件接口都要引入common -->
         <dependency>
             <groupId>com.cj</groupId>
@@ -27,6 +62,11 @@
             <artifactId>commons-io</artifactId>
             <version>2.13.0</version>
             <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.cj</groupId>
+            <artifactId>cj-plugin-middleDatabase-func</artifactId>
+            <version>2.0.0</version>
         </dependency>
     </dependencies>
 </project>

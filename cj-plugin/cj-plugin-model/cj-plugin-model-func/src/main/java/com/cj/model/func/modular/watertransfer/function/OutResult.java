@@ -9,6 +9,8 @@ import com.cj.model.func.modular.watertransfer.res.Option;
 import com.cj.model.func.modular.watertransfer.res.Option_Water;
 import com.cj.model.func.modular.watertransfer.res.ResOption;
 import lombok.Data;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -24,13 +26,13 @@ public class OutResult {
 
     public static List<ResOption> calculator(WaterTransferReq req) throws Exception
     {
-        if (req.getId()==1){
+        if (req.getName()==1){
             req.setTypeName("供水比例最大");
         }
-        if (req.getId()==2){
+        if (req.getName()==2){
             req.setTypeName("缺额最小");
         }
-        if (req.getId()==3){
+        if (req.getName()==3){
             req.setTypeName("单库调度");
         }
         int step=req.getTimeCalStep();
@@ -54,7 +56,7 @@ public class OutResult {
             Out1=Test_Tendays.ResourceOptimizationshort_daysTest(req);
         }
 
-        File tempFile1 = File.createTempFile("out1",".xlsx");
+        File tempFile1 = File.createTempFile("database",".xlsx");
         String path1= tempFile1.getAbsolutePath();
         List<Option> option1 = new ArrayList<>();
         for (int i = 0; i < Out1.get(0).getInflow()[0].length; i++) {
@@ -79,6 +81,8 @@ public class OutResult {
             option.setIrrigate_Proportion(Out1.get(0).getProportion()[3][i]);
             option.setGreening_Proportion(Out1.get(0).getProportion()[4][i]);
             option.setDeltawater(Out1.get(0).getDeltawater()[0][i]);
+            option.setAllWater(Out1.get(0).getAllWater()[i]);
+            option.setOutFlowWater(Out1.get(0).getOutflow_water()[0][i]);
             option1.add(option);
         }
         for (int i = 0; i < Out1.get(0).getInflow()[0].length; i++) {
@@ -103,10 +107,12 @@ public class OutResult {
             option.setIrrigate_Proportion(Out1.get(0).getProportion()[3][i]);
             option.setGreening_Proportion(Out1.get(0).getProportion()[4][i]);
             option.setDeltawater(Out1.get(0).getDeltawater()[1][i]);
+            option.setAllWater(Out1.get(0).getAllWater()[i]);
+            option.setOutFlowWater(Out1.get(0).getOutflow_water()[1][i]);
             option1.add(option);
         }
 
-        File tempFile2 = File.createTempFile("out2",".xlsx");
+        File tempFile2 = File.createTempFile("WaterDistribution",".xlsx");
         String path2= tempFile2.getAbsolutePath();
         List<Option_Water> option2 = new ArrayList<>();
         for (int i = 0; i < Out1.get(0).getInflow()[0].length; i++)
@@ -114,9 +120,17 @@ public class OutResult {
             Option_Water option = new Option_Water();
             option.setTime(Out1.get(0).getTime()[i]);
             option.setTypeName(req.getTypeName());
-//            option.setStationType();
+            option.setStationType("楼庄子生活");
             option.setStationName("楼庄子城市用水");
             option.setWater(Out1.get(0).getWaterSupply()[0][i]);
+            if (Out1.get(0).getWaterdemand()[0][i]==0){
+                double n=1;
+                option.setProportion(n);
+            }
+            else{
+                option.setProportion(Out1.get(0).getWaterSupply()[0][i]/Out1.get(0).getWaterdemand()[0][i]);
+            }
+            option.setWaterLack(Out1.get(0).getWaterdemand()[0][i]-Out1.get(0).getWaterSupply()[0][i]);
             option2.add(option);
         }
         for (int i = 0; i < Out1.get(0).getInflow()[0].length; i++)
@@ -124,131 +138,170 @@ public class OutResult {
             Option_Water option = new Option_Water();
             option.setTime(Out1.get(0).getTime()[i]);
             option.setTypeName(req.getTypeName());
-//            option.setStationType("");
-
+            option.setStationType("红岩生活");
             option.setStationName("红岩城市用水");
             option.setWater(Out1.get(0).getWaterSupply()[1][i]);
+            if (Out1.get(0).getWaterdemand()[1][i]==0){
+                double n=1;
+                option.setProportion(n);
+            }
+            else{
+                option.setProportion(Out1.get(0).getWaterSupply()[1][i]/Out1.get(0).getWaterdemand()[1][i]);
+            }
+            option.setWaterLack(Out1.get(0).getWaterdemand()[1][i]-Out1.get(0).getWaterSupply()[1][i]);
             option2.add(option);
         }
-        for (int i = 0; i < Out1.get(0).getInflow()[0].length; i++)
-        {
+        for (int i = 0; i < Out1.get(0).getInflow()[0].length; i++) {
             Option_Water option = new Option_Water();
             option.setTime(Out1.get(0).getTime()[i]);
             option.setTypeName(req.getTypeName());
-//            option.setStationType("null");
+            option.setStationType("八钢工业");
             option.setStationName("八钢工业用水");
-            option.setWater(Out1.get(0).getWaterSupply()[2][i]);
+            option.setWater(Out1.get(0).getWaterSupplyIndustry()[0][i]);
+            option.setProportion(Out1.get(0).getProportionIndustry()[0][i]);
+            option.setWaterLack(Out1.get(0).getWaterDemandIndustry()[0][i]-Out1.get(0).getWaterSupplyIndustry()[0][i]);
             option2.add(option);
+        }
+        for(int x=1;x<Out1.get(0).getNameQushou().length;x++)
+        {
+            for (int i = 0; i < Out1.get(0).getInflow()[0].length; i++) {
+                Option_Water option = new Option_Water();
+                option.setTime(Out1.get(0).getTime()[i]);
+                option.setTypeName(req.getTypeName());
+                option.setStationType("渠首工业");
+                option.setStationName(Out1.get(0).getNameQushou()[x-1]);
+                option.setWater(Out1.get(0).getWaterSupplyIndustry()[x][i]);
+                option.setProportion(Out1.get(0).getProportionIndustry()[x][i]);
+                option.setWaterLack(Out1.get(0).getWaterDemandIndustry()[x][i]-Out1.get(0).getWaterSupplyIndustry()[x][i]);
+                option2.add(option);
+            }
         }
         for (int i = 0; i < Out1.get(0).getInflow()[0].length; i++)
         {
             Option_Water option = new Option_Water();
             option.setTime(Out1.get(0).getTime()[i]);
             option.setTypeName(req.getTypeName());
-            option.setStationType("西干渠");
-            option.setStationName("三工镇");
-            option.setWater(Out1.get(0).getWaterSupply3()[0][i]);
+            option.setStationType("总西干渠");
+            option.setStationName("西干渠");
+            option.setWater(Out1.get(0).getWaterSupply()[3][i]);
+            if (Out1.get(0).getWaterdemand()[3][i]==0){
+                double n=1;
+                option.setProportion(n);
+            }
+            else{
+                option.setProportion(Out1.get(0).getWaterSupply()[3][i]/Out1.get(0).getWaterdemand()[3][i]);
+            }
+            option.setWaterLack(Out1.get(0).getWaterdemand()[3][i]-Out1.get(0).getWaterSupply()[3][i]);
             option2.add(option);
+        }
+        for(int x=1;x<Out1.get(0).getNameWest().length;x++)
+        {
+            for (int i = 0; i < Out1.get(0).getInflow()[0].length; i++)
+            {
+                Option_Water option = new Option_Water();
+                option.setTime(Out1.get(0).getTime()[i]);
+                option.setTypeName(req.getTypeName());
+                option.setStationType("西干渠灌溉");
+                option.setStationName(Out1.get(0).getNameWest()[x]);
+                option.setWater(Out1.get(0).getWaterSupply3()[x][i]);
+                option.setProportion(Out1.get(0).getProportion3()[x][i]);
+                option.setWaterLack(Out1.get(0).getWaterDemand3()[x][i]-Out1.get(0).getWaterSupply3()[x][i]);
+                option2.add(option);
+            }
         }
         for (int i = 0; i < Out1.get(0).getInflow()[0].length; i++)
         {
             Option_Water option = new Option_Water();
             option.setTime(Out1.get(0).getTime()[i]);
             option.setTypeName(req.getTypeName());
-            option.setStationType("西干渠");
-            option.setStationName("园艺场");
-            option.setWater(Out1.get(0).getWaterSupply3()[1][i]);
+            option.setStationType("总东干渠");
+            option.setStationName("东干渠");
+            option.setWater(Out1.get(0).getWaterSupply()[4][i]);
+            if (Out1.get(0).getWaterdemand()[4][i]==0){
+                double n=1;
+                option.setProportion(n);
+            }
+            else{
+                option.setProportion(Out1.get(0).getWaterSupply()[4][i]/Out1.get(0).getWaterdemand()[4][i]);
+            }
+            option.setWaterLack(Out1.get(0).getWaterdemand()[4][i]-Out1.get(0).getWaterSupply()[4][i]);
             option2.add(option);
         }
-        for (int i = 0; i < Out1.get(0).getInflow()[0].length; i++)
+
+        for (int x=2;x<Out1.get(0).getNameEast().length-Out1.get(0).getNameAgricultureEast().length;x++)
         {
-            Option_Water option = new Option_Water();
-            option.setTime(Out1.get(0).getTime()[i]);
-            option.setTypeName(req.getTypeName());
-            option.setStationType("西干渠");
-            option.setStationName("六工镇");
-            option.setWater(Out1.get(0).getWaterSupply3()[2][i]);
-            option2.add(option);
+            for (int i = 0; i < Out1.get(0).getInflow()[0].length; i++)
+            {
+                Option_Water option = new Option_Water();
+                option.setTime(Out1.get(0).getTime()[i]);
+                option.setTypeName(req.getTypeName());
+                option.setStationType("渠首灌溉");
+                option.setStationName(Out1.get(0).getNameEast()[x]);
+                option.setWater(Out1.get(0).getWaterSupply4()[x][i]);
+                option.setProportion(Out1.get(0).getProportion4()[x][i]);
+                option.setWaterLack(Out1.get(0).getWaterDemand4()[x][i]-Out1.get(0).getWaterSupply4()[x][i]);
+                option2.add(option);
+            }
         }
-        for (int i = 0; i < Out1.get(0).getInflow()[0].length; i++)
+        for (int x=2+Out1.get(0).getNameAgricultureQushou().length;x<Out1.get(0).getNameEast().length;x++)
         {
-            Option_Water option = new Option_Water();
-            option.setTime(Out1.get(0).getTime()[i]);
-            option.setTypeName(req.getTypeName());
-            option.setStationType("西干渠");
-            option.setStationName("西干绿化");
-            option.setWater(Out1.get(0).getWaterSupply3()[3][i]);
-            option2.add(option);
+            for (int i = 0; i < Out1.get(0).getInflow()[0].length; i++)
+            {
+                Option_Water option = new Option_Water();
+                option.setTime(Out1.get(0).getTime()[i]);
+                option.setTypeName(req.getTypeName());
+                option.setStationType("东干渠灌溉");
+                option.setStationName(Out1.get(0).getNameEast()[x]);
+                option.setWater(Out1.get(0).getWaterSupply4()[x][i]);
+                option.setProportion(Out1.get(0).getProportion4()[x][i]);
+                option.setWaterLack(Out1.get(0).getWaterDemand4()[x][i]-Out1.get(0).getWaterSupply4()[x][i]);
+                option2.add(option);
+            }
         }
-        for (int i = 0; i < Out1.get(0).getInflow()[0].length; i++)
+        for(int x=0;x<Out1.get(0).getNameGreenQushou().length;x++)
         {
-            Option_Water option = new Option_Water();
-            option.setTime(Out1.get(0).getTime()[i]);
-            option.setTypeName(req.getTypeName());
-            option.setStationType("西干渠");
-            option.setStationName("景观带");
-            option.setWater(Out1.get(0).getWaterSupply3()[4][i]);
-            option2.add(option);
+            for (int i = 0; i < Out1.get(0).getInflow()[0].length; i++)
+            {
+                Option_Water option = new Option_Water();
+                option.setTime(Out1.get(0).getTime()[i]);
+                option.setTypeName(req.getTypeName());
+                option.setStationType("渠首绿化");
+                option.setStationName(Out1.get(0).getNameGreenQushou()[x]);
+                option.setWater(Out1.get(0).getWaterSupplyGreenQushou()[x][i]);
+                option.setProportion(Out1.get(0).getProportionGreenQushou()[x][i]);
+                option.setWaterLack(Out1.get(0).getWaterDemandGreenQushou()[x][i]-Out1.get(0).getWaterSupplyGreenQushou()[x][i]);
+                option2.add(option);
+            }
         }
-        for (int i = 0; i < Out1.get(0).getInflow()[0].length; i++)
+        for (int x=0;x<Out1.get(0).getNameGreenEast().length;x++)
         {
-            Option_Water option = new Option_Water();
-            option.setTime(Out1.get(0).getTime()[i]);
-            option.setTypeName(req.getTypeName());
-            option.setStationType("东干渠");
-            option.setStationName("灯笼渠");
-            option.setWater(Out1.get(0).getWaterSupply4()[0][i]);
-            option2.add(option);
+            for (int i = 0; i < Out1.get(0).getInflow()[0].length; i++)
+            {
+                Option_Water option = new Option_Water();
+                option.setTime(Out1.get(0).getTime()[i]);
+                option.setTypeName(req.getTypeName());
+                option.setStationType("河东绿化");
+                option.setStationName(Out1.get(0).getNameGreenEast()[x]);
+                option.setWater(Out1.get(0).getWaterSupplyGreenEast()[x][i]);
+                option.setProportion(Out1.get(0).getProportionGreenEast()[x][i]);
+                option.setWaterLack(Out1.get(0).getWaterDemandGreenEast()[x][i]-Out1.get(0).getWaterSupplyGreenEast()[x][i]);
+                option2.add(option);
+            }
         }
-        for (int i = 0; i < Out1.get(0).getInflow()[0].length; i++)
+        for (int x=0;x<Out1.get(0).getNameGreenWest().length;x++)
         {
-            Option_Water option = new Option_Water();
-            option.setTime(Out1.get(0).getTime()[i]);
-            option.setTypeName(req.getTypeName());
-            option.setStationType("东干渠");
-            option.setStationName("十二师");
-            option.setWater(Out1.get(0).getWaterSupply4()[1][i]);
-            option2.add(option);
-        }
-        for (int i = 0; i < Out1.get(0).getInflow()[0].length; i++)
-        {
-            Option_Water option = new Option_Water();
-            option.setTime(Out1.get(0).getTime()[i]);
-            option.setTypeName(req.getTypeName());
-            option.setStationType("东干渠");
-            option.setStationName("西缘产业");
-            option.setWater(Out1.get(0).getWaterSupply4()[2][i]);
-            option2.add(option);
-        }
-        for (int i = 0; i < Out1.get(0).getInflow()[0].length; i++)
-        {
-            Option_Water option = new Option_Water();
-            option.setTime(Out1.get(0).getTime()[i]);
-            option.setTypeName(req.getTypeName());
-            option.setStationType("东干渠");
-            option.setStationName("格信公司");
-            option.setWater(Out1.get(0).getWaterSupply4()[3][i]);
-            option2.add(option);
-        }
-        for (int i = 0; i < Out1.get(0).getInflow()[0].length; i++)
-        {
-            Option_Water option = new Option_Water();
-            option.setTime(Out1.get(0).getTime()[i]);
-            option.setTypeName(req.getTypeName());
-            option.setStationType("东干渠");
-            option.setStationName("东干绿化");
-            option.setWater(Out1.get(0).getWaterSupply4()[4][i]);
-            option2.add(option);
-        }
-        for (int i = 0; i < Out1.get(0).getInflow()[0].length; i++)
-        {
-            Option_Water option = new Option_Water();
-            option.setTime(Out1.get(0).getTime()[i]);
-            option.setTypeName(req.getTypeName());
-            option.setStationType("东干渠");
-            option.setStationName("水管站");
-            option.setWater(Out1.get(0).getWaterSupply4()[5][i]);
-            option2.add(option);
+            for (int i = 0; i < Out1.get(0).getInflow()[0].length; i++)
+            {
+                Option_Water option = new Option_Water();
+                option.setTime(Out1.get(0).getTime()[i]);
+                option.setTypeName(req.getTypeName());
+                option.setStationType("河西绿化");
+                option.setStationName(Out1.get(0).getNameGreenWest()[x]);
+                option.setWater(Out1.get(0).getWaterSupplyGreenWest()[x][i]);
+                option.setProportion(Out1.get(0).getProportionGreenWest()[x][i]);
+                option.setWaterLack(Out1.get(0).getWaterDemandGreenWest()[x][i]-Out1.get(0).getWaterSupplyGreenWest()[x][i]);
+                option2.add(option);
+            }
         }
         Write(path1,option1);
         Write_peishui(path2,option2);
@@ -290,6 +343,15 @@ public class OutResult {
         row0.createCell(17).setCellValue("IrrigateProportion");
         row0.createCell(18).setCellValue("GreeningProportion");
         row0.createCell(19).setCellValue("deltawater");
+        row0.createCell(20).setCellValue("allwater");
+        row0.createCell(21).setCellValue("outFlowWater");
+
+        // 获取 CreationHelper 对象来帮助处理日期
+        CreationHelper createHelper = workbook.getCreationHelper();
+
+        // 创建 CellStyle 对象，并设置日期格式
+        CellStyle cellStyle = workbook.createCellStyle();
+        cellStyle.setDataFormat(createHelper.createDataFormat().getFormat("yyyy-MM-dd HH:mm:ss"));
 
         for (int i = 0; i < options.size(); i++) {
             Option line = options.get(i);
@@ -297,6 +359,7 @@ public class OutResult {
             row.createCell(0).setCellValue(line.getStationName());
             row.createCell(1).setCellValue(line.getTypeName());
             row.createCell(2).setCellValue(line.getTime());
+            row.getCell(2).setCellStyle(cellStyle);
             row.createCell(3).setCellValue(line.getLevelBegin());
             row.createCell(4).setCellValue(line.getLevelEnd());
             row.createCell(5).setCellValue(line.getCapacity());
@@ -314,6 +377,9 @@ public class OutResult {
             row.createCell(17).setCellValue(line.getIrrigate_Proportion());
             row.createCell(18).setCellValue(line.getGreening_Proportion());
             row.createCell(19).setCellValue(line.getDeltawater());
+            row.createCell(20).setCellValue(line.getAllWater());
+            row.createCell(21).setCellValue(line.getOutFlowWater());
+
         }
         try {
             FileOutputStream fop = new FileOutputStream(path);
@@ -330,13 +396,21 @@ public class OutResult {
         XSSFWorkbook workbook = new XSSFWorkbook();
         XSSFSheet sheet = workbook.createSheet();
         XSSFRow row0 = sheet.createRow(0);
-        row0.createCell(0).setCellValue("Time");
-        row0.createCell(1).setCellValue("TypeName");
-        row0.createCell(2).setCellValue("StationType");
-        row0.createCell(3).setCellValue("StationName");
-        row0.createCell(4).setCellValue("Water");
+        row0.createCell(0).setCellValue("time");
+        row0.createCell(1).setCellValue("typeName");
+        row0.createCell(2).setCellValue("stationType");
+        row0.createCell(3).setCellValue("stationName");
+        row0.createCell(4).setCellValue("water");
+        row0.createCell(5).setCellValue("proportion");
+        row0.createCell(6).setCellValue("waterLack");
 
 
+        // 获取 CreationHelper 对象来帮助处理日期
+        CreationHelper createHelper = workbook.getCreationHelper();
+
+        // 创建 CellStyle 对象，并设置日期格式
+        CellStyle cellStyle = workbook.createCellStyle();
+        cellStyle.setDataFormat(createHelper.createDataFormat().getFormat("yyyy-MM-dd HH:mm:ss"));
         for (int i = 0; i < options.size(); i++) {
             Option_Water line = options.get(i);
             XSSFRow row = sheet.createRow(i+1);
@@ -345,7 +419,9 @@ public class OutResult {
             row.createCell(2).setCellValue(line.getStationType());
             row.createCell(3).setCellValue(line.getStationName());
             row.createCell(4).setCellValue(line.getWater());
-
+            row.createCell(5).setCellValue(line.getProportion());
+            row.createCell(6).setCellValue(line.getWaterLack());
+            row.getCell(0).setCellStyle(cellStyle);
         }
         try
         {

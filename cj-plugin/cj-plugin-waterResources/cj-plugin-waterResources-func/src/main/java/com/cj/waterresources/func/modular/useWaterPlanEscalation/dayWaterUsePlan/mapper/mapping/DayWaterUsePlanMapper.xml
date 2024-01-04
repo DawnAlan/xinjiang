@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cj.waterresources.func.modular.useWaterPlanEscalation.dayWaterUsePlan.mapper.DayWaterUsePlanMapper">
+
+    <select id="selectOne" parameterType="com.cj.waterresources.func.modular.useWaterPlanEscalation.dayWaterUsePlan.bean.req.DayWaterUsePlanSelectReq" resultType="com.cj.waterresources.func.modular.useWaterPlanEscalation.dayWaterUsePlan.entity.DayWaterUsePlan">
+        select * from DAY_WATER_USE_PLAN
+        <where>
+            <if test="req.area !=null and req.area !=''">
+                and AREA = #{req.area}
+            </if>
+            <if test="req.recordTime !=null">
+                and TO_CHAR(RECORD_TIME,'YYYY-MM-DD') = TO_CHAR(#{req.recordTime},'YYYY-MM-DD')
+            </if>
+            and DEL = 0
+        </where>
+    </select>
+    <select id="getWaterNeedDetail" resultType="java.util.Map">
+        with dayUseWater as
+                 (select 'day'                                useWaterPlan,
+                         a.AREA,
+                         a.UNIT_NAME                          unit,
+                         to_char(b.V)                         v,
+                         to_char(b.RECORD_TIME, 'yyyy-mm-dd') tm
+                  from USE_WATER_MANAGEMENT a,
+                       DAY_WATER_USE_PLAN b
+                  where to_char(b.RECORD_TIME, 'yyyy-mm-dd') >= to_char(#{startTime}, 'yyyy-mm-dd')
+                    and to_char(b.RECORD_TIME, 'yyyy-mm-dd') &lt;= to_char(#{endTime}, 'yyyy-mm-dd')
+                    and a.P_ID = b.ID
+                    and a.DEL = 0
+                    and a.DEL = 0
+                    and a.USE_WATER_PLAN = '日用水计划')
+        select *
+        from dayUseWater
+        where (area, unit, tm) in
+              (select area, unit, max(tm) from dayUseWater group by area, unit)
+    </select>
+</mapper>

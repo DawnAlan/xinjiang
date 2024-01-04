@@ -25,4 +25,7 @@ public class IncomingWaterForecastListReq extends PageTool implements Serializab
 
     @ApiModelProperty(value = "制作人")
     private String createBy;
+
+    @ApiModelProperty(value = "模型类型(1-中长期 2-短期 3-场次)")
+    private Integer modelType;
 }

@@ -2,9 +2,12 @@ package com.cj.waterresources.func.modular.trendsTable.service;
 
 import com.cj.common.model.RestResponse;
 import com.cj.waterresources.func.modular.trendsTable.bean.req.QueryTrendsTableParamReq;
+import com.cj.waterresources.func.modular.trendsTable.bean.req.TrendsTableParamAddReq;
+import com.cj.waterresources.func.modular.trendsTable.bean.req.TrendsTableParamUpdateReq;
 import com.cj.waterresources.func.modular.trendsTable.bean.res.WaterDailyParamSelectRes;
 import com.cj.waterresources.func.modular.trendsTable.entity.TrendsTableParam;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -15,11 +18,14 @@ import java.util.List;
 */
 public interface TrendsTableParamService extends IService<TrendsTableParam> {
 
-    RestResponse add(TrendsTableParam param);
+
+    @Transactional(rollbackFor=RuntimeException.class)
+    RestResponse add(TrendsTableParamAddReq req);
 
     RestResponse delete(String id);
 
-    RestResponse update(TrendsTableParam param);
+    @Transactional(rollbackFor=RuntimeException.class)
+    RestResponse update(TrendsTableParamUpdateReq req);
 
     RestResponse<List<WaterDailyParamSelectRes>> select(QueryTrendsTableParamReq req);
 

@@ -115,6 +115,8 @@
 
         <!-- 依赖服务启动模块 -->
         <module>cj-server</module>
+        <module>cj-modules/cj-fourPredictions-app</module>
+        <module>cj-plugin/cj-plugin-fourPredictions</module>
     </modules>
 
     <dependencyManagement>

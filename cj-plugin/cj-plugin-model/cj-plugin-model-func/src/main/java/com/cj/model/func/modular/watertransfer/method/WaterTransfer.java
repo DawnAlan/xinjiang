@@ -37,6 +37,16 @@ public class WaterTransfer {
     //3,4西干东干支渠供水
     private double [][]waterSupply3;
     private double [][]waterSupply4;
+
+    public double[] getAllWater() {
+        return allWater;
+    }
+
+    public void setAllWater(double[] allWater) {
+        this.allWater = allWater;
+    }
+
+    private double []allWater;
     //供水比例
     private double [][]proportion;
     //评价
@@ -52,6 +62,201 @@ public class WaterTransfer {
     //来水减去供水
     private double [][]inflowWater_supply;
 
+    //绿化配水
+    private double [][]waterSupplyGreenEast;
+    private double [][]waterSupplyGreenWest;
+    private double [][]waterSupplyGreenQushou;
+    //工业配水
+    private double [][]waterSupplyIndustry;
+    //绿化配水
+    private double [][]waterDemandGreenEast;
+
+    public String[] getNameAgricultureQushou() {
+        return nameAgricultureQushou;
+    }
+
+    public void setNameAgricultureQushou(String[] nameAgricultureQushou) {
+        this.nameAgricultureQushou = nameAgricultureQushou;
+    }
+
+    public String[] getNameAgricultureEast() {
+        return nameAgricultureEast;
+    }
+
+    public void setNameAgricultureEast(String[] nameAgricultureEast) {
+        this.nameAgricultureEast = nameAgricultureEast;
+    }
+
+    private String [] nameAgricultureQushou;
+    private String [] nameAgricultureEast;
+    public double[][] getWaterDemandGreenEast() {
+        return waterDemandGreenEast;
+    }
+
+    public void setWaterDemandGreenEast(double[][] waterDemandGreenEast) {
+        this.waterDemandGreenEast = waterDemandGreenEast;
+    }
+
+    public double[][] getWaterDemandGreenWest() {
+        return waterDemandGreenWest;
+    }
+
+    public void setWaterDemandGreenWest(double[][] waterDemandGreenWest) {
+        this.waterDemandGreenWest = waterDemandGreenWest;
+    }
+
+    public double[][] getWaterDemandGreenQushou() {
+        return waterDemandGreenQushou;
+    }
+
+    public void setWaterDemandGreenQushou(double[][] waterDemandGreenQushou) {
+        this.waterDemandGreenQushou = waterDemandGreenQushou;
+    }
+
+    public double[][] getWaterDemandIndustry() {
+        return waterDemandIndustry;
+    }
+
+    public void setWaterDemandIndustry(double[][] waterDemandIndustry) {
+        this.waterDemandIndustry = waterDemandIndustry;
+    }
+
+    public double[][] getWaterDemand3() {
+        return waterDemand3;
+    }
+
+    public void setWaterDemand3(double[][] waterDemand3) {
+        this.waterDemand3 = waterDemand3;
+    }
+
+    public double[][] getWaterDemand4() {
+        return waterDemand4;
+    }
+
+    public void setWaterDemand4(double[][] waterDemand4) {
+        this.waterDemand4 = waterDemand4;
+    }
+
+    private double [][]waterDemandGreenWest;
+    private double [][]waterDemandGreenQushou;
+    //工业配水
+    private double [][]waterDemandIndustry;
+    private double [][]waterDemand3;
+    private double [][]waterDemand4;
+    public double[][] getProportionGreenEast() {
+        return proportionGreenEast;
+    }
+
+    public void setProportionGreenEast(double[][] proportionGreenEast) {
+        this.proportionGreenEast = proportionGreenEast;
+    }
+
+    public double[][] getProportionGreenWest() {
+        return proportionGreenWest;
+    }
+
+    public void setProportionGreenWest(double[][] proportionGreenWest) {
+        this.proportionGreenWest = proportionGreenWest;
+    }
+
+    public double[][] getProportionGreenQushou() {
+        return proportionGreenQushou;
+    }
+
+    public void setProportionGreenQushou(double[][] proportionGreenQushou) {
+        this.proportionGreenQushou = proportionGreenQushou;
+    }
+
+    public double[][] getProportionIndustry() {
+        return proportionIndustry;
+    }
+
+    public void setProportionIndustry(double[][] proportionIndustry) {
+        this.proportionIndustry = proportionIndustry;
+    }
+
+    public double[][] getProportion3() {
+        return proportion3;
+    }
+
+    public void setProportion3(double[][] proportion3) {
+        this.proportion3 = proportion3;
+    }
+
+    public double[][] getProportion4() {
+        return proportion4;
+    }
+
+    public void setProportion4(double[][] proportion4) {
+        this.proportion4 = proportion4;
+    }
+
+    //绿化配水比例
+    private double [][]proportionGreenEast;
+    private double [][]proportionGreenWest;
+    private double [][]proportionGreenQushou;
+    //工业配水比例
+    private double [][]proportionIndustry;
+
+    private double[][] proportion3;
+    private double[][] proportion4;
+    //绿化地名
+    private String []nameQushou;
+    //东干绿化地名
+
+    public String[] getNameGreenQushou() {
+        return nameGreenQushou;
+    }
+
+    public void setNameGreenQushou(String[] nameGreenQushou) {
+        this.nameGreenQushou = nameGreenQushou;
+    }
+
+    private String []nameGreenQushou;
+    public String[] getNameGreenEast() {
+        return nameGreenEast;
+    }
+
+    public void setNameGreenEast(String[] nameGreenEast) {
+        this.nameGreenEast = nameGreenEast;
+    }
+    //西干绿化地名
+    public String[] getNameGreenWest() {
+        return nameGreenWest;
+    }
+
+    public void setNameGreenWest(String[] nameGreenWest) {
+        this.nameGreenWest = nameGreenWest;
+    }
+
+    private String []nameGreenEast;
+    private String []nameGreenWest;
+
+    public String[] getNameEast() {
+        return nameEast;
+    }
+
+    public void setNameEast(String[] nameEast) {
+        this.nameEast = nameEast;
+    }
+
+    public String[] getNameWest() {
+        return nameWest;
+    }
+
+    public void setNameWest(String[] nameWest) {
+        this.nameWest = nameWest;
+    }
+
+    private String []nameEast;
+    private String []nameWest;
+    public String[] getNameQushou() {
+        return nameQushou;
+    }
+
+    public void setNameQushou(String[] nameQushou) {
+        this.nameQushou = nameQushou;
+    }
 
 
     public void setTime(Date[] time){
@@ -74,7 +279,31 @@ public class WaterTransfer {
     public double[][] getLevelend() {
         return levelend;
     }
+    public void setWaterSupplyGreenEast(double [][]waterSupplyGreenEast){
+        this.waterSupplyGreenEast = waterSupplyGreenEast;
+    }
+    public double[][] getWaterSupplyGreenEast() {
+        return waterSupplyGreenEast;
+    }
 
+    public void setWaterSupplyGreenWest(double [][]waterSupplyGreenWest){
+        this.waterSupplyGreenWest = waterSupplyGreenWest;
+    }
+    public double[][] getWaterSupplyGreenWest() {
+        return waterSupplyGreenWest;
+    }
+    public void setWaterSupplyGreenQushou(double [][]waterSupplyGreenQushou){
+        this.waterSupplyGreenQushou = waterSupplyGreenQushou;
+    }
+    public double[][] getWaterSupplyGreenQushou() {
+        return waterSupplyGreenQushou;
+    }
+    public void setWaterSupplyIndustry(double [][]waterSupplyIndustry){
+        this.waterSupplyIndustry = waterSupplyIndustry;
+    }
+    public double[][] getWaterSupplyIndustry() {
+        return waterSupplyIndustry;
+    }
     public void setEndCapacity(double[][] endCapacity){
         this.endCapacity =endCapacity;
     }

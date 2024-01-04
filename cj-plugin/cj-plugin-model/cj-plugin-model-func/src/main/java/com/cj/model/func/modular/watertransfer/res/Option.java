@@ -26,6 +26,8 @@ public class Option {
     private double inflow;
 //    下泄
     private double outflow;
+//    下泄水量
+    private double outFlowWater;
 //    来水水量
     private double inflow_water;
 //     上月末可用水量
@@ -52,6 +54,7 @@ public class Option {
 //    供水计划
     private double WaterSupply;
 
+    private double allWater;
 
 
 }

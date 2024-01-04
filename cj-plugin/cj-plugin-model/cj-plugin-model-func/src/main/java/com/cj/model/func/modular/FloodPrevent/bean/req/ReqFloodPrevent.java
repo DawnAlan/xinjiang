@@ -37,4 +37,13 @@ public class ReqFloodPrevent {
 
     @ApiModelProperty(value = "来水预报结果名称")
     private String programmeName;
+
+    /**
+     * 楼庄子各月份汛限水位，共12个
+     */
+    private double[] limitLevels_lzz;
+    /**
+     * 头屯河各月份汛限水位，共12个
+     */
+    private double[] limitLevels_tth;
 }

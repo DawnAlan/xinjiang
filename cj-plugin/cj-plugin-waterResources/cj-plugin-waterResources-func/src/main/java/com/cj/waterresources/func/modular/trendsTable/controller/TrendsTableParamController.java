@@ -3,6 +3,8 @@ package com.cj.waterresources.func.modular.trendsTable.controller;
 
 import com.cj.common.model.RestResponse;
 import com.cj.waterresources.func.modular.trendsTable.bean.req.QueryTrendsTableParamReq;
+import com.cj.waterresources.func.modular.trendsTable.bean.req.TrendsTableParamAddReq;
+import com.cj.waterresources.func.modular.trendsTable.bean.req.TrendsTableParamUpdateReq;
 import com.cj.waterresources.func.modular.trendsTable.bean.res.WaterDailyParamSelectRes;
 import com.cj.waterresources.func.modular.trendsTable.entity.TrendsTableParam;
 import com.cj.waterresources.func.modular.trendsTable.service.TrendsTableParamService;
@@ -38,8 +40,8 @@ public class TrendsTableParamController {
     @ApiOperationSupport(order = 1)
     @ApiOperation("新增")
     @PostMapping("/add")
-    public RestResponse add(@RequestBody TrendsTableParam param) {
-        return trendsTableParamService.add(param);
+    public RestResponse add(@RequestBody TrendsTableParamAddReq req) {
+        return trendsTableParamService.add(req);
     }
 
     @ApiOperationSupport(order = 2)
@@ -52,7 +54,7 @@ public class TrendsTableParamController {
     @ApiOperationSupport(order = 3)
     @ApiOperation("修改")
     @PostMapping("/update")
-    public RestResponse update(@RequestBody TrendsTableParam param) {
+    public RestResponse update(@RequestBody TrendsTableParamUpdateReq param) {
         return trendsTableParamService.update(param);
     }
 

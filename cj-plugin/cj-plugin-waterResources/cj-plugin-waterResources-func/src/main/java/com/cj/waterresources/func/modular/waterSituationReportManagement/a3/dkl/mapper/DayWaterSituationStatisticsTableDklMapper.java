@@ -1,0 +1,21 @@
+package com.cj.waterresources.func.modular.waterSituationReportManagement.a3.dkl.mapper;
+
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.dkl.entity.DayWaterSituationStatisticsTableDkl;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
+
+import java.util.List;
+
+/**
+ * 对口率日水情统计表(DayWaterSituationStatisticsTableDkl)表数据库访问层
+ *
+ * @author makejava
+ * @since 2023-12-23 15:58:23
+ */
+public interface DayWaterSituationStatisticsTableDklMapper extends BaseMapper<DayWaterSituationStatisticsTableDkl> {
+
+    @Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_DKL WHERE TO_CHAR(RECORD_TIME,'YYYY-MM-DD') = #{date}")
+    List<DayWaterSituationStatisticsTableDkl> selectList(@Param("date")String date);
+}
+
