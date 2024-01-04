@@ -325,7 +325,7 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
         try {
             calculator = OutResult.calculator(waterTransferReq);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new CommonException(e.getMessage());
         }
         String displayDataPath = calculator.stream().filter(n -> n.getName().equals("表1")).findFirst().get().getPath();
         String displayDataPathMinio = DateUtil.format(dateTime, "yyyyMMdd/HH/mm/ss/") + displayDataPath.substring(displayDataPath.lastIndexOf(File.separator) + 1);
