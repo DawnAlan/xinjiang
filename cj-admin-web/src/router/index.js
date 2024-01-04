@@ -37,6 +37,7 @@ const routes = [...systemRouter, ...whiteListRouters, ...routes_404]
 
 const router = createRouter({
 	history: createWebHistory(),
+	//history: createWebHashHistory(),
 	routes
 })
 
