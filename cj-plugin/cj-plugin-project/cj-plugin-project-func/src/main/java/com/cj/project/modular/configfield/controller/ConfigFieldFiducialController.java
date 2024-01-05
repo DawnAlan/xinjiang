@@ -1,8 +1,9 @@
 package com.cj.project.modular.configfield.controller;
 
-import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.cj.project.modular.configfield.param.*;
+import com.cj.project.api.configfield.dto.ConfigFieldFiducialPageDto;
+import com.cj.project.api.configfield.dto.ConfigFieldFiducialQueryDto;
+import com.cj.project.api.configfield.entity.ConfigFieldFiducial;
 import com.cj.project.modular.configfield.result.ConfigFieldFiducialResult;
 import com.cj.project.modular.configfield.service.ConfigFieldFiducialGreatService;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
@@ -10,14 +11,9 @@ import com.github.xiaoymin.knife4j.annotations.ApiSupport;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import com.cj.common.annotation.CommonLog;
 import com.cj.common.pojo.CommonResult;
-import com.cj.common.pojo.CommonValidList;
-import com.cj.project.modular.configfield.entity.ConfigFieldFiducial;
 import com.cj.project.modular.configfield.service.ConfigFieldFiducialService;
 
 import javax.annotation.Resource;
@@ -52,9 +48,24 @@ public class ConfigFieldFiducialController {
     @ApiOperation("获取考证字段配置")
     @CommonLog("添加考证字段配置")
     @GetMapping("/project/configfield/fiducial/get")
-    public CommonResult<List<ConfigFieldFiducialResult>> getList(ConfigFieldFiducialQueryParam configFieldFiducialQueryParam) {
-        return CommonResult.data(configFieldFiducialService.getList(configFieldFiducialQueryParam));
+    public CommonResult<List<ConfigFieldFiducialResult>> getList(ConfigFieldFiducialQueryDto configFieldFiducialQueryDto) {
+        return CommonResult.data(configFieldFiducialService.getList(configFieldFiducialQueryDto));
     }
+
+
+    /**
+     * 获取考证字段配置分页
+     *
+     * @author Lb
+     * @date  2023/08/31 19:28
+     */
+    @ApiOperationSupport(order = 1)
+    @ApiOperation("获取数据字段配置分页")
+    @GetMapping("/project/configfield/page")
+    public CommonResult<Page<ConfigFieldFiducial>> page(ConfigFieldFiducialPageDto configFieldFiducialPageDto) {
+        return CommonResult.data(configFieldFiducialService.page(configFieldFiducialPageDto));
+    }
+
 
     /**
      * 添加考证字段配置
@@ -66,8 +77,8 @@ public class ConfigFieldFiducialController {
     @ApiOperation("添加考证字段配置")
     @CommonLog("添加考证字段配置")
     @PostMapping("/project/configfield/fiducial/add")
-    public CommonResult<String> add(@RequestBody @Valid ConfigFieldFiducialAddParam configFieldFiducialAddParam) {
-        configFieldFiducialService.add(configFieldFiducialAddParam);
+    public CommonResult<String> add(@RequestBody @Valid ConfigFieldFiducial configFieldFiducial) {
+        configFieldFiducialService.add(configFieldFiducial);
         return CommonResult.ok();
     }
 
@@ -81,8 +92,8 @@ public class ConfigFieldFiducialController {
     @ApiOperation("编辑考证字段配置")
     @CommonLog("编辑考证字段配置")
     @PostMapping("/project/configfield/fiducial/edit")
-    public CommonResult<String> edit(@RequestBody @Valid ConfigFieldFiducialEditParam configFieldFiducialEditParam) {
-        configFieldFiducialService.edit(configFieldFiducialEditParam);
+    public CommonResult<String> edit(@RequestBody @Valid ConfigFieldFiducial configFieldFiducial) {
+        configFieldFiducialService.edit(configFieldFiducial);
         return CommonResult.ok();
     }
 
@@ -97,8 +108,8 @@ public class ConfigFieldFiducialController {
     @CommonLog("删除考证字段配置")
     @PostMapping("/project/configfield/fiducial/delete")
     public CommonResult<String> delete(@RequestBody @Valid @NotEmpty(message = "集合不能为空")
-                                           CommonValidList<ConfigFieldFiducialIdParam> configFieldFiducialIdParamList) {
-        configFieldFiducialService.delete(configFieldFiducialIdParamList);
+                                                   List<String> idList) {
+        configFieldFiducialService.delete(idList);
         return CommonResult.ok();
     }
 
@@ -110,9 +121,9 @@ public class ConfigFieldFiducialController {
      */
     @ApiOperationSupport(order = 5)
     @ApiOperation("获取考证字段配置详情")
-    @GetMapping("/project/configfield/fiducial/detail")
-    public CommonResult<ConfigFieldFiducial> detail(@Valid ConfigFieldFiducialIdParam configFieldFiducialIdParam) {
-        return CommonResult.data(configFieldFiducialService.detail(configFieldFiducialIdParam));
+    @GetMapping("/project/configfield/fiducial/detail/{id}")
+    public CommonResult<ConfigFieldFiducial> detail(@PathVariable("id") String id) {
+        return CommonResult.data(configFieldFiducialService.detail(id));
     }
 
     /**

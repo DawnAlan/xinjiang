@@ -2,8 +2,9 @@ package com.cj.project.modular.configfield.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.cj.project.modular.configfield.entity.ConfigFieldFiducial;
-import com.cj.project.modular.configfield.param.*;
+import com.cj.project.api.configfield.dto.ConfigFieldFiducialPageDto;
+import com.cj.project.api.configfield.dto.ConfigFieldFiducialQueryDto;
+import com.cj.project.api.configfield.entity.ConfigFieldFiducial;
 import com.cj.project.modular.configfield.result.ConfigFieldFiducialResult;
 
 import java.util.List;
@@ -18,10 +19,10 @@ public interface ConfigFieldFiducialService extends IService<ConfigFieldFiducial
 
     /**
      * 查询仪器类型考证字段配置
-     * @param configFieldFiducialQueryParam
+     * @param configFieldFiducialQueryDto
      * @return
      */
-    List<ConfigFieldFiducialResult> getList(ConfigFieldFiducialQueryParam configFieldFiducialQueryParam);
+    List<ConfigFieldFiducialResult> getList(ConfigFieldFiducialQueryDto configFieldFiducialQueryDto);
 
     /**
      * 获取考证字段配置分页
@@ -29,7 +30,7 @@ public interface ConfigFieldFiducialService extends IService<ConfigFieldFiducial
      * @author Lb
      * @date  2023/08/31 19:28
      */
-    Page<ConfigFieldFiducial> page(ConfigFieldFiducialPageParam configFieldFiducialPageParam);
+    Page<ConfigFieldFiducial> page(ConfigFieldFiducialPageDto configFieldFiducialPageDto);
 
     /**
      * 添加考证字段配置
@@ -37,7 +38,7 @@ public interface ConfigFieldFiducialService extends IService<ConfigFieldFiducial
      * @author Lb
      * @date  2023/08/31 19:28
      */
-    void add(ConfigFieldFiducialAddParam configFieldFiducialAddParam);
+    void add(ConfigFieldFiducial configFieldFiducial);
 
     /**
      * 编辑考证字段配置
@@ -45,7 +46,7 @@ public interface ConfigFieldFiducialService extends IService<ConfigFieldFiducial
      * @author Lb
      * @date  2023/08/31 19:28
      */
-    void edit(ConfigFieldFiducialEditParam configFieldFiducialEditParam);
+    void edit(ConfigFieldFiducial configFieldFiducial);
 
     /**
      * 删除考证字段配置
@@ -53,7 +54,7 @@ public interface ConfigFieldFiducialService extends IService<ConfigFieldFiducial
      * @author Lb
      * @date  2023/08/31 19:28
      */
-    void delete(List<ConfigFieldFiducialIdParam> configFieldFiducialIdParamList);
+    void delete(List<String> idList);
 
     /**
      * 获取考证字段配置详情
@@ -61,7 +62,7 @@ public interface ConfigFieldFiducialService extends IService<ConfigFieldFiducial
      * @author Lb
      * @date  2023/08/31 19:28
      */
-    ConfigFieldFiducial detail(ConfigFieldFiducialIdParam configFieldFiducialIdParam);
+    ConfigFieldFiducial detail(String id);
 
     /**
      * 获取考证字段配置详情

@@ -4,7 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.cj.project.modular.configfield.entity.ConfigFieldFiducial;
+import com.cj.project.api.configfield.entity.ConfigFieldFiducial;
 import com.cj.project.modular.configfield.enums.ConfigFieldFiducialOutEnum;
 import com.cj.project.modular.configfield.mapper.ConfigFieldFiducialMapper;
 import com.cj.project.modular.configfield.service.ConfigFieldFiducialGreatService;

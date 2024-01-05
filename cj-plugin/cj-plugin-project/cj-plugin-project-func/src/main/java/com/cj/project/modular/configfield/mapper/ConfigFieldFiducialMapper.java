@@ -1,7 +1,7 @@
 package com.cj.project.modular.configfield.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.cj.project.modular.configfield.entity.ConfigFieldFiducial;
+import com.cj.project.api.configfield.entity.ConfigFieldFiducial;
 
 /**
  * 考证字段配置Mapper接口

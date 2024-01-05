@@ -7,14 +7,15 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.cj.project.modular.configfield.param.*;
+import com.cj.project.api.configfield.dto.ConfigFieldFiducialPageDto;
+import com.cj.project.api.configfield.dto.ConfigFieldFiducialQueryDto;
+import com.cj.project.api.configfield.entity.ConfigFieldFiducial;
 import com.cj.project.modular.configfield.result.ConfigFieldFiducialResult;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.cj.common.enums.CommonSortOrderEnum;
 import com.cj.common.exception.CommonException;
 import com.cj.common.page.CommonPageRequest;
-import com.cj.project.modular.configfield.entity.ConfigFieldFiducial;
 import com.cj.project.modular.configfield.mapper.ConfigFieldFiducialMapper;
 import com.cj.project.modular.configfield.service.ConfigFieldFiducialService;
 
@@ -33,15 +34,15 @@ import java.util.stream.Collectors;
 public class ConfigFieldFiducialServiceImpl extends ServiceImpl<ConfigFieldFiducialMapper, ConfigFieldFiducial> implements ConfigFieldFiducialService {
 
     @Override
-    public List<ConfigFieldFiducialResult> getList(ConfigFieldFiducialQueryParam configFieldFiducialQueryParam) {
+    public List<ConfigFieldFiducialResult> getList(ConfigFieldFiducialQueryDto configFieldFiducialQueryDto) {
         List<ConfigFieldFiducialResult> fieldFiducialResults = new ArrayList<>();
         //List
         QueryWrapper<ConfigFieldFiducial> queryWrapper = new QueryWrapper<>();
-        if(ObjectUtil.isNotEmpty(configFieldFiducialQueryParam.getProjectCode())) {
-            queryWrapper.lambda().eq(ConfigFieldFiducial::getProjectCode, configFieldFiducialQueryParam.getProjectCode());
+        if(ObjectUtil.isNotEmpty(configFieldFiducialQueryDto.getProjectCode())) {
+            queryWrapper.lambda().eq(ConfigFieldFiducial::getProjectCode, configFieldFiducialQueryDto.getProjectCode());
         }
-        if(ObjectUtil.isNotEmpty(configFieldFiducialQueryParam.getInstrumentType())) {
-            queryWrapper.lambda().eq(ConfigFieldFiducial::getInstrumentType, configFieldFiducialQueryParam.getInstrumentType());
+        if(ObjectUtil.isNotEmpty(configFieldFiducialQueryDto.getInstrumentType())) {
+            queryWrapper.lambda().eq(ConfigFieldFiducial::getInstrumentType, configFieldFiducialQueryDto.getInstrumentType());
         }
         queryWrapper.lambda().orderByAsc(ConfigFieldFiducial::getSortCode);
         List<ConfigFieldFiducial> configFieldFiducials = this.list(queryWrapper);
@@ -61,18 +62,18 @@ public class ConfigFieldFiducialServiceImpl extends ServiceImpl<ConfigFieldFiduc
     }
 
     @Override
-    public Page<ConfigFieldFiducial> page(ConfigFieldFiducialPageParam configFieldFiducialPageParam) {
+    public Page<ConfigFieldFiducial> page(ConfigFieldFiducialPageDto configFieldFiducialPageDto) {
         QueryWrapper<ConfigFieldFiducial> queryWrapper = new QueryWrapper<>();
-        if(ObjectUtil.isNotEmpty(configFieldFiducialPageParam.getProjectCode())) {
-            queryWrapper.lambda().eq(ConfigFieldFiducial::getProjectCode, configFieldFiducialPageParam.getProjectCode());
+        if(ObjectUtil.isNotEmpty(configFieldFiducialPageDto.getProjectCode())) {
+            queryWrapper.lambda().eq(ConfigFieldFiducial::getProjectCode, configFieldFiducialPageDto.getProjectCode());
         }
-        if(ObjectUtil.isNotEmpty(configFieldFiducialPageParam.getInstrumentType())) {
-            queryWrapper.lambda().eq(ConfigFieldFiducial::getInstrumentType, configFieldFiducialPageParam.getInstrumentType());
+        if(ObjectUtil.isNotEmpty(configFieldFiducialPageDto.getInstrumentType())) {
+            queryWrapper.lambda().eq(ConfigFieldFiducial::getInstrumentType, configFieldFiducialPageDto.getInstrumentType());
         }
-        if(ObjectUtil.isAllNotEmpty(configFieldFiducialPageParam.getSortField(), configFieldFiducialPageParam.getSortOrder())) {
-            CommonSortOrderEnum.validate(configFieldFiducialPageParam.getSortOrder());
-            queryWrapper.orderBy(true, configFieldFiducialPageParam.getSortOrder().equals(CommonSortOrderEnum.ASC.getValue()),
-                    StrUtil.toUnderlineCase(configFieldFiducialPageParam.getSortField()));
+        if(ObjectUtil.isAllNotEmpty(configFieldFiducialPageDto.getSortField(), configFieldFiducialPageDto.getSortOrder())) {
+            CommonSortOrderEnum.validate(configFieldFiducialPageDto.getSortOrder());
+            queryWrapper.orderBy(true, configFieldFiducialPageDto.getSortOrder().equals(CommonSortOrderEnum.ASC.getValue()),
+                    StrUtil.toUnderlineCase(configFieldFiducialPageDto.getSortField()));
         } else {
             queryWrapper.lambda().orderByAsc(ConfigFieldFiducial::getId);
         }
@@ -81,29 +82,27 @@ public class ConfigFieldFiducialServiceImpl extends ServiceImpl<ConfigFieldFiduc
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void add(ConfigFieldFiducialAddParam configFieldFiducialAddParam) {
-        ConfigFieldFiducial configFieldFiducial = BeanUtil.toBean(configFieldFiducialAddParam, ConfigFieldFiducial.class);
+    public void add(ConfigFieldFiducial configFieldFiducial) {
         this.save(configFieldFiducial);
     }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void edit(ConfigFieldFiducialEditParam configFieldFiducialEditParam) {
-        ConfigFieldFiducial configFieldFiducial = this.queryEntity(configFieldFiducialEditParam.getId());
-        BeanUtil.copyProperties(configFieldFiducialEditParam, configFieldFiducial);
+    public void edit(ConfigFieldFiducial configFieldFiducial) {
+        this.queryEntity(configFieldFiducial.getId());
         this.updateById(configFieldFiducial);
     }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void delete(List<ConfigFieldFiducialIdParam> configFieldFiducialIdParamList) {
+    public void delete(List<String> idList) {
         // 执行删除
-        this.removeByIds(CollStreamUtil.toList(configFieldFiducialIdParamList, ConfigFieldFiducialIdParam::getId));
+        this.removeByIds(idList);
     }
 
     @Override
-    public ConfigFieldFiducial detail(ConfigFieldFiducialIdParam configFieldFiducialIdParam) {
-        return this.queryEntity(configFieldFiducialIdParam.getId());
+    public ConfigFieldFiducial detail(String id) {
+        return this.queryEntity(id);
     }
 
     @Override
