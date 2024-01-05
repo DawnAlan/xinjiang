@@ -2,7 +2,7 @@ package com.cj.project.modular.instruments.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.cj.project.modular.instruments.entity.ProjectInstruments;
+import com.cj.project.api.instruments.entity.ProjectInstruments;
 import com.cj.project.modular.instruments.param.ProjectInstrumentsAddParam;
 import com.cj.project.modular.instruments.param.ProjectInstrumentsEditParam;
 import com.cj.project.modular.instruments.param.ProjectInstrumentsIdParam;

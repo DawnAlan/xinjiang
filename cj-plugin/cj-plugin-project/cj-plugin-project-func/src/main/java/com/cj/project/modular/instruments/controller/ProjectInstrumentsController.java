@@ -1,9 +1,9 @@
 package com.cj.project.modular.instruments.controller;
 
-import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSupport;
+import com.cj.project.api.instruments.entity.ProjectInstruments;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.cj.common.annotation.CommonLog;
 import com.cj.common.pojo.CommonResult;
 import com.cj.common.pojo.CommonValidList;
-import com.cj.project.modular.instruments.entity.ProjectInstruments;
 import com.cj.project.modular.instruments.param.ProjectInstrumentsAddParam;
 import com.cj.project.modular.instruments.param.ProjectInstrumentsEditParam;
 import com.cj.project.modular.instruments.param.ProjectInstrumentsIdParam;
@@ -24,6 +23,7 @@ import com.cj.project.modular.instruments.service.ProjectInstrumentsService;
 import javax.annotation.Resource;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
+import java.util.List;
 
 /**
  * 项目仪器表控制器
@@ -39,6 +39,8 @@ public class ProjectInstrumentsController {
 
     @Resource
     private ProjectInstrumentsService projectInstrumentsService;
+
+
 
     /**
      * 获取项目仪器表分页
@@ -111,4 +113,13 @@ public class ProjectInstrumentsController {
     public CommonResult<ProjectInstruments> detail(@Valid ProjectInstrumentsIdParam projectInstrumentsIdParam) {
         return CommonResult.data(projectInstrumentsService.detail(projectInstrumentsIdParam));
     }
+
+
+    @ApiOperationSupport(order = 6)
+    @ApiOperation("获取项目仪器表列表")
+    @GetMapping("/project/instruments/getList")
+    public CommonResult<List<ProjectInstruments>> getList() {
+        return CommonResult.data(projectInstrumentsService.list());
+    }
+
 }

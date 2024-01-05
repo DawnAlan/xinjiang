@@ -24,7 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.cj.common.enums.CommonSortOrderEnum;
 import com.cj.common.exception.CommonException;
 import com.cj.common.page.CommonPageRequest;
-import com.cj.project.modular.instruments.entity.ProjectInstruments;
+import com.cj.project.api.instruments.entity.ProjectInstruments;
 import com.cj.project.modular.instruments.mapper.ProjectInstrumentsMapper;
 import com.cj.project.modular.instruments.param.ProjectInstrumentsAddParam;
 import com.cj.project.modular.instruments.param.ProjectInstrumentsEditParam;
