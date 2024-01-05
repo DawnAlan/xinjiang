@@ -4,10 +4,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.cj.project.api.instruments.dto.ProjectInstrumentsPageDto;
 import com.cj.project.api.instruments.entity.ProjectInstruments;
-import com.cj.project.modular.instruments.param.ProjectInstrumentsAddParam;
-import com.cj.project.modular.instruments.param.ProjectInstrumentsEditParam;
-import com.cj.project.modular.instruments.param.ProjectInstrumentsIdParam;
-import com.cj.project.modular.instruments.param.ProjectInstrumentsPageParam;
 
 import java.util.List;
 

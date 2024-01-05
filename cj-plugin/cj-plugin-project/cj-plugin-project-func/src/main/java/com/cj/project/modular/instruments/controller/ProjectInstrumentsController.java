@@ -13,10 +13,6 @@ import org.springframework.web.bind.annotation.*;
 import com.cj.common.annotation.CommonLog;
 import com.cj.common.pojo.CommonResult;
 import com.cj.common.pojo.CommonValidList;
-import com.cj.project.modular.instruments.param.ProjectInstrumentsAddParam;
-import com.cj.project.modular.instruments.param.ProjectInstrumentsEditParam;
-import com.cj.project.modular.instruments.param.ProjectInstrumentsIdParam;
-import com.cj.project.modular.instruments.param.ProjectInstrumentsPageParam;
 import com.cj.project.modular.instruments.service.ProjectInstrumentsService;
 
 import javax.annotation.Resource;

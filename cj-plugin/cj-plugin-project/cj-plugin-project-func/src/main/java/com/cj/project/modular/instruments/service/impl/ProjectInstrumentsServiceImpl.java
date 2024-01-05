@@ -27,10 +27,6 @@ import com.cj.common.exception.CommonException;
 import com.cj.common.page.CommonPageRequest;
 import com.cj.project.api.instruments.entity.ProjectInstruments;
 import com.cj.project.modular.instruments.mapper.ProjectInstrumentsMapper;
-import com.cj.project.modular.instruments.param.ProjectInstrumentsAddParam;
-import com.cj.project.modular.instruments.param.ProjectInstrumentsEditParam;
-import com.cj.project.modular.instruments.param.ProjectInstrumentsIdParam;
-import com.cj.project.modular.instruments.param.ProjectInstrumentsPageParam;
 import com.cj.project.modular.instruments.service.ProjectInstrumentsService;
 
 import java.util.List;
