@@ -51,4 +51,8 @@ public class AllocationDisplayData {
     private double allWater;
     @Excel(name = "outFlowWater")
     private double outFlowWater;
+    @Excel(name = "ecologFlow")
+    private double ecologFlow;
+    @Excel(name = "ecologWater")
+    private double ecologWater;
 }
