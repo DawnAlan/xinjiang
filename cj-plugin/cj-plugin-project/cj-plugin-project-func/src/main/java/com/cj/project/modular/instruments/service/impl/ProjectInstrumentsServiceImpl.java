@@ -19,17 +19,14 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.cj.project.api.instruments.dto.ProjectInstrumentsPageDto;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.cj.common.enums.CommonSortOrderEnum;
 import com.cj.common.exception.CommonException;
 import com.cj.common.page.CommonPageRequest;
-import com.cj.project.modular.instruments.entity.ProjectInstruments;
+import com.cj.project.api.instruments.entity.ProjectInstruments;
 import com.cj.project.modular.instruments.mapper.ProjectInstrumentsMapper;
-import com.cj.project.modular.instruments.param.ProjectInstrumentsAddParam;
-import com.cj.project.modular.instruments.param.ProjectInstrumentsEditParam;
-import com.cj.project.modular.instruments.param.ProjectInstrumentsIdParam;
-import com.cj.project.modular.instruments.param.ProjectInstrumentsPageParam;
 import com.cj.project.modular.instruments.service.ProjectInstrumentsService;
 
 import java.util.List;
@@ -44,18 +41,18 @@ import java.util.List;
 public class ProjectInstrumentsServiceImpl extends ServiceImpl<ProjectInstrumentsMapper, ProjectInstruments> implements ProjectInstrumentsService {
 
     @Override
-    public Page<ProjectInstruments> page(ProjectInstrumentsPageParam projectInstrumentsPageParam) {
+    public Page<ProjectInstruments> page(ProjectInstrumentsPageDto projectInstrumentsPageDto) {
         QueryWrapper<ProjectInstruments> queryWrapper = new QueryWrapper<>();
-        if(ObjectUtil.isNotEmpty(projectInstrumentsPageParam.getProjectCode())) {
-            queryWrapper.lambda().eq(ProjectInstruments::getProjectCode, projectInstrumentsPageParam.getProjectCode());
+        if(ObjectUtil.isNotEmpty(projectInstrumentsPageDto.getProjectCode())) {
+            queryWrapper.lambda().eq(ProjectInstruments::getProjectCode, projectInstrumentsPageDto.getProjectCode());
         }
-        if(ObjectUtil.isNotEmpty(projectInstrumentsPageParam.getInstrumentType())) {
-            queryWrapper.lambda().eq(ProjectInstruments::getInstrumentType, projectInstrumentsPageParam.getInstrumentType());
+        if(ObjectUtil.isNotEmpty(projectInstrumentsPageDto.getInstrumentType())) {
+            queryWrapper.lambda().eq(ProjectInstruments::getInstrumentType, projectInstrumentsPageDto.getInstrumentType());
         }
-        if(ObjectUtil.isAllNotEmpty(projectInstrumentsPageParam.getSortField(), projectInstrumentsPageParam.getSortOrder())) {
-            CommonSortOrderEnum.validate(projectInstrumentsPageParam.getSortOrder());
-            queryWrapper.orderBy(true, projectInstrumentsPageParam.getSortOrder().equals(CommonSortOrderEnum.ASC.getValue()),
-                    StrUtil.toUnderlineCase(projectInstrumentsPageParam.getSortField()));
+        if(ObjectUtil.isAllNotEmpty(projectInstrumentsPageDto.getSortField(), projectInstrumentsPageDto.getSortOrder())) {
+            CommonSortOrderEnum.validate(projectInstrumentsPageDto.getSortOrder());
+            queryWrapper.orderBy(true, projectInstrumentsPageDto.getSortOrder().equals(CommonSortOrderEnum.ASC.getValue()),
+                    StrUtil.toUnderlineCase(projectInstrumentsPageDto.getSortField()));
         } else {
             queryWrapper.lambda().orderByAsc(ProjectInstruments::getId);
         }
@@ -64,29 +61,27 @@ public class ProjectInstrumentsServiceImpl extends ServiceImpl<ProjectInstrument
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void add(ProjectInstrumentsAddParam projectInstrumentsAddParam) {
-        ProjectInstruments projectInstruments = BeanUtil.toBean(projectInstrumentsAddParam, ProjectInstruments.class);
+    public void add(ProjectInstruments projectInstruments) {
         this.save(projectInstruments);
     }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void edit(ProjectInstrumentsEditParam projectInstrumentsEditParam) {
-        ProjectInstruments projectInstruments = this.queryEntity(projectInstrumentsEditParam.getId());
-        BeanUtil.copyProperties(projectInstrumentsEditParam, projectInstruments);
+    public void edit(ProjectInstruments projectInstruments) {
+        this.queryEntity(projectInstruments.getId());
         this.updateById(projectInstruments);
     }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void delete(List<ProjectInstrumentsIdParam> projectInstrumentsIdParamList) {
+    public void delete(List<String> idList) {
         // 执行删除
-        this.removeByIds(CollStreamUtil.toList(projectInstrumentsIdParamList, ProjectInstrumentsIdParam::getId));
+        this.removeByIds(idList);
     }
 
     @Override
-    public ProjectInstruments detail(ProjectInstrumentsIdParam projectInstrumentsIdParam) {
-        return this.queryEntity(projectInstrumentsIdParam.getId());
+    public ProjectInstruments detail(String id) {
+        return this.queryEntity(id);
     }
 
     @Override

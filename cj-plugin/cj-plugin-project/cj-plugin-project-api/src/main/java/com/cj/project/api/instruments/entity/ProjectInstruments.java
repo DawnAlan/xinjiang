@@ -1,9 +1,9 @@
-package com.cj.project.modular.instruments.entity;
+package com.cj.project.api.instruments.entity;
 
-import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 /**
  * 项目仪器表实体
@@ -11,8 +11,7 @@ import lombok.Setter;
  * @author Lb
  * @date  2023/09/02 18:12
  **/
-@Getter
-@Setter
+@Data
 @TableName("project_instruments")
 public class ProjectInstruments {
 
@@ -41,11 +40,15 @@ public class ProjectInstruments {
     @ApiModelProperty(value = "仪器编码", position = 6)
     private String instrumentCode;
 
+    /** 排序值 */
+    @ApiModelProperty(value = "排序值", position = 7)
+    private Integer sortCode;
+
     /** 设计埋设量 */
-    @ApiModelProperty(value = "设计埋设量", position = 7)
+    @ApiModelProperty(value = "设计埋设量", position = 8)
     private Integer designCount;
 
     /** 别名关键词 */
-    @ApiModelProperty(value = "别名关键词", position = 8)
+    @ApiModelProperty(value = "别名关键词", position = 9)
     private String nameKeys;
 }

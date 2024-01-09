@@ -1,6 +1,7 @@
-package com.cj.project.modular.configfield.entity;
+package com.cj.project.api.configfield.entity;
 
-import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
@@ -60,4 +61,8 @@ public class ConfigFieldFiducial {
     /** 配置 */
     @ApiModelProperty(value = "配置", position = 11)
     private String extJson;
+
+    /** 是否必填 */
+    @ApiModelProperty(value = "是否必填", position = 12)
+    private String isRequired;
 }

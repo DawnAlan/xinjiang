@@ -1,18 +1,12 @@
-package com.cj.project.modular.configfield.param;
+package com.cj.common.page;
 
 import io.swagger.annotations.ApiModelProperty;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
-/**
- * 考证字段配置查询参数
- *
- * @author Lb
- * @date  2023/08/31 19:28
- **/
-@Getter
-@Setter
-public class ConfigFieldFiducialPageParam {
+import java.io.Serializable;
+
+@Data
+public class PageEntity implements Serializable {
 
     /** 当前页 */
     @ApiModelProperty(value = "当前页码")
@@ -30,16 +24,7 @@ public class ConfigFieldFiducialPageParam {
     @ApiModelProperty(value = "排序方式，升序：ASCEND；降序：DESCEND")
     private String sortOrder;
 
-    /** 关键词 */
-    @ApiModelProperty(value = "关键词")
+    /** 名称关键词 */
+    @ApiModelProperty(value = "名称关键词")
     private String searchKey;
-
-    /** 项目编号 */
-    @ApiModelProperty(value = "项目编号")
-    private String projectCode;
-
-    /** 仪器类型 */
-    @ApiModelProperty(value = "仪器类型")
-    private String instrumentType;
-
 }

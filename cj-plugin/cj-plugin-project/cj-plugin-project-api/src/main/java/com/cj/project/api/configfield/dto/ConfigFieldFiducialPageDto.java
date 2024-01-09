@@ -1,5 +1,6 @@
-package com.cj.project.modular.configfield.param;
+package com.cj.project.api.configfield.dto;
 
+import com.cj.common.page.PageEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,7 +13,8 @@ import lombok.Setter;
  **/
 @Getter
 @Setter
-public class ConfigFieldFiducialQueryParam {
+public class ConfigFieldFiducialPageDto extends PageEntity {
+
 
     /** 项目编号 */
     @ApiModelProperty(value = "项目编号")
