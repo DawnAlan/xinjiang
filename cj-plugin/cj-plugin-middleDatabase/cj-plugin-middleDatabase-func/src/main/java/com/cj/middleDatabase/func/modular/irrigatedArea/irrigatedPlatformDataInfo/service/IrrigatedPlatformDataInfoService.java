@@ -1,8 +1,10 @@
 package com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.cj.middleDatabase.func.modular.dto.RealTimeRainfallRes;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.bean.res.SelectInfoByIrrigationNameListRes;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.entity.IrrigatedPlatformDataInfo;
+import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.entity.LzzGaugingStation;
 
 import java.util.List;
 
@@ -22,5 +24,11 @@ public interface IrrigatedPlatformDataInfoService extends IService<IrrigatedPlat
     IrrigatedPlatformDataInfo selectOneByCondition1(String name,String time);
 
     List<IrrigatedPlatformDataInfo> selectOneByCondition2(String name,String time);
+
+    List<RealTimeRainfallRes> getRealTimeRainfall(String startTime, String endTime);
+
+    List<IrrigatedPlatformDataInfo>  selectInfoByTime(String time,String name);
+
+    List<IrrigatedPlatformDataInfo> selectHistoryList(String name, String startTime, String endTime);
 }
 

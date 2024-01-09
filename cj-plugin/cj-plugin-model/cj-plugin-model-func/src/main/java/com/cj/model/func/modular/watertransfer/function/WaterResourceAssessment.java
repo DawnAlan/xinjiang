@@ -30,6 +30,8 @@ public class WaterResourceAssessment {
            proportion2=getSum(data2)[0];
            waterLack2=getSum(data2)[1];
            //奇数评价为方案1，偶数为方案2
+           String better=new String();
+
            String appraise1=new String();
            String appraise2=new String();
 
@@ -44,11 +46,11 @@ public class WaterResourceAssessment {
             //从供水比例比较
            if (proportion1>proportion2)
            {
-               appraise1="方案1的供水比例整体结构优于方案2";
+               appraise1=req1.getName()+"的供水比例整体结构优于"+req2.getName();
            }
            if (proportion1<proportion2)
            {
-               appraise1="方案1的供水比例整体结构不如方案2";
+               appraise1=req1.getName()+"的供水比例整体结构不如"+req2.getName();
            }
            if (proportion1==proportion2)
            {
@@ -57,19 +59,23 @@ public class WaterResourceAssessment {
             //从供水缺额比较
            if (waterLack1>waterLack2)
            {
-               appraise2="方案2的供水缺额要小于方案1";
+               appraise2=req2.getName()+"的供水缺额要小于"+req1.getName();
+               better=req2.getName();
            }
            if (waterLack1<waterLack2)
            {
-               appraise2="方案2的供水缺额要大于方案1";
+               appraise2=req2.getName()+"的供水缺额要大于"+req1.getName();
+               better=req1.getName();
            }
            if (waterLack1==waterLack2)
            {
                appraise2="两个方案的供水缺额相同";
+               better=req2.getName();
            }
            Date[] tmie=getTime(data1);
 
-           appraise="方案一："+appraise1+","+appraiseLzz1+","+appraiseHy1+","+appraiseIndustry1+";"+"方案二："+appraise2+","+appraiseLzz2+","+appraiseHy2+","+appraiseIndustry2+"。";
+           appraise=req1.getName()+"："+appraise1+","+appraiseLzz1+","+appraiseHy1+","+appraiseIndustry1+";"+
+                   req2.getName()+"："+appraise2+","+appraiseLzz2+","+appraiseHy2+","+appraiseIndustry2+";"+"方案推荐："+better+"。";
        }
        else
        {

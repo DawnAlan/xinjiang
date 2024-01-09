@@ -2,7 +2,7 @@ package com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePl
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.cj.common.model.RestResponse;
-import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.req.CropSelectListReq;
+import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.req.YearCropSelectListReq;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.entity.YearWaterUsePlanCrop;
 
 import java.util.List;
@@ -15,7 +15,7 @@ import java.util.List;
  */
 public interface YearWaterUsePlanCropService extends IService<YearWaterUsePlanCrop> {
 
-    RestResponse<List<YearWaterUsePlanCrop>> selectList(CropSelectListReq req);
+    RestResponse<List<YearWaterUsePlanCrop>> selectList(YearCropSelectListReq req);
 
     RestResponse update(YearWaterUsePlanCrop yearWaterUsePlanCrop);
 

@@ -1,6 +1,9 @@
 package com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuota.entity;
 
 import java.util.Date;
+
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.extension.activerecord.Model;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -39,168 +42,178 @@ public class IrrigationQuota extends Model<IrrigationQuota> {
     private String irrigationCrop;
 
     //计划灌溉总面积
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "计划灌溉总面积")
     private Double totalPlannedIrrigationArea;
 
     //四月上旬灌溉面积
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "四月上旬灌溉面积")
     private Double aprilEarlyOctoberIrrigationArea;
 
     //四月上旬灌溉水量
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "四月上旬灌溉水量")
     private Double aprilEarlyOctoberIrrigationWaterVolume;
 
     //四月中旬灌溉面积
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "四月中旬灌溉面积")
     private Double aprilMidDayIrrigationArea;
 
     //四月中旬灌溉水量
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "四月中旬灌溉水量")
     private Double aprilMidDayIrrigationWaterVolume;
 
     //四月下旬灌溉面积
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "四月下旬灌溉面积")
     private Double aprilLateOctoberIrrigationArea;
 
     //四月下旬灌溉水量
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "四月下旬灌溉水量")
     private Double aprilLateOctoberIrrigationWaterVolume;
 
-    
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double mayEarlyOctoberIrrigationArea;
 
-    
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double mayEarlyOctoberIrrigationWaterVolume;
 
-    
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double mayMidDayIrrigationArea;
 
-    
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double mayMidDayIrrigationWaterVolume;
 
-    
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double mayLateOctoberIrrigationArea;
 
-    
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double mayLateOctoberIrrigationWaterVolume;
 
-    
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double juneEarlyOctoberIrrigationArea;
 
-    
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double juneEarlyOctoberIrrigationWaterVolume;
 
-    
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double juneMidDayIrrigationArea;
 
-    
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double juneMidDayIrrigationWaterVolume;
 
-    
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double juneLateOctoberIrrigationArea;
 
-    
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double juneLateOctoberIrrigationWaterVolume;
 
-    
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double julyEarlyOctoberIrrigationArea;
 
-    
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double julyEarlyOctoberIrrigationWaterVolume;
 
-    
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double julyMidDayIrrigationArea;
 
-    
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double julyMidDayIrrigationWaterVolume;
 
-    
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double julyLateOctoberIrrigationArea;
 
-    
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double julyLateOctoberIrrigationWaterVolume;
 
-    
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double augustEarlyOctoberIrrigationArea;
 
-    
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double augustEarlyOctoberIrrigationWaterVolume;
 
-    
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double augustMidDayIrrigationArea;
 
-    
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double augustMidDayIrrigationWaterVolume;
 
-    
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double augustLateOctoberIrrigationArea;
 
-    
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double augustLateOctoberIrrigationWaterVolume;
 
-    
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double septemberEarlyOctoberIrrigationArea;
 
-
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double septemberEarlyOctoberIrrigationWaterVolume;
 
-    
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double septemberMidDayIrrigationArea;
 
-    
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double septemberMidDayIrrigationWaterVolume;
 
-    
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double septemberLateOctoberIrrigationArea;
 
-    
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double septemberLateOctoberIrrigationWaterVolume;
 
-    
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double octoberEarlyOctoberIrrigationArea;
 
-    
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double octoberEarlyOctoberIrrigationWaterVolume;
 
-    
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double octoberMidDayIrrigationArea;
 
-    
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double octoberMidDayIrrigationWaterVolume;
 
-    
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double octoberLateOctoberIrrigationArea;
 
-    
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double octoberLateOctoberIrrigationWaterVolume;
 
-    
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double novemberEarlyOctoberIrrigationArea;
 
-    
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double novemberEarlyOctoberIrrigationWaterVolume;
 
-    
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double novemberMidDayIrrigationArea;
 
-    
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double novemberMidDayIrrigationWaterVolume;
 
-    
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double novemberLateOctoberIrrigationArea;
 
-    
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double novemberLateOctoberIrrigationWaterVolume;
 
     //累计灌溉面积
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "累计灌溉面积")
     private Double accumulatedIrrigationArea;
 
     //累计灌溉总量
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "累计灌溉总量")
     private Double accumulatedTotalIrrigationAmount;
 
     //灌水定额
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "灌水定额")
     private Double irrigationQuota;
 

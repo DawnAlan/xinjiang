@@ -2,8 +2,6 @@ package com.cj.waterresources.func.modular.waterStorageScheduling.waterStorageSc
 
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.UUIDUtils;
-import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.req.CropSelectListReq;
-import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.entity.YearWaterUsePlanCrop;
 import com.cj.waterresources.func.modular.waterStorageScheduling.waterStorageSchedulingLzz.entity.WaterStorageSchedulingLzz;
 import com.cj.waterresources.func.modular.waterStorageScheduling.waterStorageSchedulingLzz.service.WaterStorageSchedulingLzzService;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;

@@ -1,7 +1,7 @@
 package com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.controller;
 
 import com.cj.common.model.RestResponse;
-import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.req.CropSelectListReq;
+import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.req.YearCropSelectListReq;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.entity.YearWaterUsePlanCrop;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.service.YearWaterUsePlanCropService;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
@@ -54,7 +54,7 @@ public class YearWaterUsePlanCropController {
     @ApiOperationSupport(order = 4)
     @ApiOperation("查询列表")
     @PostMapping("/select")
-    public RestResponse<List<YearWaterUsePlanCrop>> select(@RequestBody CropSelectListReq req) {
+    public RestResponse<List<YearWaterUsePlanCrop>> select(@RequestBody YearCropSelectListReq req) {
         return yearWaterUsePlanCropService.selectList(req);
     }
 

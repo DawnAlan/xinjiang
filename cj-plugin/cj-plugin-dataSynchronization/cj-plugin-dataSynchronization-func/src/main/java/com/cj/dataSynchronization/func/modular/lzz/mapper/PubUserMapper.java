@@ -18,7 +18,7 @@ public interface PubUserMapper {
     @Select("SELECT id from PUBUSER.WDS_HYDRO_ELEMENTS where DTYPE = 5 and name = '萨尔达万雨量'")
     String selectRainfallStation();
 
-    @Select("select ID as id,NAME as name,PID as pId from PUBUSER.WDS_HYDRO_MEASANALOG where PID = 92102 and name like CONCAT('%',#{name},'%')")
+    @Select("select ID as id,NAME as name,PID as pId from PUBUSER.WDS_HYDRO_MEASANALOG where PID = 92102 and NAME like CONCAT('%',#{name},'%')")
     List<UserIdParam> selectPidList(@Param("name") String name);
 
     @Select("select ID as id,NAME as name,PID as pId from PUBUSER.WDS_HYDRO_MEASANALOG where PID = 92102")

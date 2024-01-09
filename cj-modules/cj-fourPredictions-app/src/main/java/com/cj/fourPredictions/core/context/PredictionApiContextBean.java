@@ -1,0 +1,112 @@
+package com.cj.fourPredictions.core.context;
+
+import com.cj.flood.api.PredictionApi;
+import com.cj.floof.feign.PredictionFeign;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+
+import java.util.Date;
+
+@Slf4j
+@RequiredArgsConstructor
+@Component
+public class PredictionApiContextBean implements PredictionApi {
+
+    private final PredictionFeign predictionFeign;
+    @Override
+    public String getProgrammeListByTime(String startTime, String endTime) {
+        String programmeListByTime = predictionFeign.getProgrammeListByTime(startTime, endTime);
+        return programmeListByTime;
+    }
+
+    @Override
+    public String getProgrammeList() {
+        String data = predictionFeign.getProgrammeList();
+        return data;
+    }
+
+    @Override
+    public String getProgrammeDetails(String id) {
+        String data = predictionFeign.getProgrammeDetails(id);
+        return data;
+    }
+
+    @Override
+    public String getRealTimeRainfall(String startTime, String endTime) {
+        String realTimeRainfall = predictionFeign.getRealTimeRainfall(startTime, endTime);
+        return realTimeRainfall;
+    }
+
+    @Override
+    public String getRealTimeWaterLevelData(String date) {
+        String realTimeWaterLevelData = predictionFeign.getRealTimeWaterLevelData(date);
+        return realTimeWaterLevelData;
+    }
+
+    @Override
+    public String getRealTimeReservoirLevelData(String date) {
+        String realTimeReservoirLevelData = predictionFeign.getRealTimeReservoirLevelData(date);
+        return realTimeReservoirLevelData;
+    }
+
+    @Override
+    public String getRainfallStationsHistoricalData(String name, String startTime, String endTime) {
+        String data = predictionFeign.getRainfallStationsHistoricalData(name,startTime,endTime);
+        return data;
+    }
+
+    @Override
+    public String getReservoirLevel(String name, String startTime, String endTime) {
+        String data = predictionFeign.getReservoirLevel(name,startTime,endTime);
+        return data;
+    }
+
+    @Override
+    public String getWaterLevelData(String name, String startTime, String endTime) {
+        String data = predictionFeign.getWaterLevelData(name,startTime,endTime);
+        return data;
+    }
+
+    @Override
+    public String getFloodControlOperationListById(String id) {
+        String data = predictionFeign.getFloodControlOperationListById(id);
+        return data;
+    }
+
+    @Override
+    public String getFloodControlOperationFrontViewById(String id) {
+        String data = predictionFeign.getFloodControlOperationFrontViewById(id);
+        return data;
+    }
+
+    @Override
+    public String getFloodControlOperationDetails(String id) {
+        String data = predictionFeign.getFloodControlOperationDetails(id);
+        return data;
+    }
+
+    @Override
+    public String getPlansComparison(String ids) {
+        String data = predictionFeign.getPlansComparison(ids);
+        return data;
+    }
+
+    @Override
+    public String getProgrammeListForFloodControlOperation() {
+        String data = predictionFeign.getProgrammeListForFloodControlOperation();
+        return data;
+    }
+
+    @Override
+    public String getPredictionListByTimeType(Integer timeType) {
+        String data = predictionFeign.getPredictionListByTimeType(timeType);
+        return data;
+    }
+
+    @Override
+    public String getPredictionListByName(String id, String reservoir) {
+        String data = predictionFeign.getPredictionListByName(id,reservoir);
+        return data;
+    }
+}

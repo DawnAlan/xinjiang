@@ -199,6 +199,8 @@ public class DayWaterBalanceServiceImpl extends ServiceImpl<DayWaterBalanceMappe
                                 if(null != ratio){
                                     //按比例水量
                                     balance.setProportionalWaterQuantity(((ratio.getV()==null?0.0:ratio.getV())/100)*(balance.getActualWaterReceived()==null?0.0:balance.getActualWaterReceived()));
+                                }else {
+                                    balance.setProportionalWaterQuantity(null);
                                 }
                                 //实际水量
                                 balance.setActualWaterVolume(balance.getActualWaterReceived()==null?0.0:balance.getActualWaterReceived());
@@ -213,6 +215,8 @@ public class DayWaterBalanceServiceImpl extends ServiceImpl<DayWaterBalanceMappe
                                 if(null != ratio){
                                     //按比例水量
                                     balance.setProportionalWaterQuantity(((ratio.getV()==null?0.0:ratio.getV())/100)* (details.getV()==null?0.0:details.getV()));
+                                }else {
+                                    balance.setProportionalWaterQuantity(null);
                                 }
                                 //实际水量
                                 balance.setActualWaterVolume(details.getV());
@@ -241,6 +245,8 @@ public class DayWaterBalanceServiceImpl extends ServiceImpl<DayWaterBalanceMappe
                                 if(null != ratio){
                                     //按比例水量
                                     balance.setProportionalWaterQuantity(((ratio.getV()==null?0.0:ratio.getV())/100)*(balance.getActualWaterReceived()==null?0.0:balance.getActualWaterReceived()));
+                                }else {
+                                    balance.setProportionalWaterQuantity(null);
                                 }
                                 //实际水量
                                 balance.setActualWaterVolume(balance.getActualWaterReceived()==null?0.0:balance.getActualWaterReceived());
@@ -255,6 +261,8 @@ public class DayWaterBalanceServiceImpl extends ServiceImpl<DayWaterBalanceMappe
                                 if(null != ratio){
                                     //按比例水量
                                     balance.setProportionalWaterQuantity(((ratio.getV()==null?0.0:ratio.getV())/100)* (details.getV()==null?0.0:details.getV()));
+                                }else {
+                                    balance.setProportionalWaterQuantity(null);
                                 }
                                 //实际水量
                                 balance.setActualWaterVolume(details.getV());

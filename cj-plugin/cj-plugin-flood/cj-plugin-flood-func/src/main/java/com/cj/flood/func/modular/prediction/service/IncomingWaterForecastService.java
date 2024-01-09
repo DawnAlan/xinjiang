@@ -9,6 +9,7 @@ import com.cj.flood.func.modular.prediction.entity.IncomingWaterForecast;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;
+import java.util.Map;
 
 /**
 * @author July Lion
@@ -26,4 +27,8 @@ public interface IncomingWaterForecastService extends IService<IncomingWaterFore
     RestResponse<IPage<IncomingWaterForecast>> selectList(IncomingWaterForecastListReq req);
 
     RestResponse<IncomingWaterForecastDetailsRes> selectDetails(String id);
+
+    List<IncomingWaterForecast> getPredictionListByTimeType(Integer timeType);
+
+    Map<String,Object> getPredictionListByName(String id, String reservoir);
 }

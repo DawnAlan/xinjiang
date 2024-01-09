@@ -18,6 +18,10 @@
 			<groupId>com.cj</groupId>
 			<artifactId>cj-common</artifactId>
 		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-openfeign-core</artifactId>
+        </dependency>
+    </dependencies>
 
 </project>

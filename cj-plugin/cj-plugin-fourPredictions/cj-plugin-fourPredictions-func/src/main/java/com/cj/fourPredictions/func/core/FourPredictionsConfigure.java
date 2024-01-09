@@ -34,8 +34,8 @@ public class FourPredictionsConfigure {
      * @author xuyuxiang
      * @date 2022/7/7 16:18
      **/
-    @Bean(value = "waterDocApi")
-    public Docket waterDocApi() {
+    @Bean(value = "fourPredictionsDocApi")
+    public Docket fourPredictionsDocApi() {
         return new Docket(DocumentationType.SWAGGER_2)
                 .apiInfo(new ApiInfoBuilder()
                         .title("四预功能")

@@ -7,6 +7,8 @@ import java.util.Date;
 import java.util.List;
 @Data
 public class AppraiseReq {
+    //方案名称
+    private String name;
     //时段类型
     private String period;
     //配水类型

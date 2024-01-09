@@ -8,7 +8,11 @@ import lombok.Getter;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
+
+import static com.cj.model.func.modular.FloodPredict.utils.DataUtils.stringToDate;
 
 public class ModelOfLZZ {
 
@@ -39,7 +43,6 @@ public class ModelOfLZZ {
 
     @Getter
     List<Date> Time =new ArrayList<>();
-
     List<Double> Q_Input =new ArrayList<>();
     List<Double> Q_Interval =new ArrayList<>();
     List<Double> MaxQ =new ArrayList<>();
@@ -49,6 +52,49 @@ public class ModelOfLZZ {
     int coefficient =10000 ;
 
 
+    public ModelOfLZZ(Object[][] pre,int delta) {
+        for (int i = 0; i < pre.length; i++) {
+            Date t = stringToDate(pre[i][1].toString());
+            Time.add(t);
+            Q_Input.add((double)pre[i][2]);
+            MaxQ.add(180.0);
+
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(t);
+            int month = calendar.get(Calendar.MONTH)+1;
+            if(month>=4&&month<=9){
+                MinQ.add(1.48);
+            }
+            else{
+                MinQ.add(0.74);
+            }
+
+        }
+        H_begin=1394.5;
+        T_Delta=delta;
+
+        LV_Curve= new double[][]{{1326, 1330, 1335, 1340, 1345, 1350, 1355, 1360, 1365, 1370, 1375, 1380, 1385, 1390, 1395, 1400, 1405, 1410, 1415, 1420,},
+                {0,	3,	28,	92,	221,	417,	680,	1022,	1464,	2018,	2686,	3468,	4378,	5440,	6656,	8021,	9532,	11195,	13022,	15028,}};
+        LQ_Curve1= new double[][]{{1335,	1336,	1340,	1345,	1355,	1365,	1370,	1380,	1380.5,	1381,	1381.5,	1382,	1382.5,	1383,	1383.5,	1384,	1384.5,	1385,	1385.5,	1386,	1386.5,	1387,	1387.5,	1388,	1388.5,	1389,	1389.5,	1390,	1390.5,	1391,	1391.5,	1392,	1392.5,	1393,	1394,	1394.1,	1394.2,	1394.3,	1394.4,	1394.5,	1394.6,	1394.7,	1394.8,	1394.9,	1395,	1395.1,	1395.2,	1395.3,	1395.4,	1395.5,	1395.6,	1395.7,	1395.8,	1395.9,	1396,	1396.1,	1396.2,	1396.3,	1396.4,	1396.44,	1396.5,	1396.6,	1396.7,	1396.8,	1396.9,	1397,	1397.1,	1397.2,	1397.21,	1397.22,	1397.23,	1397.24,	1397.25,	1397.26,	1397.27,	1397.28,	1397.29,	1397.3,	1397.31,	1397.32,	1397.33,	1397.34,	1397.35,	1397.36,	1397.37,	1397.38,	1397.39,	1397.41,	1397.5,	1397.6,	1397.63,	1398,},
+                {0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	1.3,	2.61,	3.91,	5.22,	6.52,	7.83,	9.13,	10.43,	11.74,	13.04,	14.35,	15.65,	16.96,	18.26,	19.57,	20.87,	22.17,	23.48,	24.78,	27.39,	27.65,	27.91,	28.17,	28.43,	28.7,	28.96,	29.22,	29.48,	29.74,	30,	36.6,	43.19,	49.79,	56.39,	62.99,	69.58,	76.18,	82.78,	89.38,	95.97,	102.57,	109.17,	115.76,	122.36,	125,	125,	125,	125,	125,	125,	125,	125,	125,	125,	125,	125,	125,	125,	125,	125,	125,	125,	125,	125,	125,	125,	125,	125,	125,	125,	125,	125,	246.6,	250,	253,	256,	300,}};
+        LQ_Curve2= new double[][]{{1335,	1336,	1340,	1345,	1355,	1365,	1370,	1380,	1380.5,	1381,	1381.5,	1382,	1382.5,	1383,	1383.5,	1384,	1384.5,	1385,	1385.5,	1386,	1386.5,	1387,	1387.5,	1388,	1388.5,	1389,	1389.5,	1390,	1390.5,	1391,	1391.5,	1392,	1392.5,	1393,	1394,	1394.1,	1394.2,	1394.3,	1394.4,	1394.5,	1394.6,	1394.7,	1394.8,	1394.9,	1395,	1395.1,	1395.2,	1395.3,	1395.4,	1395.5,	1395.6,	1395.7,	1395.8,	1395.9,	1396,	1396.1,	1396.2,	1396.3,	1396.4,	1396.44,	1396.5,	1396.6,	1396.7,	1396.8,	1396.9,	1397,	1397.1,	1397.2,	1397.21,	1397.22,	1397.23,	1397.24,	1397.25,	1397.26,	1397.27,	1397.28,	1397.29,	1397.3,	1397.31,	1397.32,	1397.33,	1397.34,	1397.35,	1397.36,	1397.37,	1397.38,	1397.39,	1397.41,	1397.5,	1397.6,	1397.63,},
+                {0,	15,	50.55,	98.52,	154.94,	195.72,	213.21,	244.46,	245.92,	247.37,	248.81,	250.24,	251.66,	253.08,	254.49,	255.89,	257.28,	258.67,	260.05,	261.42,	262.78,	264.14,	265.49,	266.83,	268.17,	269.5,	270.82,	272.14,	273.45,	274.76,	276.05,	277.35,	278.63,	279.91,	282.45,	282.71,	282.96,	283.21,	283.47,	283.72,	283.97,	284.22,	284.47,	284.72,	284.98,	285.23,	285.48,	285.73,	285.98,	286.23,	286.48,	286.73,	286.98,	287.22,	287.47,	287.72,	287.97,	288.22,	288.47,	288.57,	288.71,	288.96,	289.21,	289.46,	289.7,	289.95,	290.2,	290.44,	290.47,	290.49,	290.52,	290.54,	290.57,	290.59,	290.62,	290.64,	290.67,	290.69,	290.71,	290.74,	290.76,	290.79,	290.81,	290.84,	290.86,	290.89,	290.91,	290.96,	291.18,	299.43,	304,}};
+        this.DeadLevel  =1353.3;
+        this.LimitLevel =1394.5;
+        this.NormalLevel=1394.5;
+        this.HeightLevel=1397.21;
+        this.DesignLevel=1397.41;
+        this.ProofLevel =1397.63;
+        DeadVolume = GetV(DeadLevel);
+        LimitVolume = GetV(LimitLevel);
+        NormalVolume = GetV(NormalLevel);
+        HeightVolume = GetV(HeightLevel);
+        DesignVolume = GetV(DesignLevel);
+        ProofVolume = GetV(ProofLevel);
+        LimitLevels = new double[]{1394.5,1394.5,1394.5,1394.5,1394.5,1394.5,1394.5,1394.5,1394.5,1394.5,1394.5,1394.5};
+
+
+    }
     public ModelOfLZZ(ReqFloodPrevent reqFloodPrevent){
         List<DataFloodPrevent> data_FloodPrevent_all = reqFloodPrevent.getData().get("lzz");
 
@@ -165,6 +211,7 @@ public class ModelOfLZZ {
         List<Double> Q_Release2=new ArrayList<>();
         List<Double> Q_Release3=new ArrayList<>();
         List<Double> V_list=new ArrayList<>();
+        List<Double> Retain_list=new ArrayList<>();
 
         for (int i = 0; i < Q_Input.size(); i++) {
             UpdateLimitLevel(Time.get(i));
@@ -178,6 +225,7 @@ public class ModelOfLZZ {
             double V;
             double endH;
             double Q_max;
+            double retain;
             double[] H_Limit=new double[2];
             double[] H_Limit1;
             double[] H_Limit2;
@@ -299,6 +347,7 @@ public class ModelOfLZZ {
             }
 
             V=BigDecimal.valueOf(GetV(endH)).setScale(2, RoundingMode.HALF_UP).doubleValue();
+            retain=Math.max(0,V-GetV(H_begin));
 
             H_b.add(BigDecimal.valueOf(beginH).setScale(2, RoundingMode.HALF_UP).doubleValue());
             H_e.add(BigDecimal.valueOf(endH).setScale(2, RoundingMode.HALF_UP).doubleValue());
@@ -307,6 +356,7 @@ public class ModelOfLZZ {
             Q_Release2.add(BigDecimal.valueOf(Q_2).setScale(2, RoundingMode.HALF_UP).doubleValue());
             Q_Release3.add(BigDecimal.valueOf(Q_3).setScale(2, RoundingMode.HALF_UP).doubleValue());
             V_list.add(BigDecimal.valueOf(V).setScale(2, RoundingMode.HALF_UP).doubleValue());
+            Retain_list.add(BigDecimal.valueOf(retain).setScale(2, RoundingMode.HALF_UP).doubleValue());
 
         }
         Result.add(Q_Input);
@@ -317,6 +367,8 @@ public class ModelOfLZZ {
         Result.add(Q_Release2);
         Result.add(Q_Release3);
         Result.add(V_list);
+        Result.add(Retain_list);
+
         return Result;
     }
     //最大调洪水位最小
@@ -342,6 +394,7 @@ public class ModelOfLZZ {
             double V;
             double value1;
             double value2;
+            double retain;
 
             double[] H_Limit = H_Limit(H_b,Q_in,MinQ.get(0));
 
@@ -363,6 +416,8 @@ public class ModelOfLZZ {
                 List<Double> V_list= new ArrayList<>(option.get(7));
                 List<Double> Value1= new ArrayList<>();
                 List<Double> Value2= new ArrayList<>();
+                List<Double> Retain_list= new ArrayList<>(option.get(10));
+
                 Q_in_list.add(BigDecimal.valueOf(Q_in).setScale(2, RoundingMode.HALF_UP).doubleValue());
                 H_b_list.add(BigDecimal.valueOf(H_b).setScale(2, RoundingMode.HALF_UP).doubleValue());
                 H_e_list.add(BigDecimal.valueOf(H_e).setScale(2, RoundingMode.HALF_UP).doubleValue());
@@ -374,8 +429,10 @@ public class ModelOfLZZ {
 
                 value1=GetObj1(H_e_list,Q_out_list,Q_Interval);
                 value2=GetObj2(H_e_list);
+                retain=Math.max(0,V-GetV(H_begin));
                 Value1.add(value1);
                 Value2.add(value2);
+                Retain_list.add(retain);
 
                 Result_OnePoint.add(Q_in_list);
                 Result_OnePoint.add(H_b_list);
@@ -387,6 +444,7 @@ public class ModelOfLZZ {
                 Result_OnePoint.add(V_list);
                 Result_OnePoint.add(Value1);
                 Result_OnePoint.add(Value2);
+                Result_OnePoint.add(Retain_list);
 
                 option_temp.add(Result_OnePoint);
             }
@@ -436,6 +494,7 @@ public class ModelOfLZZ {
             double V;
             double value1;
             double value2;
+            double retain;
 
             double[] H_Limit = H_Limit(H_b,Q_in,MinQ.get(0));
 
@@ -457,6 +516,7 @@ public class ModelOfLZZ {
                 List<Double> V_list= new ArrayList<>(option.get(7));
                 List<Double> Value1= new ArrayList<>();
                 List<Double> Value2= new ArrayList<>();
+                List<Double> Retain_list = new ArrayList<>();
                 Q_in_list.add(BigDecimal.valueOf(Q_in).setScale(2, RoundingMode.HALF_UP).doubleValue());
                 H_b_list.add(BigDecimal.valueOf(H_b).setScale(2, RoundingMode.HALF_UP).doubleValue());
                 H_e_list.add(BigDecimal.valueOf(H_e).setScale(2, RoundingMode.HALF_UP).doubleValue());
@@ -468,8 +528,10 @@ public class ModelOfLZZ {
 
                 value1=GetObj1(H_e_list,Q_out_list,Q_Interval);
                 value2=GetObj2(H_e_list);
+                retain=Math.max(0,V-GetV(H_begin));
                 Value1.add(value1);
                 Value2.add(value2);
+                Retain_list.add(retain);
 
                 Result_OnePoint.add(Q_in_list);
                 Result_OnePoint.add(H_b_list);
@@ -481,10 +543,10 @@ public class ModelOfLZZ {
                 Result_OnePoint.add(V_list);
                 Result_OnePoint.add(Value1);
                 Result_OnePoint.add(Value2);
+                Result_OnePoint.add(Retain_list);
 
                 option_temp.add(Result_OnePoint);
             }
-
         }
 
         if(option_temp.isEmpty()){
@@ -525,6 +587,7 @@ public class ModelOfLZZ {
             double V;
             double value1;
             double value2;
+            double retain;
 
             double[] H_Limit = H_Limit(H_b,Q_in,MinQ.get(0));
             List<Double> points = Discrete(H_b,H_Limit);
@@ -546,6 +609,7 @@ public class ModelOfLZZ {
                 List<Double> V_list= new ArrayList<>();
                 List<Double> Value1= new ArrayList<>();
                 List<Double> Value2= new ArrayList<>();
+                List<Double> Retain_list = new ArrayList<>();
                 Q_in_list.add(BigDecimal.valueOf(Q_in).setScale(2, RoundingMode.HALF_UP).doubleValue());
                 H_b_list.add(BigDecimal.valueOf(H_b).setScale(2, RoundingMode.HALF_UP).doubleValue());
                 H_e_list.add(BigDecimal.valueOf(H_e).setScale(2, RoundingMode.HALF_UP).doubleValue());
@@ -557,8 +621,10 @@ public class ModelOfLZZ {
 
                 value1=GetObj1(H_e_list,Q_out_list,Q_Interval);
                 value2=GetObj2(H_e_list);
+                retain=Math.max(0,V-GetV(H_begin));
                 Value1.add(BigDecimal.valueOf(value1).setScale(2, RoundingMode.HALF_UP).doubleValue());
                 Value2.add(BigDecimal.valueOf(value2).setScale(2, RoundingMode.HALF_UP).doubleValue());
+                Retain_list.add(BigDecimal.valueOf(retain).setScale(2, RoundingMode.HALF_UP).doubleValue());
 
                 Result_OnePoint.add(Q_in_list);
                 Result_OnePoint.add(H_b_list);
@@ -570,6 +636,7 @@ public class ModelOfLZZ {
                 Result_OnePoint.add(V_list);
                 Result_OnePoint.add(Value1);
                 Result_OnePoint.add(Value2);
+                Result_OnePoint.add(Retain_list);
 
                 option_temp.add(Result_OnePoint);
             }
@@ -588,6 +655,7 @@ public class ModelOfLZZ {
                 double V;
                 double value1;
                 double value2;
+                double retain;
 
                 double[] H_Limit = H_Limit(H_b,Q_in,MinQ.get(0));
                 List<Double> points = Discrete(H_b,H_Limit);
@@ -610,6 +678,7 @@ public class ModelOfLZZ {
                     List<Double> V_list= new ArrayList<>(option1.get(7));
                     List<Double> Value1= new ArrayList<>();
                     List<Double> Value2= new ArrayList<>();
+                    List<Double> Retain_list = new ArrayList<>(option1.get(10));
                     Q_in_list.add(BigDecimal.valueOf(Q_in).setScale(2, RoundingMode.HALF_UP).doubleValue());
                     H_b_list.add(BigDecimal.valueOf(H_b).setScale(2, RoundingMode.HALF_UP).doubleValue());
                     H_e_list.add(BigDecimal.valueOf(H_e).setScale(2, RoundingMode.HALF_UP).doubleValue());
@@ -621,8 +690,10 @@ public class ModelOfLZZ {
 
                     value1=GetObj1(H_e_list,Q_out_list,Q_Interval);
                     value2=GetObj2(H_e_list);
+                    retain=Math.max(0,V-GetV(H_begin));
                     Value1.add(BigDecimal.valueOf(value1).setScale(2, RoundingMode.HALF_UP).doubleValue());
                     Value2.add(BigDecimal.valueOf(value2).setScale(2, RoundingMode.HALF_UP).doubleValue());
+                    Retain_list.add(BigDecimal.valueOf(retain).setScale(2, RoundingMode.HALF_UP).doubleValue());
 
                     Result_OnePoint.add(Q_in_list);
                     Result_OnePoint.add(H_b_list);
@@ -634,6 +705,7 @@ public class ModelOfLZZ {
                     Result_OnePoint.add(V_list);
                     Result_OnePoint.add(Value1);
                     Result_OnePoint.add(Value2);
+                    Result_OnePoint.add(Retain_list);
 
                     option_temp.add(Result_OnePoint);
                 }
@@ -704,6 +776,7 @@ public class ModelOfLZZ {
     public double[] H_Limit_S1(double level, double Q_Input, double MinQ){
         double MaxQ1=0;
         double MinQ2=0;
+        //最大下泄能力
         double QQ0;
         //按最大下泄计算时段最低末水位
         if(Q_Input<=750){
@@ -778,8 +851,6 @@ public class ModelOfLZZ {
     public double[] H_Limit(double level,double Q_Input,double MinQ){
         double d = 0.1;
         //闸门最大下泄能力
-        double MaxQ1=0;
-        double MinQ2=0;
         double QQ0;
         if(Q_Input<=750){
                 if (level>=1397.21) {

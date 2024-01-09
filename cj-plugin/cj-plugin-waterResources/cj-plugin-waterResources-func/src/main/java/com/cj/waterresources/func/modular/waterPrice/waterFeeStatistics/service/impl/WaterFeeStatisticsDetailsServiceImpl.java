@@ -2,6 +2,7 @@ package com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.service
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cj.common.model.RestResponse;
+import com.cj.common.util.RedisUtil;
 import com.cj.common.util.UUIDUtils;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.entity.IrrigatedPlatformDataInfo;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.service.IrrigatedPlatformDataInfoService;
@@ -25,6 +26,7 @@ import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.service.
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.service.WaterFeeStatisticsTotalService;
 import com.cj.waterresources.func.modular.waterPrice.waterPriceManagement.entity.WaterPriceManagement;
 import com.cj.waterresources.func.modular.waterPrice.waterPriceManagement.service.WaterPriceManagementService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -80,6 +82,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
     @Autowired
     private TenDaysWaterBalanceService tenDaysWaterBalanceService;
 
+    @Autowired
+    private RedisUtil redisUtil;
+
 
     public  Map<String,Double> getLanternCanalInfoByDate(Integer year,Integer month,String tenDays,String statisticsDate) {
         Map<String,Double> resultMap = new HashMap<>();
@@ -118,6 +123,12 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
     @Override
     @Transactional(rollbackFor=Exception.class)
     public RestResponse add(List<WaterFeeStatisticsDetails> waterFeeStatisticsDetails) {
+       /* String isHave = (String)redisUtil.get(waterFeeStatisticsDetails.get(0).getStation()+waterFeeStatisticsDetails.get(0).getYear()+waterFeeStatisticsDetails.get(0).getMonth()+waterFeeStatisticsDetails.get(0).getTenDays());
+        if(StringUtils.isNotEmpty(isHave)){
+            return RestResponse.no("当前站点正在生成表，请稍后……");
+        }else {
+            redisUtil.set(waterFeeStatisticsDetails.get(0).getStation()+waterFeeStatisticsDetails.get(0).getYear()+waterFeeStatisticsDetails.get(0).getMonth()+waterFeeStatisticsDetails.get(0).getTenDays(),"1");
+        }*/
         String station = waterFeeStatisticsDetails.get(0).getStation();
         String dateTemp = waterFeeStatisticsDetails.get(0).getYear()+"-"+waterFeeStatisticsDetails.get(0).getMonth()+"-"+waterFeeStatisticsDetails.get(0).getStatisticsDate().substring(3,5);
         if(station.equals("渠首管理站")){

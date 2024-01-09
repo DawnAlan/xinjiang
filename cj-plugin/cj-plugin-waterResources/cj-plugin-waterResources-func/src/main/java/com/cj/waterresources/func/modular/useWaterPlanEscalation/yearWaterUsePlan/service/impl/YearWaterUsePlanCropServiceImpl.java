@@ -3,8 +3,7 @@ package com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePl
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.UUIDUtils;
-import com.cj.waterresources.func.modular.useWaterPlanEscalation.tenDaysWaterUsePlan.entity.TenDayWaterUsePlan;
-import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.req.CropSelectListReq;
+import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.req.YearCropSelectListReq;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.entity.YearWaterUsePlanCrop;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.mapper.YearWaterUsePlanCropMapper;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.entity.YearWaterUsePlanTrunkCanal;
@@ -32,7 +31,7 @@ public class YearWaterUsePlanCropServiceImpl extends ServiceImpl<YearWaterUsePla
     private YearWaterUsePlanTrunkCanalService yearWaterUsePlanTrunkCanalService;
 
     @Override
-    public RestResponse<List<YearWaterUsePlanCrop>> selectList(CropSelectListReq req) {
+    public RestResponse<List<YearWaterUsePlanCrop>> selectList(YearCropSelectListReq req) {
         List<YearWaterUsePlanCrop> list = this.lambdaQuery().
                 eq(StringUtils.isNotEmpty(req.getUnit()),YearWaterUsePlanCrop::getUnit, req.getUnit()).
                 eq(StringUtils.isNotEmpty(req.getCropType()),YearWaterUsePlanCrop::getCropType, req.getCropType()).
@@ -168,9 +167,49 @@ public class YearWaterUsePlanCropServiceImpl extends ServiceImpl<YearWaterUsePla
 
     @Override
     public RestResponse delete(String id) {
+        YearWaterUsePlanCrop yearWaterUsePlanCrop = this.getById(id);
         boolean update = this.lambdaUpdate().set(YearWaterUsePlanCrop::getDel, 1).eq(YearWaterUsePlanCrop::getId, id).update();
         if(update){
-            return RestResponse.ok("删除成功");
+            Double AprilTotal = 0.0;
+            Double MayTotal = 0.0;
+            Double JuneTotal = 0.0;
+            Double JulyTotal = 0.0;
+            Double AugustTotal = 0.0;
+            Double SeptemberTotal = 0.0;
+            Double OctoberTotal = 0.0;
+            Double NovemberTotal = 0.0;
+            List<YearWaterUsePlanCrop> list = this.lambdaQuery().eq(YearWaterUsePlanCrop::getYear, yearWaterUsePlanCrop.getYear()).eq(YearWaterUsePlanCrop::getArea, yearWaterUsePlanCrop.getArea()).
+                    eq(YearWaterUsePlanCrop::getUnitId, yearWaterUsePlanCrop.getUnitId()).eq(YearWaterUsePlanCrop::getDel, 0).ne(YearWaterUsePlanCrop::getId,yearWaterUsePlanCrop.getId()).list();
+            if(null != list && list.size()>0){
+                for(YearWaterUsePlanCrop crop:list){
+                    AprilTotal +=crop.getAprilTotal()==null?0.0:crop.getAprilTotal();
+                    MayTotal +=crop.getMayTotal()==null?0.0:crop.getMayTotal();
+                    JuneTotal +=crop.getJuneTotal()==null?0.0:crop.getJuneTotal();
+                    JulyTotal +=crop.getJulyTotal()==null?0.0:crop.getJulyTotal();
+                    AugustTotal +=crop.getAugustTotal()==null?0.0:crop.getAugustTotal();
+                    SeptemberTotal +=crop.getSeptemberTotal()==null?0.0:crop.getSeptemberTotal();
+                    OctoberTotal +=crop.getOctoberTotal()==null?0.0:crop.getOctoberTotal();
+                    NovemberTotal +=crop.getNovemberTotal()==null?0.0:crop.getNovemberTotal();
+                }
+            }
+            boolean update1 = yearWaterUsePlanTrunkCanalService.lambdaUpdate().
+                    set(YearWaterUsePlanTrunkCanal::getApril, AprilTotal).
+                    set(YearWaterUsePlanTrunkCanal::getMay, MayTotal).
+                    set(YearWaterUsePlanTrunkCanal::getJune, JuneTotal).
+                    set(YearWaterUsePlanTrunkCanal::getJuly, JulyTotal).
+                    set(YearWaterUsePlanTrunkCanal::getAugust, AugustTotal).
+                    set(YearWaterUsePlanTrunkCanal::getSeptember, SeptemberTotal).
+                    set(YearWaterUsePlanTrunkCanal::getOctober, OctoberTotal).
+                    set(YearWaterUsePlanTrunkCanal::getNovember, NovemberTotal).
+                    set(YearWaterUsePlanTrunkCanal::getAmountCount,AprilTotal+MayTotal+JuneTotal+JulyTotal+AugustTotal+SeptemberTotal+OctoberTotal+NovemberTotal).
+                    eq(YearWaterUsePlanTrunkCanal::getYear,yearWaterUsePlanCrop.getYear()).
+                    eq(YearWaterUsePlanTrunkCanal::getArea, yearWaterUsePlanCrop.getArea()).eq(YearWaterUsePlanTrunkCanal::getUnitId, yearWaterUsePlanCrop.getUnitId()).update();
+            if(update1){
+                return RestResponse.ok("删除成功");
+            }else {
+                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                return RestResponse.no("删除失败");
+            }
         }else {
             return RestResponse.no("删除失败");
         }

@@ -13,9 +13,9 @@ import java.util.List;
 @DS("multi-datasource1")
 public interface LzzPlatformMapper {
 
-    @Select("select time,v,SENID from wds.HOURDB where SENID = #{senId} and [TIME] = #{time}")
+    @Select("select time,v,SENID from wds.HOURDB where SENID = #{senId} and CONVERT(nvarchar(13),[TIME],121) = #{time}")
     ParamDto selectInfoByTime(@Param("senId") String senId, @Param("time") String time);
 
-    @Select("select time,v,SENID from wds.HOURDB where SENID = #{senId} and [TIME] BETWEEN #{startTime} AND #{endTime}")
+    @Select("select time,v,SENID from wds.HOURDB where SENID = #{senId} and CONVERT(nvarchar(13),[TIME],121) BETWEEN #{startTime} AND #{endTime}")
     List<ParamDto> selectInfoBetweenTime(@Param("senId") String senId, @Param("startTime") String startTime, @Param("endTime") String endTime);
 }

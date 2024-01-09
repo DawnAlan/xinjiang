@@ -41,6 +41,7 @@
         <module>cj-plugin-middleDatabase</module>
         <module>cj-plugin-inspection</module>
         <module>cj-plugin-approval</module>
+        <module>cj-plugin-fourPredictions</module>
     </modules>
 
 </project>

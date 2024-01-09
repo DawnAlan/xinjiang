@@ -2,6 +2,7 @@ package com.cj.middleDatabase.func.modular.lzz.lzzRainfallStation.service.impl;
 
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.cj.middleDatabase.func.modular.dto.RealTimeRainfallRes;
 import com.cj.middleDatabase.func.modular.lzz.lzzRainfallStation.mapper.LzzRainfallStationMapper;
 import com.cj.middleDatabase.func.modular.lzz.lzzRainfallStation.entity.LzzRainfallStation;
 import com.cj.middleDatabase.func.modular.lzz.lzzRainfallStation.service.LzzRainfallStationService;
@@ -40,6 +41,16 @@ public class LzzRainfallStationServiceImpl extends ServiceImpl<LzzRainfallStatio
     @Override
     public List<LzzRainfallStation> selectYesterday(String name, String time) {
         return this.baseMapper.selectYesterday(name, time);
+    }
+
+    @Override
+    public List<RealTimeRainfallRes> getRealTimeRainfall(String startTime, String endTime) {
+        return this.baseMapper.getRealTimeRainfall(startTime, endTime);
+    }
+
+    @Override
+    public List<LzzRainfallStation> selectHistoryList(String name, String startTime, String endTime) {
+        return this.baseMapper.selectHistoryList(name, startTime, endTime);
     }
 }
 

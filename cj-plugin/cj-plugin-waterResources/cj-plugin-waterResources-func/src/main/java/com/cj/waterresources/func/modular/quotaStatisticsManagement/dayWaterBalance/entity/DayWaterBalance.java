@@ -1,6 +1,9 @@
 package com.cj.waterresources.func.modular.quotaStatisticsManagement.dayWaterBalance.entity;
 
 import java.util.Date;
+
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.extension.activerecord.Model;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -40,14 +43,17 @@ public class DayWaterBalance extends Model<DayWaterBalance> {
     private String tableHeadId;
 
     //实收水量
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "实收水量")
     private Double actualWaterReceived;
 
     //按比例水量
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "按比例水量")
     private Double proportionalWaterQuantity;
 
     //实际水量
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "实际水量")
     private Double actualWaterVolume;
 

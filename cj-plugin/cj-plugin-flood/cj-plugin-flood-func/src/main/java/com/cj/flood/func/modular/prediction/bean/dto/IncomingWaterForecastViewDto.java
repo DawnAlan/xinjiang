@@ -20,4 +20,10 @@ public class IncomingWaterForecastViewDto implements Serializable {
 
     @ApiModelProperty(value = "洪量组成")
     private List<IncomingWaterForecastKVDto> qComposition;
+
+    @ApiModelProperty(value = "洪峰流量")
+    private Double peakFlood;
+
+    @ApiModelProperty(value = "洪量")
+    private Double peakVolume;
 }

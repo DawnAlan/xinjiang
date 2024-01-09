@@ -357,6 +357,9 @@ public class VMD {
             }
 
         }
+        if (K == 1){
+            System.arraycopy(signal, 0, vmd_output[0], 0, signal.length);
+        }
         return vmd_output;
     }
 

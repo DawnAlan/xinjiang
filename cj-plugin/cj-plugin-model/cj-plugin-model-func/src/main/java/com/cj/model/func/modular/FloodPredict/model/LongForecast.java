@@ -200,13 +200,13 @@ public class LongForecast {
         int outputNum = result[0].length;
         Date[][] dates;
         if (paramsSetVO.getForecastPeriod().equals("月")) {
-            dates = TimeUtils.getSelectMonthDateList(startDate, result.length);
+            dates = TimeUtils.getMonthDateList(startDate, result.length);
         } else if (paramsSetVO.getForecastPeriod().equals("旬")) {
-            dates = TimeUtils.getSelectDateList(startDate, result.length, 10, 0);
+            dates = TimeUtils.getDateList(startDate, result.length, 10, 0);
         } else if (paramsSetVO.getForecastPeriod().equals("日")) {
-            dates = TimeUtils.getSelectDateList(startDate, result.length, 1, 0);
+            dates = TimeUtils.getDateList(startDate, result.length, 1, 0);
         } else {
-            dates = TimeUtils.getSelectDateList(startDate, result.length, 0, 1);
+            dates = TimeUtils.getDateList(startDate, result.length, 0, 1);
         }
         List<TthResultEntity> resultList = new ArrayList();
         String inputIndex1 = DataUtils.array2String(paramsSetVO.getInputIndex());
