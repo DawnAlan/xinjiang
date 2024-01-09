@@ -41,7 +41,7 @@ public interface WaterResourceFeign {
                            @RequestParam(value = "timeType", required =true)Integer timeType);
 
     @RequestMapping("/feign/provider/waterResource/getWaterResourceAllocationList")
-    String getWaterResourceAllocationList(@RequestParam(value = "waterDistributionType", required =true)Integer waterDistributionType);
+    String getWaterResourceAllocationList(@RequestParam(value = "bucketType", required =true)Integer bucketType);
 
     @RequestMapping("/feign/provider/waterResource/getWaterResourceAllocationDetails")
     String getWaterResourceAllocationDetails(@RequestParam(value = "id", required =true)String id);
@@ -55,4 +55,17 @@ public interface WaterResourceFeign {
 
     @RequestMapping("/feign/provider/waterResource/getRealTimeReservoirLevel")
     String getRealTimeReservoirLevel(@RequestParam(value = "reservoir", required =true)String reservoir);
+
+    @RequestMapping("/feign/provider/waterResource/getSupplyDemandBalance")
+    String getSupplyDemandBalance();
+
+    @RequestMapping("/feign/provider/waterResource/getReservoirWaterConditionAlarm")
+    String getReservoirWaterConditionAlarm(@RequestParam(value = "reservoir", required =true)String reservoir,
+                                           @RequestParam(value = "time", required =true)String time);
+
+    @RequestMapping("/feign/provider/waterResource/getTurbidityAlarm")
+    String getTurbidityAlarm(@RequestParam(value = "time", required =true)String time);
+
+    @RequestMapping("/feign/provider/waterResource/getWaterAlarm")
+    String getWaterAlarm();
 }

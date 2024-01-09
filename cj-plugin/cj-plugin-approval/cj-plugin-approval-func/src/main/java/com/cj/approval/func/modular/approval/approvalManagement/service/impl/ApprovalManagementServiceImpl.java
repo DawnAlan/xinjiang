@@ -198,7 +198,7 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
         IPage<ApprovalManagement> page = this.lambdaQuery().
                 between(req.getStartTime() !=null && req.getEndTime()!=null,ApprovalManagement::getCreateTime, req.getStartTime(),req.getEndTime()).
                 eq(StringUtils.isNotEmpty(req.getInstructionType()),ApprovalManagement::getInstructionType, req.getInstructionType()).
-                eq(ApprovalManagement::getDel, 0).page(p);
+                eq(ApprovalManagement::getDel, 0).orderByDesc(ApprovalManagement::getCreateTime).page(p);
         if(page.getTotal()>0){
             return RestResponse.ok(page);
         }else {
@@ -212,7 +212,7 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
         IPage<ApprovalManagement> page = this.lambdaQuery().
                 between(req.getStartTime() !=null && req.getEndTime()!=null,ApprovalManagement::getCreateTime, req.getStartTime(),req.getEndTime()).
                 eq(StringUtils.isNotEmpty(req.getInstructionType()),ApprovalManagement::getInstructionType, req.getInstructionType()).eq(ApprovalManagement::getApprovalStatus,2).
-                eq(ApprovalManagement::getDel, 0).page(p);
+                eq(ApprovalManagement::getDel, 0).orderByDesc(ApprovalManagement::getCreateTime).page(p);
         if(page.getTotal()>0){
             return RestResponse.ok(page);
         }else {

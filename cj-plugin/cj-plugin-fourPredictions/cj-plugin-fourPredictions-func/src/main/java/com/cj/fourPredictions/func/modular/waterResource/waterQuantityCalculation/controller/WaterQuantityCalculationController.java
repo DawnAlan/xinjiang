@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("waterQuantityCalculation")
 public class WaterQuantityCalculationController {
-
+/*
     @Autowired
     private WaterQuantityCalculationService waterQuantityCalculationService;
 
@@ -35,5 +35,5 @@ public class WaterQuantityCalculationController {
     @GetMapping("/getRealTimeReservoirLevel")
     public RestResponse getRealTimeReservoirLevel(@RequestParam(value = "reservoir")String reservoir) {
         return waterQuantityCalculationService.getRealTimeReservoirLevel(reservoir);
-    }
+    }*/
 }

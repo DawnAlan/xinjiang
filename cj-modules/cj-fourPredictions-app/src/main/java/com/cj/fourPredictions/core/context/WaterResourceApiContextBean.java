@@ -67,8 +67,8 @@ public class WaterResourceApiContextBean implements WaterResourceApi {
     }
 
     @Override
-    public String getWaterResourceAllocationList(Integer waterDistributionType) {
-        String data = waterResourceFeign.getWaterResourceAllocationList(waterDistributionType);
+    public String getWaterResourceAllocationList(Integer bucketType) {
+        String data = waterResourceFeign.getWaterResourceAllocationList(bucketType);
         return data;
     }
 
@@ -93,6 +93,30 @@ public class WaterResourceApiContextBean implements WaterResourceApi {
     @Override
     public String getRealTimeReservoirLevel(String reservoir) {
         String data = waterResourceFeign.getRealTimeReservoirLevel(reservoir);
+        return data;
+    }
+
+    @Override
+    public String getSupplyDemandBalance() {
+        String data = waterResourceFeign.getSupplyDemandBalance();
+        return data;
+    }
+
+    @Override
+    public String getReservoirWaterConditionAlarm(String reservoir, String time) {
+        String data = waterResourceFeign.getReservoirWaterConditionAlarm(reservoir,time);
+        return data;
+    }
+
+    @Override
+    public String getTurbidityAlarm(String time) {
+        String data = waterResourceFeign.getTurbidityAlarm(time);
+        return data;
+    }
+
+    @Override
+    public String getWaterAlarm() {
+        String data = waterResourceFeign.getWaterAlarm();
         return data;
     }
 }

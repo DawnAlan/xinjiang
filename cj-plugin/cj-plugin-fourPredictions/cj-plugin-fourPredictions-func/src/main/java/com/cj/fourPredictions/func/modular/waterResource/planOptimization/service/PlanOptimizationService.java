@@ -4,7 +4,7 @@ import com.cj.common.model.RestResponse;
 
 public interface PlanOptimizationService {
 
-    RestResponse getWaterResourceAllocationList(Integer waterDistributionType);
+    RestResponse getWaterResourceAllocationList(Integer bucketType);
 
     RestResponse contrast(String idA,String idB);
 }

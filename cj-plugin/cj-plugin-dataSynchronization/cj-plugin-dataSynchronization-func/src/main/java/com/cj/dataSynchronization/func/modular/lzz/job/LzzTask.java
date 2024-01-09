@@ -19,6 +19,7 @@ public class LzzTask {
 
 
     @Scheduled(cron="0 0 0/1 * * ?")//每小时执行一次，以空格分隔
+    //@Scheduled(cron="0 */5 * * * ?")
     public  void saveAffluentLevelByOneHour(){
         try {
             lzzPlatformService.insertReservoirLevel(new Date());

@@ -20,7 +20,7 @@ public interface WaterResourceApi {
 
     String getNeedWaterValueList(String area,Integer timeType);
 
-    String getWaterResourceAllocationList(Integer waterDistributionType);
+    String getWaterResourceAllocationList(Integer bucketType);
 
     String getWaterResourceAllocationDetails(String id);
 
@@ -29,5 +29,13 @@ public interface WaterResourceApi {
     String waterQuantityCalculation(String id);
 
     String getRealTimeReservoirLevel(String reservoir);
+
+    String getSupplyDemandBalance();
+
+    String getReservoirWaterConditionAlarm(String reservoir,String time);
+
+    String getTurbidityAlarm(String time);
+
+    String getWaterAlarm();
 
 }

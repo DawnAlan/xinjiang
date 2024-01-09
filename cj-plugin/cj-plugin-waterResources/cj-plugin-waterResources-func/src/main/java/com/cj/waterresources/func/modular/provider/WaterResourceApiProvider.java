@@ -3,6 +3,8 @@ package com.cj.waterresources.func.modular.provider;
 import com.alibaba.fastjson.JSONObject;
 import com.cj.common.model.RestResponse;
 import com.cj.waterresources.api.WaterResourceApi;
+import com.cj.waterresources.func.modular.trendsTable.entity.TrendsTableParam;
+import com.cj.waterresources.func.modular.trendsTable.service.TrendsTableParamService;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.dayWaterUsePlan.entity.DayWaterUsePlan;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.dayWaterUsePlan.service.DayWaterUsePlanService;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.index.res.WaterUsePlanForViewRes;
@@ -22,6 +24,10 @@ import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePla
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.service.YearWaterUsePlanTrunkCanalService;
 import com.cj.waterresources.func.modular.waterResourceAllcation.entity.WaterResourceAllocation;
 import com.cj.waterresources.func.modular.waterResourceAllcation.service.WaterResourceAllocationService;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.entity.DayWaterSituationStatisticsTableLzz;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.service.DayWaterSituationStatisticsTableLzzService;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tth.entity.DayWaterSituationStatisticsTableTth;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tth.service.DayWaterSituationStatisticsTableTthService;
 import com.cj.waterresources.func.modular.waterStorageScheduling.waterStorageSchedulingLzz.entity.WaterStorageSchedulingLzz;
 import com.cj.waterresources.func.modular.waterStorageScheduling.waterStorageSchedulingLzz.service.WaterStorageSchedulingLzzService;
 import com.cj.waterresources.func.modular.waterStorageScheduling.waterStorageSchedulingTth.entity.WaterStorageSchedulingTth;
@@ -48,6 +54,9 @@ public class WaterResourceApiProvider implements WaterResourceApi {
     private final WaterStorageSchedulingLzzService waterStorageSchedulingLzzService;
     private final WaterStorageSchedulingTthService waterStorageSchedulingTthService;
     private final WaterResourceAllocationService waterResourceAllocationService;
+    private final TrendsTableParamService trendsTableParamService;
+    private final DayWaterSituationStatisticsTableLzzService dayWaterSituationStatisticsTableLzzService;
+    private final DayWaterSituationStatisticsTableTthService dayWaterSituationStatisticsTableTthService;
 
     @Override
     public String getYearWaterPlan(String area) {
@@ -327,8 +336,11 @@ public class WaterResourceApiProvider implements WaterResourceApi {
     }
 
     @Override
-    public String getWaterResourceAllocationList(Integer waterDistributionType) {
-        List<WaterResourceAllocation> list = waterResourceAllocationService.lambdaQuery().eq(WaterResourceAllocation::getWaterDistributionType, waterDistributionType).list();
+    public String getWaterResourceAllocationList(Integer bucketType) {
+        List<WaterResourceAllocation> list = waterResourceAllocationService.lambdaQuery().
+                eq(WaterResourceAllocation::getBucketType, bucketType).
+                eq(WaterResourceAllocation::getDel,0).
+                list();
         if(null!= list && list.size()>0){
             return JSONObject.toJSONString(list);
         }
@@ -368,6 +380,120 @@ public class WaterResourceApiProvider implements WaterResourceApi {
         if(restResponse.getCode()==200){
             return JSONObject.toJSONString(restResponse.getData());
         }
+        return null;
+    }
+
+    @Override
+    public String getSupplyDemandBalance() {
+        Map<String,Object> result = new HashMap<>();
+        int year = LocalDateTime.now().getYear();
+        List<WaterStorageSchedulingLzz> lzz = waterStorageSchedulingLzzService.lambdaQuery().eq(WaterStorageSchedulingLzz::getYear, year).list();
+        List<WaterStorageSchedulingTth> tth = waterStorageSchedulingTthService.lambdaQuery().eq(WaterStorageSchedulingTth::getYear, year).list();
+        result.put("楼庄子水库",lzz);
+        result.put("头屯河水库",tth);
+        return JSONObject.toJSONString(result);
+    }
+
+    @Override
+    public String getReservoirWaterConditionAlarm(String reservoir,String time) {
+        if(reservoir.equals("楼庄子水库")){
+            List<TrendsTableParam> lzzTableParam = trendsTableParamService.lambdaQuery().
+                    eq(TrendsTableParam::getUseType, 1).
+                    eq(TrendsTableParam::getUseStation, "楼庄子水库").list();
+            TrendsTableParam lzzJkllTableParam = lzzTableParam.stream().filter(t -> t.getParamName().equals("进库流量")).collect(Collectors.toList()).get(0);
+            TrendsTableParam lzzCkllTableParam = lzzTableParam.stream().filter(t -> t.getParamName().equals("河道")).collect(Collectors.toList()).get(0);
+            TrendsTableParam lzzSwTableParam = lzzTableParam.stream().filter(t -> t.getParamName().equals("水位")).collect(Collectors.toList()).get(0);
+            TrendsTableParam lzzKrTableParam = lzzTableParam.stream().filter(t -> t.getParamName().equals("库容")).collect(Collectors.toList()).get(0);
+            RestResponse<Map<String, List<DayWaterSituationStatisticsTableLzz>>> mapRestResponse = dayWaterSituationStatisticsTableLzzService.selectList(time);
+            Map<String,Object> lzzResult = new HashMap<>();
+            if(mapRestResponse.getCode()==200){
+                List<DayWaterSituationStatisticsTableLzz> yesterday = mapRestResponse.getData().get("昨日均");
+                lzzResult.put("进库流量",yesterday.stream().filter(t->t.getTableHeadId().equals(lzzJkllTableParam.getId())).collect(Collectors.toList()).get(0).getV());
+                lzzResult.put("出库流量",yesterday.stream().filter(t->t.getTableHeadId().equals(lzzCkllTableParam.getId())).collect(Collectors.toList()).get(0).getV());
+                lzzResult.put("水位",yesterday.stream().filter(t->t.getTableHeadId().equals(lzzSwTableParam.getId())).collect(Collectors.toList()).get(0).getV());
+                lzzResult.put("库容",yesterday.stream().filter(t->t.getTableHeadId().equals(lzzKrTableParam.getId())).collect(Collectors.toList()).get(0).getV());
+            }else {
+                lzzResult.put("进库流量",null);
+                lzzResult.put("出库流量",null);
+                lzzResult.put("水位",null);
+                lzzResult.put("库容",null);
+            }
+            return JSONObject.toJSONString(lzzResult);
+        }
+       if(reservoir.equals("头屯河水库")){
+           List<TrendsTableParam> tthTableParam = trendsTableParamService.lambdaQuery().
+                   eq(TrendsTableParam::getUseType, 1).
+                   eq(TrendsTableParam::getUseStation, "头屯河水库").list();
+           TrendsTableParam tthJkllTableParam = tthTableParam.stream().filter(t -> t.getParamName().equals("进库流量")).collect(Collectors.toList()).get(0);
+           TrendsTableParam tthCkllTableParam = tthTableParam.stream().filter(t -> t.getParamName().equals("河道流量")).collect(Collectors.toList()).get(0);
+           TrendsTableParam tthSwTableParam = tthTableParam.stream().filter(t -> t.getParamName().equals("水位")).collect(Collectors.toList()).get(0);
+           TrendsTableParam tthKrTableParam = tthTableParam.stream().filter(t -> t.getParamName().equals("库容")).collect(Collectors.toList()).get(0);
+           RestResponse<Map<String, List<DayWaterSituationStatisticsTableTth>>> mapRestResponse1 = dayWaterSituationStatisticsTableTthService.selectList(time);
+           Map<String,Object> tthResult = new HashMap<>();
+           if(mapRestResponse1.getCode()==200){
+               List<DayWaterSituationStatisticsTableTth> yesterday = mapRestResponse1.getData().get("昨日均");
+               tthResult.put("进库流量",yesterday.stream().filter(t->t.getTableHeadId().equals(tthJkllTableParam.getId())).collect(Collectors.toList()).get(0).getV());
+               tthResult.put("出库流量",yesterday.stream().filter(t->t.getTableHeadId().equals(tthCkllTableParam.getId())).collect(Collectors.toList()).get(0).getV());
+               tthResult.put("水位",yesterday.stream().filter(t->t.getTableHeadId().equals(tthSwTableParam.getId())).collect(Collectors.toList()).get(0).getV());
+               tthResult.put("库容",yesterday.stream().filter(t->t.getTableHeadId().equals(tthKrTableParam.getId())).collect(Collectors.toList()).get(0).getV());
+           }else {
+               tthResult.put("进库流量",null);
+               tthResult.put("出库流量",null);
+               tthResult.put("水位",null);
+               tthResult.put("库容",null);
+           }
+           return JSONObject.toJSONString(tthResult);
+       }
+       return null;
+    }
+
+    @Override
+    public String getTurbidityAlarm(String time) {
+        Map<String,Object> result = new HashMap<>();
+        Map<String,Object> reservoirTurbidity = new HashMap<>();
+        List<TrendsTableParam> lzzTableParam = trendsTableParamService.lambdaQuery().
+                eq(TrendsTableParam::getUseType, 1).
+                eq(TrendsTableParam::getUseStation, "楼庄子水库").list();
+        TrendsTableParam lzzJkzdTableParam = lzzTableParam.stream().filter(t -> t.getParamName().equals("进库浊度")).collect(Collectors.toList()).get(0);
+        TrendsTableParam lzzCkzdTableParam = lzzTableParam.stream().filter(t -> t.getParamName().equals("出库浊度")).collect(Collectors.toList()).get(0);
+        RestResponse<Map<String, List<DayWaterSituationStatisticsTableLzz>>> mapRestResponse = dayWaterSituationStatisticsTableLzzService.selectList(time);
+        Map<String,Object> lzzResultTurbidity = new HashMap<>();
+        if(mapRestResponse.getCode()==200){
+            List<DayWaterSituationStatisticsTableLzz> yesterday = mapRestResponse.getData().get("昨日均");
+            lzzResultTurbidity.put("进库浊度",yesterday.stream().filter(t->t.getTableHeadId().equals(lzzJkzdTableParam.getId())).collect(Collectors.toList()).get(0).getV());
+            lzzResultTurbidity.put("出库浊度",yesterday.stream().filter(t->t.getTableHeadId().equals(lzzCkzdTableParam.getId())).collect(Collectors.toList()).get(0).getV());
+        }else {
+            lzzResultTurbidity.put("进库浊度",null);
+            lzzResultTurbidity.put("出库浊度",null);
+        }
+        List<TrendsTableParam> tthTableParam = trendsTableParamService.lambdaQuery().
+                eq(TrendsTableParam::getUseType, 1).
+                eq(TrendsTableParam::getUseStation, "头屯河水库").list();
+        TrendsTableParam tthJkzdTableParam = tthTableParam.stream().filter(t -> t.getParamName().equals("进库浊度")).collect(Collectors.toList()).get(0);
+        TrendsTableParam tthCkzdTableParam = tthTableParam.stream().filter(t -> t.getParamName().equals("河道浊度")).collect(Collectors.toList()).get(0);
+        TrendsTableParam tthAgzdTableParam = tthTableParam.stream().filter(t -> t.getParamName().equals("暗管浊度")).collect(Collectors.toList()).get(0);
+        RestResponse<Map<String, List<DayWaterSituationStatisticsTableTth>>> mapRestResponse1 = dayWaterSituationStatisticsTableTthService.selectList(time);
+        Map<String,Object> tthResultTurbidity = new HashMap<>();
+        Map<String,Object> turbidity = new HashMap<>();
+        if(mapRestResponse1.getCode()==200) {
+            List<DayWaterSituationStatisticsTableTth> yesterday = mapRestResponse1.getData().get("昨日均");
+            tthResultTurbidity.put("进库浊度",yesterday.stream().filter(t->t.getTableHeadId().equals(tthJkzdTableParam.getId())).collect(Collectors.toList()).get(0).getV());
+            tthResultTurbidity.put("出库浊度",yesterday.stream().filter(t->t.getTableHeadId().equals(tthCkzdTableParam.getId())).collect(Collectors.toList()).get(0).getV());
+            turbidity.put("暗管",yesterday.stream().filter(t->t.getTableHeadId().equals(tthAgzdTableParam.getId())).collect(Collectors.toList()).get(0).getV());
+        }else {
+            tthResultTurbidity.put("进库浊度",null);
+            tthResultTurbidity.put("出库浊度",null);
+            turbidity.put("暗管",null);
+        }
+        reservoirTurbidity.put("楼庄子水库",lzzResultTurbidity);
+        reservoirTurbidity.put("头屯河水库",tthResultTurbidity);
+        result.put("水库浊度",reservoirTurbidity);
+        result.put("暗渠浊度",turbidity);
+        return JSONObject.toJSONString(result);
+    }
+
+    @Override
+    public String getWaterAlarm() {
         return null;
     }
 

@@ -58,8 +58,8 @@ public class WaterResourceFeignProvider implements WaterResourceFeign {
     }
 
     @Override
-    public String getWaterResourceAllocationList(Integer waterDistributionType) {
-        return waterResourceApiProvider.getWaterResourceAllocationList(waterDistributionType);
+    public String getWaterResourceAllocationList(Integer bucketType) {
+        return waterResourceApiProvider.getWaterResourceAllocationList(bucketType);
     }
 
     @Override
@@ -80,5 +80,25 @@ public class WaterResourceFeignProvider implements WaterResourceFeign {
     @Override
     public String getRealTimeReservoirLevel(String reservoir) {
         return waterResourceApiProvider.getRealTimeReservoirLevel(reservoir);
+    }
+
+    @Override
+    public String getSupplyDemandBalance() {
+        return waterResourceApiProvider.getSupplyDemandBalance();
+    }
+
+    @Override
+    public String getReservoirWaterConditionAlarm(String reservoir, String time) {
+        return waterResourceApiProvider.getReservoirWaterConditionAlarm(reservoir,time);
+    }
+
+    @Override
+    public String getTurbidityAlarm(String time) {
+        return waterResourceApiProvider.getTurbidityAlarm(time);
+    }
+
+    @Override
+    public String getWaterAlarm() {
+        return waterResourceApiProvider.getWaterAlarm();
     }
 }
