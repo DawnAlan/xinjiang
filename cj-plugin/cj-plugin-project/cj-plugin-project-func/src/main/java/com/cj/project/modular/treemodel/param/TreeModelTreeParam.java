@@ -32,4 +32,11 @@ public class TreeModelTreeParam {
      */
     @ApiModelProperty(value = "绑定的测点id", position = 4)
     private String pointId;
+
+    /**
+     * 测点名称
+     */
+    @ApiModelProperty(value = "测点名称", position = 5)
+    private String nodeName;
+
 }
