@@ -2,9 +2,9 @@ package com.cj.project.modular.fiducial.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.cj.project.modular.fiducial.entity.FiducialBase;
-import com.cj.project.modular.fiducial.entity.FiducialPara;
-import com.cj.project.modular.fiducial.param.*;
+import com.cj.project.api.fiducial.entity.FiducialBase;
+import com.cj.project.api.fiducial.entity.FiducialPara;
+import com.cj.project.api.fiducial.param.*;
 import com.cj.project.modular.fiducial.result.FiducialResult;
 
 import java.util.List;

@@ -1,4 +1,4 @@
-package com.cj.project.modular.fiducial.param;
+package com.cj.project.api.fiducial.param;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;

@@ -1,28 +1,21 @@
-package com.cj.project.modular.fiducial.param;
+package com.cj.project.api.fiducial.param;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import java.math.BigDecimal;
 import java.util.Date;
 
 /**
- * 测点考证表编辑参数
+ * 测点考证表添加参数
  *
  * @author Lb
  * @date  2023/09/04 12:25
  **/
 @Getter
 @Setter
-public class FiducialBaseEditParam {
-
-    /** ID */
-    @ApiModelProperty(value = "ID", required = true, position = 1)
-    @NotBlank(message = "id不能为空")
-    private String id;
+public class FiducialBaseAddParam {
 
     /** 项目编号 */
     @ApiModelProperty(value = "项目编号", required = true, position = 2)

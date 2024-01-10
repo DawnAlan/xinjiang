@@ -1,6 +1,7 @@
 package com.cj.project.modular.configfield.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.cj.project.api.configfield.dto.ConfigFieldFiducialDto;
 import com.cj.project.api.configfield.dto.ConfigFieldFiducialPageDto;
 import com.cj.project.api.configfield.dto.ConfigFieldFiducialQueryDto;
 import com.cj.project.api.configfield.entity.ConfigFieldFiducial;
@@ -15,8 +16,11 @@ import org.springframework.web.bind.annotation.*;
 import com.cj.common.annotation.CommonLog;
 import com.cj.common.pojo.CommonResult;
 import com.cj.project.modular.configfield.service.ConfigFieldFiducialService;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import java.util.List;
@@ -47,7 +51,7 @@ public class ConfigFieldFiducialController {
     @ApiOperationSupport(order = 1)
     @ApiOperation("获取考证字段配置")
     @CommonLog("添加考证字段配置")
-    @GetMapping("/project/configfield/fiducial/get")
+    @PostMapping("/project/configfield/fiducial/get")
     public CommonResult<List<ConfigFieldFiducialResult>> getList(ConfigFieldFiducialQueryDto configFieldFiducialQueryDto) {
         return CommonResult.data(configFieldFiducialService.getList(configFieldFiducialQueryDto));
     }
@@ -61,7 +65,7 @@ public class ConfigFieldFiducialController {
      */
     @ApiOperationSupport(order = 1)
     @ApiOperation("获取数据字段配置分页")
-    @GetMapping("/project/configfield/page")
+    @PostMapping("/project/configfield/page")
     public CommonResult<Page<ConfigFieldFiducial>> page(ConfigFieldFiducialPageDto configFieldFiducialPageDto) {
         return CommonResult.data(configFieldFiducialService.page(configFieldFiducialPageDto));
     }
@@ -135,9 +139,37 @@ public class ConfigFieldFiducialController {
     @ApiOperationSupport(order = 11)
     @ApiOperation("创建考证字段配置")
     @CommonLog("创建考证字段配置")
-    @GetMapping("/project/configfield/fiducial/creat")
-    public CommonResult<String> Create(String projectcode, String instrumentmetatype, String instrumenttype) {
-        configFieldFiducialGreatService.Create(projectcode, instrumentmetatype, instrumenttype);
+    @PostMapping("/project/configfield/fiducial/creat")
+    public CommonResult<String> Create(@RequestBody ConfigFieldFiducialDto configFieldFiducialExportDto) {
+        configFieldFiducialGreatService.Create(configFieldFiducialExportDto);
         return CommonResult.ok();
     }
+
+
+    @ApiOperationSupport(order = 12)
+    @ApiOperation(value = "项目仪器模板导出" , tags = "文件名需要前端解码")
+    @PostMapping("/project/configfield/fiducial/templateExport")
+    public void templateExport(@RequestBody ConfigFieldFiducialDto configFieldFiducialExportDto,
+                               HttpServletRequest request , HttpServletResponse response) {
+        configFieldFiducialService.templateExport(configFieldFiducialExportDto , request , response);
+    }
+
+
+    @ApiOperationSupport(order = 13)
+    @ApiOperation("项目仪器数据导入")
+    @PostMapping("/project/configfield/fiducial/dataImport")
+    public CommonResult dataImport(@RequestParam(value = "file")  MultipartFile file ) {
+
+        return configFieldFiducialService.dataImport(file);
+    }
+
+    @ApiOperationSupport(order = 14)
+    @ApiOperation("项目仪器数据导出")
+    @PostMapping("/project/configfield/fiducial/dataExport")
+    public void dataExport(@RequestBody ConfigFieldFiducialDto configFieldFiducialExportDto,
+                           HttpServletRequest request , HttpServletResponse response) {
+        configFieldFiducialService.templateExport(configFieldFiducialExportDto , request , response);
+    }
+
+    
 }
