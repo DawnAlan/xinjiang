@@ -10,28 +10,40 @@
  * 5.不可二次分发开源参与同类竞品，如有想法可联系团队xiaonuobase@qq.com商议合作。
  * 6.若您的项目无法满足以上几点，需要更多功能代码，获取Snowy商业授权许可，请在官网购买授权，地址为 https://www.xiaonuo.vip
  */
-package com.cj.project.modular.fiducial.param;
+package com.cj.project.api.fiducial.entity;
 
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.validation.constraints.NotBlank;
-
 /**
- * 测点考证表Id参数
+ * 考证参数表实体
  *
  * @author Lb
- * @date  2023/09/04 12:25
+ * @date  2023/09/04 19:57
  **/
 @Getter
 @Setter
-@Builder
-public class FiducialIdParam {
+@TableName("fiducial_para")
+public class FiducialPara {
 
     /** ID */
-    @ApiModelProperty(value = "ID", required = true)
-    // @NotBlank(message = "id不能为空")
+    @TableId
+    @ApiModelProperty(value = "ID", position = 1)
     private String id;
+
+    /** 测点编号 */
+    @ApiModelProperty(value = "测点编号", position = 2)
+    private String pointId;
+
+    /** 考证字段 */
+    @ApiModelProperty(value = "考证字段", position = 3)
+    private String fieldKey;
+
+    /** 考证值 */
+    @ApiModelProperty(value = "考证值", position = 4)
+    private String fieldValue;
+
 }

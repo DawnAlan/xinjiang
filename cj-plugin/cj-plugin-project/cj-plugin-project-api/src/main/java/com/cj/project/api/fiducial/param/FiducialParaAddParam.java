@@ -10,42 +10,32 @@
  * 5.不可二次分发开源参与同类竞品，如有想法可联系团队xiaonuobase@qq.com商议合作。
  * 6.若您的项目无法满足以上几点，需要更多功能代码，获取Snowy商业授权许可，请在官网购买授权，地址为 https://www.xiaonuo.vip
  */
-package com.cj.project.modular.fiducial.param;
+package com.cj.project.api.fiducial.param;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.validation.constraints.NotBlank;
-import java.util.Map;
-
 /**
- * 测点考证表添加参数
+ * 考证参数表添加参数
  *
  * @author Lb
- * @date  2023/09/04 12:25
+ * @date  2023/09/04 19:57
  **/
 @Getter
 @Setter
-public class FiducialAddParam {
-
-    /** 项目编号 */
-    @ApiModelProperty(value = "项目编号", required = true, position = 1)
-    @NotBlank(message = "projectCode不能为空")
-    private String projectCode;
-
-    /** 项目仪器类型 */
-    @ApiModelProperty(value = "项目仪器类型", required = true, position = 2)
-    @NotBlank(message = "instrumentType不能为空")
-    private String instrumentType;
+public class FiducialParaAddParam {
 
     /** 测点编号 */
-    @ApiModelProperty(value = "测点编号", required = true, position = 3)
-    @NotBlank(message = "pointName不能为空")
-    private String pointName;
+    @ApiModelProperty(value = "测点编号", position = 1)
+    private String pointId;
 
-    /** 测点详情 */
-    @ApiModelProperty(value = "测点详情", required = true, position = 4)
-    private Map<String, Object> detail;
+    /** 考证字段 */
+    @ApiModelProperty(value = "考证字段", position = 2)
+    private String fieldKey;
+
+    /** 考证值 */
+    @ApiModelProperty(value = "考证值", position = 3)
+    private String fieldValue;
 
 }

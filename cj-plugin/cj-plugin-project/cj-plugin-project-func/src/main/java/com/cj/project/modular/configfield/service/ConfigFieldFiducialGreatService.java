@@ -1,6 +1,8 @@
 package com.cj.project.modular.configfield.service;
 
 
+import com.cj.project.api.configfield.dto.ConfigFieldFiducialDto;
+
 
 /**
  * 考证字段配置生成Service接口
@@ -10,7 +12,6 @@ package com.cj.project.modular.configfield.service;
  **/
 public interface ConfigFieldFiducialGreatService {
 
-    void Create(String projectCode,String instrumentMetaType, String instrumentType);
-
+    void Create(ConfigFieldFiducialDto configFieldFiducialExportDto);
 
 }

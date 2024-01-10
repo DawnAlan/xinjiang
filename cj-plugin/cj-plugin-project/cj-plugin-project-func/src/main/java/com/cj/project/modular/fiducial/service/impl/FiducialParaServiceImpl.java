@@ -4,13 +4,11 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollStreamUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.cj.project.modular.fiducial.param.FiducialIdParam;
+import com.cj.project.api.fiducial.entity.FiducialPara;
+import com.cj.project.api.fiducial.param.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.cj.project.modular.fiducial.entity.FiducialPara;
 import com.cj.project.modular.fiducial.mapper.FiducialParaMapper;
-import com.cj.project.modular.fiducial.param.FiducialParaAddParam;
-import com.cj.project.modular.fiducial.param.FiducialParaIdParam;
 import com.cj.project.modular.fiducial.service.FiducialParaService;
 
 import java.util.ArrayList;

@@ -4,6 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.cj.project.api.configfield.dto.ConfigFieldFiducialDto;
 import com.cj.project.api.configfield.entity.ConfigFieldFiducial;
 import com.cj.project.modular.configfield.enums.ConfigFieldFiducialOutEnum;
 import com.cj.project.modular.configfield.mapper.ConfigFieldFiducialMapper;
@@ -29,14 +30,14 @@ public class ConfigFieldFiducialCreatServiceImpl extends ServiceImpl<ConfigField
 
 
     @Override
-    public void Create(String projectCode, String instrumentMetaType, String instrumentType) {
+    public void Create(ConfigFieldFiducialDto configFieldFiducialExportDto) {
         //已存在keyList
         QueryWrapper<ConfigFieldFiducial> queryWrapper = new QueryWrapper<>();
-        if(ObjectUtil.isNotEmpty(projectCode)) {
-            queryWrapper.lambda().eq(ConfigFieldFiducial::getProjectCode, projectCode);
+        if(ObjectUtil.isNotEmpty(configFieldFiducialExportDto.getProjectCode())) {
+            queryWrapper.lambda().eq(ConfigFieldFiducial::getProjectCode, configFieldFiducialExportDto.getProjectCode());
         }
-        if(ObjectUtil.isNotEmpty(instrumentType)) {
-            queryWrapper.lambda().eq(ConfigFieldFiducial::getInstrumentType, instrumentType);
+        if(ObjectUtil.isNotEmpty(configFieldFiducialExportDto.getInstrumentType())) {
+            queryWrapper.lambda().eq(ConfigFieldFiducial::getInstrumentType, configFieldFiducialExportDto.getInstrumentType());
         }
         queryWrapper.lambda().orderByAsc(ConfigFieldFiducial::getSortCode);
         List<ConfigFieldFiducial> fieldsFiducial = this.list(queryWrapper);
@@ -55,9 +56,9 @@ public class ConfigFieldFiducialCreatServiceImpl extends ServiceImpl<ConfigField
                 if(EnumUtils.isValidEnum(ConfigFieldFiducialOutEnum.class, field.getName()))
                     continue;
                 ConfigFieldFiducial fieldFiducial = new ConfigFieldFiducial();
-                fieldFiducial.setProjectCode(projectCode);
-                fieldFiducial.setInstrumentType(instrumentType);
-                fieldFiducial.setInstrumentMetaType(instrumentMetaType);
+                fieldFiducial.setProjectCode(configFieldFiducialExportDto.getProjectCode());
+                fieldFiducial.setInstrumentType(configFieldFiducialExportDto.getInstrumentType());
+                fieldFiducial.setInstrumentMetaType(configFieldFiducialExportDto.getInstrumentMetaType());
                 fieldFiducial.setFieldKey(field.getName());
                 if (field.getAnnotation(ApiModelProperty.class) != null) {
                     fieldFiducial.setFieldText(field.getAnnotation(ApiModelProperty.class).value());
@@ -71,7 +72,7 @@ public class ConfigFieldFiducialCreatServiceImpl extends ServiceImpl<ConfigField
         }
         this.saveBatch(createList);
 
-        if(projectCode.equals("000"))
+        if(configFieldFiducialExportDto.getProjectCode().equals("000"))
         {
 
         }else
@@ -80,4 +81,6 @@ public class ConfigFieldFiducialCreatServiceImpl extends ServiceImpl<ConfigField
         }
 
     }
+
+
 }

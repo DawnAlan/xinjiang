@@ -1,18 +1,18 @@
-package com.cj.project.modular.fiducial.param;
+package com.cj.project.api.fiducial.param;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 
 /**
- * 考证参数表查询参数
+ * 测点考证表分页查询参数
  *
  * @author Lb
- * @date  2023/09/04 19:57
+ * @date  2023/09/04 12:25
  **/
 @Getter
 @Setter
-public class FiducialParaPageParam {
+public class FiducialPageParam {
 
     /** 当前页 */
     @ApiModelProperty(value = "当前页码")
@@ -34,8 +34,19 @@ public class FiducialParaPageParam {
     @ApiModelProperty(value = "关键词")
     private String searchKey;
 
-    /** 测点编号 */
-    @ApiModelProperty(value = "测点编号")
+    /** 项目编号 */
+    @ApiModelProperty(value = "项目编号")
+    private String projectCode;
+
+    /** 项目仪器类型 */
+    @ApiModelProperty(value = "项目仪器类型")
+    private String instrumentType;
+
+    /** 测点ID */
+    @ApiModelProperty(value = "测点ID")
     private String pointId;
 
+    /** 测点编号 */
+    @ApiModelProperty(value = "测点编号")
+    private String pointName;
 }
