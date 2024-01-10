@@ -10,7 +10,6 @@ import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import com.baomidou.mybatisplus.core.toolkit.BeanUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cj.common.pojo.CommonEntity;
 import com.cj.project.api.fiducial.entity.FiducialBase;
@@ -120,10 +119,6 @@ public class TreeModelServiceImpl extends ServiceImpl<TreeModelMapper, TreeModel
 
     /**
      * 添加节点
-     * 注意事项：
-     * 1.判断同级节点是否有同名的
-     * 2.节点类型、项目code、绑定的测点id、
-     * 3.父级节点如果是叶子节点，则变更
      */
     @Transactional(rollbackFor = Exception.class)
     @Override
