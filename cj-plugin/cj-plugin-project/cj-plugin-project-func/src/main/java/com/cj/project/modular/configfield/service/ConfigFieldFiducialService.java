@@ -80,6 +80,6 @@ public interface ConfigFieldFiducialService extends IService<ConfigFieldFiducial
 
     void templateExport(ConfigFieldFiducialDto configFieldFiducialDto, HttpServletRequest request , HttpServletResponse response);
 
-    CommonResult dataImport(MultipartFile file);
+    CommonResult dataImport(ConfigFieldFiducialDto configFieldFiducialDto , MultipartFile file);
 
 }

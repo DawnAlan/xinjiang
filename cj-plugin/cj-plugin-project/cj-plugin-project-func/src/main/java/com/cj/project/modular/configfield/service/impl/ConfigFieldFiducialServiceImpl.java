@@ -3,6 +3,7 @@ package com.cj.project.modular.configfield.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollStreamUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
@@ -11,20 +12,27 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cj.common.pojo.CommonResult;
 import com.cj.common.util.ExcelUtils;
+import com.cj.common.util.MapTransformUtil;
 import com.cj.project.api.configfield.dto.ConfigFieldFiducialDto;
 import com.cj.project.api.configfield.dto.ConfigFieldFiducialPageDto;
 import com.cj.project.api.configfield.dto.ConfigFieldFiducialQueryDto;
 import com.cj.project.api.configfield.entity.ConfigFieldFiducial;
+import com.cj.project.api.fiducial.entity.FiducialBase;
+import com.cj.project.api.fiducial.entity.FiducialPara;
 import com.cj.project.modular.configfield.result.ConfigFieldFiducialResult;
+import com.cj.project.modular.fiducial.service.FiducialBaseService;
+import com.cj.project.modular.fiducial.service.FiducialParaService;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.cj.common.enums.CommonSortOrderEnum;
@@ -40,6 +48,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -57,6 +67,18 @@ import org.springframework.web.multipart.MultipartFile;
  **/
 @Service
 public class ConfigFieldFiducialServiceImpl extends ServiceImpl<ConfigFieldFiducialMapper, ConfigFieldFiducial> implements ConfigFieldFiducialService {
+
+
+
+    @Autowired
+    MapTransformUtil mapTransformUtil;
+
+    @Autowired
+    FiducialBaseService fiducialBaseService;
+
+    @Autowired
+    FiducialParaService fiducialParaService;
+
 
     @Override
     public List<ConfigFieldFiducialResult> getList(ConfigFieldFiducialQueryDto configFieldFiducialQueryDto) {
@@ -191,9 +213,10 @@ public class ConfigFieldFiducialServiceImpl extends ServiceImpl<ConfigFieldFiduc
 
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @SneakyThrows
     @Override
-    public CommonResult dataImport(MultipartFile file) {
+    public CommonResult dataImport(ConfigFieldFiducialDto configFieldFiducialDto , MultipartFile file) {
         String originalFilename = file.getOriginalFilename();
         //获取文件后缀名
         String suffixName = originalFilename.substring(originalFilename.lastIndexOf(".") + 1);
@@ -214,21 +237,56 @@ public class ConfigFieldFiducialServiceImpl extends ServiceImpl<ConfigFieldFiduc
             Sheet sheetAt = wb.getSheetAt(0);
             //获取公共字段的列序号
             Row row1 = sheetAt.getRow(1);
-            HashMap<String , Integer> commonFieldOrderMap = new HashMap();
+            Map<String , Object> fieldOrderMap = new HashMap();
             for(int i = 0 ; i < row1.getLastCellNum() ; i ++){
-                commonFieldOrderMap.put(row1.getCell(i).toString() , i );
+                fieldOrderMap.put(row1.getCell(i).toString() , i );
             }
-
+            //分离Base、para字段
+            Map<String , Object> baseMap = new HashMap();
+            Map<String , Object> paraMap = fieldOrderMap;
+            Field[] baseFields = ReflectUtil.getFields(FiducialBase.class);
+            for (Field field : baseFields) {
+                if(fieldOrderMap.containsKey(field.getName())){
+                    baseMap.put(field.getName() , fieldOrderMap.get(field.getName()));
+                    paraMap.remove(field.getName());
+                }
+            }
+            //反转map的key与value
+            Map<Object, Object> newBaseMap = baseMap.entrySet().stream().collect(Collectors.toMap(entry -> entry.getValue(), entry -> entry.getKey()));
+            Map<Object, Object> newParaMap = paraMap.entrySet().stream().collect(Collectors.toMap(entry -> entry.getValue(), entry -> entry.getKey()));
 
             int lastRowNum = sheetAt.getLastRowNum();
-            for (int i = 0 ; i < lastRowNum ; i ++){
+            for (int i = 2 ; i <= lastRowNum ; i ++){
                 Row row = sheetAt.getRow(i);
+                Map<String , Object> baseValueMap = new HashMap();
+                List<FiducialPara> fiducialParaList = new ArrayList<>();
                 for (int j = 0 ; j < row.getLastCellNum() ; j ++){
-                    System.out.println("第" + i + "行  " + "第" + j + "列的值  " + row.getCell(j) );
+                    if(newBaseMap.get(j) != null){
+                        String field = newBaseMap.get(j).toString();
+                        String value = row.getCell(j).toString();
+                        baseValueMap.put(field , value);
+                    }else if(newParaMap.get(j) != null){
+                        FiducialPara fiducialPara = new FiducialPara();
+                        fiducialPara.setFieldKey(newParaMap.get(j).toString());
+                        fiducialPara.setFieldValue(row.getCell(j).toString());
+                        fiducialParaList.add(fiducialPara);
+                    }
+                    //System.out.println("第" + i + "行  " + "第" + j + "列的值  " + row.getCell(j) );
                 }
-
+                FiducialBase fiducialBase = (FiducialBase)mapTransformUtil.mapTransformClass(baseValueMap, FiducialBase.class);
+                fiducialBase.setProjectCode(configFieldFiducialDto.getProjectCode());
+                fiducialBase.setInstrumentType(configFieldFiducialDto.getInstrumentType());
+                fiducialBaseService.save(fiducialBase);
+                System.out.println("id的值： " + fiducialBase.getId());
+                fiducialParaList.stream().forEach( e -> e.setPointId(fiducialBase.getId()));
+                fiducialParaService.saveBatch(fiducialParaList);
             }
         }
         return CommonResult.ok("导入成功");
     }
+
+
+
+
+
 }

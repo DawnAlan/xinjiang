@@ -149,18 +149,19 @@ public class ConfigFieldFiducialController {
     @ApiOperationSupport(order = 12)
     @ApiOperation(value = "项目仪器模板导出" , tags = "文件名需要前端解码")
     @PostMapping("/project/configfield/fiducial/templateExport")
-    public void templateExport(@RequestBody ConfigFieldFiducialDto configFieldFiducialExportDto,
+    public void templateExport(@RequestBody ConfigFieldFiducialDto configFieldFiducialDto,
                                HttpServletRequest request , HttpServletResponse response) {
-        configFieldFiducialService.templateExport(configFieldFiducialExportDto , request , response);
+        configFieldFiducialService.templateExport(configFieldFiducialDto , request , response);
     }
 
 
     @ApiOperationSupport(order = 13)
     @ApiOperation("项目仪器数据导入")
     @PostMapping("/project/configfield/fiducial/dataImport")
-    public CommonResult dataImport(@RequestParam(value = "file")  MultipartFile file ) {
+    public CommonResult dataImport( ConfigFieldFiducialDto configFieldFiducialDto,
+                                        @RequestParam(value = "file")  MultipartFile file ) {
 
-        return configFieldFiducialService.dataImport(file);
+        return configFieldFiducialService.dataImport(configFieldFiducialDto , file);
     }
 
     @ApiOperationSupport(order = 14)

@@ -97,7 +97,7 @@ public class FiducialBase extends CommonEntity implements TransPojo {
 
     /** 断面 */
     @ApiModelProperty(value = "断面", position = 15, notes = "position_field")
-    private String section;
+    private String fractureSurface;
 
     /** 观测频次 */
     @ApiModelProperty(value = "观测频次", position = 16, notes = "status_field")
