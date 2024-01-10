@@ -11,7 +11,7 @@ import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.cj.project.modular.fiducial.entity.FiducialBase;
+import com.cj.project.api.fiducial.entity.FiducialBase;
 import com.cj.project.modular.fiducial.service.FiducialBaseService;
 import com.cj.project.modular.treemodel.param.*;
 import org.apache.commons.lang3.StringUtils;

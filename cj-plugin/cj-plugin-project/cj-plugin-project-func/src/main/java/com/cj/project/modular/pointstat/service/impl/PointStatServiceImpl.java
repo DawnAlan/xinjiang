@@ -5,7 +5,7 @@ import cn.hutool.json.JSONObject;
 import com.cj.common.exception.CommonException;
 import com.cj.common.pojo.bizPojo.TableColumn;
 import com.cj.dev.api.DevDictApi;
-import com.cj.project.modular.fiducial.entity.FiducialBase;
+import com.cj.project.api.fiducial.entity.FiducialBase;
 import com.cj.project.modular.fiducial.service.FiducialBaseService;
 import com.cj.project.modular.pointstat.result.PointStatResult;
 import com.cj.project.modular.pointstat.result.RemarkPoints;

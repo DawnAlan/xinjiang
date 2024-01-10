@@ -209,10 +209,17 @@ public class ConfigFieldFiducialServiceImpl extends ServiceImpl<ConfigFieldFiduc
             // 无效后缀名称，这里之能保证excel的后缀名称，不能保证文件类型正确，不过没关系，在创建Workbook的时候会校验文件格式
             return CommonResult.error("Invalid excel version");
         }
-        //获取公共字段的列序号
-        
+
         if(wb != null){
             Sheet sheetAt = wb.getSheetAt(0);
+            //获取公共字段的列序号
+            Row row1 = sheetAt.getRow(1);
+            HashMap<String , Integer> commonFieldOrderMap = new HashMap();
+            for(int i = 0 ; i < row1.getLastCellNum() ; i ++){
+                commonFieldOrderMap.put(row1.getCell(i).toString() , i );
+            }
+
+
             int lastRowNum = sheetAt.getLastRowNum();
             for (int i = 0 ; i < lastRowNum ; i ++){
                 Row row = sheetAt.getRow(i);
