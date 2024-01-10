@@ -2,16 +2,19 @@ package com.cj.project.modular.treemodel.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollStreamUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.lang.tree.Tree;
 import cn.hutool.core.lang.tree.TreeNode;
 import cn.hutool.core.lang.tree.TreeUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.json.JSONUtil;
+import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cj.project.modular.fiducial.entity.FiducialBase;
 import com.cj.project.modular.fiducial.service.FiducialBaseService;
 import com.cj.project.modular.treemodel.param.*;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.cj.common.exception.CommonException;
@@ -20,7 +23,7 @@ import com.cj.project.modular.treemodel.mapper.TreeModelMapper;
 import com.cj.project.modular.treemodel.service.TreeModelService;
 
 import javax.annotation.Resource;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -46,14 +49,69 @@ public class TreeModelServiceImpl extends ServiceImpl<TreeModelMapper, TreeModel
                 //树目录类型
                 .eq(ObjectUtil.isNotEmpty(treeModelTreeParam.getCategory()), TreeModel::getCategory, treeModelTreeParam.getCategory())
                 //绑定的测点id
-                .eq(ObjectUtil.isNotEmpty(treeModelTreeParam.getPointId()),TreeModel::getPointId, treeModelTreeParam.getPointId())
+                .eq(ObjectUtil.isNotEmpty(treeModelTreeParam.getPointId()), TreeModel::getPointId, treeModelTreeParam.getPointId())
                 .orderByAsc(TreeModel::getSortCode)
         );
+        if (StringUtils.isNotEmpty(treeModelTreeParam.getNodeName())) {
+            List<TreeModel> list = this.list(new LambdaQueryWrapper<TreeModel>()
+                    //项目code
+                    .eq(ObjectUtil.isNotEmpty(treeModelTreeParam.getProjectCode()), TreeModel::getProjectCode, treeModelTreeParam.getProjectCode())
+                    //树目录类型
+                    .eq(ObjectUtil.isNotEmpty(treeModelTreeParam.getCategory()), TreeModel::getCategory, treeModelTreeParam.getCategory())
+                    //绑定的测点id
+                    .eq(ObjectUtil.isNotEmpty(treeModelTreeParam.getPointId()), TreeModel::getPointId, treeModelTreeParam.getPointId())
+                    .like(TreeModel::getNodeName, treeModelTreeParam.getNodeName())
+                    .orderByAsc(TreeModel::getSortCode)
+            );
+            List<TreeModel> treeModels = new ArrayList<>();
+            for (TreeModel treeModel : list) {
+                treeModels.addAll(queryParentIds(treeModel.getId(), treeModelList));
+            }
+            System.out.println("筛选后的集合：" + JSON.toJSONString(treeModels));
+            List<TreeNode<String>> queryTreeNodeList = treeModels.stream().map(treeModel ->
+                            new TreeNode<>(treeModel.getId(), treeModel.getParentId(),
+                                    treeModel.getNodeName(), treeModel.getSortCode()).setExtra(JSONUtil.parseObj(treeModel)))
+                    .collect(Collectors.toList());
+            return TreeUtil.build(queryTreeNodeList, "0");
+        }
         List<TreeNode<String>> treeNodeList = treeModelList.stream().map(treeModel ->
                         new TreeNode<>(treeModel.getId(), treeModel.getParentId(),
                                 treeModel.getNodeName(), treeModel.getSortCode()).setExtra(JSONUtil.parseObj(treeModel)))
                 .collect(Collectors.toList());
         return TreeUtil.build(treeNodeList, "0");
+    }
+
+    /**
+     * 递归遍历获取指定菜单的所有父节点
+     *
+     * @param treeModelList 当前菜单
+     * @param treeId        子菜单ID
+     */
+    public List<TreeModel> queryParentIds(String treeId, List<TreeModel> treeModelList) {
+        //递归获取父级节点,不包含自己  第一次传值为当前节点id，递归时传入的是父节点id，所以是完整的
+        List<TreeModel> resultTreeModelList = new ArrayList<>();
+        this.treeOrgParent(treeModelList, treeId, resultTreeModelList);
+        return resultTreeModelList;
+    }
+
+    /**
+     * 递归获取父级ids
+     *
+     * @param treeModelList
+     * @param treeId
+     * @param resultTreeModelList
+     */
+    public void treeOrgParent(List<TreeModel> treeModelList, String treeId, List<TreeModel> resultTreeModelList) {
+        for (TreeModel treeModel : treeModelList) {
+            if (StringUtils.isEmpty(treeModel.getParentId())) {
+                continue;
+            }
+            //判断是否有父节点
+            if (treeId.equals(treeModel.getId())) {
+                resultTreeModelList.add(treeModel);
+                treeOrgParent(treeModelList, treeModel.getParentId(), resultTreeModelList);
+            }
+        }
     }
 
     @Transactional(rollbackFor = Exception.class)
