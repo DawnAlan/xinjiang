@@ -2,7 +2,6 @@ package com.cj.project.modular.treemodel.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollStreamUtil;
-import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.lang.tree.Tree;
 import cn.hutool.core.lang.tree.TreeNode;
 import cn.hutool.core.lang.tree.TreeUtil;
@@ -10,9 +9,13 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.toolkit.BeanUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.cj.common.pojo.CommonEntity;
 import com.cj.project.api.fiducial.entity.FiducialBase;
 import com.cj.project.modular.fiducial.service.FiducialBaseService;
+import com.cj.project.modular.treemodel.enums.TreeModelEnum;
 import com.cj.project.modular.treemodel.param.*;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -48,6 +51,7 @@ public class TreeModelServiceImpl extends ServiceImpl<TreeModelMapper, TreeModel
                 .eq(ObjectUtil.isNotEmpty(treeModelTreeParam.getProjectCode()), TreeModel::getProjectCode, treeModelTreeParam.getProjectCode())
                 //树目录类型
                 .eq(ObjectUtil.isNotEmpty(treeModelTreeParam.getCategory()), TreeModel::getCategory, treeModelTreeParam.getCategory())
+                .eq(CommonEntity::getDeleteFlag, TreeModelEnum.NOT_DELETE)
                 //绑定的测点id
                 .eq(ObjectUtil.isNotEmpty(treeModelTreeParam.getPointId()), TreeModel::getPointId, treeModelTreeParam.getPointId())
                 .orderByAsc(TreeModel::getSortCode)
@@ -72,13 +76,13 @@ public class TreeModelServiceImpl extends ServiceImpl<TreeModelMapper, TreeModel
                             new TreeNode<>(treeModel.getId(), treeModel.getParentId(),
                                     treeModel.getNodeName(), treeModel.getSortCode()).setExtra(JSONUtil.parseObj(treeModel)))
                     .collect(Collectors.toList());
-            return TreeUtil.build(queryTreeNodeList, "0");
+            return TreeUtil.build(queryTreeNodeList, ROOT_PARENT_ID);
         }
         List<TreeNode<String>> treeNodeList = treeModelList.stream().map(treeModel ->
                         new TreeNode<>(treeModel.getId(), treeModel.getParentId(),
                                 treeModel.getNodeName(), treeModel.getSortCode()).setExtra(JSONUtil.parseObj(treeModel)))
                 .collect(Collectors.toList());
-        return TreeUtil.build(treeNodeList, "0");
+        return TreeUtil.build(treeNodeList, ROOT_PARENT_ID);
     }
 
     /**
@@ -114,11 +118,36 @@ public class TreeModelServiceImpl extends ServiceImpl<TreeModelMapper, TreeModel
         }
     }
 
+    /**
+     * 添加节点
+     * 注意事项：
+     * 1.判断同级节点是否有同名的
+     * 2.节点类型、项目code、绑定的测点id、
+     * 3.父级节点如果是叶子节点，则变更
+     */
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void add(TreeModelAddParam treeModelAddParam) {
-        TreeModel treeModel = BeanUtil.toBean(treeModelAddParam, TreeModel.class);
+    public void add(TreeModelDto treeModelDto) {
+        String nodeName = treeModelDto.getNodeName();
+        boolean exists = baseMapper.exists(new LambdaQueryWrapper<TreeModel>()
+                .eq(TreeModel::getParentId, treeModelDto.getParentId())
+                .eq(TreeModel::getDeleteFlag, TreeModelEnum.NOT_DELETE)
+                .eq(TreeModel::getNodeName, nodeName)
+                .last("limit 1"));
+        if (exists) {
+            throw new CommonException(300, "已存在同名节点 请勿重复创建");
+        }
+        TreeModel treeModel = BeanUtil.toBean(treeModelDto, TreeModel.class);
         this.save(treeModel);
+        boolean isEndBoolean = baseMapper.exists(new LambdaQueryWrapper<TreeModel>()
+                .eq(TreeModel::getParentId, treeModelDto.getParentId())
+                .eq(CommonEntity::getDeleteFlag, TreeModelEnum.NOT_DELETE)
+                .eq(TreeModel::getIsEnd, 1));
+        if (isEndBoolean) {
+            baseMapper.update(null, new LambdaUpdateWrapper<TreeModel>()
+                    .eq(TreeModel::getId, treeModelDto.getParentId())
+                    .set(TreeModel::getIsEnd, 0));
+        }
     }
 
     @Override
@@ -135,7 +164,7 @@ public class TreeModelServiceImpl extends ServiceImpl<TreeModelMapper, TreeModel
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void edit(TreeModelEditParam treeModelEditParam) {
+    public void edit(TreeModelDto treeModelEditParam) {
         TreeModel treeModel = this.queryEntity(treeModelEditParam.getId());
         BeanUtil.copyProperties(treeModelEditParam, treeModel);
         this.updateById(treeModel);
@@ -143,8 +172,8 @@ public class TreeModelServiceImpl extends ServiceImpl<TreeModelMapper, TreeModel
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void delete(List<TreeModelIdParam> treeModelIdParamList) {
-        List<String> treeNodeIds = CollStreamUtil.toList(treeModelIdParamList, TreeModelIdParam::getId);
+    public void delete(List<TreeModelTreeParam> treeModelIdParamList) {
+        List<String> treeNodeIds = CollStreamUtil.toList(treeModelIdParamList, TreeModelTreeParam::getId);
         for (String treeNode : treeNodeIds
         ) {
             long childNodeCount = this.count(new LambdaQueryWrapper<TreeModel>().eq(TreeModel::getParentId, treeNode));
@@ -153,7 +182,7 @@ public class TreeModelServiceImpl extends ServiceImpl<TreeModelMapper, TreeModel
             }
         }
         // 执行删除
-        this.removeByIds(CollStreamUtil.toList(treeModelIdParamList, TreeModelIdParam::getId));
+        this.removeByIds(CollStreamUtil.toList(treeModelIdParamList, TreeModelTreeParam::getId));
     }
 
     @Override
@@ -168,7 +197,7 @@ public class TreeModelServiceImpl extends ServiceImpl<TreeModelMapper, TreeModel
     }
 
     @Override
-    public TreeModel detail(TreeModelIdParam treeModelIdParam) {
+    public TreeModel detail(TreeModelTreeParam treeModelIdParam) {
         return this.queryEntity(treeModelIdParam.getId());
     }
 

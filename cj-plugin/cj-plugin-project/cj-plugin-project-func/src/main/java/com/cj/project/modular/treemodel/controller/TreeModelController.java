@@ -1,8 +1,6 @@
 package com.cj.project.modular.treemodel.controller;
 
-import cn.dev33.satoken.annotation.SaCheckPermission;
 import cn.hutool.core.lang.tree.Tree;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cj.project.modular.treemodel.param.*;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSupport;
@@ -63,7 +61,7 @@ public class TreeModelController {
     @ApiOperation("添加测点树")
     @CommonLog("添加测点树")
     @PostMapping("/project/treemodel/add")
-    public CommonResult<String> add(@RequestBody @Valid TreeModelAddParam treeModelAddParam) {
+    public CommonResult<String> add(@RequestBody @Valid TreeModelDto treeModelAddParam) {
         treeModelService.add(treeModelAddParam);
         return CommonResult.ok();
     }
@@ -93,7 +91,7 @@ public class TreeModelController {
     @ApiOperation("编辑测点树")
     @CommonLog("编辑测点树")
     @PostMapping("/project/treemodel/edit")
-    public CommonResult<String> edit(@RequestBody @Valid TreeModelEditParam treeModelEditParam) {
+    public CommonResult<String> edit(@RequestBody @Valid TreeModelDto treeModelEditParam) {
         treeModelService.edit(treeModelEditParam);
         return CommonResult.ok();
     }
@@ -109,7 +107,7 @@ public class TreeModelController {
     @CommonLog("删除测点树")
     @PostMapping("/project/treemodel/delete")
     public CommonResult<String> delete(@RequestBody @Valid @NotEmpty(message = "集合不能为空")
-                                                   CommonValidList<TreeModelIdParam> treeModelIdParamList) {
+                                                   CommonValidList<TreeModelTreeParam> treeModelIdParamList) {
         treeModelService.delete(treeModelIdParamList);
         return CommonResult.ok();
     }
@@ -139,7 +137,7 @@ public class TreeModelController {
     @ApiOperationSupport(order = 5)
     @ApiOperation("获取测点树详情")
     @GetMapping("/project/treemodel/detail")
-    public CommonResult<TreeModel> detail(@Valid TreeModelIdParam treeModelIdParam) {
+    public CommonResult<TreeModel> detail(@Valid TreeModelTreeParam treeModelIdParam) {
         return CommonResult.data(treeModelService.detail(treeModelIdParam));
     }
 }
