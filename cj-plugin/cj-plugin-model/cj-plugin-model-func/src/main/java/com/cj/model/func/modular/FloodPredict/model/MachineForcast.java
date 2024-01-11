@@ -110,7 +110,7 @@ public class MachineForcast {
                 preResult[i][1] = (double) preResult[i][1] + (double) de_result[i + 1][j + 1];
             }
         }
-        resultProcessing(preResult , pvo);
+        resultProcessing(preResult , pvo);//恢复为径流量
         peakFlood = setFloodXlsx(preResult , pvo);
         result.add(peakFlood);
         return result;
@@ -138,16 +138,17 @@ public class MachineForcast {
         //预报期时间、流量赋值
         switch (pvo.getForecastPeriod()) {
             case "月":
-                dates = TimeUtils.getSelectMonthDateList(startDate, pvo.getPeriodStepNumber());
+                dates = TimeUtils.getMonthDateList(startDate, pvo.getPeriodStepNumber());
+//                dates = TimeUtils.getSelectMonthDateList(startDate, pvo.getPeriodStepNumber());
                 break;
             case "旬":
-                dates = TimeUtils.getSelectDateList(startDate, pvo.getPeriodStepNumber(), 10, 0);
+                dates = TimeUtils.getDateList(startDate, pvo.getPeriodStepNumber(), 10, 0);
                 break;
             case "日":
-                dates = TimeUtils.getSelectDateList(startDate, pvo.getPeriodStepNumber() * pvo.getPeriodStepSize(), 1, 0);
+                dates = TimeUtils.getDateList(startDate, pvo.getPeriodStepNumber() * pvo.getPeriodStepSize(), 1, 0);
                 break;
             default:
-                dates = TimeUtils.getSelectDateList(startDate, pvo.getPeriodStepNumber() * pvo.getPeriodStepSize(), 0, 1);
+                dates = TimeUtils.getDateList(startDate, pvo.getPeriodStepNumber() * pvo.getPeriodStepSize(), 0, 1);
                 break;
         }
         /**
@@ -247,15 +248,15 @@ public class MachineForcast {
      * @return
      */
     public static String judgingYear(Object[][] input,ParamsSetVO pvo){
-        String result = new String();
+        String result = "";
         double[] water = new double[input.length];
         for (int i = 0; i < water.length; i++) {
             water[i]= (double) input[i][9];
         }
         if (pvo.getForecastPeriod().equals("月")){
             double waterSum =0.0;
-            for (int i = 0; i < water.length; i++) {
-                waterSum += water[i];
+            for (double v : water) {
+                waterSum += v;
             }
             waterSum = waterSum/10000;
             if (pvo.getForecastDuanmian().equals("3号桥")||pvo.getForecastDuanmian().equals("楼庄子")){
@@ -281,7 +282,7 @@ public class MachineForcast {
                 }
             }
         }else {
-            result = null ;
+            result = "平水年" ;
         }
         return result;
     }
@@ -321,7 +322,7 @@ public class MachineForcast {
      * @param input
      * @return
      */
-    public Object[][] resultProcessing(Object[][] input,ParamsSetVO pvo){
+    public static Object[][] resultProcessing(Object[][] input,ParamsSetVO pvo){
         int month = 0;
         for (int i = 0; i < input.length; i++) {
             if (pvo.getForecastDuanmian().equals("3号桥")||pvo.getForecastDuanmian().equals("楼庄子")){

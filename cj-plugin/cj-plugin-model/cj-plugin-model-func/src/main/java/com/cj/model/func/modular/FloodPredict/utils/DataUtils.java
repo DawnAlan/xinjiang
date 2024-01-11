@@ -74,46 +74,48 @@ public class DataUtils {
 		List<LzzGaugingStation> LZZO = entity.getLzzHydrologyParam().getLzzOutput();
 		List<PredictInputData> LOUOUT = lzzFlowConversion(date,LZZO);
 		result.add(LOUOUT);
-		//喀什沟雨量站
-		List<LzzRainfallStation> KSG = entity.getLzzHydrologyParam().getKsgRainfallStation();
-		List<PredictInputData> KASHI = lzzRainConversion(KSG);
-		result.add(KASHI);
-		//黑沟雨量站
-		List<LzzRainfallStation> HG = entity.getLzzHydrologyParam().getHgRainfallStation();
-		List<PredictInputData> HEIGOU = lzzRainConversion(HG);
-		result.add(HEIGOU);
-		//煤矿沟雨量站
-		List<LzzRainfallStation> MKG = entity.getLzzHydrologyParam().getMkgRainfallStation();
-		List<PredictInputData> MEI = lzzRainConversion(MKG);
-		result.add(MEI);
-		//无名沟雨量站
-		List<LzzRainfallStation> WMG = entity.getLzzHydrologyParam().getWmgRainfallStation();
-		List<PredictInputData> WUMING = lzzRainConversion(WMG);
-		result.add(WUMING);
-		//加普沙雨量站
-		List<LzzRainfallStation> JPS = entity.getLzzHydrologyParam().getJpsRainfallStation();
-		List<PredictInputData> JIA = lzzRainConversion(JPS);
-		result.add(JIA);
-		//宰尔德雨量站
-		List<LzzRainfallStation> ZED = entity.getLzzHydrologyParam().getZrdRainfallStation();
-		List<PredictInputData> ZAI = lzzRainConversion(ZED);
-		result.add(ZAI);
-		//东南沟雨量站
-		List<LzzRainfallStation> DNG = entity.getLzzHydrologyParam().getDngRainfallStation();
-		List<PredictInputData> DONG = lzzRainConversion(DNG);
-		result.add(DONG);
-		//八一林场雨量站
-		List<LzzRainfallStation> BYLC = entity.getLzzHydrologyParam().getBylcRainfallStation();
-		List<PredictInputData> BAYI = lzzRainConversion(BYLC);
-		result.add(BAYI);
-		//萨尔达万雨量站
-		List<LzzRainfallStation> SEDW = entity.getLzzHydrologyParam().getSedwRainfallStation();
-		List<PredictInputData> SAER = lzzRainConversion(SEDW);
-		result.add(SAER);
-		//制材厂雨量站
-		List<LzzRainfallStation> ZCC = entity.getLzzHydrologyParam().getZccRainfallStation();
-		List<PredictInputData> ZHI = lzzRainConversion(ZCC);
-		result.add(ZHI);
+		if (entity.getModelType()==3){
+			//喀什沟雨量站
+			List<LzzRainfallStation> KSG = entity.getLzzHydrologyParam().getKsgRainfallStation();
+			List<PredictInputData> KASHI = lzzRainConversion(KSG);
+			result.add(KASHI);
+			//黑沟雨量站
+			List<LzzRainfallStation> HG = entity.getLzzHydrologyParam().getHgRainfallStation();
+			List<PredictInputData> HEIGOU = lzzRainConversion(HG);
+			result.add(HEIGOU);
+			//煤矿沟雨量站
+			List<LzzRainfallStation> MKG = entity.getLzzHydrologyParam().getMkgRainfallStation();
+			List<PredictInputData> MEI = lzzRainConversion(MKG);
+			result.add(MEI);
+			//无名沟雨量站
+			List<LzzRainfallStation> WMG = entity.getLzzHydrologyParam().getWmgRainfallStation();
+			List<PredictInputData> WUMING = lzzRainConversion(WMG);
+			result.add(WUMING);
+			//加普沙雨量站
+			List<LzzRainfallStation> JPS = entity.getLzzHydrologyParam().getJpsRainfallStation();
+			List<PredictInputData> JIA = lzzRainConversion(JPS);
+			result.add(JIA);
+			//宰尔德雨量站
+			List<LzzRainfallStation> ZED = entity.getLzzHydrologyParam().getZrdRainfallStation();
+			List<PredictInputData> ZAI = lzzRainConversion(ZED);
+			result.add(ZAI);
+			//东南沟雨量站
+			List<LzzRainfallStation> DNG = entity.getLzzHydrologyParam().getDngRainfallStation();
+			List<PredictInputData> DONG = lzzRainConversion(DNG);
+			result.add(DONG);
+			//八一林场雨量站
+			List<LzzRainfallStation> BYLC = entity.getLzzHydrologyParam().getBylcRainfallStation();
+			List<PredictInputData> BAYI = lzzRainConversion(BYLC);
+			result.add(BAYI);
+			//萨尔达万雨量站
+			List<LzzRainfallStation> SEDW = entity.getLzzHydrologyParam().getSedwRainfallStation();
+			List<PredictInputData> SAER = lzzRainConversion(SEDW);
+			result.add(SAER);
+			//制材厂雨量站
+			List<LzzRainfallStation> ZCC = entity.getLzzHydrologyParam().getZccRainfallStation();
+			List<PredictInputData> ZHI = lzzRainConversion(ZCC);
+			result.add(ZHI);
+		}
 		return result;
 	}
 
@@ -769,6 +771,7 @@ public class DataUtils {
 		}
 		return result;
 	}
+
 	/**
 	 * 保留前20天雨量
 	 * @param input
@@ -1030,6 +1033,7 @@ public class DataUtils {
 		result.add(RainDay);
 		return result;
 	}
+
 	/**
 	 * 区间雨量站整合
 	 * @param paramNew
@@ -1186,6 +1190,7 @@ public class DataUtils {
 		}
 		return result;
 	}
+
 
 	/**
 	 * 从数据库导入的数据进行处理，包括对三号桥、楼庄子进库站异常流量的处理，上游雨量站温度空值的处理
@@ -1452,13 +1457,11 @@ public class DataUtils {
 
 	/**
 	 *
-	 * @param WaterStation 水位站数据
 	 * @param paramForcastInputParamNew 从数据库中获得的数据
-	 * @return 日尺度的添加了温度和降水的水位站数据
+	 * @return 日尺度温度与降水
 	 */
-	public static List<PredictInputData> AddRAndT(List<PredictInputData> WaterStation, ForcastInputParamNew paramForcastInputParamNew)
-			throws IOException, InvalidFormatException {
-		List<PredictInputData> result = new ArrayList<>();
+	public static List<PredictInputData> RAT(ForcastInputParamNew paramForcastInputParamNew)
+	{
 		//雨量站整合
 		List<PredictInputData> RainDay = new ArrayList<>();
 		//喀什沟
@@ -1493,7 +1496,18 @@ public class DataUtils {
 		RainDay.addAll(ZCCDAY);
 		//添加日尺度温度与降水
 		List<PredictInputData> RAT = pointToSurface(RainDay);//转换为平均值
-//		ExcelTool.writeListPredictListExcel("D:\\204\\2.头屯河\\径流预报数据文件\\RAT.xlsx","RAT",RAT);
+
+		return RAT;
+	}
+
+	/**
+	 * 为水位站添加温度和降水
+	 * @param WaterStation
+	 * @param RAT
+	 * @return
+	 */
+	public static List<PredictInputData> AddRAndT(List<PredictInputData> WaterStation, List<PredictInputData> RAT){
+		List<PredictInputData> result = new ArrayList<>();
 		for (int i = 0; i < WaterStation.size(); i++) {
 			for (int j = 0; j < RAT.size(); j++) {
 				Boolean dateCompare = DateCompare(RAT.get(j).getDates(),WaterStation.get(i).getDates(),"小时");
@@ -1509,15 +1523,15 @@ public class DataUtils {
 			}
 		}
 		//为空日期赋值，赋值为0
-		for (int i = 0; i <WaterStation.size() ; i++) {
-			if (WaterStation.get(i).getTemperature()==null){
-				WaterStation.get(i).setTemperature(0.0);
-			}
-		}
+        for (PredictInputData predictInputData : WaterStation) {
+            if (predictInputData.getTemperature() == null) {
+                predictInputData.setTemperature(0.0);
+            }
+        }
 		result = WaterStation;
-
 		return result;
 	}
+
 
 	/**
 	 * 日期比较
@@ -1558,6 +1572,7 @@ public class DataUtils {
 		}
 		return result;
 	}
+
 	/**
 	 * 返回的是这个时间或者他后面离他最近的值
 	 * @param timeSeries 按升序排列的时间list
@@ -1600,6 +1615,7 @@ public class DataUtils {
 //		}
 		return index;
 	}
+
 	/**
 	 * 根据period将日尺度数据转换为相应尺度
 	 * @param data
@@ -1621,11 +1637,12 @@ public class DataUtils {
 				Date time = data.get(i).getDates();
 				int day = getSpecificDate(time).get("日");
 				int dayBefore = 0;
+				Date time2 = new Date();
 				if(i!=0){
-					Date time2 = data.get(i-1).getDates();
+					time2 = data.get(i-1).getDates();
 					dayBefore = getSpecificDate(time2).get("日");
 				}
-				if(day==11||day==21||((day-dayBefore)<0)){
+				if(day==11||day==21||((day-dayBefore)<0)||i==data.size()-1){
 					if (flowNum==0){
 						flowNum=1;
 					}
@@ -1639,7 +1656,7 @@ public class DataUtils {
 					double temperatureY =temperatureSum / temperatureNum;
 					double rainfallY =rainfallSum / rainfallNum;
 					PredictInputData piece = new PredictInputData();
-					piece.setDates(time);
+					piece.setDates(time2);
 					piece.setFlow(flowY);
 					piece.setTemperature(temperatureY);
 					piece.setRainfall(rainfallY);
@@ -1670,12 +1687,13 @@ public class DataUtils {
 				Date time = data.get(i).getDates();
 				int day = getSpecificDate(time).get("日");
 				int dayBefore = 0;
+				Date time2 = new Date();
 				if(i!=0){
-					Date time2 = data.get(i-1).getDates();
+					time2 = data.get(i-1).getDates();
 					dayBefore = getSpecificDate(time2).get("日");
 				}
 
-				if(((day-dayBefore)<0)){
+				if(((day-dayBefore)<0)||i==data.size()-1){
 					if (flowNum==0){
 						flowNum=1;
 					}
@@ -1689,7 +1707,7 @@ public class DataUtils {
 					double temperatureY =temperatureSum / temperatureNum;
 					double rainfallY =rainfallSum / rainfallNum;
 					PredictInputData piece = new PredictInputData();
-					piece.setDates(time);
+					piece.setDates(time2);
 					piece.setFlow(flowY);
 					piece.setTemperature(temperatureY);
 					piece.setRainfall(rainfallY);
@@ -1720,6 +1738,7 @@ public class DataUtils {
 
 		return result;
 	}
+
 
 	/**
 	 * 筛选枯水期丰水期,5~9月为丰水期
@@ -2067,6 +2086,7 @@ public class DataUtils {
 		}
 		return result;
 	}
+
 	/**
 	 * 获得数据中的年、月、日、小时
 	 * @param date
@@ -2091,6 +2111,7 @@ public class DataUtils {
 		result.put("小时",hour);
 		return result;
 	}
+
 	/**
 	 * 获得丰水期和枯水期的预报开始时间和预报数量
 	 * @param param

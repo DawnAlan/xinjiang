@@ -12,6 +12,8 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 
 import java.io.*;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -60,6 +62,13 @@ public class Cascade {
             option.setQ2(LZZ_op1.get(5).get(i));
             option.setQ3(LZZ_op1.get(6).get(i));
             option.setV(LZZ_op1.get(7).get(i));
+            option.setRetain(LZZ_op1.get(8).get(i));
+
+            double V=modelOfLZZ.GetV(LZZ_op1.get(2).get(i));
+            double[] percentage=getPercentage_lzz(V);
+            option.setPercentage1(percentage[0]);
+            option.setPercentage2(percentage[1]);
+
             option1.add(option);
         }
         for (int i = 0; i < TTH_op1.get(0).size(); i++) {
@@ -75,6 +84,13 @@ public class Cascade {
             option.setQ2(TTH_op1.get(5).get(i));
             option.setQ3(TTH_op1.get(6).get(i));
             option.setV(TTH_op1.get(7).get(i));
+            option.setRetain(TTH_op1.get(8).get(i));
+
+            double V=modelOfTTH.GetV(TTH_op1.get(2).get(i));
+            double[] percentage=getPercentage_tth(V);
+            option.setPercentage1(percentage[0]);
+            option.setPercentage2(percentage[1]);
+
             option1.add(option);
         }
 
@@ -94,6 +110,13 @@ public class Cascade {
             option.setQ2(LZZ_op2.get(5).get(i));
             option.setQ3(LZZ_op2.get(6).get(i));
             option.setV(LZZ_op2.get(7).get(i));
+            option.setRetain(LZZ_op2.get(10).get(i));
+
+            double V=modelOfLZZ.GetV(LZZ_op1.get(2).get(i));
+            double[] percentage=getPercentage_lzz(V);
+            option.setPercentage1(percentage[0]);
+            option.setPercentage2(percentage[1]);
+
             option2.add(option);
         }
         for (int i = 0; i < TTH_op2.get(0).size(); i++) {
@@ -109,6 +132,13 @@ public class Cascade {
             option.setQ2(TTH_op2.get(5).get(i));
             option.setQ3(TTH_op2.get(6).get(i));
             option.setV(TTH_op2.get(7).get(i));
+            option.setRetain(TTH_op2.get(10).get(i));
+
+            double V=modelOfTTH.GetV(TTH_op1.get(2).get(i));
+            double[] percentage=getPercentage_tth(V);
+            option.setPercentage1(percentage[0]);
+            option.setPercentage2(percentage[1]);
+
             option2.add(option);
         }
 
@@ -128,6 +158,13 @@ public class Cascade {
             option.setQ2(LZZ_op3.get(5).get(i));
             option.setQ3(LZZ_op3.get(6).get(i));
             option.setV(LZZ_op3.get(7).get(i));
+            option.setRetain(LZZ_op2.get(10).get(i));
+
+            double V=modelOfLZZ.GetV(LZZ_op1.get(2).get(i));
+            double[] percentage=getPercentage_lzz(V);
+            option.setPercentage1(percentage[0]);
+            option.setPercentage2(percentage[1]);
+
             option3.add(option);
         }
         for (int i = 0; i < TTH_op3.get(0).size(); i++) {
@@ -143,6 +180,13 @@ public class Cascade {
             option.setQ2(TTH_op3.get(5).get(i));
             option.setQ3(TTH_op3.get(6).get(i));
             option.setV(TTH_op3.get(7).get(i));
+            option.setRetain(TTH_op3.get(10).get(i));
+
+            double V=modelOfTTH.GetV(TTH_op1.get(2).get(i));
+            double[] percentage=getPercentage_tth(V);
+            option.setPercentage1(percentage[0]);
+            option.setPercentage2(percentage[1]);
+
             option3.add(option);
         }
 
@@ -183,6 +227,7 @@ public class Cascade {
         row0.createCell(8).setCellValue("q2");
         row0.createCell(9).setCellValue("q3");
         row0.createCell(10).setCellValue("v");
+        row0.createCell(11).setCellValue("retain");
         for (int i = 0; i < options.size(); i++) {
             Option line = options.get(i);
             XSSFRow row = sheet.createRow(i+1);
@@ -197,6 +242,7 @@ public class Cascade {
             row.createCell(8).setCellValue(line.getQ2());
             row.createCell(9).setCellValue(line.getQ3());
             row.createCell(10).setCellValue(line.getV());
+            row.createCell(11).setCellValue(line.getRetain());
         }
         try {
             FileOutputStream fop = new FileOutputStream(path);
@@ -213,5 +259,22 @@ public class Cascade {
 
 
 
+    }
+    public static double[] getPercentage_lzz(double V){
+
+        double[] result = new double[2];
+        result[0]=100*Math.max(0,(V-6534.4))/724.93;
+        result[1]=100*Math.max(0,(V-6534.4))/839.59;
+        result[0]=BigDecimal.valueOf(result[0]).setScale(2, RoundingMode.HALF_UP).doubleValue();
+        result[1]=BigDecimal.valueOf(result[1]).setScale(2, RoundingMode.HALF_UP).doubleValue();
+        return result;
+    }
+    public static double[] getPercentage_tth(double V){
+        double[] result = new double[2];
+        result[0]=100*Math.max(0,(V-1297.03))/223.816;
+        result[1]=100*Math.max(0,(V-1297.03))/541.681;
+        result[0]=BigDecimal.valueOf(result[0]).setScale(2, RoundingMode.HALF_UP).doubleValue();
+        result[1]=BigDecimal.valueOf(result[1]).setScale(2, RoundingMode.HALF_UP).doubleValue();
+        return result;
     }
 }

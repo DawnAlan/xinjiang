@@ -18,5 +18,9 @@ public interface LzzGaugingStationService extends IService<LzzGaugingStation> {
     List<LzzGaugingStation> selectInfoByCondition(String id, String time, String startTime, String endTime);
 
     LzzGaugingStation selectInfoByNameAndTime(String time, String name);
+
+    LzzGaugingStation selectInfoByTime(String time,String name);
+
+    List<LzzGaugingStation> selectHistoryList(String name, String startTime, String endTime);
 }
 

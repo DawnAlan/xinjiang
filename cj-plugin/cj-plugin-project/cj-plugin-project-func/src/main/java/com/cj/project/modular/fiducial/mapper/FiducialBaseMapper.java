@@ -1,7 +1,7 @@
 package com.cj.project.modular.fiducial.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.cj.project.modular.fiducial.entity.FiducialBase;
+import com.cj.project.api.fiducial.entity.FiducialBase;
 
 /**
  * 测点考证表Mapper接口

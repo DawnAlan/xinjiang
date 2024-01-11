@@ -8,13 +8,13 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.cj.project.modular.fiducial.param.*;
+import com.cj.project.api.fiducial.entity.FiducialBase;
+import com.cj.project.api.fiducial.param.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.cj.common.enums.CommonSortOrderEnum;
 import com.cj.common.exception.CommonException;
 import com.cj.common.page.CommonPageRequest;
-import com.cj.project.modular.fiducial.entity.FiducialBase;
 import com.cj.project.modular.fiducial.mapper.FiducialBaseMapper;
 import com.cj.project.modular.fiducial.service.FiducialBaseService;
 

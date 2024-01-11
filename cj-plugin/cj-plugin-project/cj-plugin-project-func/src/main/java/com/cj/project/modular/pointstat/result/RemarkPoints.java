@@ -1,6 +1,6 @@
 package com.cj.project.modular.pointstat.result;
 
-import com.cj.project.modular.fiducial.entity.FiducialBase;
+import com.cj.project.api.fiducial.entity.FiducialBase;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;

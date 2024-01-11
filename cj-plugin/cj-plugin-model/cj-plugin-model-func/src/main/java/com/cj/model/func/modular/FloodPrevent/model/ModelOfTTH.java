@@ -11,6 +11,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
 
+import static com.cj.model.func.modular.FloodPredict.utils.DataUtils.stringToDate;
+
 public class ModelOfTTH {
 
     int T_Delta;
@@ -48,7 +50,55 @@ public class ModelOfTTH {
 
     int choice;
     int coefficient =10000 ;
+    public ModelOfTTH(Object[][] pre,int delta) {
+        for (int i = 0; i < pre.length; i++) {
+            Date t = stringToDate(pre[i][1].toString());
+            Time.add(t);
+            Q_Input.add((double)pre[i][2]);
+            MaxQ.add(180.0);
 
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(t);
+            int month = calendar.get(Calendar.MONTH)+1;
+            if(month>=4&&month<=9){
+                MinQ.add(1.48);
+            }
+            else{
+                MinQ.add(0.74);
+            }
+
+        }
+        H_begin=988;
+        T_Delta=delta;
+
+        LV_Curve=new double[][]{{   955,   956,   957,   958,   959,   960,   961,   962,   963,   964,   966,   968,   970,   972,   974,   976,   978,   980,   982,   984,   986,   988,   990,   992,   },
+                {   0.03,  0.28,  0.81,  1.59,  3.31,  6.78,  11.84, 18.36, 26.52, 36.29, 61.6,  95.28, 137.82,    191.56,    256.88,    335.89,    428.83,    549.14,    694.74,    863.67,    1063.26,   1297.03,   1576.8,    1838.71,   }
+        };
+        LQ_Curve1=new double[][]{{  950,   952,   960,   962,   965,   978,   985,   989.6, 990,   991,   992.5, 993.5, },
+                {   5.1,   30.8,  112.3, 120,   120,   120,   120,   120,   120,   120,   120,   120,   }
+        };
+        LQ_Curve2=new double[][]{{  950,   952,   960,   962,   965,   978,   985,   989.6, 990,   991,   992.5, 993.5, },
+                {   0, 0, 0, 4, 16,    42.8,  47.7,  50.6,  50.9,  51.5,  52.4,  53,    }
+        };
+        LQ_Curve3=new double[][]{{  950,   952,   960,   962,   965,   978,   985,   989.6, 990,   991,   992.5, 993.5, },
+                {   0, 0, 0, 0, 0, 0, 0, 0, 23.7,  154.9, 497,   813.5, }
+        };
+        this.DeadLevel  =972;
+        this.LimitLevel =987;
+        this.NormalLevel=989.6;
+        this.HeightLevel=989.6;
+        this.DesignLevel=991.2;
+        this.ProofLevel =992.54;
+        DeadVolume = GetV(DeadLevel);
+        LimitVolume = GetV(LimitLevel);
+        NormalVolume = GetV(NormalLevel);
+        HeightVolume = GetV(HeightLevel);
+        DesignVolume = GetV(DesignLevel);
+        ProofVolume = GetV(ProofLevel);
+        LimitLevels = new double[]{988,988,988,988,988,988,987,988,988,988,988,988};
+
+
+    }
     public ModelOfTTH(ReqFloodPrevent reqFloodPrevent){
         List<DataFloodPrevent> data_FloodPrevent_all = reqFloodPrevent.getData().get("lat");
 
@@ -177,6 +227,7 @@ public class ModelOfTTH {
         List<Double> Q_Release2=new ArrayList<>();
         List<Double> Q_Release3=new ArrayList<>();
         List<Double> V_list=new ArrayList<>();
+        List<Double> Retain_list=new ArrayList<>();
 
         for (int i = 0; i < Q_Input.size(); i++) {
             UpdateLimitLevel(Time.get(i));
@@ -190,6 +241,7 @@ public class ModelOfTTH {
             double Q_2;
             double Q_3;
             double V;
+            double retain;
             double Q_max;
             double[] H_Limit;
 
@@ -272,7 +324,6 @@ public class ModelOfTTH {
             }
             else{
                 //库水位不超过汛限水位,水库下泄流量不超过120m3/s，泄洪方式采用放水涵洞，持续泄洪直至水位回落到汛限水位
-
                 H_Limit= H_Limit_S2(beginH,Q_in,minQ);
                 //判断能否回落到汛限水位
                 if(LimitLevel>=H_Limit[0]&&LimitLevel<=H_Limit[1]){
@@ -296,6 +347,7 @@ public class ModelOfTTH {
                 }
             }
             V=GetV(beginH);
+            retain=Math.max(0,V-GetV(H_begin));
 
             H_b.add(BigDecimal.valueOf(beginH).setScale(2, RoundingMode.HALF_UP).doubleValue());
             H_e.add(BigDecimal.valueOf(endH).setScale(2, RoundingMode.HALF_UP).doubleValue());
@@ -304,6 +356,7 @@ public class ModelOfTTH {
             Q_Release2.add(BigDecimal.valueOf(Q_2).setScale(2, RoundingMode.HALF_UP).doubleValue());
             Q_Release3.add(BigDecimal.valueOf(Q_3).setScale(2, RoundingMode.HALF_UP).doubleValue());
             V_list.add(BigDecimal.valueOf(V).setScale(2, RoundingMode.HALF_UP).doubleValue());
+            Retain_list.add(BigDecimal.valueOf(retain).setScale(2, RoundingMode.HALF_UP).doubleValue());
         }
         Result.add(Q_Input);
         Result.add(H_b);
@@ -313,6 +366,7 @@ public class ModelOfTTH {
         Result.add(Q_Release2);
         Result.add(Q_Release3);
         Result.add(V_list);
+        Result.add(Retain_list);
 
         return Result;
     }
@@ -340,6 +394,7 @@ public class ModelOfTTH {
             double V;
             double value1;
             double value2;
+            double retain;
 
             double[] H_Limit = H_Limit(H_b,Q_in,MinQ.get(0));
 
@@ -361,6 +416,7 @@ public class ModelOfTTH {
                 List<Double> V_list= new ArrayList<>(option.get(7));
                 List<Double> Value1= new ArrayList<>();
                 List<Double> Value2= new ArrayList<>();
+                List<Double> Retain_list= new ArrayList<>(option.get(10));
                 Q_in_list.add(BigDecimal.valueOf(Q_in).setScale(2, RoundingMode.HALF_UP).doubleValue());
                 H_b_list.add(BigDecimal.valueOf(H_b).setScale(2, RoundingMode.HALF_UP).doubleValue());
                 H_e_list.add(BigDecimal.valueOf(H_e).setScale(2, RoundingMode.HALF_UP).doubleValue());
@@ -372,8 +428,10 @@ public class ModelOfTTH {
 
                 value1=GetObj1(H_e_list,Q_out_list,Q_Interval);
                 value2=GetObj2(H_e_list);
+                retain=Math.max(0,V-GetV(H_begin));
                 Value1.add(BigDecimal.valueOf(value1).setScale(2, RoundingMode.HALF_UP).doubleValue());
                 Value2.add(BigDecimal.valueOf(value2).setScale(2, RoundingMode.HALF_UP).doubleValue());
+                Retain_list.add(BigDecimal.valueOf(retain).setScale(2, RoundingMode.HALF_UP).doubleValue());
 
                 Result_OnePoint.add(Q_in_list);
                 Result_OnePoint.add(H_b_list);
@@ -385,6 +443,7 @@ public class ModelOfTTH {
                 Result_OnePoint.add(V_list);
                 Result_OnePoint.add(Value1);
                 Result_OnePoint.add(Value2);
+                Result_OnePoint.add(Retain_list);
 
                 option_temp.add(Result_OnePoint);
             }
@@ -434,6 +493,7 @@ public class ModelOfTTH {
             double V;
             double value1;
             double value2;
+            double retain;
 
             double[] H_Limit = H_Limit(H_b,Q_in,MinQ.get(0));
 
@@ -443,6 +503,7 @@ public class ModelOfTTH {
                 Q2 = Math.min(Q_out-Q1,GetQ2((H_b+H_e)/2));
                 Q3 = Math.min(Q_out - Q1 - Q2, GetQ3((H_b+H_e)/2));
                 V=GetV(H_e);
+
 
                 List<List<Double>> Result_OnePoint = new ArrayList<>();
                 List<Double> Q_in_list = new ArrayList<>(option.get(0));
@@ -455,6 +516,7 @@ public class ModelOfTTH {
                 List<Double> V_list= new ArrayList<>(option.get(7));
                 List<Double> Value1= new ArrayList<>();
                 List<Double> Value2= new ArrayList<>();
+                List<Double> Retain_list= new ArrayList<>(option.get(10));
                 Q_in_list.add(BigDecimal.valueOf(Q_in).setScale(2, RoundingMode.HALF_UP).doubleValue());
                 H_b_list.add(BigDecimal.valueOf(H_b).setScale(2, RoundingMode.HALF_UP).doubleValue());
                 H_e_list.add(BigDecimal.valueOf(H_e).setScale(2, RoundingMode.HALF_UP).doubleValue());
@@ -466,8 +528,10 @@ public class ModelOfTTH {
 
                 value1=GetObj1(H_e_list,Q_out_list,Q_Interval);
                 value2=GetObj2(H_e_list);
+                retain=Math.max(0,V-GetV(H_begin));
                 Value1.add(BigDecimal.valueOf(value1).setScale(2, RoundingMode.HALF_UP).doubleValue());
                 Value2.add(BigDecimal.valueOf(value2).setScale(2, RoundingMode.HALF_UP).doubleValue());
+                Retain_list.add(BigDecimal.valueOf(retain).setScale(2, RoundingMode.HALF_UP).doubleValue());
 
                 Result_OnePoint.add(Q_in_list);
                 Result_OnePoint.add(H_b_list);
@@ -479,6 +543,7 @@ public class ModelOfTTH {
                 Result_OnePoint.add(V_list);
                 Result_OnePoint.add(Value1);
                 Result_OnePoint.add(Value2);
+                Result_OnePoint.add(Retain_list);
 
                 option_temp.add(Result_OnePoint);
             }
@@ -520,6 +585,7 @@ public class ModelOfTTH {
             double V;
             double value1;
             double value2;
+            double retain;
 
             double[] H_Limit = H_Limit(H_b,Q_in,MinQ.get(0));
             List<Double> points = Discrete(H_b,H_Limit);
@@ -542,6 +608,7 @@ public class ModelOfTTH {
                 List<Double> V_list= new ArrayList<>();
                 List<Double> Value1= new ArrayList<>();
                 List<Double> Value2= new ArrayList<>();
+                List<Double> Retain_list= new ArrayList<>();
                 Q_in_list.add(BigDecimal.valueOf(Q_in).setScale(2, RoundingMode.HALF_UP).doubleValue());
                 H_b_list.add(BigDecimal.valueOf(H_b).setScale(2, RoundingMode.HALF_UP).doubleValue());
                 H_e_list.add(BigDecimal.valueOf(H_e).setScale(2, RoundingMode.HALF_UP).doubleValue());
@@ -553,9 +620,11 @@ public class ModelOfTTH {
 
                 value1=GetObj1(H_e_list,Q_out_list,Q_Interval);
                 value2=GetObj2(H_e_list);
+                retain=Math.max(0,V-GetV(H_begin));
 
                 Value1.add(BigDecimal.valueOf(value1).setScale(2, RoundingMode.HALF_UP).doubleValue());
                 Value2.add(BigDecimal.valueOf(value2).setScale(2, RoundingMode.HALF_UP).doubleValue());
+                Retain_list.add(BigDecimal.valueOf(retain).setScale(2, RoundingMode.HALF_UP).doubleValue());
 
                 Result_OnePoint.add(Q_in_list);
                 Result_OnePoint.add(H_b_list);
@@ -567,6 +636,7 @@ public class ModelOfTTH {
                 Result_OnePoint.add(V_list);
                 Result_OnePoint.add(Value1);
                 Result_OnePoint.add(Value2);
+                Result_OnePoint.add(Retain_list);
 
                 option_temp.add(Result_OnePoint);
             }
@@ -585,6 +655,7 @@ public class ModelOfTTH {
                 double V;
                 double value1;
                 double value2;
+                double retain;
 
                 double[] H_Limit = H_Limit(H_b,Q_in,MinQ.get(0));
                 List<Double> points = Discrete(H_b,H_Limit);
@@ -607,6 +678,7 @@ public class ModelOfTTH {
                     List<Double> V_list= new ArrayList<>(option1.get(7));
                     List<Double> Value1= new ArrayList<>();
                     List<Double> Value2= new ArrayList<>();
+                    List<Double> Retain_list= new ArrayList<>(option1.get(10));
                     Q_in_list.add(BigDecimal.valueOf(Q_in).setScale(2, RoundingMode.HALF_UP).doubleValue());
                     H_b_list.add(BigDecimal.valueOf(H_b).setScale(2, RoundingMode.HALF_UP).doubleValue());
                     H_e_list.add(BigDecimal.valueOf(H_e).setScale(2, RoundingMode.HALF_UP).doubleValue());
@@ -618,8 +690,10 @@ public class ModelOfTTH {
 
                     value1=GetObj1(H_e_list,Q_out_list,Q_Interval);
                     value2=GetObj2(H_e_list);
+                    retain=Math.max(0,V-GetV(H_begin));
                     Value1.add(BigDecimal.valueOf(value1).setScale(2, RoundingMode.HALF_UP).doubleValue());
                     Value2.add(BigDecimal.valueOf(value2).setScale(2, RoundingMode.HALF_UP).doubleValue());
+                    Retain_list.add(BigDecimal.valueOf(retain).setScale(2, RoundingMode.HALF_UP).doubleValue());
 
                     Result_OnePoint.add(Q_in_list);
                     Result_OnePoint.add(H_b_list);
@@ -631,6 +705,7 @@ public class ModelOfTTH {
                     Result_OnePoint.add(V_list);
                     Result_OnePoint.add(Value1);
                     Result_OnePoint.add(Value2);
+                    Result_OnePoint.add(Retain_list);
 
                     option_temp.add(Result_OnePoint);
                 }

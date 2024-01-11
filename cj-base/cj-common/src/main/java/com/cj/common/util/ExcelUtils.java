@@ -7,11 +7,16 @@ import cn.afterturn.easypoi.excel.entity.ExportParams;
 import cn.afterturn.easypoi.excel.entity.ImportParams;
 import cn.afterturn.easypoi.excel.entity.enmus.ExcelType;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.hssf.usermodel.*;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
@@ -211,7 +216,7 @@ public class ExcelUtils {
         params.setTitleRows(titleRows);
         params.setHeadRows(headerRows);
         params.setSaveUrl("/excel/");
-        params.setNeedSave(true);
+        params.setNeedSave(false);
         try {
             return ExcelImportUtil.importExcel(inputStream, pojoClass, params);
         } catch (NoSuchElementException e) {
@@ -219,5 +224,73 @@ public class ExcelUtils {
         } catch (Exception e) {
             throw new IOException(e.getMessage());
         }
+    }
+
+
+    /**
+     * 创建并将数据写入HSSFWorkbook对象
+     * @param execlName excel中表名
+     * @param data 数据List<List<Map>>
+     * @return
+     */
+    public static XSSFWorkbook createExcel(String execlName, List<List<Map>> data){
+        //创建一个文件工作簿
+        XSSFWorkbook workbook = new XSSFWorkbook();
+        //创建一张表
+        XSSFSheet sheet = workbook.createSheet(execlName);
+        //创建一行
+        XSSFRow row = sheet.createRow(0);
+
+
+        //创建填充对象
+        XSSFCell cell;
+        //解析全部数据
+        for (int i = 0 ; i < data.size() ;i ++ ) {
+            //解析每一行的数据
+            int j = 0;
+            for (Map map : data.get(i)) {
+                //设置列宽
+                if(i == 0){
+                    sheet.setColumnWidth(j,Integer.parseInt(map.get("cell").toString())/9*256);
+                }
+                //创建单元格对象
+                cell = row.createCell(j);
+                //写入数据
+                cell.setCellValue(map.get("text") == null ? "" : map.get("text").toString());
+                //设置必须字段为红色
+                String isRequired = map.get("isRequired") == null ? "0" : map.get("isRequired").toString();
+                //设置字体格式
+                XSSFCellStyle style = workbook.createCellStyle();
+                //居中
+                style.setAlignment(HorizontalAlignment.CENTER);
+                if(isRequired.equals("1")){
+                    XSSFFont font = workbook.createFont();
+                    //加粗
+                    font.setBold(true);
+                    //标红
+                    font.setColor(IndexedColors.RED.getIndex());
+                    style.setFont(font);
+                }
+                //设置单元格式
+                cell.setCellStyle(style);
+                j ++ ;
+            }
+            //创建新的行
+            row = sheet.createRow(i + 1);
+        }
+        return workbook;
+    }
+
+    /**
+     * 本地生成文件
+     * @param filename 文件路径
+     * @param workbook excel对象
+     * @throws Exception
+     */
+    public static void buildExcelFile(String filename,HSSFWorkbook workbook) throws Exception{
+        FileOutputStream fos = new FileOutputStream(filename);
+        workbook.write(fos);
+        fos.flush();
+        fos.close();
     }
 }

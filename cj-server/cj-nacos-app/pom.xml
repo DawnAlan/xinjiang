@@ -15,8 +15,8 @@
   ~ limitations under the License.
   -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.cj</groupId>
@@ -32,7 +32,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <nacos.version>2.1.2.GA</nacos.version>
     </properties>
-    
+
     <dependencies>
         <dependency>
             <groupId>vip.xiaonuo.nacos</groupId>
@@ -55,7 +55,7 @@
             <artifactId>nacos-istio</artifactId>
             <version>${nacos.version}</version>
         </dependency>
-        
+
         <!-- log -->
         <!-- log4j通过slf4j来代理 -->
         <dependency>
@@ -77,7 +77,7 @@
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
     </dependencies>
-    
+
     <build>
         <finalName>${project.artifactId}</finalName>
         <plugins>

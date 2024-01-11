@@ -123,8 +123,8 @@
 				captchaOpen: config.SYS_BASE_CONFIG.SNOWY_SYS_DEFAULT_CAPTCHA_OPEN,
 				validCodeBase64: '',
 				ruleForm: {
-					account: 'superAdmin',
-					password: '123456',
+					account: '',
+					password: '',
 					validCode: '',
 					validCodeReqNo: '',
 					autologin: false

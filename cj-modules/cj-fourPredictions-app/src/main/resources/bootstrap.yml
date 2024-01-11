@@ -1,0 +1,20 @@
+spring:
+  application:
+      name: cj-fourPredictions-app
+  profiles:
+    active: dev
+  cloud:
+    nacos:
+      config:
+        server-addr: localhost:8848
+        namespace: cj-cloud-2x-${spring.profiles.active}
+        group: ${spring.profiles.active}
+        prefix: ${spring.application.name}
+        file-extension: yaml
+        username: nacos
+        password: nacos
+artemisConfig:
+  tth:
+    host: 10.65.73.68
+    appKey: 28444121
+    appSecret: 2EbGI1Pwbz04E5DKdre9

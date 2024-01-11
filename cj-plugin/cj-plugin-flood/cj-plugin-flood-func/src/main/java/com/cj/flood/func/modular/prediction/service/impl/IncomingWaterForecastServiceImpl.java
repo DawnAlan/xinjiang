@@ -11,6 +11,7 @@ import com.cj.auth.core.util.StpLoginUserUtil;
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.ExcelUtils;
 import com.cj.common.util.UUIDUtils;
+import com.cj.flood.func.modular.prediction.bean.dto.*;
 import com.cj.flood.func.modular.prediction.bean.req.IncomingWaterForecastAddReq;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.entity.IrrigatedPlatformDataInfo;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.service.IrrigatedPlatformDataInfoService;
@@ -20,10 +21,6 @@ import com.cj.middleDatabase.func.modular.lzz.lzzRainfallStation.entity.LzzRainf
 import com.cj.middleDatabase.func.modular.lzz.lzzRainfallStation.service.LzzRainfallStationService;
 import com.cj.model.func.core.util.MinioUtils;
 import com.cj.model.func.core.util.MultipartFileUtil;
-import com.cj.flood.func.modular.prediction.bean.dto.FloodPeakDto;
-import com.cj.flood.func.modular.prediction.bean.dto.IncomingWaterForecastKVDto;
-import com.cj.flood.func.modular.prediction.bean.dto.IncomingWaterForecastViewDto;
-import com.cj.flood.func.modular.prediction.bean.dto.PredictionProcessDto;
 import com.cj.flood.func.modular.prediction.bean.req.IncomingWaterForecastListReq;
 import com.cj.flood.func.modular.prediction.bean.res.IncomingWaterForecastDetailsRes;
 import com.cj.flood.func.modular.prediction.entity.IncomingWaterForecast;
@@ -42,6 +39,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -63,8 +63,6 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
     @Autowired
     private MinioUtils minioUtils;
 
-    @Autowired
-    private IncomingWaterForecastService incomingWaterForecastService;
 
     @Autowired
     private LzzGaugingStationService lzzGaugingStationService;
@@ -75,6 +73,9 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
     @Autowired
     private IrrigatedPlatformDataInfoService irrigatedPlatformDataInfoService;
 
+    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd");
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public RestResponse add(IncomingWaterForecastAddReq req) {
@@ -83,11 +84,12 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
             IncomingWaterForecast incomingWaterForecast = req.getIncomingWaterForecast();
             incomingWaterForecast.setId(UUIDUtils.getUUID());
             incomingWaterForecast.setCreateTime(new Date());
+            //(1-月 2-旬 3-日 4-小时)
             if(incomingWaterForecast.getPeriodTimeType()==1){
                 Date predictionTime = incomingWaterForecast.getPredictionTime();
                 Calendar calendar = Calendar.getInstance();
                 calendar.setTime(predictionTime);
-                calendar.add(Calendar.DATE,incomingWaterForecast.getPeriodTimeStep()*30);
+                calendar.add(Calendar.MONTH,incomingWaterForecast.getPeriodTimeStep()*incomingWaterForecast.getPeriodTimeNum());
                 Date targetDate = calendar.getTime();
                 incomingWaterForecast.setEndTime(targetDate);
             }
@@ -95,7 +97,7 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                 Date predictionTime = incomingWaterForecast.getPredictionTime();
                 Calendar calendar = Calendar.getInstance();
                 calendar.setTime(predictionTime);
-                calendar.add(Calendar.DATE,incomingWaterForecast.getPeriodTimeStep()*10);
+                calendar.add(Calendar.DATE,incomingWaterForecast.getPeriodTimeStep()*incomingWaterForecast.getPeriodTimeNum()*10);
                 Date targetDate = calendar.getTime();
                 incomingWaterForecast.setEndTime(targetDate);
             }
@@ -103,7 +105,7 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                 Date predictionTime = incomingWaterForecast.getPredictionTime();
                 Calendar calendar = Calendar.getInstance();
                 calendar.setTime(predictionTime);
-                calendar.add(Calendar.DATE,incomingWaterForecast.getPeriodTimeStep());
+                calendar.add(Calendar.DATE,incomingWaterForecast.getPeriodTimeStep()*incomingWaterForecast.getPeriodTimeNum());
                 Date targetDate = calendar.getTime();
                 incomingWaterForecast.setEndTime(targetDate);
             }
@@ -111,7 +113,7 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                 Date predictionTime = incomingWaterForecast.getPredictionTime();
                 Calendar calendar = Calendar.getInstance();
                 calendar.setTime(predictionTime);
-                calendar.add(Calendar.HOUR,incomingWaterForecast.getPeriodTimeStep());
+                calendar.add(Calendar.HOUR,incomingWaterForecast.getPeriodTimeStep()*incomingWaterForecast.getPeriodTimeNum());
                 Date targetDate = calendar.getTime();
                 incomingWaterForecast.setEndTime(targetDate);
             }
@@ -173,11 +175,12 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                     }catch (Exception e) {
                         e.printStackTrace();
                         log.error("-------------------------------------------error-------------------------------------------");
+                        incomingWaterForecastService.lambdaUpdate().set(IncomingWaterForecast::getStatus,3).eq(IncomingWaterForecast::getId,incomingWaterForecast.getId()).update();
                     }
                 }
             });
             if(save){
-                return RestResponse.ok("生成模型结果成功");
+                return RestResponse.ok("来水预报模型生成中……");
             }else {
                 return RestResponse.no("生成模型结果失败");
             }
@@ -307,11 +310,12 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
     @Transactional(rollbackFor = Exception.class)
     public RestResponse update(IncomingWaterForecast incomingWaterForecast) {
         try {
+            //(1-月 2-旬 3-日 4-小时)
             if(incomingWaterForecast.getPeriodTimeType()==1){
                 Date predictionTime = incomingWaterForecast.getPredictionTime();
                 Calendar calendar = Calendar.getInstance();
                 calendar.setTime(predictionTime);
-                calendar.add(Calendar.DATE,incomingWaterForecast.getPeriodTimeStep()*30);
+                calendar.add(Calendar.MONTH,incomingWaterForecast.getPeriodTimeStep()*incomingWaterForecast.getPeriodTimeNum());
                 Date targetDate = calendar.getTime();
                 incomingWaterForecast.setEndTime(targetDate);
             }
@@ -319,7 +323,7 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                 Date predictionTime = incomingWaterForecast.getPredictionTime();
                 Calendar calendar = Calendar.getInstance();
                 calendar.setTime(predictionTime);
-                calendar.add(Calendar.DATE,incomingWaterForecast.getPeriodTimeStep()*10);
+                calendar.add(Calendar.DATE,incomingWaterForecast.getPeriodTimeStep()*incomingWaterForecast.getPeriodTimeNum()*10);
                 Date targetDate = calendar.getTime();
                 incomingWaterForecast.setEndTime(targetDate);
             }
@@ -327,7 +331,7 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                 Date predictionTime = incomingWaterForecast.getPredictionTime();
                 Calendar calendar = Calendar.getInstance();
                 calendar.setTime(predictionTime);
-                calendar.add(Calendar.DATE,incomingWaterForecast.getPeriodTimeStep());
+                calendar.add(Calendar.DATE,incomingWaterForecast.getPeriodTimeStep()*incomingWaterForecast.getPeriodTimeNum());
                 Date targetDate = calendar.getTime();
                 incomingWaterForecast.setEndTime(targetDate);
             }
@@ -335,7 +339,7 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                 Date predictionTime = incomingWaterForecast.getPredictionTime();
                 Calendar calendar = Calendar.getInstance();
                 calendar.setTime(predictionTime);
-                calendar.add(Calendar.HOUR,incomingWaterForecast.getPeriodTimeStep());
+                calendar.add(Calendar.HOUR,incomingWaterForecast.getPeriodTimeStep()*incomingWaterForecast.getPeriodTimeNum());
                 Date targetDate = calendar.getTime();
                 incomingWaterForecast.setEndTime(targetDate);
             }
@@ -462,6 +466,12 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                     }else {
                         view.put("楼头区间",null);
                     }
+                    IncomingWaterForecastViewDto tREntryStation = getIncomingWaterForecastViewDto(floods, "头屯河");
+                    if(null != tREntryStation){
+                        view.put("头屯河",tREntryStation);
+                    }else {
+                        view.put("头屯河",null);
+                    }
                     res.setView(view);
                     return RestResponse.ok(res);
                 }else {
@@ -475,6 +485,94 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
             e.printStackTrace();
             return RestResponse.no(e.getMessage());
         }
+    }
+
+    @Override
+    public List<IncomingWaterForecast> getPredictionListByTimeType(Integer timeType) {
+        Integer year = LocalDateTime.now().getYear();
+        Integer month = LocalDateTime.now().getMonth().getValue();
+        Integer day = LocalDateTime.now().getDayOfMonth();
+        if(timeType==1){
+            List<IncomingWaterForecast> predictionListForYear = this.baseMapper.getPredictionListForYear(year.toString());
+            return predictionListForYear;
+        }
+        if(timeType==2){
+            String monthTemp = month.toString().length()==2?month.toString():"0"+month;
+            List<IncomingWaterForecast> predictionListForMonth = this.baseMapper.getPredictionListForMonth(year + "-" + monthTemp);
+            return predictionListForMonth;
+        }
+        if(timeType==3){
+            Map<String, String> tenDaysTime = getTenDaysTime(day);
+            if(tenDaysTime!=null){
+                String monthTemp = month.toString().length()==2?month.toString():"0"+month;
+                String startTime = year + "-" + monthTemp + "-"+tenDaysTime.get("start");
+                String endTime = year + "-" + monthTemp + "-"+tenDaysTime.get("end");
+                List<IncomingWaterForecast> predictionListForTenDays = this.baseMapper.getPredictionListForTenDays(startTime, endTime);
+                return predictionListForTenDays;
+            }
+        }
+        if(timeType==4){
+            String monthTemp = month.toString().length()==2?month.toString():"0"+month;
+            String dayTemp = day.toString().length()==2?day.toString():"0"+day;
+            List<IncomingWaterForecast> predictionListForDay = this.baseMapper.getPredictionListForDay(year + "-" + monthTemp+ "-" + dayTemp);
+            return predictionListForDay;
+        }
+        return null;
+    }
+
+    @Override
+    public Map<String, Object> getPredictionListByName(String id, String reservoir) {
+        DecimalFormat decimalFormat = new DecimalFormat("#0.00");
+        try {
+            Map<String, Object> result = new HashMap<>();
+            RestResponse<IncomingWaterForecastDetailsRes> incomingWaterForecastDetailsResRestResponse = this.selectDetails(id);
+            if(incomingWaterForecastDetailsResRestResponse.getCode()==200){
+                IncomingWaterForecast incomingWaterForecast = this.getById(id);
+                IncomingWaterForecastViewDto incomingWaterForecastViewDto = incomingWaterForecastDetailsResRestResponse.getData().getView().get(reservoir);
+                List<PredictionProcessDto> predictionProcess = incomingWaterForecastViewDto.getPredictionProcess();
+                if(null!= predictionProcess && predictionProcess.size()>0){
+                    Integer year = LocalDateTime.now().getYear();
+                    Integer monthTemp = LocalDateTime.now().getMonth().getValue();
+                    String month  = monthTemp.toString().length()==2?monthTemp.toString():"0"+monthTemp;
+                    Integer day = LocalDateTime.now().getDayOfMonth();
+                    List<ForecastPredictionDto> list = new ArrayList<>();
+                    if(incomingWaterForecast.getPeriodTimeType()==2){
+                        List<PredictionProcessDto> collect = predictionProcess.stream().filter(t -> sdf1.format(t.getTime()).contains(year+"-"+month)).collect(Collectors.toList());
+                        for(PredictionProcessDto dto:collect){
+                            ForecastPredictionDto forecastPredictionDto = new ForecastPredictionDto();
+                            forecastPredictionDto.setTime(sdf.format(dto.getTime()));
+                            forecastPredictionDto.setWaterAmount(Double.parseDouble(decimalFormat.format((dto.getPreQ()*60*60*24)/10000)));
+                            list.add(forecastPredictionDto);
+                        }
+                    }else if(incomingWaterForecast.getPeriodTimeType()==3) {
+                        Map<String, String> tenDaysTime = getTenDaysTime(day);
+                        Date startTime = sdf1.parse(year + "-" + month + "-" + tenDaysTime.get("start"));
+                        Date endTime = sdf1.parse(year + "-" + month + "-" + tenDaysTime.get("end"));
+                        List<PredictionProcessDto> collect = predictionProcess.stream().filter(t -> (t.getTime().compareTo(startTime) > 0 && t.getTime().compareTo(endTime) < 0)|| t.getTime().compareTo(endTime) == 0).collect(Collectors.toList());
+                        for(PredictionProcessDto dto:collect){
+                            ForecastPredictionDto forecastPredictionDto = new ForecastPredictionDto();
+                            forecastPredictionDto.setTime(sdf.format(dto.getTime()));
+                            forecastPredictionDto.setWaterAmount(Double.parseDouble(decimalFormat.format((dto.getPreQ()*60*60*24)/10000)));
+                            list.add(forecastPredictionDto);
+                        }
+                    }else {
+                        for(PredictionProcessDto dto:predictionProcess){
+                            ForecastPredictionDto forecastPredictionDto = new ForecastPredictionDto();
+                            forecastPredictionDto.setTime(sdf.format(dto.getTime()));
+                            forecastPredictionDto.setWaterAmount(Double.parseDouble(decimalFormat.format((dto.getPreQ()*60*60*24)/10000)));
+                            list.add(forecastPredictionDto);
+                        }
+                    }
+                    Double aDouble = list.stream().map(ForecastPredictionDto::getWaterAmount).reduce(Double::sum).orElse(0.00);
+                    result.put("list", list);
+                    result.put("amount", decimalFormat.format(aDouble));
+                    return result;
+                }
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public IncomingWaterForecastViewDto getIncomingWaterForecastViewDto(List<Flood> floods,String station){
@@ -502,6 +600,7 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                 PredictionProcessDto predictionProcessDto = new PredictionProcessDto();
                 predictionProcessDto.setPreQ(flood.getPreQ());
                 predictionProcessDto.setTime(flood.getTime());
+                predictionProcessDto.setWaterLevel(flood.getWaterLevel());
                 predictionProcess.add(predictionProcessDto);
             }
             incomingWaterForecastViewDto.setPredictionProcess(predictionProcess);
@@ -532,10 +631,51 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                 }
             }
             incomingWaterForecastViewDto.setQComposition(qComposition);
+            List<Flood> collect = threeBridge.stream().filter(f -> f.getPeakIndex() == 1).collect(Collectors.toList());
+            if(null != collect && collect.size() > 0){
+                Flood flood1 = collect.get(0);
+                incomingWaterForecastViewDto.setPeakFlood(flood1.getPeakFlood());
+                incomingWaterForecastViewDto.setPeakVolume(flood1.getFloodVolume());
+            }else {
+                incomingWaterForecastViewDto.setPeakFlood(null);
+                incomingWaterForecastViewDto.setPeakVolume(null);
+            }
             return incomingWaterForecastViewDto;
         }else {
             return null;
         }
+    }
+
+    public Map<String,String> getTenDaysTime(Integer day){
+        Map<String,String> result = new HashMap<>();
+        if(day<=10){
+            result.put("start","01");
+            result.put("end","10");
+            return result;
+        }
+        if(day<=20){
+            result.put("start","11");
+            result.put("end","20");
+            return result;
+        }
+        if(day>20){
+            // 获取当前月份
+            Calendar calendar = Calendar.getInstance();
+            int year = calendar.get(Calendar.YEAR);
+            int month = calendar.get(Calendar.MONTH) + 1;
+            // 获取当前月份的天数
+            Integer daysInMonth = getDaysInMonth(year, month);
+            result.put("start","21");
+            result.put("end",daysInMonth.toString());
+            return result;
+        }
+        return null;
+    }
+    public static int getDaysInMonth(int year, int month) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(year, month - 1, 1); // 将日期设置为当前月份的第一天
+        int daysInMonth = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+        return daysInMonth;
     }
 }
 

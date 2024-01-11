@@ -34,14 +34,6 @@ import java.util.stream.Collectors;
 @Service("useWaterManagementService")
 public class UseWaterManagementServiceImpl extends ServiceImpl<UseWaterManagementMapper, UseWaterManagement> implements UseWaterManagementService {
 
-    @Autowired
-    private YearWaterUsePlanTrunkCanalService yearWaterUsePlanTrunkCanalService;
-
-    @Autowired
-    private MonthWaterUsePlanService monthWaterUsePlanService;
-
-    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-
     @Override
     public RestResponse insert(UseWaterManagementAddReq req) {
         try {
@@ -63,45 +55,6 @@ public class UseWaterManagementServiceImpl extends ServiceImpl<UseWaterManagemen
             useWaterManagement.setCreateTime(new Date());
             boolean save = this.save(useWaterManagement);
             if(save){
-                /*if(req.getUseWaterPlan().contains("年")){
-                    YearWaterUsePlanTrunkCanal yearWaterUsePlanTrunkCanal = new YearWaterUsePlanTrunkCanal();
-                    yearWaterUsePlanTrunkCanal.setId(UUIDUtils.getUUID());
-                    yearWaterUsePlanTrunkCanal.setUnitId(useWaterManagement.getId());
-                    yearWaterUsePlanTrunkCanal.setDel(0);
-                    yearWaterUsePlanTrunkCanal.setCreateTime(new Date());
-                    yearWaterUsePlanTrunkCanal.setArea(req.getArea());
-                    yearWaterUsePlanTrunkCanal.setUnit(req.getUnitName());
-                    yearWaterUsePlanTrunkCanal.setUseWaterPlan(req.getUseWaterPlan());
-                    String a = sdf.format(yearWaterUsePlanTrunkCanal.getCreateTime()).split("-")[0];
-                    yearWaterUsePlanTrunkCanal.setYear(Integer.valueOf(a));
-                    boolean save1 = yearWaterUsePlanTrunkCanalService.save(yearWaterUsePlanTrunkCanal);
-                    if(save1){
-                        return RestResponse.ok("添加成功");
-                    }else {
-                        TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-                        return RestResponse.no("添加失败");
-                    }
-                }
-                if(req.getUseWaterPlan().contains("月")){
-                    MonthWaterUsePlan monthWaterUsePlan = new MonthWaterUsePlan();
-                    monthWaterUsePlan.setId(UUIDUtils.getUUID());
-                    monthWaterUsePlan.setUnitId(useWaterManagement.getId());
-                    monthWaterUsePlan.setDel(0);
-                    monthWaterUsePlan.setCreateTime(new Date());
-                    monthWaterUsePlan.setArea(req.getArea());
-                    monthWaterUsePlan.setUnit(req.getUnitName());
-                    String month = sdf.format(monthWaterUsePlan.getCreateTime()).split("-")[1];
-                    String year = sdf.format(monthWaterUsePlan.getCreateTime()).split("-")[0];
-                    monthWaterUsePlan.setMonth(Integer.valueOf(month));
-                    monthWaterUsePlan.setYear(Integer.valueOf(year));
-                    boolean save1 = monthWaterUsePlanService.save(monthWaterUsePlan);
-                    if(save1){
-                        return RestResponse.ok("添加成功");
-                    }else {
-                        TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-                        return RestResponse.no("添加失败");
-                    }
-                }*/
                 return RestResponse.ok("添加成功");
             }else {
                 TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
@@ -119,24 +72,6 @@ public class UseWaterManagementServiceImpl extends ServiceImpl<UseWaterManagemen
     public RestResponse delete(String id,String useWaterPlan) {
         boolean update = this.lambdaUpdate().set(UseWaterManagement::getDel, 1).eq(UseWaterManagement::getId, id).update();
         if(update){
-            String month = sdf.format(new Date()).split("-")[1];
-            String year = sdf.format(new Date()).split("-")[0];
-            if(useWaterPlan.contains("年")){
-                boolean update1 = yearWaterUsePlanTrunkCanalService.lambdaUpdate().set(YearWaterUsePlanTrunkCanal::getDel, 1).eq(YearWaterUsePlanTrunkCanal::getYear,year).eq(YearWaterUsePlanTrunkCanal::getUnitId, id).update();
-                if(update1){
-                    return RestResponse.ok("删除成功");
-                }else {
-                    return RestResponse.no("删除失败");
-                }
-            }
-            if(useWaterPlan.contains("月")){
-                boolean update1 = monthWaterUsePlanService.lambdaUpdate().set(MonthWaterUsePlan::getDel, 1).eq(MonthWaterUsePlan::getYear,year).eq(MonthWaterUsePlan::getMonth,month).eq(MonthWaterUsePlan::getUnitId, id).update();
-                if(update1){
-                    return RestResponse.ok("删除成功");
-                }else {
-                    return RestResponse.no("删除失败");
-                }
-            }
             return RestResponse.ok("删除成功");
         }else {
             return RestResponse.no("删除失败");

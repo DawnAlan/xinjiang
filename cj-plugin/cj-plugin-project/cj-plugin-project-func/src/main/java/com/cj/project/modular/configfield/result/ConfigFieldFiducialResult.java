@@ -1,6 +1,6 @@
 package com.cj.project.modular.configfield.result;
 
-import com.cj.project.modular.configfield.entity.ConfigFieldFiducial;
+import com.cj.project.api.configfield.entity.ConfigFieldFiducial;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;

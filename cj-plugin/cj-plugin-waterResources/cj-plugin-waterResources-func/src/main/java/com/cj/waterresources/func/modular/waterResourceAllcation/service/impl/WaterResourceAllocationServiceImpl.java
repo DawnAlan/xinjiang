@@ -9,11 +9,16 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.cj.common.exception.CommonException;
 import com.cj.common.model.RestResponse;
 import com.cj.common.pojo.CommonResult;
 import com.cj.common.util.ExcelUtils;
 import com.cj.common.util.UUIDUtils;
 import com.cj.flood.api.PredictionApi;
+import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.entity.IrrigatedPlatformDataInfo;
+import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.service.IrrigatedPlatformDataInfoService;
+import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.entity.LzzGaugingStation;
+import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.service.LzzGaugingStationService;
 import com.cj.model.func.core.util.MinioUtils;
 import com.cj.model.func.core.util.MultipartFileUtil;
 import com.cj.model.func.modular.curve.service.CurveService;
@@ -34,11 +39,11 @@ import com.cj.waterresources.func.modular.useWaterPlanEscalation.tenDaysWaterUse
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.entity.YearWaterUsePlanTrunkCanal;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.service.YearWaterUsePlanTrunkCanalService;
 import com.cj.waterresources.func.modular.waterResourceAllcation.bean.dto.IncomingWaterForecastDto;
+import com.cj.waterresources.func.modular.waterResourceAllcation.bean.dto.WaterDistributionDto;
 import com.cj.waterresources.func.modular.waterResourceAllcation.bean.req.ViewModelReq;
 import com.cj.waterresources.func.modular.waterResourceAllcation.bean.req.WaterResourceAllocationAddReq;
 import com.cj.waterresources.func.modular.waterResourceAllcation.bean.req.WaterResourceAllocationQueryReq;
-import com.cj.waterresources.func.modular.waterResourceAllcation.bean.res.ViewModelRes;
-import com.cj.waterresources.func.modular.waterResourceAllcation.bean.res.WaterAllocationComparisonSelectionRes;
+import com.cj.waterresources.func.modular.waterResourceAllcation.bean.res.*;
 import com.cj.waterresources.func.modular.waterResourceAllcation.entity.AllocationDisplayData;
 import com.cj.waterresources.func.modular.waterResourceAllcation.entity.IncomingWaterForecast;
 import com.cj.waterresources.func.modular.waterResourceAllcation.mapper.WaterResourceAllocationMapper;
@@ -55,6 +60,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -76,6 +82,8 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
     private final MonthWaterUsePlanService monthWaterUsePlanService;
     private final TenDayWaterUsePlanService tenDayWaterUsePlanService;
     private final DayWaterUsePlanService dayWaterUsePlanService;
+    private final LzzGaugingStationService lzzGaugingStationService;
+    private final IrrigatedPlatformDataInfoService irrigatedPlatformDataInfoService;
 
     @Override
     public RestResponse<List<IncomingWaterForecastDto>> getIncomingWaterForecastListByTime(String startTime, String endTime, Integer bucketType) {
@@ -296,6 +304,286 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
         return RestResponse.ok(waterResourceAllocation);
     }
 
+    @Override
+    @SneakyThrows
+    public RestResponse getWaterResourceAllocationDetails(String id) {
+        Map<String,Object> result =new HashMap<>();
+        WaterResourceAllocation waterResourceAllocation = this.getById(id);
+        String customAddress = waterResourceAllocation.getAllocationDataCustomAddress();
+        String displayAddress = waterResourceAllocation.getAllocationDataDisplayAddress();
+        //业务
+        InputStream customAddressInputStream = minioUtils.getObject("tth", customAddress);
+        String[] customAddressSplit = customAddress.split("/");
+        String[] customAddressSplit1 = customAddressSplit[customAddressSplit.length - 1].split("\\.");
+        MultipartFile customAddressFile = MultipartFileUtil.inputStreamToMultipartFile(customAddressInputStream, customAddressSplit1[0]);
+        List<WaterDistributionDto> waterDistributionList = ExcelUtils.importExcel(customAddressFile, WaterDistributionDto.class);
+        //配水详情
+        Map<String,Object> waterDistributionDetails = new HashMap<>();
+        Map<String, List<WaterDistributionDto>> collect1 = waterDistributionList.stream().collect(Collectors.groupingBy(WaterDistributionDto::getStationType));
+        Set<String> strings1 = collect1.keySet();
+        for(String s:strings1){
+            List<WaterDistributionDto> waterDistributionDtos = collect1.get(s);
+            Map<String, List<WaterDistributionDto>> collect = waterDistributionDtos.stream().collect(Collectors.groupingBy(WaterDistributionDto::getStationName));
+            Set<String> strings = collect.keySet();
+            Map<String,Object> waterDistributionDetailsTemp = new HashMap<>();
+            for(String s1:strings){
+                Double aDouble = collect.get(s1).stream().map(WaterDistributionDto::getWater).reduce(Double::sum).orElse(0.00);
+                waterDistributionDetailsTemp.put(s1,aDouble);
+            }
+            waterDistributionDetails.put(s,waterDistributionDetailsTemp);
+        }
+        //四预
+        InputStream displayAddressInputStream = minioUtils.getObject("tth", displayAddress);
+        String[] displayAddressSplit = displayAddress.split("/");
+        String[] displayAddressSplit1 = displayAddressSplit[displayAddressSplit.length - 1].split("\\.");
+        MultipartFile displayAddressFile = MultipartFileUtil.inputStreamToMultipartFile(displayAddressInputStream, displayAddressSplit1[0]);
+        List<AllocationDisplayData> displayDataList = ExcelUtils.importExcel(displayAddressFile, AllocationDisplayData.class);
+        //水库水情
+        Map<String,Object> regimen = new HashMap<>();
+        //供水平衡
+        Map<String,Object> waterSupplyBalance = new HashMap<>();
+        //用水分布
+        Map<String,Object> waterDistribution= new HashMap<>();
+        //生态
+        Double a = displayDataList.stream().map(AllocationDisplayData::getEcologyProportion).reduce(Double::sum).orElse(0.00);
+        //生活
+        Double b = displayDataList.stream().map(AllocationDisplayData::getCityProportion).reduce(Double::sum).orElse(0.00);
+        //工业
+        Double c = displayDataList.stream().map(AllocationDisplayData::getIndustryProportion).reduce(Double::sum).orElse(0.00);
+        //农业
+        Double d = displayDataList.stream().map(AllocationDisplayData::getIrrigateProportion).reduce(Double::sum).orElse(0.00);
+        //绿化
+        Double e = displayDataList.stream().map(AllocationDisplayData::getGreeningProportion).reduce(Double::sum).orElse(0.00);
+        waterDistribution.put("生态用水",a);
+        waterDistribution.put("生活用水",b);
+        waterDistribution.put("工业用水",c);
+        waterDistribution.put("农业用水",d);
+        waterDistribution.put("绿化用水",e);
+        Map<String, List<AllocationDisplayData>> collect = displayDataList.stream().collect(Collectors.groupingBy(AllocationDisplayData::getStationName));
+        Set<String> strings = collect.keySet();
+        for(String s:strings){
+            List<AllocationDisplayData> displayDataList1 = collect.get(s);
+            List<RegimenViewRes> regimenViewResList = new ArrayList<>();
+            List<WaterSupplyBalanceRes> waterSupplyBalanceResList = new ArrayList<>();
+            for(AllocationDisplayData data:displayDataList1){
+                RegimenViewRes regimenViewRes = new RegimenViewRes();
+                WaterSupplyBalanceRes waterSupplyBalanceRes = new WaterSupplyBalanceRes();
+                regimenViewRes.setStationName(data.getStationName());
+                regimenViewRes.setTime(data.getTime());
+                regimenViewRes.setCapacity(data.getCapacity());
+                regimenViewRes.setLevel(data.getLevelEnd());
+                regimenViewRes.setInflow(data.getInflow());
+                regimenViewRes.setOutflow(data.getOutflow());
+                regimenViewResList.add(regimenViewRes);
+                waterSupplyBalanceRes.setWaterDemand(data.getWaterDemand());
+                waterSupplyBalanceRes.setWaterSupply(data.getWaterSupply());
+                waterSupplyBalanceResList.add(waterSupplyBalanceRes);
+            }
+            regimen.put(s,regimenViewResList);
+            waterSupplyBalance.put(s,waterSupplyBalanceResList);
+        }
+        result.put("水库水情",regimen);
+        result.put("供水平衡",waterSupplyBalance);
+        result.put("用水分布",waterDistribution);
+        result.put("配水详情",waterDistributionDetails);
+        return RestResponse.ok(result);
+    }
+
+    @Override
+    @SneakyThrows
+    public RestResponse contrast(String idA, String idB) {
+        Map<String,Object> result = new HashMap<>();
+        SimpleDateFormat sdf =new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        WaterResourceAllocation schemeA = this.getById(idA);
+        String schemeAAddress = schemeA.getAllocationDataDisplayAddress();
+        InputStream schemeAAddressInputStream = minioUtils.getObject("tth", schemeAAddress);
+        String[] schemeAAddressSplit = schemeAAddress.split("/");
+        String[] schemeAAddressSplit1 = schemeAAddressSplit[schemeAAddressSplit.length - 1].split("\\.");
+        MultipartFile schemeAAddressFile = MultipartFileUtil.inputStreamToMultipartFile(schemeAAddressInputStream, schemeAAddressSplit1[0]);
+        List<AllocationDisplayData> schemeADataList = ExcelUtils.importExcel(schemeAAddressFile, AllocationDisplayData.class);
+        List<AllocationDisplayData> schemeALzz = schemeADataList.stream().filter(t -> t.getStationName().equals("楼庄子")).collect(Collectors.toList());
+        List<AllocationDisplayData> schemeATth = schemeADataList.stream().filter(t -> t.getStationName().equals("头屯河")).collect(Collectors.toList());
+        WaterResourceAllocation schemeB = this.getById(idB);
+        String schemeBAddress = schemeB.getAllocationDataDisplayAddress();
+        InputStream schemeBAddressInputStream = minioUtils.getObject("tth", schemeBAddress);
+        String[] schemeBAddressSplit = schemeBAddress.split("/");
+        String[] schemeBAddressSplit1 = schemeBAddressSplit[schemeBAddressSplit.length - 1].split("\\.");
+        MultipartFile schemeBAddressFile = MultipartFileUtil.inputStreamToMultipartFile(schemeBAddressInputStream, schemeBAddressSplit1[0]);
+        List<AllocationDisplayData> schemeBDataList = ExcelUtils.importExcel(schemeBAddressFile, AllocationDisplayData.class);
+        List<AllocationDisplayData> schemeBLzz = schemeBDataList.stream().filter(t -> t.getStationName().equals("楼庄子")).collect(Collectors.toList());
+        List<AllocationDisplayData> schemeBTth = schemeBDataList.stream().filter(t -> t.getStationName().equals("头屯河")).collect(Collectors.toList());
+        //水库供蓄对比
+        Map<String,Object> contrast = new HashMap<>();
+        //楼庄子
+        Map<String,Object> lzzResult = new HashMap<>();
+        //头屯河
+        Map<String,Object> tthResult = new HashMap<>();
+        //lzz供水量
+        List<ContrastRes> lzzWaterSupply = new ArrayList<>();
+        List<ContrastRes> lzzWaterBalance = new ArrayList<>();
+        schemeALzz.forEach(t->{
+            ContrastRes contrastRes = new ContrastRes();
+            ContrastRes waterBalanceRes = new ContrastRes();
+            contrastRes.setA(t.getWaterSupply());
+            contrastRes.setDate(sdf.format(t.getTime()));
+            waterBalanceRes.setA(t.getWaterBalance());
+            waterBalanceRes.setDate(sdf.format(t.getTime()));
+            for(AllocationDisplayData data:schemeBLzz){
+                if(data.getTime().compareTo(t.getTime())==0){
+                    contrastRes.setB(data.getWaterSupply());
+                    waterBalanceRes.setB(data.getWaterBalance());
+                }
+            }
+            lzzWaterSupply.add(contrastRes);
+            lzzWaterBalance.add(waterBalanceRes);
+        });
+        //lzz蓄水量
+        List<ContrastRes> lzzDeltawater = new ArrayList<>();
+        schemeALzz.forEach(t->{
+            ContrastRes contrastRes = new ContrastRes();
+            contrastRes.setA(t.getDeltaWater());
+            contrastRes.setDate(sdf.format(t.getTime()));
+            for(AllocationDisplayData data:schemeBLzz){
+                if(data.getTime().compareTo(t.getTime())==0){
+                    contrastRes.setB(data.getDeltaWater());
+                }
+            }
+            lzzDeltawater.add(contrastRes);
+        });
+        lzzResult.put("供水量",lzzWaterSupply);
+        lzzResult.put("蓄水量",lzzDeltawater);
+
+        //tth供水量
+        List<ContrastRes> tthWaterSupply = new ArrayList<>();
+        List<ContrastRes> tthWaterBalance = new ArrayList<>();
+        schemeATth.forEach(t->{
+            ContrastRes contrastRes = new ContrastRes();
+            ContrastRes waterBalanceRes = new ContrastRes();
+            contrastRes.setA(t.getWaterSupply());
+            contrastRes.setDate(sdf.format(t.getTime()));
+            waterBalanceRes.setA(t.getWaterBalance());
+            waterBalanceRes.setDate(sdf.format(t.getTime()));
+            for(AllocationDisplayData data:schemeBTth){
+                if(data.getTime().compareTo(t.getTime())==0){
+                    contrastRes.setB(data.getWaterSupply());
+                    waterBalanceRes.setB(data.getWaterBalance());
+                }
+            }
+            tthWaterSupply.add(contrastRes);
+            tthWaterBalance.add(waterBalanceRes);
+        });
+        //tth蓄水量
+        List<ContrastRes> tthDeltawater = new ArrayList<>();
+        schemeATth.forEach(t->{
+            ContrastRes contrastRes = new ContrastRes();
+            contrastRes.setA(t.getDeltaWater());
+            contrastRes.setDate(sdf.format(t.getTime()));
+            for(AllocationDisplayData data:schemeBTth){
+                if(data.getTime().compareTo(t.getTime())==0){
+                    contrastRes.setB(data.getDeltaWater());
+                }
+            }
+            tthDeltawater.add(contrastRes);
+        });
+        tthResult.put("供水量",tthWaterSupply);
+        tthResult.put("蓄水量",tthDeltawater);
+
+        contrast.put("头屯河",tthResult);
+        contrast.put("楼庄子",lzzResult);
+        //水量平衡
+        Map<String,Object> waterBalance = new HashMap<>();
+        waterBalance.put("头屯河",tthWaterBalance);
+        waterBalance.put("楼庄子",lzzWaterBalance);
+        result.put("水库供蓄对比",contrast);
+        result.put("水量平衡",waterBalance);
+        RestResponse<WaterAllocationComparisonSelectionRes> compare = compare(idA, idB);
+        if(compare.getCode()==200){
+            String appraise = compare.getData().getAppraise();
+            result.put("方案优选",appraise);
+        }else {
+            result.put("方案优选",null);
+        }
+        return RestResponse.ok(result);
+    }
+
+    @Override
+    @SneakyThrows
+    public RestResponse waterQuantityCalculation(String id) {
+        Map<String,Object> result = new HashMap<>();
+        SimpleDateFormat sdf =new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        WaterResourceAllocation resourceAllocation = this.getById(id);
+        String dataDisplayAddress = resourceAllocation.getAllocationDataDisplayAddress();
+        InputStream displayAddressInputStream = minioUtils.getObject("tth", dataDisplayAddress);
+        String[] displayAddressSplit = dataDisplayAddress.split("/");
+        String[] displayAddressSplit1 = displayAddressSplit[displayAddressSplit.length - 1].split("\\.");
+        MultipartFile displayAddressFile = MultipartFileUtil.inputStreamToMultipartFile(displayAddressInputStream, displayAddressSplit1[0]);
+        List<AllocationDisplayData> displayDataList = ExcelUtils.importExcel(displayAddressFile, AllocationDisplayData.class);
+        if(null != displayDataList && displayDataList.size()>0){
+            Map<String, List<AllocationDisplayData>> collect = displayDataList.stream().collect(Collectors.groupingBy(AllocationDisplayData::getStationName));
+            Set<String> strings = collect.keySet();
+            for(String s:strings){
+                List<WaterQuantityCalculationRes> resList = new ArrayList<>();
+                List<AllocationDisplayData> displayDataList1 = collect.get(s);
+                for(AllocationDisplayData data:displayDataList1){
+                    WaterQuantityCalculationRes res = new WaterQuantityCalculationRes();
+                    BeanUtils.copyProperties(data,res);
+                    res.setTime(sdf.format(data.getTime()));
+                    resList.add(res);
+                }
+                result.put(s,resList);
+            }
+        }
+        return RestResponse.ok(result);
+    }
+
+    @Override
+    public RestResponse getRealTimeReservoirLevel(String reservoir) {
+        SimpleDateFormat sdf =new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        // 创建 Calendar 对象
+        Calendar calendar = Calendar.getInstance();
+        // 将日期设置为当前时间
+        calendar.setTimeInMillis(System.currentTimeMillis());
+        // 在当前时间上减去 24 小时（1天）
+        calendar.add(Calendar.HOUR_OF_DAY, -24);
+        Date startTime = calendar.getTime();
+        Date endTime = new Date();
+        if(reservoir.equals("楼庄子")){
+            List<LzzGaugingStation> list = lzzGaugingStationService.lambdaQuery().eq(LzzGaugingStation::getStationName,"楼庄子库水位站").
+                    between(LzzGaugingStation::getGatherTime, startTime, endTime).list();
+            if(null != list && list.size()>0){
+                List<RealTimeReservoirLevelRes> resList = new ArrayList<>();
+                for(LzzGaugingStation station:list){
+                    RealTimeReservoirLevelRes res = new RealTimeReservoirLevelRes();
+                    res.setDate(sdf.format(station.getGatherTime()));
+                    res.setWaterLevel(station.getRelativeWaterLevel());
+                    res.setCapacity(station.getStorageCapacity());
+                    resList.add(res);
+                }
+                return RestResponse.ok(resList);
+            }else {
+                return RestResponse.no("no data");
+            }
+        }
+        if(reservoir.equals("头屯河")){
+            List<IrrigatedPlatformDataInfo> list = irrigatedPlatformDataInfoService.lambdaQuery().eq(IrrigatedPlatformDataInfo::getMonitorName, "头屯河水库水位").
+                    between(IrrigatedPlatformDataInfo::getMonitorTime, startTime, endTime).list();
+            if(null != list && list.size()>0){
+                List<RealTimeReservoirLevelRes> resList = new ArrayList<>();
+                for(IrrigatedPlatformDataInfo dataInfo:list){
+                    RealTimeReservoirLevelRes res = new RealTimeReservoirLevelRes();
+                    res.setDate(dataInfo.getMonitorTime());
+                    res.setWaterLevel(dataInfo.getSqWaterLevel());
+                    res.setCapacity(dataInfo.getSqCapacity());
+                    resList.add(res);
+                }
+                return RestResponse.ok(resList);
+            }else {
+                return RestResponse.no("no data");
+            }
+        }
+        return null;
+    }
+
     private WaterResourceAllocation doAllocation(WaterResourceAllocation allocation, Date dateTime) {
         WaterTransferReq waterTransferReq = new WaterTransferReq();
         List<Flood> floods = getListFromMinio(allocation.getInflowDataAddress(), Flood.class);
@@ -324,7 +612,7 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
         try {
             calculator = OutResult.calculator(waterTransferReq);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new CommonException(e.getMessage());
         }
         String displayDataPath = calculator.stream().filter(n -> n.getName().equals("表1")).findFirst().get().getPath();
         String displayDataPathMinio = DateUtil.format(dateTime, "yyyyMMdd/HH/mm/ss/") + displayDataPath.substring(displayDataPath.lastIndexOf(File.separator) + 1);
@@ -404,6 +692,7 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
 
     private AppraiseReq getCompareAppraise(WaterResourceAllocation waterResourceAllocation) {
         AppraiseReq appraiseReq = new AppraiseReq();
+        appraiseReq.setName(waterResourceAllocation.getSchemeName());
         appraiseReq.setPeriod(waterResourceAllocation.getBucketType().toString());
         appraiseReq.setId(waterResourceAllocation.getWaterDistributionType());
         appraiseReq.setStartTime(waterResourceAllocation.getWaterDistributionStartTime());
@@ -490,6 +779,9 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
         List<Map<String, Object>> maps = tenDayWaterUsePlanService.getBaseMapper().selectMaps(lqw);
         for (int i = 0; i < maps.size(); i++) {
             Map<String, Object> tenDays = maps.get(i);
+            if (tenDays == null || tenDays.get("DEMAND") == null) {
+                throw new CommonException("旬需水计划数据异常");
+            }
             Waterdemand waterdemand = new Waterdemand();
             waterdemand.setUseWaterPlan("tenDays");
             waterdemand.setWaterDemendData(((BigDecimal) tenDays.get("DEMAND")).doubleValue());

@@ -42,5 +42,15 @@ public class LzzGaugingStationServiceImpl extends ServiceImpl<LzzGaugingStationM
     public LzzGaugingStation selectInfoByNameAndTime(String time, String name) {
         return this.baseMapper.selectInfoByNameAndTime(time,name);
     }
+
+    @Override
+    public LzzGaugingStation selectInfoByTime(String time,String name) {
+        return this.baseMapper.selectInfoByTime(time,name);
+    }
+
+    @Override
+    public List<LzzGaugingStation> selectHistoryList(String name, String startTime, String endTime) {
+        return this.baseMapper.selectHistoryList(name,startTime,endTime);
+    }
 }
 

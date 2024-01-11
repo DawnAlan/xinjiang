@@ -1,7 +1,6 @@
 package com.cj.project.modular.treemodel.service;
 
 import cn.hutool.core.lang.tree.Tree;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.cj.project.modular.treemodel.entity.TreeModel;
 import com.cj.project.modular.treemodel.param.*;
@@ -30,7 +29,7 @@ public interface TreeModelService extends IService<TreeModel> {
      * @author Lb
      * @date  2023/09/14 16:41
      */
-    void add(TreeModelAddParam treeModelAddParam);
+    void add(TreeModelDto treeModelAddParam);
 
     /**
      * 绑定测点到测点树节点
@@ -44,7 +43,7 @@ public interface TreeModelService extends IService<TreeModel> {
      * @author Lb
      * @date  2023/09/14 16:41
      */
-    void edit(TreeModelEditParam treeModelEditParam);
+    void edit(TreeModelDto treeModelEditParam);
 
     /**
      * 删除测点树节点
@@ -52,7 +51,7 @@ public interface TreeModelService extends IService<TreeModel> {
      * @author Lb
      * @date  2023/09/14 16:41
      */
-    void delete(List<TreeModelIdParam> treeModelIdParamList);
+    void delete(List<TreeModelTreeParam> treeModelIdParamList);
 
     /**
      * 删除绑定的节点
@@ -67,7 +66,7 @@ public interface TreeModelService extends IService<TreeModel> {
      * @author Lb
      * @date  2023/09/14 16:41
      */
-    TreeModel detail(TreeModelIdParam treeModelIdParam);
+    TreeModel detail(TreeModelTreeParam treeModelIdParam);
 
     /**
      * 获取测点树详情

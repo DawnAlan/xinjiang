@@ -83,7 +83,7 @@ public class PhysicalForcast {
             peakFloodXlsx[i][2]=floodIndex[i* param.getPeriodStepSize()][0];//洪号
             peakFloodXlsx[i][3]=predict[i * param.getPeriodStepSize()][0];//时间
             peakFloodXlsx[i][4]=Math.round((double) predict[i * param.getPeriodStepSize()][1] * 100.0) / 100.0;//预报流量
-            double[] waterLevel=getWaterLevel(predict);
+            double[] waterLevel=getWaterLevel(predict,param);
             peakFloodXlsx[i][5]=waterLevel[i * param.getPeriodStepSize()];//相应水位
             Object[][] floodNature = floodInformation.get(1);
             peakFloodXlsx[i][6]=floodNature[2][1];//洪峰
@@ -367,12 +367,19 @@ public class PhysicalForcast {
      * @param predict 预报流量
      * @return 相应水位
      */
-    public  static double[] getWaterLevel(Object[][] predict){
+    public  static double[] getWaterLevel(Object[][] predict,ForcastInputParam param){
         //水位流量关系
         double[] waterLevel=new double[predict.length];
-        for (int i = 0; i < predict.length; i++) {
-            waterLevel[i]=(double) predict[i][1]*0.1+900;//这里用水位流量曲线
+        if (param.getLocation().equals("楼头区间")){
+            for (int i = 0; i < predict.length; i++) {
+                waterLevel[i]=(double) predict[i][1]*0.01+1000;//这里用水位流量曲线
+            }
+        }else {
+            for (int i = 0; i < predict.length; i++) {
+                waterLevel[i]=(double) predict[i][1]*0.01+1394.5;//这里用水位流量曲线
+            }
         }
+
         return waterLevel;
     }
 
@@ -651,7 +658,7 @@ public class PhysicalForcast {
         Object[][] result= new Object[shanBeiQ.length-10][2];
         //减去汇流滞时
         Date currentDate = param.getPreStartTime();
-        Date[][] dates = TimeUtils.getSelectDateList(currentDate, shanBeiQ.length-10, 0, 1);
+        Date[][] dates = TimeUtils.getDateList(currentDate, shanBeiQ.length-10, 0, 1);
        //shanBeiq为实际预报的值
         double[] shanBeiq = new double[shanBeiQ.length-10];
         for (int i = L; i < shanBeiQ.length-10+L; i++) {

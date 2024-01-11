@@ -66,6 +66,17 @@ public class Option {
      */
     @Excel(name = "v",width = 15,orderNum = "11")
     private double v;
-
+    /**
+     * 拦蓄洪量
+     */
+    private double retain;
+    /**
+     * 防洪库容
+     */
+    private double percentage1;
+    /**
+     * 调洪库容
+     */
+    private double percentage2;
 
 }

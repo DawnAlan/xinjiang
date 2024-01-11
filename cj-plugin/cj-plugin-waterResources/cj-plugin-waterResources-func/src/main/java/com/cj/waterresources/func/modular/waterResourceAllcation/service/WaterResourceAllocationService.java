@@ -33,5 +33,13 @@ public interface WaterResourceAllocationService extends IService<WaterResourceAl
     RestResponse<List<ViewModelRes>> viewModel(ViewModelReq id);
 
     RestResponse updateAllocation(WaterResourceAllocation waterResourceAllocation);
+
+    RestResponse getWaterResourceAllocationDetails(String id);
+
+    RestResponse contrast(String idA,String idB);
+
+    RestResponse waterQuantityCalculation(String id);
+
+    RestResponse getRealTimeReservoirLevel(String reservoir);
 }
 

@@ -1,6 +1,7 @@
 package com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.cj.middleDatabase.func.modular.dto.RealTimeRainfallRes;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.bean.res.SelectInfoByIrrigationNameListRes;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.entity.IrrigatedPlatformDataInfo;
 import org.apache.ibatis.annotations.Param;
@@ -36,5 +37,14 @@ public interface IrrigatedPlatformDataInfoMapper extends BaseMapper<IrrigatedPla
 
     @Select("SELECT * FROM IRRIGATED_PLATFORM_DATA_INFO WHERE MONITOR_NAME = #{name} AND TO_CHAR(MONITOR_TIME,'YYYY-MM-DD') = #{time} order by MONITOR_TIME DESC")
     List<IrrigatedPlatformDataInfo> selectOneByCondition2(@Param("name") String name, @Param("time")String time);
+
+    @Select("SELECT MONITOR_NAME as stationName,ROUND(AVG(YQ_RAIN_FALL_ONE),2) as RAINFALL FROM IRRIGATED_PLATFORM_DATA_INFO WHERE MONITOR_NAME like CONCAT('%','雨量站') and (TO_CHAR(MONITOR_TIME,'YYYY-MM-DD hh24') BETWEEN #{startTime} AND #{endTime} ) GROUP BY MONITOR_NAME")
+    List<RealTimeRainfallRes> getRealTimeRainfall(@Param("startTime")String startTime, @Param("endTime")String endTime);
+
+    @Select("SELECT * FROM IRRIGATED_PLATFORM_DATA_INFO WHERE MONITOR_NAME = #{name} AND TO_CHAR(MONITOR_TIME,'YYYY-MM-DD hh24') = #{time} ORDER BY MONITOR_TIME DESC")
+    List<IrrigatedPlatformDataInfo> selectInfoByTime(@Param("time")String time,@Param("name") String name);
+
+    @Select("SELECT * FROM IRRIGATED_PLATFORM_DATA_INFO WHERE MONITOR_NAME = #{name} AND TO_CHAR(MONITOR_TIME,'YYYY-MM-DD hh24:MI') BETWEEN #{startTime} AND #{endTime}")
+    List<IrrigatedPlatformDataInfo> selectHistoryList(@Param("name")String name, @Param("startTime")String startTime, @Param("endTime")String endTime);
 }
 

@@ -49,7 +49,7 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
     @Autowired
     private LzzPlatformTreeService lzzPlatformTreeService;
 
-    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH");
 
 
 
@@ -156,7 +156,6 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
             if(!userPidParam.getName().equals("出库自动水位站") && !userPidParam.getName().equals("入库自动水位站")){
                 gaugingStation.setStationName(userPidParam.getName());
             }
-            gaugingStation.setStationName(userPidParam.getName());
             for(UserIdParam userIdParam:userIdParams){
                 if(userIdParam.getName().substring(userIdParam.getName().length()-2).contains("水位")){
                     ParamDto paramDto = lzzPlatformMapper.selectInfoByTime(userIdParam.getId(), sdf.format(time));

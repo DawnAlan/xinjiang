@@ -18,13 +18,20 @@ import lombok.Getter;
  * 测点树枚举
  *
  * @author Lb
- * @date  2023/09/14 16:41
+ * @date 2023/09/14 16:41
  **/
 @Getter
 public enum TreeModelEnum {
 
-    /** 测试 */
-    TEST("TEST");
+    /**
+     * 测试
+     */
+    TEST("TEST"),
+    /**
+     * 删除标记
+     */
+    NOT_DELETE("NOT_DELETE"),
+    DELETE("DELETE");
 
     private final String value;
 

@@ -1,10 +1,12 @@
 package com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.cj.middleDatabase.func.modular.dto.RealTimeRainfallRes;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.bean.res.SelectInfoByIrrigationNameListRes;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.mapper.IrrigatedPlatformDataInfoMapper;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.entity.IrrigatedPlatformDataInfo;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.service.IrrigatedPlatformDataInfoService;
+import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.entity.LzzGaugingStation;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -60,6 +62,21 @@ public class IrrigatedPlatformDataInfoServiceImpl extends ServiceImpl<IrrigatedP
     @Override
     public List<IrrigatedPlatformDataInfo> selectOneByCondition2(String name, String time) {
         return this.baseMapper.selectOneByCondition2(name,time);
+    }
+
+    @Override
+    public List<RealTimeRainfallRes> getRealTimeRainfall(String startTime, String endTime) {
+        return this.baseMapper.getRealTimeRainfall(startTime,endTime);
+    }
+
+    @Override
+    public List<IrrigatedPlatformDataInfo> selectInfoByTime(String time,String name) {
+        return this.baseMapper.selectInfoByTime(time,name);
+    }
+
+    @Override
+    public List<IrrigatedPlatformDataInfo> selectHistoryList(String name, String startTime, String endTime) {
+        return this.baseMapper.selectHistoryList(name,startTime,endTime);
     }
 }
 

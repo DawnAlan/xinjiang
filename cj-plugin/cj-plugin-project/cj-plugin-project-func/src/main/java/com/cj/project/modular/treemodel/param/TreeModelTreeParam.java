@@ -15,11 +15,34 @@ import lombok.Setter;
 @Setter
 public class TreeModelTreeParam {
 
-    /** 项目Code */
+    /**
+     * 节点ID
+     */
+    @ApiModelProperty(value = "节点ID", required = true)
+    private String id;
+
+    /**
+     * 项目Code
+     */
     @ApiModelProperty(value = "项目Code", position = 2)
     private String projectCode;
 
-    /** 测点树分类 */
+    /**
+     * 测点树分类
+     */
     @ApiModelProperty(value = "测点树分类", position = 3)
     private String category;
+
+    /**
+     * 绑定的测点id
+     */
+    @ApiModelProperty(value = "绑定的测点id", position = 4)
+    private String pointId;
+
+    /**
+     * 测点名称
+     */
+    @ApiModelProperty(value = "测点名称", position = 5)
+    private String nodeName;
+
 }

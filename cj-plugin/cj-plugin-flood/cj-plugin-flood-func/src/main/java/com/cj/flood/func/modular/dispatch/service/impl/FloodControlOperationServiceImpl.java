@@ -40,8 +40,10 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 /**
@@ -133,8 +135,9 @@ public class FloodControlOperationServiceImpl extends ServiceImpl<FloodControlOp
             result.add(minimumContainment);
             result.add(maximumPeakShaving);
             ExecutorService pool = Executors.newSingleThreadExecutor();
-            pool.submit(new Runnable() {
+             pool.submit(new Runnable() {
                 private FloodControlOperationServiceImpl floodControlOperationService = SpringUtil.getBean(FloodControlOperationServiceImpl.class);
+
                 @Override
                 public void run() {
                     try {
@@ -150,17 +153,17 @@ public class FloodControlOperationServiceImpl extends ServiceImpl<FloodControlOp
                         String[] split1 = split[split.length - 1].split("\\.");
                         MultipartFile multipartFile = MultipartFileUtil.inputStreamToMultipartFile(tth, split1[0]);
                         List<Flood> floods = ExcelUtils.importExcel(multipartFile, Flood.class);
-                        List<DataFloodPrevent> interval = getDataFloodPrevent(floods,"楼头区间");
-                        if(null != interval){
-                            data.put("lat",interval);
-                        }else {
-                            data.put("lat",null);
+                        List<DataFloodPrevent> interval = getDataFloodPrevent(floods, "楼头区间");
+                        if (null != interval) {
+                            data.put("lat", interval);
+                        } else {
+                            data.put("lat", null);
                         }
-                        List<DataFloodPrevent> lzzEntryStation  = getDataFloodPrevent(floods,"楼庄子");
-                        if(null != lzzEntryStation){
-                            data.put("lzz",lzzEntryStation);
-                        }else {
-                            data.put("lzz",null);
+                        List<DataFloodPrevent> lzzEntryStation = getDataFloodPrevent(floods, "楼庄子");
+                        if (null != lzzEntryStation) {
+                            data.put("lzz", lzzEntryStation);
+                        } else {
+                            data.put("lzz", null);
                         }
                         List<CurveParam> curveParams = curveService.selectList();
                         paramReq.setCurveParam(curveParams);
@@ -174,7 +177,7 @@ public class FloodControlOperationServiceImpl extends ServiceImpl<FloodControlOp
                         paramReq.setLimitLevels_lzz(req.getLimitLevelsLzz());
                         paramReq.setLimitLevels_tth(req.getLimitLevelsTth());
                         List<ResOption> calculator = Cascade.calculator(paramReq);
-                        for(ResOption resOption : calculator){
+                        for (ResOption resOption : calculator) {
                             String path = resOption.getPath();
                             String[] pathSplit = path.split("\\\\");
                             Date date = new Date();
@@ -182,20 +185,20 @@ public class FloodControlOperationServiceImpl extends ServiceImpl<FloodControlOp
                             String hh = DateUtil.format(date, "HH");
                             String mm = DateUtil.format(date, "mm");
                             String ss = DateUtil.format(date, "ss");
-                            ObjectWriteResponse objectWriteResponse = minioUtils.putObject("tth", yyyyMMdd+"/"+hh+"/"+mm+"/"+ss+"/"+ UUID.fastUUID().toString(true)+"/"+pathSplit[pathSplit.length-1], path);
+                            ObjectWriteResponse objectWriteResponse = minioUtils.putObject("tth", yyyyMMdd + "/" + hh + "/" + mm + "/" + ss + "/" + UUID.fastUUID().toString(true) + "/" + pathSplit[pathSplit.length - 1], path);
                             String object = objectWriteResponse.object();
-                            floodControlOperationService.lambdaUpdate().set(FloodControlOperation::getStatus,2).set(FloodControlOperation::getModelResultAddress,object).eq(FloodControlOperation::getSchemeName,resOption.getName()).update();
+                            floodControlOperationService.lambdaUpdate().set(FloodControlOperation::getStatus, 2).set(FloodControlOperation::getModelResultAddress, object).eq(FloodControlOperation::getSchemeName, resOption.getName()).update();
                         }
                         tth.close();
-                        System.out.println(calculator.size());
-                    }catch (Exception e){
+                    } catch (Exception e) {
                         e.printStackTrace();
+                        floodControlOperationService.lambdaUpdate().set(FloodControlOperation::getStatus, 3).eq(FloodControlOperation::getForecastingSchemeId, req.getIncomingWaterForecastId()).update();
                     }
                 }
             });
             boolean b = this.saveBatch(result);
             if(b){
-                return RestResponse.ok("防洪调度生成成功");
+                return RestResponse.ok("防洪调度生成中……");
             }else {
                 return RestResponse.no("防洪调度生成失败");
             }
@@ -370,6 +373,11 @@ public class FloodControlOperationServiceImpl extends ServiceImpl<FloodControlOp
                 predictionProcessDto.setTime(flood.getTime());
                 predictionProcessDto.setWaterLevel(flood.getH2());
                 predictionProcessDto.setCapacity(flood.getV());
+                predictionProcessDto.setRetain(flood.getRetain());
+                predictionProcessDto.setQIn(flood.getQIn());
+                predictionProcessDto.setQOut(flood.getQOut());
+                predictionProcessDto.setFloodStorageCapacityPercent(flood.getPercentage1());
+                predictionProcessDto.setRegulatingStorageCapacityPercent(flood.getPercentage2());
                 predictionProcess.add(predictionProcessDto);
             }
             return predictionProcess;

@@ -1,7 +1,7 @@
 package com.cj.project.modular.instruments.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.cj.project.modular.instruments.entity.ProjectInstruments;
+import com.cj.project.api.instruments.entity.ProjectInstruments;
 
 /**
  * 项目仪器表Mapper接口
