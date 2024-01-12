@@ -164,13 +164,13 @@ public class ConfigFieldFiducialController {
         return configFieldFiducialService.dataImport(configFieldFiducialDto , file);
     }
 
-    @ApiOperationSupport(order = 14)
+    /*@ApiOperationSupport(order = 14)
     @ApiOperation("项目仪器数据导出")
     @PostMapping("/project/configfield/fiducial/dataExport")
     public void dataExport(@RequestBody ConfigFieldFiducialDto configFieldFiducialExportDto,
                            HttpServletRequest request , HttpServletResponse response) {
         configFieldFiducialService.templateExport(configFieldFiducialExportDto , request , response);
-    }
+    }*/
 
     
 }
