@@ -3,8 +3,6 @@ package com.cj.project.modular.fiducial.provider;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.cj.project.api.FiducialApi;
-import com.cj.project.modular.fiducial.entity.FiducialBase;
-import com.cj.project.modular.fiducial.param.FiducialAddParam;
 import com.cj.project.modular.fiducial.service.FiducialBaseService;
 import com.cj.project.modular.fiducial.service.FiducialService;
 

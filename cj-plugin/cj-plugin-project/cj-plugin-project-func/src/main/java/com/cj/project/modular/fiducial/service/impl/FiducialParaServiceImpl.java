@@ -69,9 +69,9 @@ public class FiducialParaServiceImpl extends ServiceImpl<FiducialParaMapper, Fid
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void deleteByPoint(List<FiducialIdParam> fiducialIdParamList) {
+    public void deleteByPoint(List<String> fiducialIdList) {
         // 执行删除
-        List<String> points = fiducialIdParamList.stream().map(FiducialIdParam::getId).collect(Collectors.toList());
+        List<String> points = fiducialIdList;
         this.remove(new QueryWrapper<FiducialPara>().lambda().in(FiducialPara::getPointId,points));
     }
 

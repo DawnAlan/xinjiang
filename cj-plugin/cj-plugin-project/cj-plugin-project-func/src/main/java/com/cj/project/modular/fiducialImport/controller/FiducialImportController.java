@@ -1,11 +1,12 @@
 package com.cj.project.modular.fiducialImport.controller;
 
 import com.cj.common.pojo.CommonResult;
-import com.cj.project.modular.configfield.entity.ConfigFieldFiducial;
-import com.cj.project.modular.fiducialImport.enums.FieldFiducialInEnum;
-import com.cj.project.modular.configfield.param.ConfigFieldQueryParam;
-import com.cj.project.modular.configfield.result.ConfigFieldFiducialResult;
+import com.cj.project.api.configfield.dto.ConfigFieldFiducialQueryDto;
+import com.cj.project.api.configfield.entity.ConfigFieldFiducial;
 import com.cj.project.modular.configfield.service.ConfigFieldFiducialService;
+import com.cj.project.modular.fiducialImport.enums.FieldFiducialInEnum;
+import com.cj.project.api.configfield.dto.ConfigFieldFiducialQueryDto;
+import com.cj.project.modular.configfield.result.ConfigFieldFiducialResult;
 import com.cj.project.modular.fiducialImport.service.FiducialImportService;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSupport;
@@ -55,10 +56,10 @@ public class FiducialImportController {
     @GetMapping("/project/fiducialImport/fieldExcel")
     public CommonResult<String> FiducialFieldExcel(String projectCode, String instrumentType) {
         Map<String,String> fieldMap = new LinkedHashMap<>();
-        ConfigFieldQueryParam configFieldQueryParam = new ConfigFieldQueryParam();
-        configFieldQueryParam.setProjectCode(projectCode);
-        configFieldQueryParam.setInstrumentType(instrumentType);
-        List<ConfigFieldFiducialResult> fieldFiducialResults = configFieldFiducialService.getList(configFieldQueryParam);
+        ConfigFieldFiducialQueryDto configFieldQueryDto = new ConfigFieldFiducialQueryDto();
+        configFieldQueryDto.setProjectCode(projectCode);
+        configFieldQueryDto.setInstrumentType(instrumentType);
+        List<ConfigFieldFiducialResult> fieldFiducialResults = configFieldFiducialService.getList(configFieldQueryDto);
         for (FieldFiducialInEnum item : FieldFiducialInEnum.values()
              ) {
             fieldMap.put(item.name(),item.getValue());
