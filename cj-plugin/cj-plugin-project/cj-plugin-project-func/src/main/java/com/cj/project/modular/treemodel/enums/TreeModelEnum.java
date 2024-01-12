@@ -30,8 +30,8 @@ public enum TreeModelEnum {
     /**
      * 删除标记
      */
-    NOT_DELETE("NOT_DELETE"),
-    DELETE("DELETE");
+    NOT_DELETE("0"),
+    DELETE("1");
 
     private final String value;
 

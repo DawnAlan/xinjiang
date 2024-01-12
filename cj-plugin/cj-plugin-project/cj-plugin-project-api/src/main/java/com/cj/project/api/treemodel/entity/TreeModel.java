@@ -98,9 +98,9 @@ public class TreeModel extends CommonEntity implements TransPojo {
     private String instrumentName;
 
     /**
-     * 检测名称
+     * 检测类型
      */
-    @ApiModelProperty(value = "检测名称", position = 14)
+    @ApiModelProperty(value = "检测类型", position = 14)
     private String monitorName;
 
 }

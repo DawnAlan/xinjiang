@@ -26,4 +26,9 @@ public class TreeBaseVo implements Serializable {
      * 测点编号
      */
     private String pointName;
+
+    /**
+     * 监测类型
+     */
+    private String monitorName;
 }

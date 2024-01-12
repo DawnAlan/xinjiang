@@ -3,9 +3,12 @@ package com.cj.project.modular.treemodel.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollStreamUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.lang.Snowflake;
+import cn.hutool.core.lang.generator.SnowflakeGenerator;
 import cn.hutool.core.lang.tree.Tree;
 import cn.hutool.core.lang.tree.TreeNode;
 import cn.hutool.core.lang.tree.TreeUtil;
+import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson2.JSON;
@@ -231,7 +234,6 @@ public class TreeModelServiceImpl extends ServiceImpl<TreeModelMapper, TreeModel
         //分项工程
         Map<String, List<FiducialBase>> subProjectListMap = list.stream().collect(Collectors.groupingBy(FiducialBase::getSubProject));
         //分部工程
-        //父key 子value
         Set<TreeBaseVo> collect = list.stream().map(item -> {
             TreeBaseVo treeBaseVo = new TreeBaseVo();
             treeBaseVo.setSubProject(item.getSubProject());
@@ -246,10 +248,9 @@ public class TreeModelServiceImpl extends ServiceImpl<TreeModelMapper, TreeModel
             treeBaseVo.setItemProject(item.getItemProject());
             treeBaseVo.setInstrumentType(item.getInstrumentType());
             treeBaseVo.setPointName(item.getPointName());
+            treeBaseVo.setMonitorName(item.getMonitorName());
             return treeBaseVo;
         }).collect(Collectors.toSet());
-        Map<String, List<FiducialBase>> instrumentTypeListMap = list.stream().collect(Collectors.groupingBy(FiducialBase::getInstrumentType));
-
         //（3）拼装数据，
         //一级分项工程
         List<TreeModel> treeModelList = new ArrayList<>();
@@ -262,10 +263,11 @@ public class TreeModelServiceImpl extends ServiceImpl<TreeModelMapper, TreeModel
             List<FiducialBase> valueList = stringListEntry.getValue();
             FiducialBase fiducialBase = valueList.stream().findFirst().get();
             treeModel = new TreeModel();
-            String id = UUIDUtils.getUUID().replace("-", "");
-            treeModel.setId(id);
+            long id = IdUtil.getSnowflakeNextId();
+            treeModel.setId(String.valueOf(id));
             treeModel.setProjectCode(projectCode);
-            treeModel.setParentId(ROOT_PARENT_ID);
+            treeModel.setIsEnd(0);
+            treeModel.setParentId("0");
             treeModel.setNodeName(subProject);
             treeModel.setNodeInfo(fiducialBase.getInstrumentType());
             //工程结构树
@@ -274,7 +276,8 @@ public class TreeModelServiceImpl extends ServiceImpl<TreeModelMapper, TreeModel
             TreeNodeTypeEnum typeValue = TreeNodeTypeEnum.getTypeValue(fiducialBase.getInstrumentType());
             Integer type = BeanUtil.isNotEmpty(typeValue) ? typeValue.getType() : null;
             treeModel.setNodeType(type);
-            idInfo.put(subProject + "..", id);
+            idInfo.put(subProject + "..", String.valueOf(id));
+            treeModel.setDeleteFlag("0");
             treeModelList.add(treeModel);
         }
         //分部工程
@@ -282,14 +285,15 @@ public class TreeModelServiceImpl extends ServiceImpl<TreeModelMapper, TreeModel
             String subProject = baseVo.getSubProject();
             String itemProject = baseVo.getItemProject();
             treeModel = new TreeModel();
-            String id = UUIDUtils.getUUID().replace("-", "");
-            treeModel.setId(id);
+            long id = IdUtil.getSnowflakeNextId();
+            treeModel.setId(String.valueOf(id));
             treeModel.setProjectCode(projectCode);
             String mapKey = subProject + "..";
             String parentId = idInfo.get(mapKey);
             if (parentId == null || StringUtils.isEmpty(parentId)) {
                 continue;
             }
+            treeModel.setParentId(parentId);
             treeModel.setNodeName(itemProject);
             treeModel.setNodeInfo(baseVo.getInstrumentType());
             //工程结构树
@@ -297,7 +301,9 @@ public class TreeModelServiceImpl extends ServiceImpl<TreeModelMapper, TreeModel
             TreeNodeTypeEnum typeValue = TreeNodeTypeEnum.getTypeValue(baseVo.getInstrumentType());
             Integer nodeType = BeanUtil.isNotEmpty(typeValue) ? typeValue.getType() : null;
             treeModel.setNodeType(nodeType);
-            idInfo.put(mapKey + itemProject, id);
+            treeModel.setIsEnd(0);
+            idInfo.put(mapKey + itemProject, String.valueOf(id));
+            treeModel.setDeleteFlag("0");
             treeModelList.add(treeModel);
         }
 
@@ -312,8 +318,8 @@ public class TreeModelServiceImpl extends ServiceImpl<TreeModelMapper, TreeModel
                 continue;
             }
             treeModel = new TreeModel();
-            String id = UUIDUtils.getUUID().replace("-", "");
-            treeModel.setId(id);
+            long id = IdUtil.getSnowflakeNextId();
+            treeModel.setId(String.valueOf(id));
             treeModel.setProjectCode(projectCode);
             treeModel.setParentId(parentId);
             treeModel.setNodeName(instrumentType);
@@ -323,7 +329,9 @@ public class TreeModelServiceImpl extends ServiceImpl<TreeModelMapper, TreeModel
             TreeNodeTypeEnum typeValue = TreeNodeTypeEnum.getTypeValue(instrumentType);
             Integer type = BeanUtil.isNotEmpty(typeValue) ? typeValue.getType() : null;
             treeModel.setNodeType(type);
-            idInfo.put(mapKey + ".." + instrumentType, id);
+            treeModel.setIsEnd(0);
+            idInfo.put(mapKey + ".." + instrumentType, String.valueOf(id));
+            treeModel.setDeleteFlag("0");
             treeModelList.add(treeModel);
         }
         //测点编号
@@ -338,8 +346,8 @@ public class TreeModelServiceImpl extends ServiceImpl<TreeModelMapper, TreeModel
                 continue;
             }
             treeModel = new TreeModel();
-            String id = UUIDUtils.getUUID().replace("-", "");
-            treeModel.setId(id);
+            long id = IdUtil.getSnowflakeNextId();
+            treeModel.setId(String.valueOf(id));
             treeModel.setProjectCode(projectCode);
             treeModel.setParentId(parentId);
             treeModel.setNodeName(pointName);
@@ -349,6 +357,9 @@ public class TreeModelServiceImpl extends ServiceImpl<TreeModelMapper, TreeModel
             TreeNodeTypeEnum typeValue = TreeNodeTypeEnum.getTypeValue(instrumentType);
             Integer type = BeanUtil.isNotEmpty(typeValue) ? typeValue.getType() : null;
             treeModel.setNodeType(type);
+            treeModel.setIsEnd(1);
+            treeModel.setMonitorName(baseVo.getMonitorName());
+            treeModel.setDeleteFlag("0");
             treeModelList.add(treeModel);
         }
         /*log.error("组装的数据有：" + JSON.toJSONString(treeModelList));
@@ -362,7 +373,7 @@ public class TreeModelServiceImpl extends ServiceImpl<TreeModelMapper, TreeModel
         this.update(new LambdaUpdateWrapper<TreeModel>()
                 .eq(CommonEntity::getDeleteFlag, TreeModelEnum.NOT_DELETE.getValue())
                 .eq(TreeModel::getProjectCode, projectCode)
-                .set(CommonEntity::getDeleteFlag, TreeModelEnum.DELETE));
+                .set(CommonEntity::getDeleteFlag, TreeModelEnum.DELETE.getValue()));
         //（5）入库
         this.saveBatch(treeModelList);
     }
