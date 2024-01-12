@@ -1,4 +1,4 @@
-package com.cj.project.modular.treemodel.entity;
+package com.cj.project.api.treemodel.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 import com.cj.common.pojo.CommonEntity;
@@ -68,9 +68,9 @@ public class TreeModel extends CommonEntity implements TransPojo {
     private String nodeInfo;
 
     /**
-     * 树目录类型
+     * 树目录类型： 1 工程结构树 2 仪器类型树 3 MCU采集树之类
      */
-    @ApiModelProperty(value = "树目录类型", position = 9)
+    @ApiModelProperty(value = "树目录类型： 1 工程结构树 2 仪器类型树 3 MCU采集树之类", position = 9)
     private String category;
 
     /**

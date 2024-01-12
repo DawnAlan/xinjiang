@@ -10,14 +10,11 @@
  * 5.不可二次分发开源参与同类竞品，如有想法可联系团队xiaonuobase@qq.com商议合作。
  * 6.若您的项目无法满足以上几点，需要更多功能代码，获取Snowy商业授权许可，请在官网购买授权，地址为 https://www.xiaonuo.vip
  */
-package com.cj.project.modular.treemodel.param;
+package com.cj.project.api.treemodel.dto;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.math.BigDecimal;
-import java.util.Date;
 
 /**
  * 测点树查询参数
@@ -27,7 +24,7 @@ import java.util.Date;
  **/
 @Getter
 @Setter
-public class TreeModelPageParam {
+public class TreeModelPageDto {
 
     /**
      * 当前页

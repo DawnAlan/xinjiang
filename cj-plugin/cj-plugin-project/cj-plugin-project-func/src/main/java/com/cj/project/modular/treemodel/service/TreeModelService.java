@@ -2,8 +2,10 @@ package com.cj.project.modular.treemodel.service;
 
 import cn.hutool.core.lang.tree.Tree;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.cj.project.modular.treemodel.entity.TreeModel;
-import com.cj.project.modular.treemodel.param.*;
+import com.cj.project.api.treemodel.dto.TreeModelDto;
+import com.cj.project.api.treemodel.dto.TreeModelTreeDto;
+import com.cj.project.api.treemodel.dto.TreePointNodeAddDto;
+import com.cj.project.api.treemodel.entity.TreeModel;
 
 import java.util.List;
 
@@ -21,7 +23,7 @@ public interface TreeModelService extends IService<TreeModel> {
      * @author Lb
      * @date  2023/09/14 16:41
      */
-    List<Tree<String>> tree(TreeModelTreeParam treeModelTreeParam);
+    List<Tree<String>> tree(TreeModelTreeDto treeModelTreeParam);
 
     /**
      * 添加测点树节点
@@ -35,7 +37,7 @@ public interface TreeModelService extends IService<TreeModel> {
      * 绑定测点到测点树节点
      * @param pointNodeAddParam
      */
-    void addPointNode(TreePointNodeAddParam pointNodeAddParam);
+    void addPointNode(TreePointNodeAddDto pointNodeAddParam);
 
     /**
      * 编辑测点树
@@ -51,7 +53,7 @@ public interface TreeModelService extends IService<TreeModel> {
      * @author Lb
      * @date  2023/09/14 16:41
      */
-    void delete(List<TreeModelTreeParam> treeModelIdParamList);
+    void delete(List<TreeModelTreeDto> treeModelIdParamList);
 
     /**
      * 删除绑定的节点
@@ -66,7 +68,7 @@ public interface TreeModelService extends IService<TreeModel> {
      * @author Lb
      * @date  2023/09/14 16:41
      */
-    TreeModel detail(TreeModelTreeParam treeModelIdParam);
+    TreeModel detail(TreeModelTreeDto treeModelIdParam);
 
     /**
      * 获取测点树详情
@@ -75,6 +77,13 @@ public interface TreeModelService extends IService<TreeModel> {
      * @date  2023/09/14 16:41
      **/
     TreeModel queryEntity(String id);
+
+    /**
+     * 初始化测点考证书
+     *
+     * @param projectCode 项目编号
+     */
+    void generateTree(String projectCode);
 
     /// <summary>
     /// 获取所有未绑定到测点树的测点

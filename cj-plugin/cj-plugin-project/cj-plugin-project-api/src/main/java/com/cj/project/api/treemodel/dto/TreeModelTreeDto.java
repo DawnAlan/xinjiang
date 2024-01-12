@@ -1,5 +1,5 @@
 
-package com.cj.project.modular.treemodel.param;
+package com.cj.project.api.treemodel.dto;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
@@ -13,12 +13,12 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class TreeModelTreeParam {
+public class TreeModelTreeDto {
 
     /**
      * 节点ID
      */
-    @ApiModelProperty(value = "节点ID", required = true)
+    @ApiModelProperty(value = "节点ID", position = 1)
     private String id;
 
     /**
