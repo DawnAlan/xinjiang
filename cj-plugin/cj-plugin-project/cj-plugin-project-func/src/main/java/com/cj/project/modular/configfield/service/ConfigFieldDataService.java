@@ -1,7 +1,7 @@
 package com.cj.project.modular.configfield.service;
 
-import com.cj.project.modular.configfield.entity.ConfigFieldData;
-import com.cj.project.modular.configfield.param.*;
+import com.cj.project.api.configfield.dto.ConfigFieldQueryDto;
+import com.cj.project.api.configfield.entity.ConfigFieldData;
 import com.cj.project.modular.configfield.result.ConfigFieldDataResult;
 
 import java.util.List;
@@ -9,7 +9,7 @@ import java.util.List;
 public interface ConfigFieldDataService {
 
     //获取数据字段配置
-    List<ConfigFieldDataResult> getList(ConfigFieldQueryParam configFieldQueryParam);
+    List<ConfigFieldDataResult> getList(ConfigFieldQueryDto configFieldQueryDto);
 
     /**
      * 添加数据字段配置
@@ -17,7 +17,7 @@ public interface ConfigFieldDataService {
      * @author Lb
      * @date  2023/11/08 15:28
      */
-    void add(ConfigFieldDataAddParam configFieldDataAddParam);
+    void add(ConfigFieldData configFieldData);
 
     /**
      * 编辑数据字段配置
@@ -25,7 +25,7 @@ public interface ConfigFieldDataService {
      * @author Lb
      * @date  2023/11/08 15:28
      */
-    void edit(ConfigFieldDataEditParam configFieldDataEditParam);
+    void edit(ConfigFieldData configFieldData);
 
     /**
      * 删除数据字段配置
@@ -33,7 +33,7 @@ public interface ConfigFieldDataService {
      * @author Lb
      * @date  2023/11/08 15:28
      */
-    void delete(List<ConfigFieldIdParam> configFieldIdParamList);
+    void delete(List<String> idList);
 
     /**
      * 获取数据字段配置详情
@@ -41,7 +41,7 @@ public interface ConfigFieldDataService {
      * @author Lb
      * @date  2023/11/08 15:28
      **/
-    ConfigFieldData detail(ConfigFieldIdParam configFieldIdParam);
+    ConfigFieldData detail(String id);
 
     /**
      * 获取数据字段配置详情

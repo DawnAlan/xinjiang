@@ -1,17 +1,12 @@
 package com.cj.project.modular.configfield.service.impl;
 
-import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.collection.CollStreamUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cj.common.exception.CommonException;
-import com.cj.project.modular.configfield.entity.ConfigFieldData;
+import com.cj.project.api.configfield.entity.ConfigFieldData;
 import com.cj.project.modular.configfield.mapper.ConfigFieldDataMapper;
-import com.cj.project.modular.configfield.param.ConfigFieldDataAddParam;
-import com.cj.project.modular.configfield.param.ConfigFieldDataEditParam;
-import com.cj.project.modular.configfield.param.ConfigFieldIdParam;
-import com.cj.project.modular.configfield.param.ConfigFieldQueryParam;
+import com.cj.project.api.configfield.dto.ConfigFieldQueryDto;
 import com.cj.project.modular.configfield.result.ConfigFieldDataResult;
 import com.cj.project.modular.configfield.service.ConfigFieldDataService;
 import org.springframework.stereotype.Service;
@@ -25,20 +20,28 @@ import java.util.stream.Collectors;
 @Service
 public class ConfigFieldDataServiceImpl extends ServiceImpl<ConfigFieldDataMapper, ConfigFieldData> implements ConfigFieldDataService {
     @Override
-    public List<ConfigFieldDataResult> getList(ConfigFieldQueryParam configFieldQueryParam) {
+    public List<ConfigFieldDataResult> getList(ConfigFieldQueryDto configFieldQueryDto) {
         List<ConfigFieldDataResult> fieldDataResults = new ArrayList<>();
         //List
         QueryWrapper<ConfigFieldData> queryWrapper = new QueryWrapper<>();
-        if(ObjectUtil.isNotEmpty(configFieldQueryParam.getProjectCode())) {
-            queryWrapper.lambda().eq(ConfigFieldData::getProjectCode, configFieldQueryParam.getProjectCode());
+        if(ObjectUtil.isNotEmpty(configFieldQueryDto.getProjectCode())) {
+            queryWrapper.lambda().eq(ConfigFieldData::getProjectCode, configFieldQueryDto.getProjectCode());
         }
-        if(ObjectUtil.isNotEmpty(configFieldQueryParam.getInstrumentType())) {
-            queryWrapper.lambda().eq(ConfigFieldData::getInstrumentType, configFieldQueryParam.getInstrumentType());
+        else
+        {
+            queryWrapper.lambda().eq(ConfigFieldData::getProjectCode, "000");
+        }
+        if(ObjectUtil.isNotEmpty(configFieldQueryDto.getInstrumentType())) {
+            queryWrapper.lambda().eq(ConfigFieldData::getInstrumentType, configFieldQueryDto.getInstrumentType());
         }
         queryWrapper.lambda().orderByAsc(ConfigFieldData::getSortCode);
         List<ConfigFieldData> configFieldDatas = this.list(queryWrapper);
         //Map
         Map<String,List<ConfigFieldData>> fieldmap = configFieldDatas.stream().collect(Collectors.groupingBy(ConfigFieldData::getInstrumentType));
+        if(ObjectUtil.isNotEmpty(configFieldQueryDto.getProjectCode()))
+        {
+            fieldmap = configFieldDatas.stream().collect(Collectors.groupingBy(ConfigFieldData::getInstrumentMetaType));
+        }
         for (String instrumenttype : fieldmap.keySet()
         ) {
             ConfigFieldData defaultFieldData = fieldmap.get(instrumenttype).stream().findFirst().get();
@@ -54,28 +57,26 @@ public class ConfigFieldDataServiceImpl extends ServiceImpl<ConfigFieldDataMappe
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void add(ConfigFieldDataAddParam configFieldDataAddParam) {
-        ConfigFieldData configFielddata = BeanUtil.toBean(configFieldDataAddParam, ConfigFieldData.class);
-        this.save(configFielddata);
+    public void add(ConfigFieldData configFieldData) {
+        this.save(configFieldData);
     }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void edit(ConfigFieldDataEditParam configFieldDataEditParam) {
-        ConfigFieldData configFielddata = this.queryEntity(configFieldDataEditParam.getId());
-        BeanUtil.copyProperties(configFieldDataEditParam, configFielddata);
-        this.updateById(configFielddata);
+    public void edit(ConfigFieldData configFieldData) {
+        this.queryEntity(configFieldData.getId());
+        this.updateById(configFieldData);
     }
 
     @Override
-    public void delete(List<ConfigFieldIdParam> configFieldIdParamList) {
+    public void delete(List<String> idList) {
         // 执行删除
-        this.removeByIds(CollStreamUtil.toList(configFieldIdParamList, ConfigFieldIdParam::getId));
+        this.removeByIds(idList);
     }
 
     @Override
-    public ConfigFieldData detail(ConfigFieldIdParam configFieldIdParam) {
-        return this.queryEntity(configFieldIdParam.getId());
+    public ConfigFieldData detail(String id) {
+        return this.queryEntity(id);
     }
 
     @Override

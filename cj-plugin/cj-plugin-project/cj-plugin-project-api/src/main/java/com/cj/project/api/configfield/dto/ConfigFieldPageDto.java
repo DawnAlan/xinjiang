@@ -1,18 +1,20 @@
-package com.cj.project.modular.configfield.param;
+package com.cj.project.api.configfield.dto;
 
+import com.cj.common.page.PageEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 
 /**
- * 字段配置查询参数
+ * 考证字段配置查询参数
  *
  * @author Lb
  * @date  2023/08/31 19:28
  **/
 @Getter
 @Setter
-public class ConfigFieldQueryParam {
+public class ConfigFieldPageDto extends PageEntity {
+
 
     /** 项目编号 */
     @ApiModelProperty(value = "项目编号")

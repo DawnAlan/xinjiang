@@ -1,8 +1,8 @@
 package com.cj.project.modular.configfield.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.cj.project.modular.configfield.entity.ConfigFieldData;
-import com.cj.project.modular.configfield.entity.ConfigFieldData;
+import com.cj.project.api.configfield.entity.ConfigFieldData;
+
 
 /**
  * 数据配置管理Mapper接口

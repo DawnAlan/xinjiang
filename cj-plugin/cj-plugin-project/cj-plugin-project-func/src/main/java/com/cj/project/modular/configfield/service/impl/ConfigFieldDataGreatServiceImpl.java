@@ -2,21 +2,22 @@ package com.cj.project.modular.configfield.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.cj.project.modular.configfield.entity.ConfigFieldData;
-import com.cj.project.modular.configfield.entity.ConfigFieldFiducial;
+import com.cj.project.api.configfield.entity.ConfigFieldData;
+import com.cj.project.api.instruments.entity.ProjectInstruments;
 import com.cj.project.modular.configfield.enums.ConfigFieldFiducialOutEnum;
 import com.cj.project.modular.configfield.mapper.ConfigFieldDataMapper;
+import com.cj.project.modular.configfield.result.ConfigFieldDataResult;
 import com.cj.project.modular.configfield.service.ConfigFieldDataGreatService;
-import com.cj.project.modular.fiducial.entity.FiducialBase;
-import com.cj.project.modular.instruments.entity.ProjectInstruments;
 import com.cj.project.modular.instruments.service.ProjectInstrumentsService;
 import io.swagger.annotations.ApiModelProperty;
 import org.apache.commons.lang3.EnumUtils;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import javax.annotation.Resource;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -52,6 +53,34 @@ public class ConfigFieldDataGreatServiceImpl extends ServiceImpl<ConfigFieldData
 
             this.saveBatch(createList);
         }
+    }
+
+    public void CopyCreate(String projectCode, String instrumentType,String instrumentMetaType) {
+        //000
+        List<ConfigFieldData> fieldDataResults = new ArrayList<>();
+        LambdaQueryWrapper<ConfigFieldData> wrapper = new QueryWrapper<ConfigFieldData>().lambda().eq(ConfigFieldData::getProjectCode, "000");
+        if(ObjectUtil.isNotEmpty(instrumentMetaType)) {
+            wrapper.eq(ConfigFieldData::getInstrumentMetaType, instrumentMetaType);
+        }
+        List<ConfigFieldData> defaultDataConfig = this.list(wrapper);
+        //0##
+        wrapper = new QueryWrapper<ConfigFieldData>().lambda().eq(ConfigFieldData::getProjectCode, projectCode);
+        if(ObjectUtil.isNotEmpty(instrumentType)) {
+            wrapper.eq(ConfigFieldData::getInstrumentType, instrumentType);
+        }
+        List<String> nowDataConfigFields = this.list(wrapper).stream().map(s->s.getFieldKey()).collect(Collectors.toList());
+        //add
+        for (ConfigFieldData config : defaultDataConfig
+             ) {
+            if(!nowDataConfigFields.contains(config.getFieldKey()))
+            {
+                config.setId(null);
+                config.setProjectCode(projectCode);
+                config.setInstrumentType(instrumentType);
+                fieldDataResults.add(config);
+            }
+        }
+        this.saveBatch(fieldDataResults);
     }
 
     @Override

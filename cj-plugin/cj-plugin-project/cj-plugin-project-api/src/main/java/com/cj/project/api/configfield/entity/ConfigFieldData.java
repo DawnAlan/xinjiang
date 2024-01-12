@@ -48,7 +48,7 @@ public class ConfigFieldData {
 
     /** 是否显示 */
     @ApiModelProperty(value = "是否显示", position = 8)
-    private String isDispaly;
+    private String isDisplay;
 
     /** 排序 */
     @ApiModelProperty(value = "排序", position = 9)
@@ -61,4 +61,17 @@ public class ConfigFieldData {
     /** 配置 */
     @ApiModelProperty(value = "配置", position = 11)
     private String extJson;
+
+    /** 显示名称 */
+    @ApiModelProperty(value = "显示名称", position = 12)
+    private String displayName;
+
+    /** 数值单位 */
+    @ApiModelProperty(value = "数值单位", position = 13)
+    private String unit;
+
+    /** 数值小数位 */
+    @ApiModelProperty(value = "数值小数位", position = 14)
+    private Integer decimals;
+
 }
