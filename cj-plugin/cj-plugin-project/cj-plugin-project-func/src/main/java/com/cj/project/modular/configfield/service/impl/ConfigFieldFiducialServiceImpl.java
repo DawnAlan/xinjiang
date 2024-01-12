@@ -10,6 +10,7 @@ import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.cj.common.enums.SystemTypeEnum;
 import com.cj.common.pojo.CommonResult;
 import com.cj.common.util.ExcelUtils;
 import com.cj.common.util.FormatCheckUtil;
@@ -51,6 +52,8 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -283,6 +286,7 @@ public class ConfigFieldFiducialServiceImpl extends ServiceImpl<ConfigFieldFiduc
             Map<String , String> paraFormatMap = new HashMap<>();
             configFieldFiducials.forEach( e -> paraFormatMap.put(e.getFieldKey() , e.getSystemType()));
 
+            DateFormat dateFormat = new SimpleDateFormat("YYYY-MM-DD HH:mm:ss");
             int lastRowNum = sheetAt.getLastRowNum();
             for (int i = 2 ; i <= lastRowNum ; i ++){
                 Row row = sheetAt.getRow(i);
@@ -291,17 +295,50 @@ public class ConfigFieldFiducialServiceImpl extends ServiceImpl<ConfigFieldFiduc
                 for (int j = 0 ; j < row.getLastCellNum() ; j ++){
                     if(newBaseMap.get(j) != null){
                         String field = newBaseMap.get(j).toString();
-                        String value = row.getCell(j).toString();
-                        baseValueMap.put(field , value);
+                        //String value = row.getCell(j).toString();
+                        if(paraFormatMap.get(newBaseMap.get(j).toString()).equals(SystemTypeEnum.DATE.getValue())){
+                            try {
+                                baseValueMap.put(field , dateFormat.format(row.getCell(j).getDateCellValue()));
+                            }catch (Exception e){
+                                return CommonResult.error("第" + (i + 1) + "行第"+ (j + 1)+"列的" + newBaseMap.get(j) + "字段值格式不正确!为" + paraFormatMap.get(newBaseMap.get(j).toString()) + "类型！");
+                            }
+
+                        }else if (paraFormatMap.get(newBaseMap.get(j).toString()).equals(SystemTypeEnum.DOUBLE.getValue())){
+                            try {
+                                baseValueMap.put(field , String.valueOf(row.getCell(j).getNumericCellValue()));
+                            }catch (Exception e){
+                                return CommonResult.error("第" + (i + 1) + "行第"+ (j + 1)+"列的" + newBaseMap.get(j) + "字段值格式不正确!为" + paraFormatMap.get(newBaseMap.get(j).toString()) + "类型！");
+                            }
+                        }else {
+                            baseValueMap.put(field , row.getCell(j).toString());
+                        }
+
                     }else if(newParaMap.get(j) != null){
                         FiducialPara fiducialPara = new FiducialPara();
                         fiducialPara.setFieldKey(newParaMap.get(j).toString());
-                        fiducialPara.setFieldValue(row.getCell(j).toString());
+
+                        if(paraFormatMap.get(newParaMap.get(j).toString()).equals(SystemTypeEnum.DATE.getValue())){
+                            try {
+                                fiducialPara.setFieldValue(dateFormat.format(row.getCell(j).getDateCellValue()));
+                            }catch (Exception e){
+                                return CommonResult.error("第" + (i + 1) + "行第"+ (j + 1)+"列的" + newParaMap.get(j) + "字段值格式不正确!为" + paraFormatMap.get(newBaseMap.get(j).toString()) + "类型！");
+                            }
+
+                        }else if (paraFormatMap.get(newParaMap.get(j).toString()).equals(SystemTypeEnum.DOUBLE.getValue())){
+                            try {
+                                fiducialPara.setFieldValue(String.valueOf(row.getCell(j).getNumericCellValue()));
+                            }catch (Exception e){
+                                return CommonResult.error("第" + (i + 1) + "行第"+ (j + 1)+"列的" + newParaMap.get(j) + "字段值格式不正确!为" + paraFormatMap.get(newBaseMap.get(j).toString()) + "类型！");
+                            }
+                        }else {
+                            fiducialPara.setFieldValue(row.getCell(j).toString());
+                        }
+
                         fiducialParaList.add(fiducialPara);
                     }
                 }
                 //拓展字段值格式校验
-                for (FiducialPara fiducialPara : fiducialParaList) {
+                /*for (FiducialPara fiducialPara : fiducialParaList) {
                     String fieldKey = fiducialPara.getFieldKey();
                     String fieldValue = fiducialPara.getFieldValue();
                     String systemType = paraFormatMap.get(fieldKey);
@@ -309,7 +346,7 @@ public class ConfigFieldFiducialServiceImpl extends ServiceImpl<ConfigFieldFiduc
                     if(!msg)
                         return CommonResult.error("第" + (i + 1) + "行的" + fieldKey + "字段值格式不正确!为" + systemType + "类型！");
 
-                }
+                }*/
 
 
                 Map resultMap = mapTransformUtil.mapTransformClass(baseValueMap, FiducialBase.class);

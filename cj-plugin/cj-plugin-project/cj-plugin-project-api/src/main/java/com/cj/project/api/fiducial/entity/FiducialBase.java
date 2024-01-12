@@ -133,19 +133,19 @@ public class FiducialBase extends CommonEntity implements TransPojo {
 
     /** 安装时间 */
     @ApiModelProperty(value = "安装时间", position = 24, notes = "status_field")
-    private Date installTime;
+    private String installTime;
 
     /** 失效时间 */
     @ApiModelProperty(value = "失效时间", position = 25, notes = "status_field")
-    private Date invalidTime;
+    private String invalidTime;
 
     /** 首次数据时间 */
     @ApiModelProperty(value = "首次数据时间", position = 26, notes = "status_field")
-    private Date firstdataTime;
+    private String firstdataTime;
 
     /** 最后数据时间 */
     @ApiModelProperty(value = "最后数据时间", position = 27, notes = "status_field")
-    private Date lastdataTime;
+    private String lastdataTime;
 
     /** 备注 */
     @ApiModelProperty(value = "备注", position = 28, notes = "status_field")
