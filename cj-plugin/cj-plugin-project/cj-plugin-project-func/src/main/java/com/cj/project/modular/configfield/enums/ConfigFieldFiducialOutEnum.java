@@ -26,10 +26,10 @@ import lombok.Getter;
 public enum ConfigFieldFiducialOutEnum {
 
     id("id"),
-    projectcode("projectCode"),
-    instrumentid("instrumentType"),
-    pointname("pointName"),
-    pointalias("pointAlias");
+    projectCode("projectCode"),
+    instrumentType("instrumentType"),
+    pointName("pointName"),
+    pointAlias("pointAlias");
 
 
     private final String value;

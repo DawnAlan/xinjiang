@@ -23,6 +23,12 @@ public class DevDictFeignProvider implements DevDictFeign {
     }
 
     @Override
+    @RequestMapping("/feign/dev/dict/getDictByParentId")
+    public String getDictByParentId(String parentId) {
+        return JSONUtil.toJsonStr(devDictApiProvider.getDictByParentId(parentId));
+    }
+
+    @Override
     @RequestMapping("/feign/dev/dict/getDictByName")
     public String getDictByName(String name) {
         return JSONUtil.toJsonStr(devDictApiProvider.getDictByName(name));

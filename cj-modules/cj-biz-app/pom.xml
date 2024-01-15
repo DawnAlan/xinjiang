@@ -148,6 +148,13 @@
             <version>${project.parent.version}</version>
         </dependency>
 
+        <!-- 数据管理功能插件 -->
+        <dependency>
+            <groupId>com.cj</groupId>
+            <artifactId>cj-plugin-data-func</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+
         <!-- C端功能插件 -->
         <!--<dependency>
             <groupId>com.cj</groupId>

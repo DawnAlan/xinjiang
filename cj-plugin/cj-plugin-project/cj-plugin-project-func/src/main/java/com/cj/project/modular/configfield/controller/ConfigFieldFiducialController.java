@@ -7,6 +7,7 @@ import com.cj.project.api.configfield.dto.ConfigFieldFiducialQueryDto;
 import com.cj.project.api.configfield.entity.ConfigFieldFiducial;
 import com.cj.project.modular.configfield.result.ConfigFieldFiducialResult;
 import com.cj.project.modular.configfield.service.ConfigFieldFiducialGreatService;
+import com.cj.project.modular.configfield.service.ConfigFieldFiducialService;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSupport;
 import io.swagger.annotations.Api;
@@ -15,7 +16,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import com.cj.common.annotation.CommonLog;
 import com.cj.common.pojo.CommonResult;
-import com.cj.project.modular.configfield.service.ConfigFieldFiducialService;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
@@ -50,7 +50,7 @@ public class ConfigFieldFiducialController {
      */
     @ApiOperationSupport(order = 1)
     @ApiOperation("获取考证字段配置")
-    @CommonLog("添加考证字段配置")
+    @CommonLog("获取考证字段配置")
     @PostMapping("/project/configfield/fiducial/get")
     public CommonResult<List<ConfigFieldFiducialResult>> getList(ConfigFieldFiducialQueryDto configFieldFiducialQueryDto) {
         return CommonResult.data(configFieldFiducialService.getList(configFieldFiducialQueryDto));
@@ -65,7 +65,7 @@ public class ConfigFieldFiducialController {
      */
     @ApiOperationSupport(order = 1)
     @ApiOperation("获取数据字段配置分页")
-    @PostMapping("/project/configfield/page")
+    @PostMapping("/project/configfield/fiducial/page")
     public CommonResult<Page<ConfigFieldFiducial>> page(ConfigFieldFiducialPageDto configFieldFiducialPageDto) {
         return CommonResult.data(configFieldFiducialService.page(configFieldFiducialPageDto));
     }

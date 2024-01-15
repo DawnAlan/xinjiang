@@ -135,7 +135,7 @@ public class FiducialController {
     @CommonLog("添加测点考证")
     @PostMapping("/project/fiducial/add")
     public CommonResult<String> add(@RequestBody @Valid FiducialAddParam fiducialAddParam) {
-        fiducialService.add(fiducialAddParam.getProjectCode(),fiducialAddParam.getInstrumentType(),fiducialAddParam.getDetail());
+        fiducialService.add(fiducialAddParam.getProjectCode(),fiducialAddParam.getInstrumentType(),fiducialAddParam.getDetail().stream().findFirst().get());
         return CommonResult.ok();
     }
 
@@ -150,9 +150,6 @@ public class FiducialController {
     @CommonLog("批量添加测点考证")
     @PostMapping("/project/fiducial/addBatch")
     public CommonResult<String> addBatch(@RequestBody @Valid List<FiducialAddParam> fiducialAddParamList) {
-                /* if(ObjectUtil.isEmpty(fieldMaps.get("pointName"))) {
-            throw new CommonException("测点编号不能为空");
-        }*/
         fiducialService.adds(fiducialAddParamList);
         // fiducialBaseService.add(fiducialBaseAddParam);
         return CommonResult.ok();
@@ -184,8 +181,8 @@ public class FiducialController {
     @CommonLog("删除测点考证")
     @PostMapping("/project/fiducial/delete")
     public CommonResult<String> delete(@RequestBody @Valid @NotEmpty(message = "集合不能为空")
-                                                   CommonValidList<FiducialIdParam> fiducialIdParamList) {
-        fiducialService.delete(fiducialIdParamList);
+                                                   CommonValidList<String> fiducialIdList) {
+        fiducialService.delete(fiducialIdList);
         return CommonResult.ok();
     }
 

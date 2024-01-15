@@ -23,6 +23,14 @@ public interface DevDictApi {
      */
     List<JSONObject> getDictByValue(@RequestParam("value") String value);
 
+
+    /**
+     * 根据字典父节点ID其下所有子字典
+     *
+     * @author : lb
+     * @date : 2023/10/30 16:20
+    */
+    List<JSONObject> getDictByParentId(@RequestParam("parentId") String parentId);
     /**
      * 根据字典名称查询其下所有子字典
      * @param name 字典的名称 DictLabel

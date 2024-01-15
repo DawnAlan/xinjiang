@@ -1,6 +1,7 @@
 package com.cj.project.modular.fiducial.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cj.project.api.fiducial.entity.FiducialBase;
@@ -80,23 +81,63 @@ public class FiducialServiceImpl implements FiducialService {
     public void adds(List<FiducialAddParam> fiducialAddParamList) {
         for (FiducialAddParam fiducialAddParam : fiducialAddParamList
              ) {
-            Map<String,Object> fieldMaps = fiducialAddParam.getDetail();
+            List<Map<String,Object>> fieldMaps = fiducialAddParam.getDetail();
+            for (Map<String,Object> pointFieldMaps : fieldMaps
+                 ) {
+                //Base
+                FiducialBase fiducialBase = BeanUtil.toBean(pointFieldMaps, FiducialBase.class);
+                fiducialBase.setProjectCode(fiducialAddParam.getProjectCode());
+                fiducialBase.setInstrumentType(fiducialAddParam.getInstrumentType());
+                fiducialBaseService.add(fiducialBase);
+                String fiducialId = fiducialBase.getId();
+                //分离Base、para字段
+                Map<String,Object> paramsMap = pointFieldMaps;
+                Field[] baseFields = ReflectUtil.getFields(FiducialBase.class);
+                for (Field field : baseFields) {
+                    if(pointFieldMaps.containsKey(field.getName()))
+                        paramsMap.remove(field.getName());
+                }
+                //para
+                List<FiducialParaAddParam> paraFieldList = new ArrayList<>();
+                for (String mapkey :
+                        paramsMap.keySet()){
+                    if(ObjectUtil.isEmpty(paramsMap.get(mapkey)))
+                        continue;
+                    FiducialParaAddParam para = new FiducialParaAddParam();
+                    para.setPointId(fiducialId);
+                    para.setFieldKey(mapkey);
+                    para.setFieldValue(paramsMap.get(mapkey).toString());
+                    paraFieldList.add(para);
+                }
+                fiducialParaService.adds(paraFieldList);
+            }
+
+        }
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void addsByMap(List<Map<String, Object>>  fiducialAddList) {
+        for (Map<String,Object> pointFieldMaps : fiducialAddList
+        ) {
             //Base
-            FiducialBase fiducialBase = BeanUtil.toBean(fieldMaps, FiducialBase.class);
-            fiducialBase.setInstrumentType(fiducialAddParam.getInstrumentType());
+            FiducialBase fiducialBase = BeanUtil.toBean(pointFieldMaps, FiducialBase.class);
             fiducialBaseService.add(fiducialBase);
             String fiducialId = fiducialBase.getId();
             //分离Base、para字段
-            Map<String,Object> paramsMap = fieldMaps;
+            Map<String, Object> paramsMap = new HashMap<>();
+            paramsMap.putAll(pointFieldMaps);
             Field[] baseFields = ReflectUtil.getFields(FiducialBase.class);
             for (Field field : baseFields) {
-                if(fieldMaps.containsKey(field.getName()))
+                if(pointFieldMaps.containsKey(field.getName()))
                     paramsMap.remove(field.getName());
             }
             //para
             List<FiducialParaAddParam> paraFieldList = new ArrayList<>();
             for (String mapkey :
                     paramsMap.keySet()){
+                if(ObjectUtil.isEmpty(paramsMap.get(mapkey)))
+                    continue;
                 FiducialParaAddParam para = new FiducialParaAddParam();
                 para.setPointId(fiducialId);
                 para.setFieldKey(mapkey);
@@ -117,11 +158,11 @@ public class FiducialServiceImpl implements FiducialService {
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void delete(List<FiducialIdParam> fiducialIdParamList) {
+    public void delete(List<String> fiducialIdList) {
         // 执行删除Base
-        fiducialBaseService.delete(fiducialIdParamList);
+        fiducialBaseService.delete(fiducialIdList);
         // 执行删除Para
-        fiducialParaService.deleteByPoint(fiducialIdParamList);
+        fiducialParaService.deleteByPoint(fiducialIdList);
     }
 
     @Override

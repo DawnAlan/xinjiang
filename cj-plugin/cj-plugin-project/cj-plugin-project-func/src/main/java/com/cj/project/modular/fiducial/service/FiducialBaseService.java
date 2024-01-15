@@ -45,7 +45,7 @@ public interface FiducialBaseService extends IService<FiducialBase> {
      * @author Lb
      * @date  2023/09/04 19:57
      */
-    void delete(List<FiducialIdParam> fiducialIdParamList);
+    void delete(List<String> fiducialIdList);
 
     /**
      * 获取测点考证_基础数据表详情

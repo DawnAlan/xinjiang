@@ -39,7 +39,7 @@ public interface FiducialParaService extends IService<FiducialPara> {
      */
     void delete(List<FiducialParaIdParam> fiducialParaIdParamList);
 
-    void deleteByPoint(List<FiducialIdParam> fiducialIdParamList);
+    void deleteByPoint(List<String> fiducialIdParamList);
 
     /**
      * 获取考证参数集合

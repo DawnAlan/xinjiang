@@ -72,9 +72,9 @@ public class FiducialBaseServiceImpl extends ServiceImpl<FiducialBaseMapper, Fid
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void delete(List<FiducialIdParam> fiducialIdParamList) {
+    public void delete(List<String> fiducialIdList) {
         // 执行删除
-        this.removeByIds(CollStreamUtil.toList(fiducialIdParamList, FiducialIdParam::getId));
+        this.removeByIds(fiducialIdList);
     }
 
     @Override
@@ -138,9 +138,11 @@ public class FiducialBaseServiceImpl extends ServiceImpl<FiducialBaseMapper, Fid
         if(ObjectUtil.isNotEmpty(projectCode)) {
             queryWrapper.lambda().eq(FiducialBase::getProjectCode, projectCode);
         }
-        List<String> instruments = StrSplitter.split(instrumentStr, ',', 0, true, true);
-        if(ObjectUtil.isNotEmpty(instruments)) {
-            queryWrapper.lambda().in(FiducialBase::getInstrumentType, instruments);
+
+        if(ObjectUtil.isNotEmpty(instrumentStr)) {
+            List<String> instruments = StrSplitter.split(instrumentStr, ',', 0, true, true);
+            if(ObjectUtil.isNotEmpty(instruments))
+                queryWrapper.lambda().in(FiducialBase::getInstrumentType, instruments);
         }
         queryWrapper.lambda().orderByAsc(FiducialBase::getId);
 

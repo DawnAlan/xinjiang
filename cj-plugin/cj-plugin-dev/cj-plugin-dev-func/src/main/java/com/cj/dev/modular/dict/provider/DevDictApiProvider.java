@@ -36,6 +36,14 @@ public class DevDictApiProvider implements DevDictApi {
     }
 
     @Override
+    public List<JSONObject> getDictByParentId(String parentId) {
+        DevDictListParam devDictListParam = new DevDictListParam();
+        devDictListParam.setParentId(parentId);
+
+        return devDictService.list(devDictListParam).stream().map(JSONUtil::parseObj).collect(Collectors.toList());
+    }
+
+    @Override
     public List<JSONObject> getDictByName(String name) {
         return null;
     }

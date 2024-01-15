@@ -44,7 +44,7 @@ public class FiducialBase extends CommonEntity implements TransPojo {
     private String projectCode;
 
     /** 项目仪器类型ID */
-    @ApiModelProperty(value = "项目仪器类型ID", position = 3, notes = "base_field")
+    @ApiModelProperty(value = "仪器类型", position = 3, notes = "base_field")
     private String instrumentType;
 
     /** 测点编号 */
@@ -55,6 +55,10 @@ public class FiducialBase extends CommonEntity implements TransPojo {
     @ApiModelProperty(value = "测点别名", position = 5, notes = "base_field")
     private String pointAlias;
 
+    /** 监测类型 */
+    @ApiModelProperty(value = "监测类型", position = 5, notes = "base_field")
+
+    private String monitorName;
     /** 传感器类型 */
     @ApiModelProperty(value = "传感器类型", position = 6, notes = "base_field")
     private String sensorType;
@@ -114,6 +118,10 @@ public class FiducialBase extends CommonEntity implements TransPojo {
     /** 仪器型号 */
     @ApiModelProperty(value = "仪器型号", position = 19, notes = "param_field")
     private String modelName;
+
+    /** 仪器量程 */
+    @ApiModelProperty(value = "仪器量程", position = 19, notes = "param_field")
+    private String instrumentSpan;
 
     /** 传感器名称 */
     @ApiModelProperty(value = "传感器名称", position = 20, notes = "param_field")

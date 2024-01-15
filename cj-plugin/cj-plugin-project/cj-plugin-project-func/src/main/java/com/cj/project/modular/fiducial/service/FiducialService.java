@@ -32,9 +32,10 @@ public interface FiducialService {
      * @author Lb
      * @date  2023/09/04 12:25
      */
-    void add(String projectCode, String instrumentID, Map<String,Object> fieldMaps);
+    void add(String projectCode, String instrumentType, Map<String,Object> fieldMaps);
 
     void adds(List<FiducialAddParam> fiducialAddParamList);
+    void addsByMap(List<Map<String, Object>>  fiducialAddList);
 
     /**
      * 编辑测点考证
@@ -50,7 +51,7 @@ public interface FiducialService {
      * @author Lb
      * @date  2023/09/04 12:25
      */
-    void delete(List<FiducialIdParam> fiducialIdParamList);
+    void delete(List<String> fiducialIdList);
 
     /**
      * 合成考证结果
