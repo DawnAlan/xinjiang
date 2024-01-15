@@ -286,7 +286,7 @@ public class ConfigFieldFiducialServiceImpl extends ServiceImpl<ConfigFieldFiduc
             Map<String , String> paraFormatMap = new HashMap<>();
             configFieldFiducials.forEach( e -> paraFormatMap.put(e.getFieldKey() , e.getSystemType()));
 
-            DateFormat dateFormat = new SimpleDateFormat("YYYY-MM-DD HH:mm:ss");
+            DateFormat dateFormat = new SimpleDateFormat("YYYY/MM/DD HH:mm:ss");
             int lastRowNum = sheetAt.getLastRowNum();
             for (int i = 2 ; i <= lastRowNum ; i ++){
                 Row row = sheetAt.getRow(i);
