@@ -80,7 +80,7 @@ public class ConfigFieldDataController {
     @ApiOperationSupport(order = 3)
     @ApiOperation("编辑数据字段配置")
     @CommonLog("编辑考证数据配置")
-    @SaCheckPermission("/project/configfield/data/edit")
+    @SaCheckPermission("/project/configfield/data/deletePermissions")
     @PostMapping("/project/configfield/data/edit")
     public CommonResult<String> edit(@RequestBody @Valid ConfigFieldData configFieldData) {
         configFieldDataService.edit(configFieldData);

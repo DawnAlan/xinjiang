@@ -135,6 +135,7 @@ public class TreeModelController {
      */
     @ApiOperationSupport(order = 5)
     @ApiOperation("获取测点树详情")
+    @CommonLog("获取测点树详情")
     @GetMapping("/project/treemodel/detail")
     public CommonResult<TreeModel> detail(@Valid TreeModelTreeDto treeModelIdParam) {
         return CommonResult.data(treeModelService.detail(treeModelIdParam));
@@ -143,14 +144,31 @@ public class TreeModelController {
     /**
      * 树初始化数据接口
      *
-     * @author Lb
+     * @author zsy
      * @date 2023/09/14 16:41
      */
     @ApiOperationSupport(order = 6)
     @ApiOperation("树初始化数据接口")
+    @CommonLog("树初始化数据接口")
     @GetMapping("/project/treemodel/generateTree")
     public CommonResult generateTree(@RequestParam("projectCode") String projectCode) {
         treeModelService.generateTree(projectCode);
         return CommonResult.ok();
     }
+
+    /**
+     * 拖拽变更同级节点排序
+     *
+     * @author zsy
+     * @date 2023/09/14 16:41
+     */
+    @ApiOperationSupport(order = 7)
+    @ApiOperation("拖拽变更同级节点排序")
+    @CommonLog("拖拽变更同级节点排序")
+    @PostMapping("/project/treemodel/changeTreeSort")
+    public CommonResult changeTreeSort(@RequestBody List<TreeModelDto> treeModelDtoList) {
+        boolean result = treeModelService.changeTreeSort(treeModelDtoList);
+        return result ? CommonResult.ok() : CommonResult.error("变更顺序失败");
+    }
+
 }

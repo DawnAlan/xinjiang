@@ -3,8 +3,6 @@ package com.cj.project.modular.treemodel.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollStreamUtil;
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.lang.Snowflake;
-import cn.hutool.core.lang.generator.SnowflakeGenerator;
 import cn.hutool.core.lang.tree.Tree;
 import cn.hutool.core.lang.tree.TreeNode;
 import cn.hutool.core.lang.tree.TreeUtil;
@@ -16,7 +14,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cj.common.pojo.CommonEntity;
-import com.cj.common.util.UUIDUtils;
 import com.cj.project.api.fiducial.entity.FiducialBase;
 import com.cj.project.api.treemodel.dto.TreeModelDto;
 import com.cj.project.api.treemodel.dto.TreeModelTreeDto;
@@ -60,11 +57,9 @@ public class TreeModelServiceImpl extends ServiceImpl<TreeModelMapper, TreeModel
                 //树目录类型
                 .eq(ObjectUtil.isNotEmpty(treeModelTreeParam.getCategory()), TreeModel::getCategory, treeModelTreeParam.getCategory())
                 .eq(CommonEntity::getDeleteFlag, TreeModelEnum.NOT_DELETE.getValue())
-                //绑定的测点id
-                .eq(ObjectUtil.isNotEmpty(treeModelTreeParam.getPointId()), TreeModel::getPointId, treeModelTreeParam.getPointId())
                 .orderByAsc(TreeModel::getSortCode)
         );
-        if (StringUtils.isNotEmpty(treeModelTreeParam.getNodeName())) {
+        if (StringUtils.isNotEmpty(treeModelTreeParam.getNodeName()) || ObjectUtil.isNotEmpty(treeModelTreeParam.getPointId())) {
             List<TreeModel> list = this.list(new LambdaQueryWrapper<TreeModel>()
                     //项目code
                     .eq(ObjectUtil.isNotEmpty(treeModelTreeParam.getProjectCode()), TreeModel::getProjectCode, treeModelTreeParam.getProjectCode())
@@ -227,7 +222,7 @@ public class TreeModelServiceImpl extends ServiceImpl<TreeModelMapper, TreeModel
                 .eq(FiducialBase::getProjectCode, projectCode));
         //（2）分别根据字段进行分组
         //分项工程->分部工程->仪器类型->测点编号
-        log.debug(JSON.toJSONString(list));
+        /*log.debug(JSON.toJSONString(list));*/
         if (CollUtil.isEmpty(list) || list.isEmpty()) {
             throw new CommonException(300, "初始化数据失败:未查询到未删除的,项目编号为：" + projectCode + " 的数据");
         }
@@ -376,5 +371,24 @@ public class TreeModelServiceImpl extends ServiceImpl<TreeModelMapper, TreeModel
                 .set(CommonEntity::getDeleteFlag, TreeModelEnum.DELETE.getValue()));
         //（5）入库
         this.saveBatch(treeModelList);
+    }
+
+    /**
+     * 拖拽变更同级节点排序
+     *
+     * @param treeModelDtoList 前端处理好的顺序结构
+     * @return 变更状态
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean changeTreeSort(List<TreeModelDto> treeModelDtoList) {
+        List<TreeModel> treeModelList = new ArrayList<>();
+        for (int i = 0; i < treeModelDtoList.size(); i++) {
+            TreeModelDto treeModelDto = treeModelDtoList.get(i);
+            TreeModel treeModel = BeanUtil.copyProperties(treeModelDto, TreeModel.class);
+            treeModel.setSortCode(i);
+            treeModelList.add(treeModel);
+        }
+        return this.updateBatchById(treeModelList);
     }
 }

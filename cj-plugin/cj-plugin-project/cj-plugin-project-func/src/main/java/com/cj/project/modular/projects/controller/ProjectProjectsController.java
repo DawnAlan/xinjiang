@@ -106,7 +106,7 @@ public class ProjectProjectsController {
     @ApiOperationSupport(order = 3)
     @ApiOperation("编辑项目")
     @CommonLog("编辑项目")
-    // @SaCheckPermission("/project/projects/edit")
+    // @SaCheckPermission("/project/projects/deletePermissions")
     @PostMapping("/project/projects/edit")
     public CommonResult<String> edit(@RequestBody @Valid ProjectProjectsEditParam projectProjectsEditParam) {
         projectProjectsService.edit(projectProjectsEditParam);

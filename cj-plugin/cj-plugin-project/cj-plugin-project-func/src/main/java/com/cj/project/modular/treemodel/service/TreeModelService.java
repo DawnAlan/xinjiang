@@ -85,6 +85,8 @@ public interface TreeModelService extends IService<TreeModel> {
      */
     void generateTree(String projectCode);
 
+    boolean changeTreeSort(List<TreeModelDto> treeModelDtoList);
+
     /// <summary>
     /// 获取所有未绑定到测点树的测点
     /// </summary>
