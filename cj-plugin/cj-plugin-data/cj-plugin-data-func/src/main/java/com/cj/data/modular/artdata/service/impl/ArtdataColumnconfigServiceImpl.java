@@ -10,7 +10,7 @@
  * 5.不可二次分发开源参与同类竞品，如有想法可联系团队xiaonuobase@qq.com商议合作。
  * 6.若您的项目无法满足以上几点，需要更多功能代码，获取Snowy商业授权许可，请在官网购买授权，地址为 https://www.xiaonuo.vip
  */
-package com.cj.biz.modular.columnconfig.service.impl;
+package com.cj.data.modular.artdata.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollStreamUtil;
@@ -24,21 +24,21 @@ import org.springframework.transaction.annotation.Transactional;
 import com.cj.common.enums.CommonSortOrderEnum;
 import com.cj.common.exception.CommonException;
 import com.cj.common.page.CommonPageRequest;
-import com.cj.biz.modular.columnconfig.entity.ArtdataColumnconfig;
-import com.cj.biz.modular.columnconfig.mapper.ArtdataColumnconfigMapper;
-import com.cj.biz.modular.columnconfig.param.ArtdataColumnconfigAddParam;
-import com.cj.biz.modular.columnconfig.param.ArtdataColumnconfigEditParam;
-import com.cj.biz.modular.columnconfig.param.ArtdataColumnconfigIdParam;
-import com.cj.biz.modular.columnconfig.param.ArtdataColumnconfigPageParam;
-import com.cj.biz.modular.columnconfig.service.ArtdataColumnconfigService;
+import com.cj.data.api.artdata.entity.ArtdataColumnconfig;
+import com.cj.data.api.artdata.param.ArtdataColumnconfigAddParam;
+import com.cj.data.api.artdata.param.ArtdataColumnconfigEditParam;
+import com.cj.data.api.artdata.param.ArtdataColumnconfigIdParam;
+import com.cj.data.api.artdata.param.ArtdataColumnconfigPageParam;
+import com.cj.data.modular.artdata.mapper.ArtdataColumnconfigMapper;
+import com.cj.data.modular.artdata.service.ArtdataColumnconfigService;
 
 import java.util.List;
 
 /**
  * 格式配置表Service接口实现类
  *
- * @author dengdi
- * @date  2023/08/22 10:10
+ * @author dd
+ * @date  2024/01/12 17:23
  **/
 @Service
 public class ArtdataColumnconfigServiceImpl extends ServiceImpl<ArtdataColumnconfigMapper, ArtdataColumnconfig> implements ArtdataColumnconfigService {
@@ -46,14 +46,20 @@ public class ArtdataColumnconfigServiceImpl extends ServiceImpl<ArtdataColumncon
     @Override
     public Page<ArtdataColumnconfig> page(ArtdataColumnconfigPageParam artdataColumnconfigPageParam) {
         QueryWrapper<ArtdataColumnconfig> queryWrapper = new QueryWrapper<>();
-        if(ObjectUtil.isNotEmpty(artdataColumnconfigPageParam.getPointname())) {
-            queryWrapper.lambda().like(ArtdataColumnconfig::getPointname, artdataColumnconfigPageParam.getPointname());
+        if(ObjectUtil.isNotEmpty(artdataColumnconfigPageParam.getColumnconfigName())) {
+            queryWrapper.lambda().eq(ArtdataColumnconfig::getColumnconfigName, artdataColumnconfigPageParam.getColumnconfigName());
         }
-        if(ObjectUtil.isNotEmpty(artdataColumnconfigPageParam.getInstrumentname())) {
-            queryWrapper.lambda().like(ArtdataColumnconfig::getInstrumentname, artdataColumnconfigPageParam.getInstrumentname());
+        if(ObjectUtil.isNotEmpty(artdataColumnconfigPageParam.getInstrumentName())) {
+            queryWrapper.lambda().eq(ArtdataColumnconfig::getInstrumentName, artdataColumnconfigPageParam.getInstrumentName());
         }
-        if(ObjectUtil.isNotEmpty(artdataColumnconfigPageParam.getFilepath())) {
-            queryWrapper.lambda().like(ArtdataColumnconfig::getFilepath, artdataColumnconfigPageParam.getFilepath());
+        if(ObjectUtil.isNotEmpty(artdataColumnconfigPageParam.getFilePath())) {
+            queryWrapper.lambda().eq(ArtdataColumnconfig::getFilePath, artdataColumnconfigPageParam.getFilePath());
+        }
+        if(ObjectUtil.isNotEmpty(artdataColumnconfigPageParam.getReaddirectiOn())) {
+            queryWrapper.lambda().eq(ArtdataColumnconfig::getReaddirectiOn, artdataColumnconfigPageParam.getReaddirectiOn());
+        }
+        if(ObjectUtil.isNotEmpty(artdataColumnconfigPageParam.getPointId())) {
+            queryWrapper.lambda().eq(ArtdataColumnconfig::getPointId, artdataColumnconfigPageParam.getPointId());
         }
         if(ObjectUtil.isAllNotEmpty(artdataColumnconfigPageParam.getSortField(), artdataColumnconfigPageParam.getSortOrder())) {
             CommonSortOrderEnum.validate(artdataColumnconfigPageParam.getSortOrder());

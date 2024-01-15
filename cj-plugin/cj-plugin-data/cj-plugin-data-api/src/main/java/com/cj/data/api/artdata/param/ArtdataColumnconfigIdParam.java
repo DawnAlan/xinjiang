@@ -10,25 +10,26 @@
  * 5.不可二次分发开源参与同类竞品，如有想法可联系团队xiaonuobase@qq.com商议合作。
  * 6.若您的项目无法满足以上几点，需要更多功能代码，获取Snowy商业授权许可，请在官网购买授权，地址为 https://www.xiaonuo.vip
  */
-package com.cj.biz.modular.columnconfig.enums;
+package com.cj.data.api.artdata.param;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
+import lombok.Setter;
+
+import javax.validation.constraints.NotBlank;
 
 /**
- * 格式配置表枚举
+ * 格式配置表Id参数
  *
- * @author dengdi
- * @date  2023/08/22 10:10
+ * @author dd
+ * @date  2024/01/12 17:23
  **/
 @Getter
-public enum ArtdataColumnconfigEnum {
+@Setter
+public class ArtdataColumnconfigIdParam {
 
-    /** 测试 */
-    TEST("TEST");
-
-    private final String value;
-
-    ArtdataColumnconfigEnum(String value) {
-        this.value = value;
-    }
+    /** 配置id */
+    @ApiModelProperty(value = "配置id", required = true)
+    @NotBlank(message = "uid不能为空")
+    private String uid;
 }

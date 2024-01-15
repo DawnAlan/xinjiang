@@ -10,26 +10,28 @@
  * 5.不可二次分发开源参与同类竞品，如有想法可联系团队xiaonuobase@qq.com商议合作。
  * 6.若您的项目无法满足以上几点，需要更多功能代码，获取Snowy商业授权许可，请在官网购买授权，地址为 https://www.xiaonuo.vip
  */
-package com.cj.biz.modular.columnconfig.controller;
+package com.cj.data.modular.artdata.controller;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
-import cn.dev33.satoken.annotation.SaIgnore;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSupport;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 import com.cj.common.annotation.CommonLog;
 import com.cj.common.pojo.CommonResult;
 import com.cj.common.pojo.CommonValidList;
-import com.cj.biz.modular.columnconfig.entity.ArtdataColumnconfig;
-import com.cj.biz.modular.columnconfig.param.ArtdataColumnconfigAddParam;
-import com.cj.biz.modular.columnconfig.param.ArtdataColumnconfigEditParam;
-import com.cj.biz.modular.columnconfig.param.ArtdataColumnconfigIdParam;
-import com.cj.biz.modular.columnconfig.param.ArtdataColumnconfigPageParam;
-import com.cj.biz.modular.columnconfig.service.ArtdataColumnconfigService;
+import com.cj.data.api.artdata.entity.ArtdataColumnconfig;
+import com.cj.data.api.artdata.param.ArtdataColumnconfigAddParam;
+import com.cj.data.api.artdata.param.ArtdataColumnconfigEditParam;
+import com.cj.data.api.artdata.param.ArtdataColumnconfigIdParam;
+import com.cj.data.api.artdata.param.ArtdataColumnconfigPageParam;
+import com.cj.data.modular.artdata.service.ArtdataColumnconfigService;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
@@ -38,8 +40,8 @@ import javax.validation.constraints.NotEmpty;
 /**
  * 格式配置表控制器
  *
- * @author dengdi
- * @date  2023/08/22 10:10
+ * @author dd
+ * @date  2024/01/12 17:23
  */
 @Api(tags = "格式配置表控制器")
 @ApiSupport(author = "SNOWY_TEAM", order = 1)
@@ -53,12 +55,13 @@ public class ArtdataColumnconfigController {
     /**
      * 获取格式配置表分页
      *
-     * @author dengdi
-     * @date  2023/08/22 10:10
+     * @author dd
+     * @date  2024/01/12 17:23
      */
     @ApiOperationSupport(order = 1)
     @ApiOperation("获取格式配置表分页")
-    @GetMapping("/columnconfig/page")
+    @SaCheckPermission("/biz/artdatacolumnconfig/page")
+    @GetMapping("/biz/artdatacolumnconfig/page")
     public CommonResult<Page<ArtdataColumnconfig>> page(ArtdataColumnconfigPageParam artdataColumnconfigPageParam) {
         return CommonResult.data(artdataColumnconfigService.page(artdataColumnconfigPageParam));
     }
@@ -66,13 +69,14 @@ public class ArtdataColumnconfigController {
     /**
      * 添加格式配置表
      *
-     * @author dengdi
-     * @date  2023/08/22 10:10
+     * @author dd
+     * @date  2024/01/12 17:23
      */
     @ApiOperationSupport(order = 2)
     @ApiOperation("添加格式配置表")
     @CommonLog("添加格式配置表")
-    @PostMapping("/columnconfig/add")
+    @SaCheckPermission("/biz/artdatacolumnconfig/add")
+    @PostMapping("/biz/artdatacolumnconfig/add")
     public CommonResult<String> add(@RequestBody @Valid ArtdataColumnconfigAddParam artdataColumnconfigAddParam) {
         artdataColumnconfigService.add(artdataColumnconfigAddParam);
         return CommonResult.ok();
@@ -81,13 +85,14 @@ public class ArtdataColumnconfigController {
     /**
      * 编辑格式配置表
      *
-     * @author dengdi
-     * @date  2023/08/22 10:10
+     * @author dd
+     * @date  2024/01/12 17:23
      */
     @ApiOperationSupport(order = 3)
     @ApiOperation("编辑格式配置表")
     @CommonLog("编辑格式配置表")
-    @PostMapping("/columnconfig/edit")
+    @SaCheckPermission("/biz/artdatacolumnconfig/edit")
+    @PostMapping("/biz/artdatacolumnconfig/edit")
     public CommonResult<String> edit(@RequestBody @Valid ArtdataColumnconfigEditParam artdataColumnconfigEditParam) {
         artdataColumnconfigService.edit(artdataColumnconfigEditParam);
         return CommonResult.ok();
@@ -96,13 +101,14 @@ public class ArtdataColumnconfigController {
     /**
      * 删除格式配置表
      *
-     * @author dengdi
-     * @date  2023/08/22 10:10
+     * @author dd
+     * @date  2024/01/12 17:23
      */
     @ApiOperationSupport(order = 4)
     @ApiOperation("删除格式配置表")
     @CommonLog("删除格式配置表")
-    @PostMapping("/biz/columnconfig/delete")
+    @SaCheckPermission("/biz/artdatacolumnconfig/delete")
+    @PostMapping("/biz/artdatacolumnconfig/delete")
     public CommonResult<String> delete(@RequestBody @Valid @NotEmpty(message = "集合不能为空")
                                                    CommonValidList<ArtdataColumnconfigIdParam> artdataColumnconfigIdParamList) {
         artdataColumnconfigService.delete(artdataColumnconfigIdParamList);
@@ -112,12 +118,13 @@ public class ArtdataColumnconfigController {
     /**
      * 获取格式配置表详情
      *
-     * @author dengdi
-     * @date  2023/08/22 10:10
+     * @author dd
+     * @date  2024/01/12 17:23
      */
     @ApiOperationSupport(order = 5)
     @ApiOperation("获取格式配置表详情")
-    @GetMapping("/columnconfig/detail")
+    @SaCheckPermission("/biz/artdatacolumnconfig/detail")
+    @GetMapping("/biz/artdatacolumnconfig/detail")
     public CommonResult<ArtdataColumnconfig> detail(@Valid ArtdataColumnconfigIdParam artdataColumnconfigIdParam) {
         return CommonResult.data(artdataColumnconfigService.detail(artdataColumnconfigIdParam));
     }

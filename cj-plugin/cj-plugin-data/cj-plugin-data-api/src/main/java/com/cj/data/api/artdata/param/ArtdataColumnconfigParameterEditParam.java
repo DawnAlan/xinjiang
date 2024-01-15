@@ -10,26 +10,42 @@
  * 5.不可二次分发开源参与同类竞品，如有想法可联系团队xiaonuobase@qq.com商议合作。
  * 6.若您的项目无法满足以上几点，需要更多功能代码，获取Snowy商业授权许可，请在官网购买授权，地址为 https://www.xiaonuo.vip
  */
-package com.cj.biz.modular.columnconfig.param;
+package com.cj.data.api.artdata.param;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import java.math.BigDecimal;
+import java.util.Date;
 
 /**
- * 格式配置表Id参数
+ * 模板列参数表编辑参数
  *
- * @author dengdi
- * @date  2023/08/22 10:10
+ * @author dd
+ * @date  2024/01/12 17:25
  **/
 @Getter
 @Setter
-public class ArtdataColumnconfigIdParam {
+public class ArtdataColumnconfigParameterEditParam {
+
+    /** id */
+    @ApiModelProperty(value = "id", required = true, position = 1)
+    @NotBlank(message = "id不能为空")
+    private String id;
 
     /** 配置id */
-    @ApiModelProperty(value = "配置id", required = true)
-    @NotBlank(message = "uid不能为空")
-    private String uid;
+    @ApiModelProperty(value = "配置id", position = 2)
+    private String columnconfigId;
+
+    /** 参数名 */
+    @ApiModelProperty(value = "参数名", position = 3)
+    private String parameterName;
+
+    /** 参数位置 */
+    @ApiModelProperty(value = "参数位置", position = 4)
+    private String parameterAt;
+
 }

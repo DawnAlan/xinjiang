@@ -10,71 +10,71 @@
  * 5.不可二次分发开源参与同类竞品，如有想法可联系团队xiaonuobase@qq.com商议合作。
  * 6.若您的项目无法满足以上几点，需要更多功能代码，获取Snowy商业授权许可，请在官网购买授权，地址为 https://www.xiaonuo.vip
  */
-package com.cj.biz.modular.columnconfig.service;
+package com.cj.data.modular.artdata.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.cj.biz.modular.columnconfig.entity.ArtdataColumnconfig;
-import com.cj.biz.modular.columnconfig.param.ArtdataColumnconfigAddParam;
-import com.cj.biz.modular.columnconfig.param.ArtdataColumnconfigEditParam;
-import com.cj.biz.modular.columnconfig.param.ArtdataColumnconfigIdParam;
-import com.cj.biz.modular.columnconfig.param.ArtdataColumnconfigPageParam;
+import com.cj.data.api.artdata.entity.ArtdataColumnconfig;
+import com.cj.data.api.artdata.param.ArtdataColumnconfigAddParam;
+import com.cj.data.api.artdata.param.ArtdataColumnconfigEditParam;
+import com.cj.data.api.artdata.param.ArtdataColumnconfigIdParam;
+import com.cj.data.api.artdata.param.ArtdataColumnconfigPageParam;
 
 import java.util.List;
 
 /**
  * 格式配置表Service接口
  *
- * @author dengdi
- * @date  2023/08/22 10:10
+ * @author dd
+ * @date  2024/01/12 17:23
  **/
 public interface ArtdataColumnconfigService extends IService<ArtdataColumnconfig> {
 
     /**
      * 获取格式配置表分页
      *
-     * @author dengdi
-     * @date  2023/08/22 10:10
+     * @author dd
+     * @date  2024/01/12 17:23
      */
     Page<ArtdataColumnconfig> page(ArtdataColumnconfigPageParam artdataColumnconfigPageParam);
 
     /**
      * 添加格式配置表
      *
-     * @author dengdi
-     * @date  2023/08/22 10:10
+     * @author dd
+     * @date  2024/01/12 17:23
      */
     void add(ArtdataColumnconfigAddParam artdataColumnconfigAddParam);
 
     /**
      * 编辑格式配置表
      *
-     * @author dengdi
-     * @date  2023/08/22 10:10
+     * @author dd
+     * @date  2024/01/12 17:23
      */
     void edit(ArtdataColumnconfigEditParam artdataColumnconfigEditParam);
 
     /**
      * 删除格式配置表
      *
-     * @author dengdi
-     * @date  2023/08/22 10:10
+     * @author dd
+     * @date  2024/01/12 17:23
      */
     void delete(List<ArtdataColumnconfigIdParam> artdataColumnconfigIdParamList);
 
     /**
      * 获取格式配置表详情
      *
-     * @author dengdi
-     * @date  2023/08/22 10:10
+     * @author dd
+     * @date  2024/01/12 17:23
      */
     ArtdataColumnconfig detail(ArtdataColumnconfigIdParam artdataColumnconfigIdParam);
 
     /**
      * 获取格式配置表详情
      *
-     * @author dengdi
-     * @date  2023/08/22 10:10
+     * @author dd
+     * @date  2024/01/12 17:23
      **/
     ArtdataColumnconfig queryEntity(String id);
 }
