@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cj.common.annotation.CommonLog;
 import com.cj.common.pojo.CommonResult;
 import com.cj.common.pojo.CommonValidList;
+import com.cj.project.api.configfield.dto.ConfigFieldFiducialDto;
 import com.cj.project.api.fiducial.entity.FiducialBase;
 import com.cj.project.api.fiducial.entity.FiducialPara;
 import com.cj.project.api.fiducial.param.*;
@@ -17,12 +18,12 @@ import com.github.xiaoymin.knife4j.annotations.ApiSupport;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import java.util.ArrayList;
@@ -184,6 +185,25 @@ public class FiducialController {
                                                    CommonValidList<String> fiducialIdList) {
         fiducialService.delete(fiducialIdList);
         return CommonResult.ok();
+    }
+
+
+    @ApiOperationSupport(order = 12)
+    @ApiOperation("项目仪器模板导出")
+    @PostMapping("/project/fiducial/templateExport")
+    public void templateExport(@RequestBody ConfigFieldFiducialDto configFieldFiducialDto,
+                               HttpServletRequest request , HttpServletResponse response) {
+        fiducialService.templateExport(configFieldFiducialDto , request , response);
+    }
+
+
+    @ApiOperationSupport(order = 13)
+    @ApiOperation("项目仪器数据导入")
+    @PostMapping("/project/fiducial/dataImport")
+    public CommonResult dataImport( ConfigFieldFiducialDto configFieldFiducialDto,
+                                    @RequestParam(value = "file") MultipartFile file ) {
+
+        return fiducialService.dataImport(configFieldFiducialDto , file);
     }
 
 }

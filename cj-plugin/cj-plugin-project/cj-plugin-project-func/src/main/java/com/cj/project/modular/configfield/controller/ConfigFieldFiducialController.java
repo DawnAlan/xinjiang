@@ -16,11 +16,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import com.cj.common.annotation.CommonLog;
 import com.cj.common.pojo.CommonResult;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import java.util.List;
@@ -146,7 +143,7 @@ public class ConfigFieldFiducialController {
     }
 
 
-    @ApiOperationSupport(order = 12)
+   /* @ApiOperationSupport(order = 12)
     @ApiOperation(value = "项目仪器模板导出" , tags = "文件名需要前端解码")
     @PostMapping("/project/configfield/fiducial/templateExport")
     public void templateExport(@RequestBody ConfigFieldFiducialDto configFieldFiducialDto,
@@ -162,15 +159,8 @@ public class ConfigFieldFiducialController {
                                         @RequestParam(value = "file")  MultipartFile file ) {
 
         return configFieldFiducialService.dataImport(configFieldFiducialDto , file);
-    }
-
-    /*@ApiOperationSupport(order = 14)
-    @ApiOperation("项目仪器数据导出")
-    @PostMapping("/project/configfield/fiducial/dataExport")
-    public void dataExport(@RequestBody ConfigFieldFiducialDto configFieldFiducialExportDto,
-                           HttpServletRequest request , HttpServletResponse response) {
-        configFieldFiducialService.templateExport(configFieldFiducialExportDto , request , response);
     }*/
+
 
     
 }
