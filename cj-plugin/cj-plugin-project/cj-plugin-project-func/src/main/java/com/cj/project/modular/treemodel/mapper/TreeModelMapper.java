@@ -13,7 +13,7 @@
 package com.cj.project.modular.treemodel.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.cj.project.modular.treemodel.entity.TreeModel;
+import com.cj.project.api.treemodel.entity.TreeModel;
 
 /**
  * 测点树Mapper接口

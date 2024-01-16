@@ -7,6 +7,7 @@ import com.cj.project.api.configfield.dto.ConfigFieldFiducialQueryDto;
 import com.cj.project.api.configfield.entity.ConfigFieldFiducial;
 import com.cj.project.modular.configfield.result.ConfigFieldFiducialResult;
 import com.cj.project.modular.configfield.service.ConfigFieldFiducialGreatService;
+import com.cj.project.modular.configfield.service.ConfigFieldFiducialService;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSupport;
 import io.swagger.annotations.Api;
@@ -15,12 +16,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import com.cj.common.annotation.CommonLog;
 import com.cj.common.pojo.CommonResult;
-import com.cj.project.modular.configfield.service.ConfigFieldFiducialService;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import java.util.List;
@@ -50,9 +47,9 @@ public class ConfigFieldFiducialController {
      */
     @ApiOperationSupport(order = 1)
     @ApiOperation("获取考证字段配置")
-    @CommonLog("添加考证字段配置")
+    @CommonLog("获取考证字段配置")
     @PostMapping("/project/configfield/fiducial/get")
-    public CommonResult<List<ConfigFieldFiducialResult>> getList(ConfigFieldFiducialQueryDto configFieldFiducialQueryDto) {
+    public CommonResult<List<ConfigFieldFiducialResult>> getList(@RequestBody ConfigFieldFiducialQueryDto configFieldFiducialQueryDto) {
         return CommonResult.data(configFieldFiducialService.getList(configFieldFiducialQueryDto));
     }
 
@@ -65,8 +62,8 @@ public class ConfigFieldFiducialController {
      */
     @ApiOperationSupport(order = 1)
     @ApiOperation("获取数据字段配置分页")
-    @PostMapping("/project/configfield/page")
-    public CommonResult<Page<ConfigFieldFiducial>> page(ConfigFieldFiducialPageDto configFieldFiducialPageDto) {
+    @PostMapping("/project/configfield/fiducial/page")
+    public CommonResult<Page<ConfigFieldFiducial>> page(@RequestBody ConfigFieldFiducialPageDto configFieldFiducialPageDto) {
         return CommonResult.data(configFieldFiducialService.page(configFieldFiducialPageDto));
     }
 
@@ -146,30 +143,24 @@ public class ConfigFieldFiducialController {
     }
 
 
-    @ApiOperationSupport(order = 12)
+   /* @ApiOperationSupport(order = 12)
     @ApiOperation(value = "项目仪器模板导出" , tags = "文件名需要前端解码")
     @PostMapping("/project/configfield/fiducial/templateExport")
-    public void templateExport(@RequestBody ConfigFieldFiducialDto configFieldFiducialExportDto,
+    public void templateExport(@RequestBody ConfigFieldFiducialDto configFieldFiducialDto,
                                HttpServletRequest request , HttpServletResponse response) {
-        configFieldFiducialService.templateExport(configFieldFiducialExportDto , request , response);
+        configFieldFiducialService.templateExport(configFieldFiducialDto , request , response);
     }
 
 
     @ApiOperationSupport(order = 13)
     @ApiOperation("项目仪器数据导入")
     @PostMapping("/project/configfield/fiducial/dataImport")
-    public CommonResult dataImport(@RequestParam(value = "file")  MultipartFile file ) {
+    public CommonResult dataImport( ConfigFieldFiducialDto configFieldFiducialDto,
+                                        @RequestParam(value = "file")  MultipartFile file ) {
 
-        return configFieldFiducialService.dataImport(file);
-    }
+        return configFieldFiducialService.dataImport(configFieldFiducialDto , file);
+    }*/
 
-    @ApiOperationSupport(order = 14)
-    @ApiOperation("项目仪器数据导出")
-    @PostMapping("/project/configfield/fiducial/dataExport")
-    public void dataExport(@RequestBody ConfigFieldFiducialDto configFieldFiducialExportDto,
-                           HttpServletRequest request , HttpServletResponse response) {
-        configFieldFiducialService.templateExport(configFieldFiducialExportDto , request , response);
-    }
 
     
 }

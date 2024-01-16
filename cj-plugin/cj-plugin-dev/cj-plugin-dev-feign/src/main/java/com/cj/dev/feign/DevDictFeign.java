@@ -24,6 +24,8 @@ public interface DevDictFeign {
     String getDictByValue(@RequestParam("value") String value);
 
 
+    @RequestMapping("/feign/dev/dict/getDictByParentId")
+    String getDictByParentId(@RequestParam("parentId") String parentId);
 
     /**
      * 根据字典名称查询其下所有子字典

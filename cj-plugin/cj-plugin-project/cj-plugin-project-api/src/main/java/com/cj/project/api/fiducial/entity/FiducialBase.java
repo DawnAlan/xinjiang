@@ -44,7 +44,7 @@ public class FiducialBase extends CommonEntity implements TransPojo {
     private String projectCode;
 
     /** 项目仪器类型ID */
-    @ApiModelProperty(value = "项目仪器类型ID", position = 3, notes = "base_field")
+    @ApiModelProperty(value = "仪器类型", position = 3, notes = "base_field")
     private String instrumentType;
 
     /** 测点编号 */
@@ -55,6 +55,10 @@ public class FiducialBase extends CommonEntity implements TransPojo {
     @ApiModelProperty(value = "测点别名", position = 5, notes = "base_field")
     private String pointAlias;
 
+    /** 监测类型 */
+    @ApiModelProperty(value = "监测类型", position = 5, notes = "base_field")
+
+    private String monitorName;
     /** 传感器类型 */
     @ApiModelProperty(value = "传感器类型", position = 6, notes = "base_field")
     private String sensorType;
@@ -97,7 +101,7 @@ public class FiducialBase extends CommonEntity implements TransPojo {
 
     /** 断面 */
     @ApiModelProperty(value = "断面", position = 15, notes = "position_field")
-    private String section;
+    private String monitorSection;
 
     /** 观测频次 */
     @ApiModelProperty(value = "观测频次", position = 16, notes = "status_field")
@@ -114,6 +118,10 @@ public class FiducialBase extends CommonEntity implements TransPojo {
     /** 仪器型号 */
     @ApiModelProperty(value = "仪器型号", position = 19, notes = "param_field")
     private String modelName;
+
+    /** 仪器量程 */
+    @ApiModelProperty(value = "仪器量程", position = 19, notes = "param_field")
+    private String instrumentSpan;
 
     /** 传感器名称 */
     @ApiModelProperty(value = "传感器名称", position = 20, notes = "param_field")
@@ -133,19 +141,19 @@ public class FiducialBase extends CommonEntity implements TransPojo {
 
     /** 安装时间 */
     @ApiModelProperty(value = "安装时间", position = 24, notes = "status_field")
-    private Date installTime;
+    private String installTime;
 
     /** 失效时间 */
     @ApiModelProperty(value = "失效时间", position = 25, notes = "status_field")
-    private Date invalidTime;
+    private String invalidTime;
 
     /** 首次数据时间 */
     @ApiModelProperty(value = "首次数据时间", position = 26, notes = "status_field")
-    private Date firstdataTime;
+    private String firstdataTime;
 
     /** 最后数据时间 */
     @ApiModelProperty(value = "最后数据时间", position = 27, notes = "status_field")
-    private Date lastdataTime;
+    private String lastdataTime;
 
     /** 备注 */
     @ApiModelProperty(value = "备注", position = 28, notes = "status_field")

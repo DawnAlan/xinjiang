@@ -45,8 +45,8 @@ public class ProjectInstrumentsController {
      */
     @ApiOperationSupport(order = 1)
     @ApiOperation("获取项目仪器表分页")
-    @GetMapping("/project/instruments/page")
-    public CommonResult<Page<ProjectInstruments>> page(ProjectInstrumentsPageDto projectInstrumentsPageDto) {
+    @PostMapping("/project/instruments/page")
+    public CommonResult<Page<ProjectInstruments>> page(@RequestBody ProjectInstrumentsPageDto projectInstrumentsPageDto) {
         return CommonResult.data(projectInstrumentsService.page(projectInstrumentsPageDto));
     }
 
@@ -112,9 +112,10 @@ public class ProjectInstrumentsController {
 
     @ApiOperationSupport(order = 6)
     @ApiOperation("获取项目仪器表列表")
-    @GetMapping("/project/instruments/getList")
-    public CommonResult<List<ProjectInstruments>> getList() {
+    @GetMapping("/project/instruments/getList/{projectCode}")
+    public CommonResult<List<ProjectInstruments>> getList(@PathVariable("projectCode") String projectCode) {
         return CommonResult.data(projectInstrumentsService.list(Wrappers.<ProjectInstruments>lambdaQuery()
+                .eq(ProjectInstruments::getProjectCode , projectCode)
                 .orderByAsc(ProjectInstruments::getId)));
     }
 

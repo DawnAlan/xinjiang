@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cj.project.modular.treemodel.mapper.TreePermissionsUserMapper">
+<resultMap id="TreePermissionsUserMap" type="com.cj.project.api.treemodel.entity.TreePermissionsUser">
+    <id property="id" column="ID"/>
+    <result property="userId" column="USER_ID"/>
+    <result property="deleteFlag" column="DELETE_FLAG"/>
+    <result property="createUser" column="CREATE_USER"/>
+    <result property="pId" column="P_ID"/>
+    <result property="createTime" column="CREATE_TIME"/>
+    <result property="bindType" column="BIND_TYPE"/>
+</resultMap>
+
+</mapper>

@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cj.common.annotation.CommonLog;
 import com.cj.common.pojo.CommonResult;
 import com.cj.common.pojo.CommonValidList;
+import com.cj.project.api.configfield.dto.ConfigFieldFiducialDto;
 import com.cj.project.api.fiducial.entity.FiducialBase;
 import com.cj.project.api.fiducial.entity.FiducialPara;
 import com.cj.project.api.fiducial.param.*;
@@ -17,12 +18,12 @@ import com.github.xiaoymin.knife4j.annotations.ApiSupport;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import java.util.ArrayList;
@@ -57,8 +58,8 @@ public class FiducialController {
      */
     @ApiOperationSupport(order = 1)
     @ApiOperation("查询测点考证")
-    @GetMapping ("/project/fiducial/get")
-    public CommonResult<FiducialResult> getOne(FiducialQueryParam fiducialQueryParam) {
+    @PostMapping ("/project/fiducial/get")
+    public CommonResult<FiducialResult> getOne(@RequestBody FiducialQueryParam fiducialQueryParam) {
         //Base //String projectCode, String instrumentType,String pointName
         FiducialBase fiducialBase = fiducialBaseService.getOne(fiducialQueryParam);
         //Para
@@ -105,8 +106,8 @@ public class FiducialController {
      */
     @ApiOperationSupport(order = 2)
     @ApiOperation("获取测点考证分页")
-    @GetMapping("/project/fiducial/page")
-    public CommonResult<Page<FiducialResult>> page(FiducialPageParam fiducialPageParam) {
+    @PostMapping("/project/fiducial/page")
+    public CommonResult<Page<FiducialResult>> page(@RequestBody FiducialPageParam fiducialPageParam) {
         //base.page
         Page<FiducialBase> fiducialBases = fiducialBaseService.page(fiducialPageParam);
         Page<FiducialResult> result = fiducialService.page(fiducialBases);
@@ -135,7 +136,7 @@ public class FiducialController {
     @CommonLog("添加测点考证")
     @PostMapping("/project/fiducial/add")
     public CommonResult<String> add(@RequestBody @Valid FiducialAddParam fiducialAddParam) {
-        fiducialService.add(fiducialAddParam.getProjectCode(),fiducialAddParam.getInstrumentType(),fiducialAddParam.getDetail());
+        fiducialService.add(fiducialAddParam.getProjectCode(),fiducialAddParam.getInstrumentType(),fiducialAddParam.getDetail().stream().findFirst().get());
         return CommonResult.ok();
     }
 
@@ -150,9 +151,6 @@ public class FiducialController {
     @CommonLog("批量添加测点考证")
     @PostMapping("/project/fiducial/addBatch")
     public CommonResult<String> addBatch(@RequestBody @Valid List<FiducialAddParam> fiducialAddParamList) {
-                /* if(ObjectUtil.isEmpty(fieldMaps.get("pointName"))) {
-            throw new CommonException("测点编号不能为空");
-        }*/
         fiducialService.adds(fiducialAddParamList);
         // fiducialBaseService.add(fiducialBaseAddParam);
         return CommonResult.ok();
@@ -184,9 +182,28 @@ public class FiducialController {
     @CommonLog("删除测点考证")
     @PostMapping("/project/fiducial/delete")
     public CommonResult<String> delete(@RequestBody @Valid @NotEmpty(message = "集合不能为空")
-                                                   CommonValidList<FiducialIdParam> fiducialIdParamList) {
-        fiducialService.delete(fiducialIdParamList);
+                                                   CommonValidList<String> fiducialIdList) {
+        fiducialService.delete(fiducialIdList);
         return CommonResult.ok();
+    }
+
+
+    @ApiOperationSupport(order = 12)
+    @ApiOperation("项目仪器模板导出")
+    @PostMapping("/project/fiducial/templateExport")
+    public void templateExport(@RequestBody ConfigFieldFiducialDto configFieldFiducialDto,
+                               HttpServletRequest request , HttpServletResponse response) {
+        fiducialService.templateExport(configFieldFiducialDto , request , response);
+    }
+
+
+    @ApiOperationSupport(order = 13)
+    @ApiOperation("项目仪器数据导入")
+    @PostMapping("/project/fiducial/dataImport")
+    public CommonResult dataImport( ConfigFieldFiducialDto configFieldFiducialDto,
+                                    @RequestParam(value = "file") MultipartFile file ) {
+
+        return fiducialService.dataImport(configFieldFiducialDto , file);
     }
 
 }

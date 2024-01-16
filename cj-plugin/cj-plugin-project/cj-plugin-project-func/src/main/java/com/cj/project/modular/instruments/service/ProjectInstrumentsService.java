@@ -1,5 +1,6 @@
 package com.cj.project.modular.instruments.service;
 
+import cn.hutool.core.lang.tree.Tree;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.cj.project.api.instruments.dto.ProjectInstrumentsPageDto;
@@ -22,6 +23,9 @@ public interface ProjectInstrumentsService extends IService<ProjectInstruments> 
      * @date  2023/09/02 18:12
      */
     Page<ProjectInstruments> page(ProjectInstrumentsPageDto projectInstrumentsPageDto);
+
+    List<ProjectInstruments> getList(String projectCode,String monitorName,String instrumentType,String instrumentMetaType);
+    List<Tree<String>> tree(String projectCode);
 
     /**
      * 添加项目仪器表

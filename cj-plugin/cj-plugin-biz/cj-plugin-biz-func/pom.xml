@@ -38,5 +38,9 @@
             <groupId>com.cj</groupId>
             <artifactId>cj-plugin-dev-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>dynamic-datasource-spring-boot-starter</artifactId>
+        </dependency>
     </dependencies>
 </project>

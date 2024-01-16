@@ -1,12 +1,16 @@
 package com.cj.project.modular.fiducial.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.baomidou.mybatisplus.extension.service.IService;
+import com.cj.common.pojo.CommonResult;
+import com.cj.project.api.configfield.dto.ConfigFieldFiducialDto;
 import com.cj.project.api.fiducial.entity.FiducialBase;
 import com.cj.project.api.fiducial.entity.FiducialPara;
 import com.cj.project.api.fiducial.param.*;
 import com.cj.project.modular.fiducial.result.FiducialResult;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
 
@@ -32,9 +36,10 @@ public interface FiducialService {
      * @author Lb
      * @date  2023/09/04 12:25
      */
-    void add(String projectCode, String instrumentID, Map<String,Object> fieldMaps);
+    void add(String projectCode, String instrumentType, Map<String,Object> fieldMaps);
 
     void adds(List<FiducialAddParam> fiducialAddParamList);
+    void addsByMap(List<Map<String, Object>>  fiducialAddList);
 
     /**
      * 编辑测点考证
@@ -50,11 +55,15 @@ public interface FiducialService {
      * @author Lb
      * @date  2023/09/04 12:25
      */
-    void delete(List<FiducialIdParam> fiducialIdParamList);
+    void delete(List<String> fiducialIdList);
 
     /**
      * 合成考证结果
      * @return
      */
     FiducialResult ToFiducial(FiducialBase fiducialBase, List<FiducialPara> fiducialParas);
+
+    void templateExport(ConfigFieldFiducialDto configFieldFiducialDto, HttpServletRequest request , HttpServletResponse response);
+
+    CommonResult dataImport(ConfigFieldFiducialDto configFieldFiducialDto , MultipartFile file);
 }
