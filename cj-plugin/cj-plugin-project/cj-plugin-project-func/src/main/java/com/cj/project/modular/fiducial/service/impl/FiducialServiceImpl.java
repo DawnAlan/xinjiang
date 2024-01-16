@@ -342,6 +342,14 @@ public class FiducialServiceImpl implements FiducialService {
             Map<String , String> paraFormatMap = new HashMap<>();
             configFieldFiducials.forEach( e -> paraFormatMap.put(e.getFieldKey() , e.getSystemType()));
 
+            List<FiducialBase> fiducialBaseList = fiducialBaseService.list(Wrappers.<FiducialBase>lambdaQuery()
+                    .eq(FiducialBase::getProjectCode, projectCode)
+                    .eq(FiducialBase::getInstrumentType, instrumentType)
+            );
+
+            List<String> collect = fiducialBaseList.stream().map(FiducialBase::getPointName).collect(Collectors.toList());
+            Set<String> pointNameSet = new HashSet<>(collect);
+
             DateFormat dateFormat = new SimpleDateFormat("YYYY/MM/DD HH:mm:ss");
             int lastRowNum = sheetAt.getLastRowNum();
             for (int i = 2 ; i <= lastRowNum ; i ++){
@@ -377,14 +385,14 @@ public class FiducialServiceImpl implements FiducialService {
                             try {
                                 fiducialPara.setFieldValue(dateFormat.format(row.getCell(j).getDateCellValue()));
                             }catch (Exception e){
-                                return CommonResult.error("第" + (i + 1) + "行第"+ (j + 1)+"列的" + newParaMap.get(j) + "字段值格式不正确!为" + paraFormatMap.get(newBaseMap.get(j).toString()) + "类型！");
+                                return CommonResult.error("第" + (i + 1) + "行第"+ (j + 1)+"列的" + newParaMap.get(j) + "字段值格式不正确!为" + paraFormatMap.get(newParaMap.get(j).toString()) + "类型！");
                             }
 
                         }else if (paraFormatMap.get(newParaMap.get(j).toString()).equals(SystemTypeEnum.DOUBLE.getValue())){
                             try {
                                 fiducialPara.setFieldValue(String.valueOf(row.getCell(j).getNumericCellValue()));
                             }catch (Exception e){
-                                return CommonResult.error("第" + (i + 1) + "行第"+ (j + 1)+"列的" + newParaMap.get(j) + "字段值格式不正确!为" + paraFormatMap.get(newBaseMap.get(j).toString()) + "类型！");
+                                return CommonResult.error("第" + (i + 1) + "行第"+ (j + 1)+"列的" + newParaMap.get(j) + "字段值格式不正确!为" + paraFormatMap.get(newParaMap.get(j).toString()) + "类型！");
                             }
                         }else {
                             fiducialPara.setFieldValue(row.getCell(j).toString());
@@ -410,6 +418,14 @@ public class FiducialServiceImpl implements FiducialService {
                     FiducialBase fiducialBase = (FiducialBase)resultMap.get("Object");
                     fiducialBase.setProjectCode(projectCode);
                     fiducialBase.setInstrumentType(instrumentType);
+                    //校验在projectCode下pointName是否唯一
+                    String pointName = fiducialBase.getPointName();
+                    if(ObjectUtil.isEmpty(pointName)){
+                        return CommonResult.error("第" + (i + 1) + "行的" + pointName + "字段值为必填字段！");
+                    }else if(pointNameSet.contains(pointName)){
+                        return CommonResult.error("第" + (i + 1) + "行的" + pointName + "字段值已存在！");
+                    }
+
                     fiducialBaseService.save(fiducialBase);
 
                     fiducialParaList.stream().forEach(e -> e.setPointId(fiducialBase.getId()));

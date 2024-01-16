@@ -58,8 +58,8 @@ public class FiducialController {
      */
     @ApiOperationSupport(order = 1)
     @ApiOperation("查询测点考证")
-    @GetMapping ("/project/fiducial/get")
-    public CommonResult<FiducialResult> getOne(FiducialQueryParam fiducialQueryParam) {
+    @PostMapping ("/project/fiducial/get")
+    public CommonResult<FiducialResult> getOne(@RequestBody FiducialQueryParam fiducialQueryParam) {
         //Base //String projectCode, String instrumentType,String pointName
         FiducialBase fiducialBase = fiducialBaseService.getOne(fiducialQueryParam);
         //Para
@@ -106,8 +106,8 @@ public class FiducialController {
      */
     @ApiOperationSupport(order = 2)
     @ApiOperation("获取测点考证分页")
-    @GetMapping("/project/fiducial/page")
-    public CommonResult<Page<FiducialResult>> page(FiducialPageParam fiducialPageParam) {
+    @PostMapping("/project/fiducial/page")
+    public CommonResult<Page<FiducialResult>> page(@RequestBody FiducialPageParam fiducialPageParam) {
         //base.page
         Page<FiducialBase> fiducialBases = fiducialBaseService.page(fiducialPageParam);
         Page<FiducialResult> result = fiducialService.page(fiducialBases);

@@ -49,7 +49,7 @@ public class ConfigFieldFiducialController {
     @ApiOperation("获取考证字段配置")
     @CommonLog("获取考证字段配置")
     @PostMapping("/project/configfield/fiducial/get")
-    public CommonResult<List<ConfigFieldFiducialResult>> getList(ConfigFieldFiducialQueryDto configFieldFiducialQueryDto) {
+    public CommonResult<List<ConfigFieldFiducialResult>> getList(@RequestBody ConfigFieldFiducialQueryDto configFieldFiducialQueryDto) {
         return CommonResult.data(configFieldFiducialService.getList(configFieldFiducialQueryDto));
     }
 
@@ -63,7 +63,7 @@ public class ConfigFieldFiducialController {
     @ApiOperationSupport(order = 1)
     @ApiOperation("获取数据字段配置分页")
     @PostMapping("/project/configfield/fiducial/page")
-    public CommonResult<Page<ConfigFieldFiducial>> page(ConfigFieldFiducialPageDto configFieldFiducialPageDto) {
+    public CommonResult<Page<ConfigFieldFiducial>> page(@RequestBody ConfigFieldFiducialPageDto configFieldFiducialPageDto) {
         return CommonResult.data(configFieldFiducialService.page(configFieldFiducialPageDto));
     }
 

@@ -45,8 +45,8 @@ public class FiducialBaseController {
      */
     @ApiOperationSupport(order = 1)
     @ApiOperation("获取测点考证分页")
-    @GetMapping("/project/fiducialbase/page")
-    public CommonResult<Page<FiducialBase>> page(FiducialPageParam fiducialPageParam) {
+    @PostMapping("/project/fiducialbase/page")
+    public CommonResult<Page<FiducialBase>> page(@RequestBody FiducialPageParam fiducialPageParam) {
         return CommonResult.data(fiducialBaseService.page(fiducialPageParam));
     }
 
@@ -106,8 +106,8 @@ public class FiducialBaseController {
      */
     @ApiOperationSupport(order = 5)
     @ApiOperation("获取测点考证详情")
-    @GetMapping("/project/fiducialbase/detail")
-    public CommonResult<FiducialBase> detail(@Valid FiducialIdParam fiducialIdParam) {
+    @PostMapping("/project/fiducialbase/detail")
+    public CommonResult<FiducialBase> detail(@RequestBody @Valid FiducialIdParam fiducialIdParam) {
         return CommonResult.data(fiducialBaseService.detail(fiducialIdParam));
     }
 }

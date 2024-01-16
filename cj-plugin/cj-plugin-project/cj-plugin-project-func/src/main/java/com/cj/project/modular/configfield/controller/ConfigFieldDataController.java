@@ -50,7 +50,7 @@ public class ConfigFieldDataController {
     @ApiOperation("获取数据字段配置")
     @CommonLog("获取数据字段配置")
     @PostMapping("/project/configfield/data/get")
-    public CommonResult<List<ConfigFieldDataResult>> getList(ConfigFieldQueryDto configFieldQueryDto) {
+    public CommonResult<List<ConfigFieldDataResult>> getList(@RequestBody ConfigFieldQueryDto configFieldQueryDto) {
         return CommonResult.data(configFieldDataService.getList(configFieldQueryDto));
     }
 
