@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 @Data
 public class SurfaceWaterFlowDetailVo {
     @ApiModelProperty(value = "日期")
-    private Integer Day;
+    private String Day;
     @ApiModelProperty(value = "一月")
     private BigDecimal Jan;
     @ApiModelProperty(value = "二月")

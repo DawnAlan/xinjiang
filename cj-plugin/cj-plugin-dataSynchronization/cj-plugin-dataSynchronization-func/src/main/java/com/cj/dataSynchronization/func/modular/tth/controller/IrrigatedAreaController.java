@@ -10,6 +10,7 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 
 @Api(tags = "灌区E平台")
@@ -70,5 +71,13 @@ public class IrrigatedAreaController {
             e.printStackTrace();
             return RestResponse.no("error");
         }
+    }
+
+    @ApiOperationSupport(order = 3)
+    @ApiOperation(value="导入历史记录", notes="导入历史记录")
+    @GetMapping(value = "/importHistoryData")
+    public RestResponse importHistoryData(@RequestParam(value = "file",required = true) MultipartFile file) {
+        return irrigatedAreaService.importHistoryData(file);
+
     }
 }

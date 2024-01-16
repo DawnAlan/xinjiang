@@ -3,6 +3,7 @@ package com.cj.flood.func.modular.prediction.service.impl;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.lang.UUID;
 import cn.hutool.extra.spring.SpringUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -448,31 +449,45 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                     MultipartFile multipartFile = MultipartFileUtil.inputStreamToMultipartFile(tth, split1[0]);
                     List<Flood> floods = ExcelUtils.importExcel(multipartFile, Flood.class);
                     Map<String, IncomingWaterForecastViewDto> view = new LinkedHashMap<>();
+                    List<Object> viewForFourPredictions = new LinkedList<>();
                     IncomingWaterForecastViewDto threeBridge = getIncomingWaterForecastViewDto(floods, "3号桥");
+                    threeBridge.setSort(1);
                     if(null != threeBridge){
+                        threeBridge.setName("3号桥");
+                        viewForFourPredictions.add(JSONObject.parseObject(JSONObject.toJSONString(threeBridge)));
                         view.put("3号桥",threeBridge);
                     }else {
                         view.put("3号桥",null);
                     }
                     IncomingWaterForecastViewDto lzzEntryStation = getIncomingWaterForecastViewDto(floods, "楼庄子");
+                    lzzEntryStation.setSort(2);
                     if(null != lzzEntryStation){
+                        lzzEntryStation.setName("楼庄子");
+                        viewForFourPredictions.add(JSONObject.parseObject(JSONObject.toJSONString(lzzEntryStation)));
                         view.put("楼庄子",lzzEntryStation);
                     }else {
                         view.put("楼庄子",null);
                     }
                     IncomingWaterForecastViewDto tthEntryStation = getIncomingWaterForecastViewDto(floods, "楼头区间");
+                    tthEntryStation.setSort(3);
                     if(null != tthEntryStation){
+                        tthEntryStation.setName("楼头区间");
+                        viewForFourPredictions.add(JSONObject.parseObject(JSONObject.toJSONString(tthEntryStation)));
                         view.put("楼头区间",tthEntryStation);
                     }else {
                         view.put("楼头区间",null);
                     }
                     IncomingWaterForecastViewDto tREntryStation = getIncomingWaterForecastViewDto(floods, "头屯河");
+                    tREntryStation.setSort(4);
                     if(null != tREntryStation){
+                        tREntryStation.setName("头屯河");
+                        viewForFourPredictions.add(JSONObject.parseObject(JSONObject.toJSONString(tREntryStation)));
                         view.put("头屯河",tREntryStation);
                     }else {
                         view.put("头屯河",null);
                     }
                     res.setView(view);
+                    res.setViewForFourPredictions(viewForFourPredictions);
                     return RestResponse.ok(res);
                 }else {
                     return RestResponse.no("正在生成模型计算结果，请稍后……");
@@ -529,7 +544,7 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
             if(incomingWaterForecastDetailsResRestResponse.getCode()==200){
                 IncomingWaterForecast incomingWaterForecast = this.getById(id);
                 IncomingWaterForecastViewDto incomingWaterForecastViewDto = incomingWaterForecastDetailsResRestResponse.getData().getView().get(reservoir);
-                List<PredictionProcessDto> predictionProcess = incomingWaterForecastViewDto.getPredictionProcess();
+                List<PredictionDto> predictionProcess = incomingWaterForecastViewDto.getPredictionProcess();
                 if(null!= predictionProcess && predictionProcess.size()>0){
                     Integer year = LocalDateTime.now().getYear();
                     Integer monthTemp = LocalDateTime.now().getMonth().getValue();
@@ -537,8 +552,8 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                     Integer day = LocalDateTime.now().getDayOfMonth();
                     List<ForecastPredictionDto> list = new ArrayList<>();
                     if(incomingWaterForecast.getPeriodTimeType()==2){
-                        List<PredictionProcessDto> collect = predictionProcess.stream().filter(t -> sdf1.format(t.getTime()).contains(year+"-"+month)).collect(Collectors.toList());
-                        for(PredictionProcessDto dto:collect){
+                        List<PredictionDto> collect = predictionProcess.stream().filter(t -> sdf1.format(t.getTime()).contains(year+"-"+month)).collect(Collectors.toList());
+                        for(PredictionDto dto:collect){
                             ForecastPredictionDto forecastPredictionDto = new ForecastPredictionDto();
                             forecastPredictionDto.setTime(sdf.format(dto.getTime()));
                             forecastPredictionDto.setWaterAmount(Double.parseDouble(decimalFormat.format((dto.getPreQ()*60*60*24)/10000)));
@@ -548,15 +563,15 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                         Map<String, String> tenDaysTime = getTenDaysTime(day);
                         Date startTime = sdf1.parse(year + "-" + month + "-" + tenDaysTime.get("start"));
                         Date endTime = sdf1.parse(year + "-" + month + "-" + tenDaysTime.get("end"));
-                        List<PredictionProcessDto> collect = predictionProcess.stream().filter(t -> (t.getTime().compareTo(startTime) > 0 && t.getTime().compareTo(endTime) < 0)|| t.getTime().compareTo(endTime) == 0).collect(Collectors.toList());
-                        for(PredictionProcessDto dto:collect){
+                        List<PredictionDto> collect = predictionProcess.stream().filter(t -> (t.getTime().compareTo(startTime) > 0 && t.getTime().compareTo(endTime) < 0)|| t.getTime().compareTo(endTime) == 0).collect(Collectors.toList());
+                        for(PredictionDto dto:collect){
                             ForecastPredictionDto forecastPredictionDto = new ForecastPredictionDto();
                             forecastPredictionDto.setTime(sdf.format(dto.getTime()));
                             forecastPredictionDto.setWaterAmount(Double.parseDouble(decimalFormat.format((dto.getPreQ()*60*60*24)/10000)));
                             list.add(forecastPredictionDto);
                         }
                     }else {
-                        for(PredictionProcessDto dto:predictionProcess){
+                        for(PredictionDto dto:predictionProcess){
                             ForecastPredictionDto forecastPredictionDto = new ForecastPredictionDto();
                             forecastPredictionDto.setTime(sdf.format(dto.getTime()));
                             forecastPredictionDto.setWaterAmount(Double.parseDouble(decimalFormat.format((dto.getPreQ()*60*60*24)/10000)));
@@ -595,12 +610,13 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                 }
                 incomingWaterForecastViewDto.setFloodPeak(floodPeak);
             }
-            List<PredictionProcessDto> predictionProcess = new ArrayList<>();
+            List<PredictionDto> predictionProcess = new ArrayList<>();
             for (Flood flood:threeBridge){
-                PredictionProcessDto predictionProcessDto = new PredictionProcessDto();
+                PredictionDto predictionProcessDto = new PredictionDto();
                 predictionProcessDto.setPreQ(flood.getPreQ());
                 predictionProcessDto.setTime(flood.getTime());
                 predictionProcessDto.setWaterLevel(flood.getWaterLevel());
+                predictionProcessDto.setOutQ(flood.getOutQ());
                 predictionProcess.add(predictionProcessDto);
             }
             incomingWaterForecastViewDto.setPredictionProcess(predictionProcess);

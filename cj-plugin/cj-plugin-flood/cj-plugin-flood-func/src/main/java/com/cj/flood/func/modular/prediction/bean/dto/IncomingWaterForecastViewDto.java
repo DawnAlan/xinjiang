@@ -13,7 +13,7 @@ public class IncomingWaterForecastViewDto implements Serializable {
     private Map<Integer, FloodPeakDto> floodPeak;
 
     @ApiModelProperty(value = "预报过程")
-    private List<PredictionProcessDto> predictionProcess;
+    private List<PredictionDto> predictionProcess;
 
     @ApiModelProperty(value = "洪水来源")
     private List<IncomingWaterForecastKVDto> qCause;
@@ -26,4 +26,8 @@ public class IncomingWaterForecastViewDto implements Serializable {
 
     @ApiModelProperty(value = "洪量")
     private Double peakVolume;
+
+    private Integer sort;
+
+    private String name;
 }

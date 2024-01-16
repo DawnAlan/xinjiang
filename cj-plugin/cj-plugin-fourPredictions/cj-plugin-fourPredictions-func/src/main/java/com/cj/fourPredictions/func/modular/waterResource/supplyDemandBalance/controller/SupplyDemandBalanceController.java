@@ -22,10 +22,10 @@ public class SupplyDemandBalanceController {
     @Autowired
     private SupplyDemandBalanceService supplyDemandBalanceService;
 
-  /*  @ApiOperationSupport(order = 1)
+    @ApiOperationSupport(order = 1)
     @ApiOperation("查询水量平衡")
     @GetMapping("/getSupplyDemandBalance")
     public RestResponse getSupplyDemandBalance() {
         return supplyDemandBalanceService.getSupplyDemandBalance();
-    }*/
+    }
 }

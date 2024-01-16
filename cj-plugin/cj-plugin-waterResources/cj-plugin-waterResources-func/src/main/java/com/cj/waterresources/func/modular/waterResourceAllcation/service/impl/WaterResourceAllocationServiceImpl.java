@@ -308,6 +308,7 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
     @SneakyThrows
     public RestResponse getWaterResourceAllocationDetails(String id) {
         Map<String,Object> result =new HashMap<>();
+        SimpleDateFormat sdf =new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         WaterResourceAllocation waterResourceAllocation = this.getById(id);
         String customAddress = waterResourceAllocation.getAllocationDataCustomAddress();
         String displayAddress = waterResourceAllocation.getAllocationDataDisplayAddress();
@@ -326,9 +327,18 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
             Map<String, List<WaterDistributionDto>> collect = waterDistributionDtos.stream().collect(Collectors.groupingBy(WaterDistributionDto::getStationName));
             Set<String> strings = collect.keySet();
             Map<String,Object> waterDistributionDetailsTemp = new HashMap<>();
+
             for(String s1:strings){
-                Double aDouble = collect.get(s1).stream().map(WaterDistributionDto::getWater).reduce(Double::sum).orElse(0.00);
-                waterDistributionDetailsTemp.put(s1,aDouble);
+                List<WaterDistributionDto> waterDistributionDtos1 = collect.get(s1);
+                List<WaterDistributionDetailsRes> waterDistributionDetailsResList = new ArrayList<>();
+                for(WaterDistributionDto dto:waterDistributionDtos1){
+                    WaterDistributionDetailsRes res = new WaterDistributionDetailsRes();
+                    res.setName(dto.getStationName());
+                    res.setTime(sdf.format(dto.getTime()));
+                    res.setValue(dto.getWater());
+                    waterDistributionDetailsResList.add(res);
+                }
+                waterDistributionDetailsTemp.put(s1,waterDistributionDetailsResList);
             }
             waterDistributionDetails.put(s,waterDistributionDetailsTemp);
         }
@@ -343,22 +353,18 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
         //供水平衡
         Map<String,Object> waterSupplyBalance = new HashMap<>();
         //用水分布
-        Map<String,Object> waterDistribution= new HashMap<>();
-        //生态
-        Double a = displayDataList.stream().map(AllocationDisplayData::getEcologyProportion).reduce(Double::sum).orElse(0.00);
-        //生活
-        Double b = displayDataList.stream().map(AllocationDisplayData::getCityProportion).reduce(Double::sum).orElse(0.00);
-        //工业
-        Double c = displayDataList.stream().map(AllocationDisplayData::getIndustryProportion).reduce(Double::sum).orElse(0.00);
-        //农业
-        Double d = displayDataList.stream().map(AllocationDisplayData::getIrrigateProportion).reduce(Double::sum).orElse(0.00);
-        //绿化
-        Double e = displayDataList.stream().map(AllocationDisplayData::getGreeningProportion).reduce(Double::sum).orElse(0.00);
-        waterDistribution.put("生态用水",a);
-        waterDistribution.put("生活用水",b);
-        waterDistribution.put("工业用水",c);
-        waterDistribution.put("农业用水",d);
-        waterDistribution.put("绿化用水",e);
+        List<WaterDistributionRes> waterDistribution= new ArrayList<>();
+        List<AllocationDisplayData> collect2 = displayDataList.stream().filter(t -> t.getStationName().equals("头屯河")).collect(Collectors.toList());
+        for (AllocationDisplayData data:collect2){
+            WaterDistributionRes res = new WaterDistributionRes();
+            res.setTime(sdf.format(data.getTime()));
+            res.setCityProportion(data.getCityProportion());
+            res.setEcologyProportion(data.getEcologyProportion());
+            res.setIrrigateProportion(data.getIrrigateProportion());
+            res.setIndustryProportion(data.getIndustryProportion());
+            res.setGreeningProportion(data.getGreeningProportion());
+            waterDistribution.add(res);
+        }
         Map<String, List<AllocationDisplayData>> collect = displayDataList.stream().collect(Collectors.groupingBy(AllocationDisplayData::getStationName));
         Set<String> strings = collect.keySet();
         for(String s:strings){
@@ -555,7 +561,7 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
                 for(LzzGaugingStation station:list){
                     RealTimeReservoirLevelRes res = new RealTimeReservoirLevelRes();
                     res.setDate(sdf.format(station.getGatherTime()));
-                    res.setWaterLevel(station.getRelativeWaterLevel());
+                    res.setWaterAmount(station.getStorageCapacity()-591);
                     res.setCapacity(station.getStorageCapacity());
                     resList.add(res);
                 }
@@ -572,7 +578,7 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
                 for(IrrigatedPlatformDataInfo dataInfo:list){
                     RealTimeReservoirLevelRes res = new RealTimeReservoirLevelRes();
                     res.setDate(dataInfo.getMonitorTime());
-                    res.setWaterLevel(dataInfo.getSqWaterLevel());
+                    res.setWaterAmount(dataInfo.getSqCapacity()-211.79);
                     res.setCapacity(dataInfo.getSqCapacity());
                     resList.add(res);
                 }

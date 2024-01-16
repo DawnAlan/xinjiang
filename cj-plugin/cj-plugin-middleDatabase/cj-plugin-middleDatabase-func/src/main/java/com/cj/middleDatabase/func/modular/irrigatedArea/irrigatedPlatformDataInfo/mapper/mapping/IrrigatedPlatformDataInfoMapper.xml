@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.mapper.IrrigatedPlatformDataInfoMapper">
+    <select id="getRealTimeWaterLevel" resultType="com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.entity.IrrigatedPlatformDataInfo">
+        SELECT *
+        FROM IRRIGATED_PLATFORM_DATA_INFO
+        WHERE MONITOR_ID in
+        <foreach item="item" collection="id" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        AND TO_CHAR(MONITOR_TIME,'YYYY-MM-DD') = #{time} ORDER BY MONITOR_TIME DESC limit #{num}
+    </select>
+
+</mapper>

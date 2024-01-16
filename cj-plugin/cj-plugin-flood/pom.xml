@@ -12,9 +12,6 @@
     <description>防洪业务管理系统基础插件</description>
 
     <modules>
-        <!--<module>cj-plugin-flood-feign</module>
-        <module>cj-plugin-flood-func</module>
-        <module>cj-plugin-flood-api</module>-->
         <module>cj-plugin-flood-api</module>
         <module>cj-plugin-flood-feign</module>
         <module>cj-plugin-flood-func</module>

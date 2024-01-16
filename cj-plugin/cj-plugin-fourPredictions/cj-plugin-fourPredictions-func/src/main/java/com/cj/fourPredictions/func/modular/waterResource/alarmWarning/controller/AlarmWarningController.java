@@ -22,7 +22,6 @@ public class AlarmWarningController {
 
     @Autowired
     private AlarmWarningService warningService;
-/*
     @ApiOperationSupport(order = 1)
     @ApiOperation("水库水情告警")
     @GetMapping("/getReservoirWaterConditionAlarm")
@@ -36,5 +35,5 @@ public class AlarmWarningController {
     @GetMapping("/getTurbidityAlarm")
     public RestResponse getTurbidityAlarm(@RequestParam(value = "time")String time) {
         return warningService.getTurbidityAlarm(time);
-    }*/
+    }
 }

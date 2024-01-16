@@ -32,4 +32,7 @@ public class IncomingWaterForecastDetailsRes implements Serializable {
 
     @ApiModelProperty(value = "视图图表")
     private Map<String, IncomingWaterForecastViewDto> view;
+
+    @ApiModelProperty(value = "四预视图图表")
+    private List<Object> viewForFourPredictions;
 }

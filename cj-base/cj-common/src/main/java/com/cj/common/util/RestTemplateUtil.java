@@ -148,7 +148,7 @@ public class RestTemplateUtil {
         headers.add("Content-Encoding", "UTF-8");
         headers.add("Content-Type", "application/json; charset=UTF-8");
         if (null != token && "" != token) {
-            headers.add("Authorization", token);
+            headers.add("X-Access-Token", token);
         }
         HttpEntity<String> requestEntity = new HttpEntity<>(null, headers);
         ResponseEntity<String> response = getRestTemplate(url).exchange(url, HttpMethod.GET, requestEntity, String.class);
@@ -163,6 +163,30 @@ public class RestTemplateUtil {
      * @return
      */
     public static String get(String url, String token, Map<String, Object> paramData) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Accept", "application/json");
+        headers.add("Content-Encoding", "UTF-8");
+        headers.add("Content-Type", "application/json; charset=UTF-8");
+        if (null != token && "" != token) {
+            headers.add("Authorization", token);
+        }
+        // 组装数据
+        StringBuffer buffer = new StringBuffer();
+        buffer.append(url);
+        // 参数
+        if (null != paramData) {
+            buffer.append("?");
+            for (String key : paramData.keySet()) {
+                buffer.append(key).append("=").append(paramData.get(key)).append("&");
+            }
+        }
+        HttpEntity<String> requestEntity = new HttpEntity<>(null, headers);
+        ResponseEntity<String> response = getRestTemplate(url).exchange(buffer.toString(), HttpMethod.GET, requestEntity, String.class);
+        String responseBody = response.getBody();
+        return responseBody;
+    }
+
+    public static String getToken(String url, String token, Map<String, Object> paramData) {
         HttpHeaders headers = new HttpHeaders();
         headers.add("Accept", "application/json");
         headers.add("Content-Encoding", "UTF-8");

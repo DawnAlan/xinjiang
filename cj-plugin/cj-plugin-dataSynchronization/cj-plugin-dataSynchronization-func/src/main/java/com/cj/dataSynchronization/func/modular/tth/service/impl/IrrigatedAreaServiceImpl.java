@@ -1,10 +1,15 @@
 package com.cj.dataSynchronization.func.modular.tth.service.impl;
 
 
+import com.alibaba.fastjson.JSONObject;
 import com.cj.common.model.RestResponse;
+import com.cj.common.util.ExcelUtils;
+import com.cj.common.util.NumberUtil;
+import com.cj.common.util.RedisUtil;
 import com.cj.dataSynchronization.func.modular.tth.IrrigatedAreaInvoke;
 import com.cj.dataSynchronization.func.modular.tth.dtos.AllHistoryDataDto;
 import com.cj.dataSynchronization.func.modular.tth.dtos.AllTreeDto;
+import com.cj.dataSynchronization.func.modular.tth.dtos.ImportHistoryDataDto;
 import com.cj.dataSynchronization.func.modular.tth.dtos.QueryRealTimeDataDto;
 import com.cj.dataSynchronization.func.modular.tth.service.IrrigatedAreaService;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformData.entity.IrrigatedPlatformData;
@@ -13,15 +18,22 @@ import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInf
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.service.IrrigatedPlatformDataInfoService;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformTree.entity.IrrigatedPlatformTree;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformTree.service.IrrigatedPlatformTreeService;
+import com.cj.middleDatabase.func.modular.lzz.storageCapacityCurve.entity.StorageCapacityCurve;
+import com.cj.middleDatabase.func.modular.lzz.storageCapacityCurve.service.StorageCapacityCurveService;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -36,6 +48,12 @@ public class IrrigatedAreaServiceImpl implements IrrigatedAreaService {
 
     @Autowired
     private IrrigatedPlatformDataInfoService irrigatedPlatformDataInfoService;
+
+    @Autowired
+    private RedisUtil redisUtil;
+
+    @Autowired
+    private StorageCapacityCurveService storageCapacityCurveService;
 
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 
@@ -230,6 +248,70 @@ public class IrrigatedAreaServiceImpl implements IrrigatedAreaService {
         }catch (Exception e) {
             e.printStackTrace();
             return RestResponse.no("error");
+        }
+    }
+
+    @Override
+    @SneakyThrows
+    public RestResponse importHistoryData(MultipartFile file) {
+        DecimalFormat df = new DecimalFormat("0.0");
+        DecimalFormat df1 = new DecimalFormat("0.00");
+        String tempString = (String)redisUtil.get("irrigatedPlatformTree");
+        if(StringUtils.isEmpty(tempString)){
+            List<IrrigatedPlatformTree> list = irrigatedPlatformTreeService.list();
+            redisUtil.set("irrigatedPlatformTree", JSONObject.toJSONString(list));
+        }
+        String treeString= (String)redisUtil.get("irrigatedPlatformTree");
+        List<IrrigatedPlatformTree> treeList = JSONObject.parseArray(treeString, IrrigatedPlatformTree.class);
+        List<IrrigatedPlatformDataInfo> resultList = new ArrayList<>();
+        List<ImportHistoryDataDto> importHistoryDataDtos = ExcelUtils.importExcel(file, ImportHistoryDataDto.class);
+        if(null != importHistoryDataDtos && importHistoryDataDtos.size()>0){
+            for(ImportHistoryDataDto dto:importHistoryDataDtos){
+                if(dto.getMonitorId()!=null){
+                    IrrigatedPlatformDataInfo info = new IrrigatedPlatformDataInfo();
+                    List<IrrigatedPlatformTree> irrigatedPlatformTrees = treeList.stream().filter(t -> t.getId().equals(dto.getMonitorId())).collect(Collectors.toList());
+                    IrrigatedPlatformTree tree = irrigatedPlatformTrees.get(0);
+                    info.setMonitorId(dto.getMonitorId());
+                    info.setMonitorName(tree.getName());
+                    info.setMonitorTime(dto.getMonitorTime());
+                    info.setId(info.getMonitorName()+"-"+sdf.parse(dto.getMonitorTime()).getTime());
+                    info.setSqMonitorFlowRate(dto.getSqMonitorFlowRate());
+                    info.setSqMonitorFlow(dto.getSqMonitorFlow()==null?dto.getSqMonitorFlow1():dto.getSqMonitorFlow());
+                    info.setSqTotalFlow(dto.getSqTotalFlow());
+                    info.setYqRainFallOne(dto.getYqRainFallOne());
+                    if(info.getMonitorName().equals("头屯河水库水位")){
+                        info.setSqWaterLevel(dto.getSqWaterLevel1()<100?949.14+dto.getSqWaterLevel1():dto.getSqWaterLevel1());
+                        if(dto.getSqCapacity()==null){
+                            String tthString = (String)redisUtil.get("storageCapacityCurveTth");
+                            if(StringUtils.isEmpty(tthString)){
+                                List<StorageCapacityCurve> tth = storageCapacityCurveService.lambdaQuery().eq(StorageCapacityCurve::getReservoir, "tth").list();
+                                redisUtil.set("storageCapacityCurveTth", JSONObject.toJSONString(tth));
+                            }
+                            String tthStringTemp= (String)redisUtil.get("storageCapacityCurveTth");
+                            List<StorageCapacityCurve> tthList = JSONObject.parseArray(tthStringTemp, StorageCapacityCurve.class);
+                            Double sqWaterLevel = info.getSqWaterLevel();
+                            String[] split = df1.format(sqWaterLevel).split("\\.");
+                            List<String> strings = NumberUtil.roundDecimal(split[0], split[1]);
+                            List<StorageCapacityCurve> collect = tthList.stream().filter(t -> t.getWaterLevel().compareTo(new BigDecimal(strings.get(0))) == 0 && df.format(t.getInterpolation()).equals(strings.get(1).length()<2?"0.0":strings.get(1).split("\\.")[0]+"."+strings.get(1).split("\\.")[1].substring(0,1))).collect(Collectors.toList());
+                            StorageCapacityCurve storageCapacityCurve = collect.size()==0?null:collect.get(0);
+                            info.setSqCapacity(storageCapacityCurve==null?null:storageCapacityCurve.getStorageCapacity().doubleValue());
+                        }else {
+                            info.setSqCapacity(dto.getSqCapacity());
+                        }
+                    }
+                    resultList.add(info);
+                }
+            }
+        }
+        if(null!= resultList && resultList.size()>0){
+            boolean b = irrigatedPlatformDataInfoService.saveOrUpdateBatch(resultList);
+            if(b){
+                return RestResponse.ok();
+            }else {
+                return RestResponse.no("save error");
+            }
+        }else {
+            return RestResponse.no("import error");
         }
     }
 }

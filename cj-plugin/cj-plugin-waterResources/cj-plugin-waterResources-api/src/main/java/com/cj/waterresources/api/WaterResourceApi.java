@@ -38,4 +38,16 @@ public interface WaterResourceApi {
 
     String getWaterAlarm();
 
+    String getRealTimeWaterSituationOfTheReservoir(String reservoir);
+
+    String getRealTimeWaterLevel(String station);
+
+    String getWaterSupplyStatistics(String station);
+
+    String getWaterFeeStatistics();
+
+    String getTodayInspectionStatistics();
+
+
+
 }

@@ -12,5 +12,7 @@
     <description>巡查管理系统基础插件</description>
     <modules>
         <module>cj-plugin-approval-func</module>
+        <module>cj-plugin-approval-feign</module>
+        <module>cj-plugin-approval-api</module>
     </modules>
 </project>

@@ -31,7 +31,7 @@ public class SurfaceWaterVo {
     @ApiModelProperty(value = "文件路径")
     private String filePath;
     @ApiModelProperty(value = "日汇总表")
-    private List<SurfaceWaterFlowDetailVo> flowDetailVos;
+    private SurfaceWaterFlowVo flowDetailVos;
     @ApiModelProperty(value = "洪水摘录表")
     private List<SurfaceWaterHydrologyDetail>hydrologyDetailVos;
     @ApiModelProperty(value = "实测流量成果表")

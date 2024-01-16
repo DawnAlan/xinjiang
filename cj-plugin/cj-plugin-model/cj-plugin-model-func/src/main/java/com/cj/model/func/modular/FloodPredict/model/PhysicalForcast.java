@@ -5,6 +5,7 @@ package com.cj.model.func.modular.FloodPredict.model;
 import com.cj.model.func.modular.FloodPredict.entity.ForcastInputParam;
 import com.cj.model.func.modular.FloodPredict.entity.PredictInputData;
 import com.cj.model.func.modular.FloodPredict.utils.TimeUtils;
+import com.cj.model.func.modular.FloodPrevent.model.ModelOfLZZ;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -72,7 +73,7 @@ public class PhysicalForcast {
      * @return
      */
     public Object[][] setPeakFlood(Object[][]predict, ForcastInputParam param){
-        Object[][] peakFloodXlsx=new Object[param.getPeriodStepNumber()][13];
+        Object[][] peakFloodXlsx=new Object[param.getPeriodStepNumber()][14];
         List<Object[][]> floodInformation = selectPeakFlood(predict);
         Object[][] floodIndex = floodInformation.get(0);
         //连续列的赋值
@@ -90,6 +91,27 @@ public class PhysicalForcast {
             peakFloodXlsx[i][7]=floodNature[3][1];//峰现时间
             peakFloodXlsx[i][8]=floodNature[1][1];//洪峰持续时间
             peakFloodXlsx[i][9]=floodNature[0][1];//洪量
+
+        }
+        if (param.getLocation().equals("楼庄子")){
+            Object[][] input = new Object[peakFloodXlsx.length][3];
+            for (int i = 0; i < peakFloodXlsx.length; i++) {
+                input[i][0] = peakFloodXlsx[i][0];
+                input[i][1] = peakFloodXlsx[i][3];
+                input[i][2] = peakFloodXlsx[i][4];
+            }
+            int timeLength =Integer.parseInt((String) peakFloodXlsx[1][1]);
+            ModelOfLZZ lzzOut = new ModelOfLZZ(input,timeLength);
+            List<List<Double>> lzzOutList = lzzOut.Calculate_S1();;
+            //连续列的赋值
+            for (int i = 0; i < peakFloodXlsx.length; i++) {
+                peakFloodXlsx[i][5] = lzzOutList.get(2).get(i);
+                peakFloodXlsx[i][13]=lzzOutList.get(3).get(i);//出库流量
+            }
+        }else {
+            for (int i = 0; i < peakFloodXlsx.length; i++) {
+                peakFloodXlsx[i][13]=peakFloodXlsx[i][4];//出库流量
+            }
         }
         return peakFloodXlsx;
         }

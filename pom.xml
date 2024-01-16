@@ -294,6 +294,69 @@
                 <artifactId>cj-plugin-waterResources-func</artifactId>
                 <version>${cj.version}</version>
             </dependency>
+
+            <!-- cj-plugin-approval-api -->
+            <dependency>
+                <groupId>com.cj</groupId>
+                <artifactId>cj-plugin-approval-api</artifactId>
+                <version>${cj.version}</version>
+            </dependency>
+
+            <!-- cj-plugin-approval-feign -->
+            <dependency>
+                <groupId>com.cj</groupId>
+                <artifactId>cj-plugin-approval-feign</artifactId>
+                <version>${cj.version}</version>
+            </dependency>
+
+            <!-- cj-plugin-approval-func -->
+            <dependency>
+                <groupId>com.cj</groupId>
+                <artifactId>cj-plugin-approval-func</artifactId>
+                <version>${cj.version}</version>
+            </dependency>
+
+            <!-- cj-plugin-dataSynchronization-func -->
+            <dependency>
+                <groupId>com.cj</groupId>
+                <artifactId>cj-plugin-dataSynchronization-func</artifactId>
+                <version>${cj.version}</version>
+            </dependency>
+
+            <!-- cj-plugin-fourPredictions-func -->
+            <dependency>
+                <groupId>com.cj</groupId>
+                <artifactId>cj-plugin-fourPredictions-func</artifactId>
+                <version>${cj.version}</version>
+            </dependency>
+
+            <!-- cj-plugin-inspection-api -->
+            <dependency>
+                <groupId>com.cj</groupId>
+                <artifactId>cj-plugin-inspection-api</artifactId>
+                <version>${cj.version}</version>
+            </dependency>
+
+            <!-- cj-plugin-inspection-feign -->
+            <dependency>
+                <groupId>com.cj</groupId>
+                <artifactId>cj-plugin-inspection-feign</artifactId>
+                <version>${cj.version}</version>
+            </dependency>
+
+            <!-- cj-plugin-inspection-func -->
+            <dependency>
+                <groupId>com.cj</groupId>
+                <artifactId>cj-plugin-inspection-func</artifactId>
+                <version>${cj.version}</version>
+            </dependency>
+
+            <!-- cj-plugin-middleDatabase-func -->
+            <dependency>
+                <groupId>com.cj</groupId>
+                <artifactId>cj-plugin-middleDatabase-func</artifactId>
+                <version>${cj.version}</version>
+            </dependency>
             <!-- cj-cloud-inner-end -->
 
 

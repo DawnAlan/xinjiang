@@ -31,7 +31,7 @@ public class TouTunHe {
         ForcastInputParamNew paramForcastInputParamNew = new ForcastInputParamNew();
         paramForcastInputParamNew.setModelType(1);//3为场次
         SimpleDateFormat sFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        paramForcastInputParamNew.setPredictionTime(sFormat.parse("2024-01-06 19:00:00"));
+        paramForcastInputParamNew.setPredictionTime(sFormat.parse("2024-01-13 24:00:00"));
         paramForcastInputParamNew.setPeriodTimeType(3);//1为月，2为旬，3为日，4为小时
         paramForcastInputParamNew.setPeriodTimeStep(1);//预报步长
         paramForcastInputParamNew.setPeriodTimeNum(12);//预报数量
@@ -185,8 +185,6 @@ public class TouTunHe {
         List<Object[][]> tthList =getTthInput(Flood_Lzz,Flood_qj,paramForcastInputParamNew);
         Object[][] Flood_tthIn = tthList.get(0);
         floodList.add(Flood_tthIn);
-//        Object[][] Flood_lzzOut = tthList.get(1);
-//        floodList.add(Flood_lzzOut);
         Object[][] Flood = AddObject(floodList);
         for (int i = 0; i < Flood.length; i++) {
             Flood[i][12]=judgeYear;
@@ -206,82 +204,55 @@ public class TouTunHe {
     public static List<Object[][]> getTthInput(Object[][] Flood_Lzz,Object[][] Flood_qj,ForcastInputParamNew param)  {
         List<Object[][]> result = new ArrayList<>();
         if (param.getPeriodTimeType()==4){
-            Object[][] input = new Object[Flood_Lzz.length][3];
-            for (int i = 0; i < Flood_Lzz.length; i++) {
-                input[i][0] = Flood_Lzz[i][0];
-                input[i][1] = Flood_Lzz[i][3];
-                input[i][2] = Flood_Lzz[i][4];
-            }
-            int timeLangth =Integer.parseInt((String) Flood_Lzz[1][1]);
-            ModelOfLZZ lzzOut = new ModelOfLZZ(input,timeLangth);
-            List<List<Double>> lzzOutList = lzzOut.Calculate_S1();;
-            Object[][] lzzOutObject = new Object[lzzOutList.get(0).size()][2];
-            for (int i = 0; i < lzzOutObject.length; i++) {
-                lzzOutObject[i][0]=Flood_Lzz[i][3];
-                lzzOutObject[i][1]=lzzOutList.get(3).get(i);
-            }
-            Object[][] lzzOutXlsx=new Object[Flood_Lzz.length][13];
-            List<Object[][]> floodInformation = selectPeakFlood(lzzOutObject);
-            Object[][] floodIndex = floodInformation.get(0);
-            //连续列的赋值
-            for (int i = 0; i < lzzOutObject.length; i++) {
-                Flood_Lzz[i][5] = lzzOutList.get(2).get(i);
-                lzzOutXlsx[i][0]="楼庄子出库站";//断面位置
-                lzzOutXlsx[i][1]=Integer.toString(timeLangth);//尺度
-                lzzOutXlsx[i][2]=floodIndex[i][0];//洪号
-                lzzOutXlsx[i][3]=lzzOutObject[i][0];//时间
-                lzzOutXlsx[i][4]=Math.round((double) lzzOutObject[i][1] * 100.0) / 100.0;//预报流量
-                lzzOutXlsx[i][5]=lzzOutList.get(2).get(i);//相应水位
-                Object[][] floodNature = floodInformation.get(1);
-                lzzOutXlsx[i][6]=floodNature[2][1];//洪峰
-                lzzOutXlsx[i][7]=floodNature[3][1];//峰现时间
-                lzzOutXlsx[i][8]=floodNature[1][1];//洪峰持续时间
-                lzzOutXlsx[i][9]=floodNature[0][1];//洪量
-                lzzOutXlsx[i][10]=Flood_Lzz[i][10];
-                lzzOutXlsx[i][11]=Flood_Lzz[i][11];
-                lzzOutXlsx[i][12]=Flood_Lzz[i][12];
-            }
-
-
+            int timeLength =Integer.parseInt((String) Flood_Lzz[1][1]);
             //头屯河入库
-            Object[][] tthInXlsx=new Object[Flood_Lzz.length][13];
+            Object[][] tthInXlsx=new Object[Flood_Lzz.length][14];
             Object[][] tthIn =new Object[Flood_Lzz.length][2];
             double qjFlood = 0.0;
             double lzzFlood = 0.0;
-            for (int i = 0; i < lzzOutObject.length; i++) {
+            for (int i = 0; i < Flood_Lzz.length; i++) {
                 tthIn[i][0]=Flood_Lzz[i][3];
-                tthIn[i][1]=lzzOutList.get(3).get(i)+(double)Flood_qj[i][4];
-                lzzFlood += lzzOutList.get(3).get(i);
+                tthIn[i][1]=(double)Flood_Lzz[i][13]+(double)Flood_qj[i][4];
+                lzzFlood += (double)Flood_Lzz[i][13];
                 qjFlood += (double)Flood_qj[i][4];
             }
             List<Object[][]> tthInformation = selectPeakFlood(tthIn);
             Object[][] tthIndex = tthInformation.get(0);
-            ModelOfTTH tthin = new ModelOfTTH(input,timeLangth);
+            ModelOfTTH tthin = new ModelOfTTH(tthIn,timeLength);
             List<List<Double>> tthInList = tthin.Calculate_S2();
             String data = Flood_Lzz[1][10].toString()+","+Flood_qj[1][10].toString();
             StringBuilder tthRain= new StringBuilder();
             String[] pairs = data.split(",");
+            double sum = 0.0;
             for (String pair : pairs) {
                 String[] splitPair = pair.split(":");
                 String area = splitPair[0];
                 double value = Double.parseDouble(splitPair[1]);
                 if (tthRain.length() == 0){
                     tthRain = new StringBuilder(area + ":" + Math.round((float) value * lzzFlood / (qjFlood + lzzFlood)*100)/100.0 );
+                    sum += Math.round((float) value * lzzFlood / (qjFlood + lzzFlood)*100)/100.0;
                 }
                 else {
                     if (area.equals("东南沟地区")||area.equals("3号桥地区")||area.equals("制材厂地区")){
                         tthRain.append(",").append(area).append(":").append(Math.round((float) value * lzzFlood / (qjFlood + lzzFlood)*100)/100.0);
+                        sum += Math.round((float) value * lzzFlood / (qjFlood + lzzFlood)*100)/100.0;
                     }else {
-                        tthRain.append(",").append(area).append(":").append(Math.round((float) value * qjFlood / (qjFlood + lzzFlood)*100)/100.0);
+                        if (!area.equals("头屯河入库")){
+                            tthRain.append(",").append(area).append(":").append(Math.round((float) value * qjFlood / (qjFlood + lzzFlood)*100)/100.0);
+                            sum += Math.round((float) value * qjFlood / (qjFlood + lzzFlood)*100)/100.0;
+                        }
+                        else {
+                            tthRain.append(",").append(area).append(":").append(Math.round((float) (1-sum)*100)/100.0);
+                        }
                     }
                 }
             }
             //连续列的赋值
-            for (int i = 0; i < lzzOutObject.length; i++) {
+            for (int i = 0; i < Flood_Lzz.length; i++) {
                 tthInXlsx[i][0]="头屯河";//断面位置
-                tthInXlsx[i][1]=Integer.toString(timeLangth);//尺度
+                tthInXlsx[i][1]=Integer.toString(timeLength);//尺度
                 tthInXlsx[i][2]=tthIndex[i][0];//洪号
-                tthInXlsx[i][3]=lzzOutObject[i][0];//时间
+                tthInXlsx[i][3]=tthIn[i][0];//时间
                 tthInXlsx[i][4]=Math.round((double) tthIn[i][1] * 100.0) / 100.0;//预报流量
                 tthInXlsx[i][5]=tthInList.get(2).get(i);//相应水位
                 Object[][] floodNature = tthInformation.get(1);
@@ -292,12 +263,12 @@ public class TouTunHe {
                 tthInXlsx[i][10]=tthRain.toString();//洪水来源
                 tthInXlsx[i][11]="区间来水:"+Math.round((float)  qjFlood / (qjFlood + lzzFlood)*100)/100.0+","+"楼庄子出库:"+Math.round((float)  lzzFlood / (qjFlood + lzzFlood)*100)/100.0;//洪水组成
                 tthInXlsx[i][12]=Flood_Lzz[i][12];
+                tthInXlsx[i][13]=tthInList.get(3).get(i);
             }
             result.add(tthInXlsx);
-            result.add(lzzOutXlsx);
             return result;
         }else {
-            Object[][] tthInXlsx=new Object[Flood_Lzz.length][13];
+            Object[][] tthInXlsx=new Object[Flood_Lzz.length][14];
             for (int i = 0; i < Flood_Lzz.length; i++) {
                 tthInXlsx[i][0]="头屯河";//断面位置
                 tthInXlsx[i][1]=Flood_Lzz[i][1];//尺度
@@ -310,6 +281,7 @@ public class TouTunHe {
                 tthInXlsx[i][8]=Flood_Lzz[i][8];//洪峰持续时间
                 tthInXlsx[i][9]=Math.round(((double) Flood_Lzz[i][9]+(double) Flood_qj[i][9]) * 100.0) / 100.0;//洪量
                 tthInXlsx[i][12]=Flood_Lzz[i][12];
+                tthInXlsx[i][13]=tthInXlsx[i][4];//出库流量
             }
             result.add(tthInXlsx);
         }
@@ -1066,67 +1038,67 @@ public class TouTunHe {
         for (int i = 0; i < length; i++) {
             rainFallDto = new RainFallDto();
             rainFallDto.setArea("喀什沟自动雨量站");
-            rainFallDto.setRainFall(i*0.03);
+            rainFallDto.setRainFall(i*0.1);
             rainFallDto.setDate(String.valueOf(dateNew));
             result.add(rainFallDto);
             rainFallDto = new RainFallDto();
             rainFallDto.setArea("黑沟自动雨量站");
-            rainFallDto.setRainFall(i*0.03);
+            rainFallDto.setRainFall(i*0.1);
             rainFallDto.setDate(String.valueOf(dateNew));
             result.add(rainFallDto);
             rainFallDto = new RainFallDto();
             rainFallDto.setArea("煤矿沟自动雨量站");
-            rainFallDto.setRainFall(i*0.03);
+            rainFallDto.setRainFall(i*0.1);
             rainFallDto.setDate(String.valueOf(dateNew));
             result.add(rainFallDto);
             rainFallDto = new RainFallDto();
             rainFallDto.setArea("无名沟自动雨量站");
-            rainFallDto.setRainFall(i*0.03);
+            rainFallDto.setRainFall(i*0.1);
             rainFallDto.setDate(String.valueOf(dateNew));
             result.add(rainFallDto);
             rainFallDto = new RainFallDto();
             rainFallDto.setArea("加普沙自动雨量站");
-            rainFallDto.setRainFall(i*0.03);
+            rainFallDto.setRainFall(i*0.1);
             rainFallDto.setDate(String.valueOf(dateNew));
             result.add(rainFallDto);
             rainFallDto = new RainFallDto();
             rainFallDto.setArea("宰尔德自动雨量站");
-            rainFallDto.setRainFall(i*0.03);
+            rainFallDto.setRainFall(i*0.1);
             rainFallDto.setDate(String.valueOf(dateNew));
             result.add(rainFallDto);
             rainFallDto = new RainFallDto();
             rainFallDto.setArea("东南沟自动雨量站");
-            rainFallDto.setRainFall(i*0.03);
+            rainFallDto.setRainFall(i*0.1);
             rainFallDto.setDate(String.valueOf(dateNew));
             result.add(rainFallDto);
             rainFallDto = new RainFallDto();
             rainFallDto.setArea("八一林场自动雨量站");
-            rainFallDto.setRainFall(i*0.03);
+            rainFallDto.setRainFall(i*0.1);
             rainFallDto.setDate(String.valueOf(dateNew));
             result.add(rainFallDto);
             rainFallDto = new RainFallDto();
             rainFallDto.setArea("萨尔达万自动雨量站");
-            rainFallDto.setRainFall(i*0.03);
+            rainFallDto.setRainFall(i*0.1);
             rainFallDto.setDate(String.valueOf(dateNew));
             result.add(rainFallDto);
             rainFallDto = new RainFallDto();
             rainFallDto.setArea("制材厂自动雨量站");
-            rainFallDto.setRainFall(i*0.03);
+            rainFallDto.setRainFall(i*0.1);
             rainFallDto.setDate(String.valueOf(dateNew));
             result.add(rainFallDto);
             rainFallDto = new RainFallDto();
             rainFallDto.setArea("小渠子雨量站");
-            rainFallDto.setRainFall(i*0.03);
+            rainFallDto.setRainFall(i*0.1);
             rainFallDto.setDate(String.valueOf(dateNew));
             result.add(rainFallDto);
             rainFallDto = new RainFallDto();
             rainFallDto.setArea("团结一队雨量站");
-            rainFallDto.setRainFall(i*0.03);
+            rainFallDto.setRainFall(i*0.1);
             rainFallDto.setDate(String.valueOf(dateNew));
             result.add(rainFallDto);
             rainFallDto = new RainFallDto();
             rainFallDto.setArea("头屯河水库雨量站");
-            rainFallDto.setRainFall(i*0.03);
+            rainFallDto.setRainFall(i*0.1);
             rainFallDto.setDate(String.valueOf(dateNew));
             result.add(rainFallDto);
             calendar.setTime(dateNew);
@@ -1135,7 +1107,7 @@ public class TouTunHe {
         }
         List<String> stationName =new ArrayList<>();
         List<RainFallDto> resultSort =new ArrayList<>();
-        if(result.size()>0){
+        if(!result.isEmpty()){
             for (int i = 0; i < 13; i++) //后续更改，目前写死为13个雨量站
             {
                 stationName.add(result.get(i).getArea());

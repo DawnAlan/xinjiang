@@ -101,4 +101,29 @@ public class WaterResourceFeignProvider implements WaterResourceFeign {
     public String getWaterAlarm() {
         return waterResourceApiProvider.getWaterAlarm();
     }
+
+    @Override
+    public String getRealTimeWaterSituationOfTheReservoir(String reservoir) {
+        return waterResourceApiProvider.getRealTimeWaterSituationOfTheReservoir(reservoir);
+    }
+
+    @Override
+    public String getRealTimeWaterLevel(String station) {
+        return waterResourceApiProvider.getRealTimeWaterLevel(station);
+    }
+
+    @Override
+    public String getWaterSupplyStatistics(String station) {
+        return waterResourceApiProvider.getWaterSupplyStatistics(station);
+    }
+
+    @Override
+    public String getWaterFeeStatistics() {
+        return waterResourceApiProvider.getWaterFeeStatistics();
+    }
+
+    @Override
+    public String getTodayInspectionStatistics() {
+        return waterResourceApiProvider.getTodayInspectionStatistics();
+    }
 }

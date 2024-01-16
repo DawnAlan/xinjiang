@@ -9,7 +9,7 @@ public class RealTimeReservoirLevelRes implements Serializable {
 
     private String date;
 
-    private Double waterLevel;
+    private Double waterAmount ;
 
     private Double capacity;
 }

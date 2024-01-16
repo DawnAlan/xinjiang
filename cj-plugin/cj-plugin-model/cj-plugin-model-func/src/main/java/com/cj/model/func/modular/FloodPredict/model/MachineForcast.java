@@ -6,6 +6,7 @@ import com.cj.model.func.modular.FloodPredict.entity.ParamsSetVO;
 import com.cj.model.func.modular.FloodPredict.utils.DataUtils;
 import com.cj.model.func.modular.FloodPredict.utils.ExcelTool;
 import com.cj.model.func.modular.FloodPredict.utils.TimeUtils;
+import com.cj.model.func.modular.FloodPrevent.model.ModelOfLZZ;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 
 import java.io.IOException;
@@ -18,6 +19,7 @@ import java.time.ZoneId;
 import java.util.List;
 
 import static com.cj.model.func.modular.FloodPredict.model.MachineModel.pvoSet;
+import static com.cj.model.func.modular.FloodPredict.model.PhysicalForcast.selectPeakFlood;
 import static com.cj.model.func.modular.FloodPredict.utils.DataUtils.getSpecificDate;
 
 public class MachineForcast {
@@ -185,7 +187,7 @@ public class MachineForcast {
     //洪峰的确定
     public Object[][] setFloodXlsx(Object[][]predict, ParamsSetVO pvo){
         //表头赋值
-        Object[][] peakFloodXlsx=new Object[pvo.getPeriodStepNumber()][13];
+        Object[][] peakFloodXlsx=new Object[pvo.getPeriodStepNumber()][14];
         //连续列的赋值
         for (int i = 0; i < pvo.getPeriodStepNumber(); i++) {
             peakFloodXlsx[i][0]=pvo.getForecastDuanmian();//断面位置
@@ -237,6 +239,11 @@ public class MachineForcast {
             peakFloodXlsx[i][6] = peakFloodXlsx[0][6];
             peakFloodXlsx[i][7] = peakFloodXlsx[0][7];
             peakFloodXlsx[i][12]=peakFloodXlsx[0][12];
+        }
+
+        //出库流量
+        for (int i = 0; i < peakFloodXlsx.length; i++) {
+            peakFloodXlsx[i][13]=peakFloodXlsx[i][4];//出库流量
         }
         return peakFloodXlsx;
     }

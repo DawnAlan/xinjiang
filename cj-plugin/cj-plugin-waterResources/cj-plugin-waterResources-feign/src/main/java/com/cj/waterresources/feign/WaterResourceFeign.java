@@ -68,4 +68,19 @@ public interface WaterResourceFeign {
 
     @RequestMapping("/feign/provider/waterResource/getWaterAlarm")
     String getWaterAlarm();
+
+    @RequestMapping("/feign/provider/waterResource/getRealTimeWaterSituationOfTheReservoir")
+    String getRealTimeWaterSituationOfTheReservoir(@RequestParam(value = "reservoir", required =true)String reservoir);
+
+    @RequestMapping("/feign/provider/waterResource/getRealTimeWaterLevel")
+    String getRealTimeWaterLevel(@RequestParam(value = "station", required =true)String station);
+
+    @RequestMapping("/feign/provider/waterResource/getWaterSupplyStatistics")
+    String getWaterSupplyStatistics(@RequestParam(value = "station", required =true)String station);
+
+    @RequestMapping("/feign/provider/waterResource/getWaterFeeStatistics")
+    String getWaterFeeStatistics();
+
+    @RequestMapping("/feign/provider/waterResource/getTodayInspectionStatistics")
+    String getTodayInspectionStatistics();
 }

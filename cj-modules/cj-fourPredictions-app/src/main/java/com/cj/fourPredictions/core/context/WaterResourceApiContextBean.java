@@ -119,4 +119,34 @@ public class WaterResourceApiContextBean implements WaterResourceApi {
         String data = waterResourceFeign.getWaterAlarm();
         return data;
     }
+
+    @Override
+    public String getRealTimeWaterSituationOfTheReservoir(String reservoir) {
+        String data = waterResourceFeign.getRealTimeWaterSituationOfTheReservoir(reservoir);
+        return data;
+    }
+
+    @Override
+    public String getRealTimeWaterLevel(String station) {
+        String data = waterResourceFeign.getRealTimeWaterLevel(station);
+        return data;
+    }
+
+    @Override
+    public String getWaterSupplyStatistics(String station) {
+        String data = waterResourceFeign.getWaterSupplyStatistics(station);
+        return data;
+    }
+
+    @Override
+    public String getWaterFeeStatistics() {
+        String data = waterResourceFeign.getWaterFeeStatistics();
+        return data;
+    }
+
+    @Override
+    public String getTodayInspectionStatistics() {
+        String data = waterResourceFeign.getTodayInspectionStatistics();
+        return data;
+    }
 }

@@ -49,7 +49,7 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
     @Autowired
     private LzzPlatformTreeService lzzPlatformTreeService;
 
-    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH");
+    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 
 

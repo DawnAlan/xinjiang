@@ -42,6 +42,14 @@
             <artifactId>cj-plugin-waterResources-feign</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.cj</groupId>
+            <artifactId>cj-plugin-approval-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.cj</groupId>
+            <artifactId>cj-plugin-approval-feign</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.hikvision.ga</groupId>
             <artifactId>artemis-http-client</artifactId>
             <version>1.1.8</version>

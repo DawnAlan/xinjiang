@@ -194,7 +194,7 @@ public class ExcelTool {
 		}
 	}
 
-	public static void writeFloodExcel(String path, String sheetName, Object[][] data) throws IOException, InvalidFormatException {
+	public static void writeFloodExcel(String path, String sheetName, Object[][] data) throws IOException{
 
 		XSSFWorkbook wb = new XSSFWorkbook();
 		XSSFSheet sheet = wb.createSheet(sheetName);
@@ -228,7 +228,8 @@ public class ExcelTool {
 		cell11.setCellValue("Q_CAUSE");//洪水来源
 		Cell cell12 = row0.createCell(12);
 		cell12.setCellValue("FLOOD_LEVEL");//洪水等级
-
+		Cell cell13 = row0.createCell(13);
+		cell13.setCellValue("OUT_Q");//洪水等级
 		// 先判断工作簿是否存在，不存在则创建，存在则继续填写
 		if (sheet != null) {
 			int nextRowNum = sheet.getLastRowNum() + 1;

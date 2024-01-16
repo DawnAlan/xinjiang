@@ -113,8 +113,8 @@ public class SurfaceWaterService extends ServiceImpl<SurfaceWaterMapper, Surface
         surfaceWaterVo.setUnit(surfaceWater.getUnit());
         surfaceWaterVo.setFilePath(surfaceWater.getFilePath().trim());
         /*根据主表ID获取子表信息
-        * */
-        surfaceWaterVo.setFlowDetailVos(flowDetailService.QueryList(id));
+         * */
+        surfaceWaterVo.setFlowDetailVos(flowDetailService.getsurf(id));
         surfaceWaterVo.setHydrologyDetailVos(hydrologyDetailService.QueryList(id));
         surfaceWaterVo.setActualflowDetailVos(sactualflowDetailService.QueryList(id));
         surfaceWaterVo.setWaterregimenDetailVos(waterregimenDetailService.QueryList(id));

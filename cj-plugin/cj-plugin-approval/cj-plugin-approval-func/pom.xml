@@ -68,5 +68,9 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.cj</groupId>
+            <artifactId>cj-plugin-approval-api</artifactId>
+        </dependency>
     </dependencies>
 </project>

@@ -148,6 +148,18 @@
             <groupId>com.cj</groupId>
             <artifactId>cj-plugin-flood-feign</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.cj</groupId>
+            <artifactId>cj-plugin-approval-api</artifactId>
+            <version>2.0.0</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.cj</groupId>
+            <artifactId>cj-plugin-approval-feign</artifactId>
+            <version>2.0.0</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
     <build>

@@ -6,11 +6,16 @@ import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInf
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.mapper.IrrigatedPlatformDataInfoMapper;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.entity.IrrigatedPlatformDataInfo;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.service.IrrigatedPlatformDataInfoService;
+import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformTree.entity.IrrigatedPlatformTree;
+import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformTree.service.IrrigatedPlatformTreeService;
 import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.entity.LzzGaugingStation;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -21,6 +26,9 @@ import java.util.List;
  */
 @Service("irrigatedPlatformDataInfoService")
 public class IrrigatedPlatformDataInfoServiceImpl extends ServiceImpl<IrrigatedPlatformDataInfoMapper, IrrigatedPlatformDataInfo> implements IrrigatedPlatformDataInfoService {
+
+    @Autowired
+    private IrrigatedPlatformTreeService irrigatedPlatformTreeService;
 
     @Override
     public List<SelectInfoByIrrigationNameListRes> selectInfoByIrrigationNameList(String[] name) {
@@ -77,6 +85,20 @@ public class IrrigatedPlatformDataInfoServiceImpl extends ServiceImpl<IrrigatedP
     @Override
     public List<IrrigatedPlatformDataInfo> selectHistoryList(String name, String startTime, String endTime) {
         return this.baseMapper.selectHistoryList(name,startTime,endTime);
+    }
+
+    @Override
+    public List<IrrigatedPlatformDataInfo> getRealTimeWaterLevel(String station) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        IrrigatedPlatformTree one = irrigatedPlatformTreeService.lambdaQuery().eq(IrrigatedPlatformTree::getName, station).one();
+        List<IrrigatedPlatformTree> list = irrigatedPlatformTreeService.lambdaQuery().eq(IrrigatedPlatformTree::getParentId, one.getId()).list();
+        List<String> ids = new ArrayList<>();
+        list.forEach(t->ids.add(t.getId()));
+        List<IrrigatedPlatformDataInfo> realTimeWaterLevel = this.baseMapper.getRealTimeWaterLevel(sdf.format(new Date()), ids,list.size());
+        if(null != realTimeWaterLevel && realTimeWaterLevel.size()>0){
+            return realTimeWaterLevel;
+        }
+        return null;
     }
 }
 

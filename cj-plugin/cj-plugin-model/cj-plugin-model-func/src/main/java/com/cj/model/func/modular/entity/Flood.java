@@ -85,6 +85,11 @@ public class Flood implements Serializable {
     @Excel(name = "FLOOD_LEVEL",width = 15,orderNum = "13")
     private String floodLevel;
 
+    @ApiModelProperty("出库流量")
+    @TableField(value = "OUT_Q")
+    @Excel(name = "OUT_Q",width = 15,orderNum = "10")
+    private Double outQ;
+
 
 }
 
