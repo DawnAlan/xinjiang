@@ -26,7 +26,7 @@ public interface WaterResourceAllocationService extends IService<WaterResourceAl
 
     RestResponse getAllocationPage(WaterResourceAllocationQueryReq req);
 
-    RestResponse delById(String id);
+    RestResponse delById(List<String> ids);
 
     RestResponse compare(String idA, String idB);
 
