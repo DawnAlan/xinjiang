@@ -173,15 +173,17 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
     }
 
     @Override
-    public RestResponse delById(String id) {
-        WaterResourceAllocation waterResourceAllocation = baseMapper.selectById(id);
-        minioUtils.deleteObjectInfo("tth", waterResourceAllocation.getAllocationDataDisplayAddress());
-        minioUtils.deleteObjectInfo("tth", waterResourceAllocation.getAllocationDataCustomAddress());
-        waterResourceAllocation.setDel(1);
-        // todo 登陆用户
-        waterResourceAllocation.setUpdateBy(null);
-        waterResourceAllocation.setUpdateTime(new Date());
-        baseMapper.updateById(waterResourceAllocation);
+    public RestResponse delById(List<String> ids) {
+        List<WaterResourceAllocation> waterResourceAllocations = baseMapper.selectBatchIds(ids);
+        for (WaterResourceAllocation waterResourceAllocation : waterResourceAllocations) {
+            minioUtils.deleteObjectInfo("tth", waterResourceAllocation.getAllocationDataDisplayAddress());
+            minioUtils.deleteObjectInfo("tth", waterResourceAllocation.getAllocationDataCustomAddress());
+            waterResourceAllocation.setDel(1);
+            // todo 登陆用户
+            waterResourceAllocation.setUpdateBy(null);
+            waterResourceAllocation.setUpdateTime(new Date());
+            baseMapper.updateById(waterResourceAllocation);
+        }
         return RestResponse.ok();
     }
 
