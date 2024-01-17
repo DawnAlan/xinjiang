@@ -1,8 +1,10 @@
 package com.cj.dataSynchronization.func.modular.lzz.service;
 
 import com.cj.common.model.RestResponse;
+import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.entity.LzzGaugingStation;
 
 import java.util.Date;
+import java.util.List;
 
 public interface LzzPlatformService {
 
@@ -17,6 +19,7 @@ public interface LzzPlatformService {
     RestResponse insertRainfallStationInfoBetweenTime(Date startTime, Date endTime);
 
     RestResponse insertReservoirLevelWaterLevelBetweenTime(Date startTime, Date endTime);
+    RestResponse<List<LzzGaugingStation>> getReservoirLevelWaterLevelBetweenTime(Date startTime, Date endTime);
     RestResponse insertReservoirLevelTemperatureBetweenTime(Date startTime, Date endTime);
     RestResponse insertReservoirLevelBetweenTime(Date startTime, Date endTime);
 

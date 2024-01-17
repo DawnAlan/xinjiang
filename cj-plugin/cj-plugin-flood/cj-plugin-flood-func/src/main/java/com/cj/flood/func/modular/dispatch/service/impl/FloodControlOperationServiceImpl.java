@@ -192,7 +192,7 @@ public class FloodControlOperationServiceImpl extends ServiceImpl<FloodControlOp
                         tth.close();
                     } catch (Exception e) {
                         e.printStackTrace();
-                        floodControlOperationService.lambdaUpdate().set(FloodControlOperation::getStatus, 3).eq(FloodControlOperation::getForecastingSchemeId, req.getIncomingWaterForecastId()).update();
+                        floodControlOperationService.lambdaUpdate().set(FloodControlOperation::getStatus, 3).set(FloodControlOperation::getRemark,"如遇异常，请降低精度重新生成一次").eq(FloodControlOperation::getForecastingSchemeId, req.getIncomingWaterForecastId()).update();
                     }
                 }
             });

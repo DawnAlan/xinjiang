@@ -2,6 +2,7 @@ package com.cj.dataSynchronization.func.modular.lzz.service.impl;
 
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.NumberUtil;
+import com.cj.common.util.RedisUtil;
 import com.cj.dataSynchronization.func.modular.lzz.bean.ParamDto;
 import com.cj.dataSynchronization.func.modular.lzz.bean.UserIdParam;
 import com.cj.dataSynchronization.func.modular.lzz.mapper.LzzPlatformMapper;
@@ -49,7 +50,11 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
     @Autowired
     private LzzPlatformTreeService lzzPlatformTreeService;
 
+    @Autowired
+    private RedisUtil redisUtil;
+
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private SimpleDateFormat time = new SimpleDateFormat("HH:mm");
 
 
 
@@ -289,6 +294,8 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
                     } else {
                         lzz.setStorageCapacity(0.00);
                     }
+                    redisUtil.set("lzz:time:waterLevel:"+time.format(lzz.getGatherTime()),lzz.getRelativeWaterLevel());
+                    redisUtil.set("lzz:time:capacity:"+time.format(lzz.getGatherTime()),lzz.getStorageCapacity());
                     reservoirLevelList.add(lzz);
                 }
 
@@ -297,6 +304,46 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
         boolean b = lzzGaugingStationService.saveOrUpdateBatch(reservoirLevelList);
         if(b){
             return RestResponse.ok("ok");
+        }else {
+            return RestResponse.no("error");
+        }
+    }
+
+    @Override
+    public RestResponse<List<LzzGaugingStation>> getReservoirLevelWaterLevelBetweenTime(Date startTime, Date endTime) {
+        List<UserIdParam> rainfallStationPidList = pubUserService.selectPidList("水位站").stream().filter(t->t.getName().equals("库水位水位站")).collect(Collectors.toList());
+        List<UserIdParam> userIdParams = pubUserService.selectReservoirLevelIdList(rainfallStationPidList.get(0).getId());
+        List<LzzGaugingStation> reservoirLevelList = new ArrayList<>();
+        for(UserIdParam userIdParam :userIdParams) {
+            if (userIdParam.getName().substring(userIdParam.getName().length() - 2).contains("水位")) {
+                List<ParamDto> paramDtoList = lzzPlatformMapper.selectInfoBetweenTime(userIdParam.getId(), sdf.format(startTime), sdf.format(endTime));
+                for (ParamDto paramDto : paramDtoList) {
+                    LzzGaugingStation lzz = new LzzGaugingStation();
+                    lzz.setTreeId(rainfallStationPidList.get(0).getId());
+                    lzz.setId("楼庄子库水位站:" + paramDto.getTime().getTime());
+                    lzz.setGatherTime(paramDto.getTime());
+                    lzz.setStationName("楼庄子库水位站");
+                    lzz.setRelativeWaterLevel(paramDto.getV().doubleValue());
+                    String[] lzzSplit = paramDto.getV().toString().split("\\.");
+                    List<String> strings = NumberUtil.roundDecimal(lzzSplit[0], lzzSplit[1]);
+                    List<StorageCapacityCurve> LZZlist = storageCapacityCurveService.lambdaQuery().
+                            eq(StorageCapacityCurve::getWaterLevel, strings.get(0)).
+                            eq(StorageCapacityCurve::getInterpolation, strings.get(1)).
+                            eq(StorageCapacityCurve::getReservoir, "lzz").
+                            list();
+                    if (null != LZZlist && LZZlist.size() > 0) {
+                        StorageCapacityCurve storageCapacityCurve = LZZlist.get(0);
+                        lzz.setStorageCapacity(storageCapacityCurve.getStorageCapacity().doubleValue());
+                    } else {
+                        lzz.setStorageCapacity(0.00);
+                    }
+                    reservoirLevelList.add(lzz);
+                }
+
+            }
+        }
+        if(reservoirLevelList.size()>0){
+            return RestResponse.ok(reservoirLevelList);
         }else {
             return RestResponse.no("error");
         }

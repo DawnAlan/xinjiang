@@ -41,9 +41,9 @@ public class IrrigationQuota extends Model<IrrigationQuota> {
     @ApiModelProperty(value = "灌溉作物")
     private String irrigationCrop;
 
-    //计划灌溉总面积
+    //实际灌溉总面积
     @TableField(updateStrategy = FieldStrategy.IGNORED)
-    @ApiModelProperty(value = "计划灌溉总面积")
+    @ApiModelProperty(value = "实际灌溉总面积")
     private Double totalPlannedIrrigationArea;
 
     //四月上旬灌溉面积
@@ -236,5 +236,10 @@ public class IrrigationQuota extends Model<IrrigationQuota> {
     //逻辑删除(0-否 1-是)
     @ApiModelProperty(value = "逻辑删除(0-否 1-是)")
     private Integer del;
+
+    //亩平均灌水额
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
+    @ApiModelProperty(value = "亩平均灌水额")
+    private Double averageIrrigationAmount;
 }
 

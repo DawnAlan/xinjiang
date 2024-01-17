@@ -2,6 +2,7 @@ package com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cj.common.model.RestResponse;
+import com.cj.common.util.RedisUtil;
 import com.cj.common.util.UUIDUtils;
 import com.cj.waterresources.func.modular.trendsTable.entity.TrendsTableParam;
 import com.cj.waterresources.func.modular.trendsTable.service.TrendsTableParamService;
@@ -32,6 +33,9 @@ public class DayWaterSituationStatisticsTableQsServiceImpl extends ServiceImpl<D
 
     @Autowired
     private TrendsTableParamService trendsTableParamService;
+
+    @Autowired
+    private RedisUtil redisUtil;
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
     @Override

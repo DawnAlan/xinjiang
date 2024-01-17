@@ -2,6 +2,7 @@ package com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cj.common.model.RestResponse;
+import com.cj.common.util.RedisUtil;
 import com.cj.common.util.UUIDUtils;
 import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.entity.LzzGaugingStation;
 import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.service.LzzGaugingStationService;
@@ -40,6 +41,9 @@ public class DayWaterSituationStatisticsTableLzzServiceImpl extends ServiceImpl<
     @Autowired
     private LzzGaugingStationService lzzGaugingStationService;
 
+    @Autowired
+    private RedisUtil redisUtil;
+
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
     @Override
     public RestResponse<Map<String,List<DayWaterSituationStatisticsTableLzz>>> selectList(String date) {
@@ -64,32 +68,37 @@ public class DayWaterSituationStatisticsTableLzzServiceImpl extends ServiceImpl<
             t.setId(UUIDUtils.getUUID());
             String paramName = trendsTableParamService.getById(t.getTableHeadId()).getParamName();
             if(paramName.equals("水位")){
-                LzzGaugingStation waterLevel = lzzGaugingStationService.selectInfoByNameAndTime(sdf.format(t.getRecordTime()) + " " + t.getTime(),"楼庄子库水位站");
-                t.setV(waterLevel==null?null:waterLevel.getRelativeWaterLevel()==null?null:waterLevel.getRelativeWaterLevel());
+                Double v = (Double)redisUtil.get("lzz:time:waterLevel:"+t.getTime());
+                t.setV(v==null?null:v);
             }
             if(paramName.equals("库容")){
-                LzzGaugingStation waterLevel = lzzGaugingStationService.selectInfoByNameAndTime(sdf.format(t.getRecordTime()) + " " + t.getTime(),"楼庄子库水位站");
-                t.setV(waterLevel==null?null:waterLevel.getStorageCapacity()==null?null:waterLevel.getStorageCapacity());
+                Double v = (Double)redisUtil.get("lzz:time:capacity:"+t.getTime());
+                t.setV(v==null?null:v);
             }
         }
         List<DayWaterSituationStatisticsTableLzz> result = new ArrayList<>();
         List<DayWaterSituationStatisticsTableLzz> list = this.baseMapper.selectList(sdf.format(dayWaterSituationStatisticsTableLzzList.get(0).getRecordTime()));
         List<DayWaterSituationStatisticsTableLzz> tempList = list.stream().filter(t -> t.getTime().equals("昨日均")).collect(Collectors.toList());
         if(null != tempList && tempList.size()==0){
-            Calendar calendar = new GregorianCalendar();
-            calendar.setTime(new Date());
-            calendar.add(calendar.DATE, -1);
-            String yesterday= sdf.format(calendar.getTime());
-            List<DayWaterSituationStatisticsTableLzz> yesterdayList = this.baseMapper.selectList(yesterday);
-            Map<String, List<DayWaterSituationStatisticsTableLzz>> collect = yesterdayList.stream().collect(Collectors.groupingBy(DayWaterSituationStatisticsTableLzz::getTableHeadId));
-            Set<String> strings = collect.keySet();
-            for(String s:strings){
+            DayWaterSituationStatisticsTableLzz dayWaterSituationStatisticsTableLzz = dayWaterSituationStatisticsTableLzzList.get(0);
+            String endTableList = dayWaterSituationStatisticsTableLzz.getEndTableList();
+            String[] split = endTableList.split(",");
+            for(String s:split){
                 DayWaterSituationStatisticsTableLzz yesterdayBean = new DayWaterSituationStatisticsTableLzz();
                 yesterdayBean.setTime("昨日均");
                 yesterdayBean.setId(UUIDUtils.getUUID());
                 yesterdayBean.setTableHeadId(s);
                 yesterdayBean.setRecordTime(new Date());
-                yesterdayBean.setV(collect.get(s).stream().filter(t->t.getV()!=null).map(DayWaterSituationStatisticsTableLzz::getV).reduce(Double::sum).orElse(0.00));
+                String paramName = trendsTableParamService.getById(s).getParamName();
+                if(paramName.equals("水位")){
+                    Double v = (Double)redisUtil.get("lzz:average:waterLevel:");
+                    yesterdayBean.setV(v==null?null:v);
+                }else if(paramName.equals("库容")){
+                    Double v = (Double)redisUtil.get("lzz:average:capacity:");
+                    yesterdayBean.setV(v==null?null:v);
+                }else {
+                    yesterdayBean.setV(0.00);
+                }
                 result.add(yesterdayBean);
             }
         }

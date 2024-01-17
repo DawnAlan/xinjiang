@@ -2,11 +2,13 @@ package com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hx.
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cj.common.model.RestResponse;
+import com.cj.common.util.RedisUtil;
 import com.cj.common.util.UUIDUtils;
 import com.cj.waterresources.func.modular.trendsTable.entity.TrendsTableParam;
 import com.cj.waterresources.func.modular.trendsTable.service.TrendsTableParamService;
 import com.cj.waterresources.func.modular.waterPrice.totalIdToStation.entity.TotalIdToStation;
 import com.cj.waterresources.func.modular.waterPrice.totalIdToStation.service.TotalIdToStationService;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.dkl.entity.DayWaterSituationStatisticsTableDkl;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hd.entity.DayWaterSituationStatisticsTableHd;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hx.mapper.DayWaterSituationStatisticsTableHxMapper;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hx.entity.DayWaterSituationStatisticsTableHx;
@@ -33,6 +35,9 @@ public class DayWaterSituationStatisticsTableHxServiceImpl extends ServiceImpl<D
 
     @Autowired
     private TrendsTableParamService trendsTableParamService;
+
+    @Autowired
+    private RedisUtil redisUtil;
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
     @Override
@@ -58,20 +63,19 @@ public class DayWaterSituationStatisticsTableHxServiceImpl extends ServiceImpl<D
         List<DayWaterSituationStatisticsTableHx> list = this.baseMapper.selectList(sdf.format(dayWaterSituationStatisticsTableHxList.get(0).getRecordTime()));
         List<DayWaterSituationStatisticsTableHx> tempList = list.stream().filter(t -> t.getTime().equals("昨日均")).collect(Collectors.toList());
         if(null != tempList && tempList.size()==0){
-            Calendar calendar = new GregorianCalendar();
-            calendar.setTime(new Date());
-            calendar.add(calendar.DATE, -1);
-            String yesterday= sdf.format(calendar.getTime());
-            List<DayWaterSituationStatisticsTableHx> yesterdayList = this.baseMapper.selectList(yesterday);
-            Map<String, List<DayWaterSituationStatisticsTableHx>> collect = yesterdayList.stream().collect(Collectors.groupingBy(DayWaterSituationStatisticsTableHx::getTableHeadId));
-            Set<String> strings = collect.keySet();
-            for(String s:strings){
+            DayWaterSituationStatisticsTableHx hx = dayWaterSituationStatisticsTableHxList.get(0);
+            String[] split = hx.getEndTableList().split(",");
+            for(String s:split){
                 DayWaterSituationStatisticsTableHx yesterdayBean = new DayWaterSituationStatisticsTableHx();
                 yesterdayBean.setTime("昨日均");
                 yesterdayBean.setId(UUIDUtils.getUUID());
                 yesterdayBean.setTableHeadId(s);
                 yesterdayBean.setRecordTime(new Date());
-                yesterdayBean.setV(collect.get(s).stream().filter(t->t.getV()!=null).map(DayWaterSituationStatisticsTableHx::getV).reduce(Double::sum).orElse(0.00));
+                TrendsTableParam byId = trendsTableParamService.getById(s);
+                Double v = (Double)redisUtil.get("irrigatedPlatform:yesterday:"+byId.getParamName());
+                yesterdayBean.setV(v==null?0.0:v);
+                yesterdayBean.setEndTableList(hx.getEndTableList());
+                yesterdayBean.setFrontTableList(hx.getFrontTableList());
                 result.add(yesterdayBean);
             }
         }

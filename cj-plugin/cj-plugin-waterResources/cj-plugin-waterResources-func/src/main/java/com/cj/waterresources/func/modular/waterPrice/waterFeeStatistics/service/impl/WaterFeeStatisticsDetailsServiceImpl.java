@@ -149,11 +149,10 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
         }else {
             waterFeeStatisticsDetails.forEach(t->{
                 if(!sdf.format(new Date()).equals(dateTemp)){
-                    String dateTemp1 = waterFeeStatisticsDetails.get(0).getYear()+"-"+waterFeeStatisticsDetails.get(0).getMonth()+"-"+(Integer.valueOf(waterFeeStatisticsDetails.get(0).getStatisticsDate().substring(3,5))+1);
                     String paramName = trendsTableParamService.getById(t.getTableHeadId()).getParamName();
                     if(!paramName.equals("合计")){
-                        IrrigatedPlatformDataInfo irrigatedPlatformDataInfo = irrigatedPlatformDataInfoService.selectOneByCondition(paramName, dateTemp1);
-                        t.setV(irrigatedPlatformDataInfo==null?null:irrigatedPlatformDataInfo.getYesterdayAvgFlow()==null?null:irrigatedPlatformDataInfo.getYesterdayAvgFlow());
+                        Double v = (Double)redisUtil.get("irrigatedPlatform:sq:"+paramName);
+                        t.setV(v==null?null:v);
                     }
                 }
                 t.setId(UUIDUtils.getUUID());

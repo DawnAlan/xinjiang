@@ -17,6 +17,7 @@ import java.util.List;
 public interface IrrigatedPlatformDataInfoService extends IService<IrrigatedPlatformDataInfo> {
 
     List<SelectInfoByIrrigationNameListRes> selectInfoByIrrigationNameList(String[] name);
+    SelectInfoByIrrigationNameListRes selectInfoByIrrigationName(String name);
 
     List<IrrigatedPlatformDataInfo> selectInfoByCondition(String id,String time,String startTime,String endTime);
     IrrigatedPlatformDataInfo selectOneByCondition(String name,String time);

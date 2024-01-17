@@ -237,6 +237,8 @@ public class IrrigatedAreaServiceImpl implements IrrigatedAreaService {
                     info.setGdMonitorFlowRate(dto.getGD_MONITOR_FLOW_RATE());
                     info.setGdTotalFlow(dto.getGD_TOTAL_FLOW());
                     result.add(info);
+                    redisUtil.set("irrigatedPlatform:yesterday:"+info.getMonitorName(),info.getYesterdayAvgFlow());
+                    redisUtil.set("irrigatedPlatform:sq:"+info.getMonitorName(),info.getSqMonitorFlow());
                 }
             }
             boolean b = irrigatedPlatformDataInfoService.saveOrUpdateBatch(result);

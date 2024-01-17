@@ -28,5 +28,10 @@ public class DayWaterSituationStatisticsTableHd extends Model<DayWaterSituationS
     //值
     @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double v;
+
+
+    private String frontTableList;
+
+    private String endTableList;
 }
 

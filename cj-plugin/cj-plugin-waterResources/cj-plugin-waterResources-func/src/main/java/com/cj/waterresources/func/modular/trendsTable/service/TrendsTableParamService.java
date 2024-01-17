@@ -19,12 +19,12 @@ import java.util.List;
 public interface TrendsTableParamService extends IService<TrendsTableParam> {
 
 
-    @Transactional(rollbackFor=RuntimeException.class)
+    @Transactional(rollbackFor=Exception.class)
     RestResponse add(TrendsTableParamAddReq req);
 
     RestResponse delete(String id);
 
-    @Transactional(rollbackFor=RuntimeException.class)
+    @Transactional(rollbackFor=Exception.class)
     RestResponse update(TrendsTableParamUpdateReq req);
 
     RestResponse<List<WaterDailyParamSelectRes>> select(QueryTrendsTableParamReq req);

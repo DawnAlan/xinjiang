@@ -11,6 +11,6 @@ public class SelectInfoByIrrigationNameListRes implements Serializable {
     @ApiModelProperty(value = "监测点")
     private String monitorName;
 
-    @ApiModelProperty(value = "瞬时流量")
-    private Double sqMonitorFlow;
+    @ApiModelProperty(value = "昨日流量")
+    private Double yesterdayAvgFlow;
 }

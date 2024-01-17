@@ -18,5 +18,8 @@ public interface DayWaterSituationStatisticsTableHxMapper extends BaseMapper<Day
 
     @Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_HX WHERE TO_CHAR(RECORD_TIME,'YYYY-MM-DD') = #{date}")
     List<DayWaterSituationStatisticsTableHx> selectList(@Param("date")String date);
+
+    @Select("DELETE FROM DAY_WATER_SITUATION_STATISTICS_TABLE_HX WHERE TO_CHAR(RECORD_TIME,'YYYY-MM-DD') = #{date}")
+    Integer deleteByTime(@Param("date")String date);
 }
 

@@ -18,5 +18,8 @@ public interface DayWaterSituationStatisticsTableLzzMapper extends BaseMapper<Da
     @Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_LZZ WHERE TO_CHAR(RECORD_TIME,'YYYY-MM-DD') = #{date}")
     List<DayWaterSituationStatisticsTableLzz> selectList(@Param("date")String date);
 
+    @Select("DELETE FROM DAY_WATER_SITUATION_STATISTICS_TABLE_LZZ WHERE TO_CHAR(RECORD_TIME,'YYYY-MM-DD') = #{date}")
+    Integer deleteByTime(@Param("date")String date);
+
 }
 

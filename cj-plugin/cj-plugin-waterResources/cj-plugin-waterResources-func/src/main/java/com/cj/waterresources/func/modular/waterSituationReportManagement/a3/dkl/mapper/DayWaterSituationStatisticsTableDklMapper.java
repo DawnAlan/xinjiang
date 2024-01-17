@@ -17,5 +17,8 @@ public interface DayWaterSituationStatisticsTableDklMapper extends BaseMapper<Da
 
     @Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_DKL WHERE TO_CHAR(RECORD_TIME,'YYYY-MM-DD') = #{date}")
     List<DayWaterSituationStatisticsTableDkl> selectList(@Param("date")String date);
+
+    @Select("DELETE FROM DAY_WATER_SITUATION_STATISTICS_TABLE_DKL WHERE TO_CHAR(RECORD_TIME,'YYYY-MM-DD') = #{date}")
+    Integer deleteByTime(@Param("date")String date);
 }
 

@@ -187,6 +187,10 @@ public class TrendsTableParamServiceImpl extends ServiceImpl<TrendsTableParamMap
     @Transactional(rollbackFor=RuntimeException.class)
     public RestResponse update(TrendsTableParamUpdateReq req) {
         try {
+            if(req.getParam().getOrderNum()==null){
+                return RestResponse.no("orderNum is blank");
+            }
+            this.lambdaUpdate().set(TrendsTableParam::getOrderNum,req.getParam().getOrderNum()).eq(TrendsTableParam::getId,req.getParam().getId()).update();
             TrendsTableParam byId = this.getById(req.getParam().getId());
             if(byId.getParamName().equals(req.getParam().getParamName())){
                 if(req.getParam().getUseType()==2){
@@ -200,13 +204,17 @@ public class TrendsTableParamServiceImpl extends ServiceImpl<TrendsTableParamMap
                             return RestResponse.no("修改失败");
                         }
                     }else {
-                        boolean update = waterPriceManagementService.lambdaUpdate().set(WaterPriceManagement::getUseWaterType, StringUtils.isEmpty(req.getUseWaterType())?null:req.getUseWaterType()).
-                                eq(WaterPriceManagement::getId, req.getParam().getId()).update();
-                        if(update){
-                            return RestResponse.ok("修改成功");
+                        if(!req.getParam().getParamName().equals("合计")){
+                            boolean update = waterPriceManagementService.lambdaUpdate().set(WaterPriceManagement::getUseWaterType, StringUtils.isEmpty(req.getUseWaterType())?null:req.getUseWaterType()).
+                                    eq(WaterPriceManagement::getId, req.getParam().getId()).update();
+                            if(update){
+                                return RestResponse.ok("修改成功");
+                            }else {
+                                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                                return RestResponse.no("修改失败");
+                            }
                         }else {
-                            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-                            return RestResponse.no("修改失败");
+                            return RestResponse.ok("修改成功");
                         }
                     }
                 }else {

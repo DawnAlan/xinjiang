@@ -2,6 +2,7 @@ package com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tth
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cj.common.model.RestResponse;
+import com.cj.common.util.RedisUtil;
 import com.cj.common.util.UUIDUtils;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.entity.IrrigatedPlatformDataInfo;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.service.IrrigatedPlatformDataInfoService;
@@ -38,6 +39,9 @@ public class DayWaterSituationStatisticsTableTthServiceImpl extends ServiceImpl<
 
     @Autowired
     private IrrigatedPlatformDataInfoService irrigatedPlatformDataInfoService;
+
+    @Autowired
+    private RedisUtil redisUtil;
 
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 

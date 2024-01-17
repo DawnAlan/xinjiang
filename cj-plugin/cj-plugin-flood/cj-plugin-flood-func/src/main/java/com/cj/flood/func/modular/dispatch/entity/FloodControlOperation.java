@@ -30,5 +30,7 @@ public class FloodControlOperation extends Model<FloodControlOperation> {
     //方案生成状态(1-生成中 2-已生成)
     private Integer status;
 
+    private String remark;
+
 }
 
