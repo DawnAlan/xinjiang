@@ -79,7 +79,7 @@ public class WaterResourceAllocationController {
     @ApiOperationSupport(order = 6)
     @ApiOperation("删除调度方案")
     @PostMapping("/delById")
-    public RestResponse delById(@RequestParam List<String> ids) {
+    public RestResponse delById(@RequestBody List<String> ids) {
         return waterResourceAllocationService.delById(ids);
     }
 
