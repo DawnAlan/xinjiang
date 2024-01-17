@@ -3,6 +3,7 @@ package com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hd.
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hd.entity.DayWaterSituationStatisticsTableHd;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.entity.DayWaterSituationStatisticsTableLzz;
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
@@ -19,7 +20,7 @@ public interface DayWaterSituationStatisticsTableHdMapper extends BaseMapper<Day
     @Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_HD WHERE TO_CHAR(RECORD_TIME,'YYYY-MM-DD') = #{date}")
     List<DayWaterSituationStatisticsTableHd> selectList(@Param("date")String date);
 
-    @Select("DELETE FROM DAY_WATER_SITUATION_STATISTICS_TABLE_HD WHERE TO_CHAR(RECORD_TIME,'YYYY-MM-DD') = #{date}")
-    Integer deleteByTime(@Param("date")String date);
+    @Delete("DELETE FROM DAY_WATER_SITUATION_STATISTICS_TABLE_HD WHERE TO_CHAR(RECORD_TIME,'YYYY-MM-DD') = #{date}")
+    Boolean deleteByTime(@Param("date")String date);
 }
 

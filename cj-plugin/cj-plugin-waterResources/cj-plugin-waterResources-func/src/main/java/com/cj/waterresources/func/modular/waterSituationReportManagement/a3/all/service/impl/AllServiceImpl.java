@@ -33,18 +33,18 @@ public class AllServiceImpl implements AllService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public RestResponse deleteAll(String date) {
-        Integer a = dayWaterSituationStatisticsTableDklMapper.deleteByTime(date);
-        Integer b = dayWaterSituationStatisticsTableHdMapper.deleteByTime(date);
-        Integer c = dayWaterSituationStatisticsTableHxMapper.deleteByTime(date);
-        Integer d = dayWaterSituationStatisticsTableLzzMapper.deleteByTime(date);
-        Integer e = dayWaterSituationStatisticsTableQsMapper.deleteByTime(date);
-        Integer f = dayWaterSituationStatisticsTableSyylMapper.deleteByTime(date);
-        Integer g = dayWaterSituationStatisticsTableTjcMapper.deleteByTime(date);
-        Integer h = dayWaterSituationStatisticsTableTthMapper.deleteByTime(date);
-        Integer i = dayWaterSituationStatisticsTableZccMapper.deleteByTime(date);
-        if(a>0 && b>0 && c>0 && d>0 && e>0 && f>0 && g>0 && h>0 && i>0) {
+        try {
+            dayWaterSituationStatisticsTableDklMapper.deleteByTime(date);
+            dayWaterSituationStatisticsTableHdMapper.deleteByTime(date);
+            dayWaterSituationStatisticsTableHxMapper.deleteByTime(date);
+            dayWaterSituationStatisticsTableLzzMapper.deleteByTime(date);
+            dayWaterSituationStatisticsTableQsMapper.deleteByTime(date);
+            dayWaterSituationStatisticsTableSyylMapper.deleteByTime(date);
+            dayWaterSituationStatisticsTableTjcMapper.deleteByTime(date);
+            dayWaterSituationStatisticsTableTthMapper.deleteByTime(date);
+            dayWaterSituationStatisticsTableZccMapper.deleteByTime(date);
             return RestResponse.ok();
-        }else {
+        } catch (Exception e){
             return RestResponse.no("error");
         }
     }

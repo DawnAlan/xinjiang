@@ -76,7 +76,7 @@ public class WaterFeeTask {
                     details.setStation(s);
                     details.setMonth(month);
                     details.setYear(year);
-                    details.setStatisticsDate(sdf.format(new Date()));
+                    details.setStatisticsDate(sdf.format(getDate(new Date(),-1)));
                     details.setTenDays(tenDays);
                     result.add(details);
                 }
@@ -99,5 +99,12 @@ public class WaterFeeTask {
             return "下旬";
         }
         return "";
+    }
+
+    public Date getDate(Date date,Integer i){
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.add(Calendar.DATE,i);
+        return calendar.getTime();
     }
 }

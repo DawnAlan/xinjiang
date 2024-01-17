@@ -41,8 +41,8 @@ public class IncomingWaterForecastController {
     @ApiOperationSupport(order = 3)
     @ApiOperation("删除")
     @GetMapping("/delete")
-    public RestResponse delete(@RequestParam(value = "id") String id) {
-        return incomingWaterForecastService.delete(id);
+    public RestResponse delete(@RequestParam(value = "ids") String ids) {
+        return incomingWaterForecastService.delete(ids);
     }
 
     @ApiOperationSupport(order = 4)

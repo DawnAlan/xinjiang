@@ -39,9 +39,6 @@ public class DayWaterSituationStatisticsTableSyylServiceImpl extends ServiceImpl
     @Autowired
     private IrrigatedPlatformDataInfoService irrigatedPlatformDataInfoService;
 
-    @Autowired
-    private RedisUtil redisUtil;
-
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
     @Override

@@ -293,9 +293,9 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
     }*/
 
     @Override
-    public RestResponse delete(String id) {
+    public RestResponse delete(String ids) {
         try {
-            boolean b = this.removeById(id);
+            boolean b = this.removeBatchByIds(Arrays.stream(ids.split(",")).collect(Collectors.toList()));
             if(b) {
                 return RestResponse.ok("删除成功");
             }else {

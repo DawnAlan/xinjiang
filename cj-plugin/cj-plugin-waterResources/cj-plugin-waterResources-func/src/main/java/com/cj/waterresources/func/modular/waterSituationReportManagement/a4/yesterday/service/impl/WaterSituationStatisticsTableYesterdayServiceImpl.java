@@ -61,19 +61,19 @@ public class WaterSituationStatisticsTableYesterdayServiceImpl extends ServiceIm
                     eq(TrendsTableParam::getUseStation,"制材厂").eq(TrendsTableParam::getParamName,"日降雨量").one();
             TrendsTableParam temperatureTableId = trendsTableParamService.lambdaQuery().eq(TrendsTableParam::getUseType,1).
                     eq(TrendsTableParam::getUseStation,"制材厂").eq(TrendsTableParam::getParamName,"平均气温").one();
-            List<Double> flowValue = dayWaterSituationStatisticsTableZccs.stream().filter(t -> t.getTableHeadId().equals(flowTableId.getId())).map(DayWaterSituationStatisticsTableZcc::getV).collect(Collectors.toList());
+            List<String> flowValue = dayWaterSituationStatisticsTableZccs.stream().filter(t -> t.getTableHeadId().equals(flowTableId.getId())).map(DayWaterSituationStatisticsTableZcc::getV).collect(Collectors.toList());
             if(null != flowValue && flowValue.size() > 0) {
                 waterSituationStatisticsTableYesterday.setZccRjll(flowValue.get(0));
             }
-            List<Double> maxFlowValue = dayWaterSituationStatisticsTableZccs.stream().filter(t -> t.getTableHeadId().equals(maxFlowTableId.getId())).map(DayWaterSituationStatisticsTableZcc::getV).collect(Collectors.toList());
+            List<String> maxFlowValue = dayWaterSituationStatisticsTableZccs.stream().filter(t -> t.getTableHeadId().equals(maxFlowTableId.getId())).map(DayWaterSituationStatisticsTableZcc::getV).collect(Collectors.toList());
             if(null != maxFlowValue && maxFlowValue.size() > 0) {
                 waterSituationStatisticsTableYesterday.setZccZdll(maxFlowValue.get(0));
             }
-            List<Double> rainFallValue = dayWaterSituationStatisticsTableZccs.stream().filter(t -> t.getTableHeadId().equals(rainFallTableId.getId())).map(DayWaterSituationStatisticsTableZcc::getV).collect(Collectors.toList());
+            List<String> rainFallValue = dayWaterSituationStatisticsTableZccs.stream().filter(t -> t.getTableHeadId().equals(rainFallTableId.getId())).map(DayWaterSituationStatisticsTableZcc::getV).collect(Collectors.toList());
             if(null != rainFallValue && rainFallValue.size() > 0) {
                 waterSituationStatisticsTableYesterday.setZccRjyl(rainFallValue.get(0));
             }
-            List<Double> temperatureValue = dayWaterSituationStatisticsTableZccs.stream().filter(t -> t.getTableHeadId().equals(temperatureTableId.getId())).map(DayWaterSituationStatisticsTableZcc::getV).collect(Collectors.toList());
+            List<String> temperatureValue = dayWaterSituationStatisticsTableZccs.stream().filter(t -> t.getTableHeadId().equals(temperatureTableId.getId())).map(DayWaterSituationStatisticsTableZcc::getV).collect(Collectors.toList());
             if(null != temperatureValue && temperatureValue.size() > 0) {
                 waterSituationStatisticsTableYesterday.setZccRjqw(temperatureValue.get(0));
             }

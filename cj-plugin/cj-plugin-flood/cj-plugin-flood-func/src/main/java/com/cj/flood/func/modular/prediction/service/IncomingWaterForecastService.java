@@ -20,7 +20,7 @@ public interface IncomingWaterForecastService extends IService<IncomingWaterFore
 
     RestResponse add(IncomingWaterForecastAddReq req);
 
-    RestResponse delete(String id);
+    RestResponse delete(String ids);
 
     RestResponse update(IncomingWaterForecast incomingWaterForecast);
 

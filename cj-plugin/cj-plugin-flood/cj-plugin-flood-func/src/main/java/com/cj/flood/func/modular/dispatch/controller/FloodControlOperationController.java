@@ -15,6 +15,10 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 /**
  * 防洪调度表(FloodControlOperation)表控制层
  *
@@ -62,8 +66,8 @@ public class FloodControlOperationController {
     @ApiOperationSupport(order = 5)
     @ApiOperation("删除")
     @GetMapping("/delete")
-    public RestResponse delete(@RequestParam(value = "id") String id) {
-        boolean b = floodControlOperationService.removeById(id);
+    public RestResponse delete(@RequestParam(value = "ids") String ids) {
+        boolean b = floodControlOperationService.removeByIds(Arrays.stream(ids.split(",")).collect(Collectors.toList()));
         if(b) {
             return RestResponse.ok();
         }else {

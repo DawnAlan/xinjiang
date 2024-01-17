@@ -24,8 +24,7 @@ public class DayWaterSituationStatisticsTableZcc extends Model<DayWaterSituation
     //表头ID
     private String tableHeadId;
     //值
-    @TableField(updateStrategy = FieldStrategy.IGNORED)
-    private Double v;
+    private String v;
 
     private String frontTableList;
 

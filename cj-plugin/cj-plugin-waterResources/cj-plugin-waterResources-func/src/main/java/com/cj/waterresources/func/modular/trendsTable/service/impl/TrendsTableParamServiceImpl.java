@@ -1,8 +1,10 @@
 package com.cj.waterresources.func.modular.trendsTable.service.impl;
 
 import cn.hutool.extra.spring.SpringUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cj.common.model.RestResponse;
+import com.cj.common.util.RedisUtil;
 import com.cj.sys.feign.SysUserFeign;
 import com.cj.waterresources.func.modular.trendsTable.bean.req.QueryTrendsTableParamReq;
 import com.cj.waterresources.func.modular.trendsTable.bean.req.TrendsTableParamAddReq;
@@ -41,7 +43,7 @@ public class TrendsTableParamServiceImpl extends ServiceImpl<TrendsTableParamMap
     implements TrendsTableParamService {
 
     @Autowired
-    private SysUserFeign sysUserFeign;
+    private RedisUtil redisUtil;
 
     @Autowired
     private WaterPriceManagementService waterPriceManagementService;
@@ -99,9 +101,11 @@ public class TrendsTableParamServiceImpl extends ServiceImpl<TrendsTableParamMap
                 if(!save1){
                     throw new RuntimeException("保存失败");
                 }else {
+                    updateCache();
                     return RestResponse.ok("保存成功");
                 }
             }else {
+                updateCache();
                 return RestResponse.ok("保存成功");
             }
         }else {
@@ -123,8 +127,6 @@ public class TrendsTableParamServiceImpl extends ServiceImpl<TrendsTableParamMap
                                 ExecutorService pool = Executors.newSingleThreadExecutor();
                                 pool.submit(new Runnable() {
                                     private WaterPriceManagementService waterPriceManagementService = SpringUtil.getBean(WaterPriceManagementService.class);
-                                    private TotalIdToStationService totalIdToStationService = SpringUtil.getBean(TotalIdToStationService.class);
-                                    private TrendsTableParamService trendsTableParamService = SpringUtil.getBean(TrendsTableParamService.class);
                                     @Override
                                     public void run() {
                                         try {
@@ -141,11 +143,13 @@ public class TrendsTableParamServiceImpl extends ServiceImpl<TrendsTableParamMap
                             if(null != collected && collected.size()>0){
                                 totalIdToStationService.lambdaUpdate().in(TotalIdToStation::getTotalId,collected).remove();
                             }
+                            updateCache();
                             return RestResponse.ok("删除成功");
                         }else {
                             return RestResponse.no("删除失败");
                         }
                     }
+                    updateCache();
                     return RestResponse.ok("删除成功");
                 }else {
                     return RestResponse.no("删除失败");
@@ -158,9 +162,6 @@ public class TrendsTableParamServiceImpl extends ServiceImpl<TrendsTableParamMap
                         ExecutorService pool = Executors.newSingleThreadExecutor();
                         pool.submit(new Runnable() {
                             private WaterPriceManagementService waterPriceManagementService = SpringUtil.getBean(WaterPriceManagementService.class);
-
-                            private TotalIdToStationService totalIdToStationService = SpringUtil.getBean(TotalIdToStationService.class);
-                            private TrendsTableParamService trendsTableParamService = SpringUtil.getBean(TrendsTableParamService.class);
                             @Override
                             public void run() {
                                 try {
@@ -172,6 +173,7 @@ public class TrendsTableParamServiceImpl extends ServiceImpl<TrendsTableParamMap
                         });
                     }
                     totalIdToStationService.lambdaUpdate().eq(TotalIdToStation::getTotalId,id).remove();
+                    updateCache();
                     return RestResponse.ok("删除成功");
                 }else {
                     return RestResponse.no("删除失败");
@@ -198,6 +200,7 @@ public class TrendsTableParamServiceImpl extends ServiceImpl<TrendsTableParamMap
                         boolean update = waterPriceManagementService.lambdaUpdate().set(WaterPriceManagement::getUseWaterType, StringUtils.isEmpty(req.getUseWaterType())?null:req.getUseWaterType()).
                                 eq(WaterPriceManagement::getId, req.getParam().getId()).update();
                         if(update){
+                            updateCache();
                             return RestResponse.ok("修改成功");
                         }else {
                             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
@@ -208,16 +211,19 @@ public class TrendsTableParamServiceImpl extends ServiceImpl<TrendsTableParamMap
                             boolean update = waterPriceManagementService.lambdaUpdate().set(WaterPriceManagement::getUseWaterType, StringUtils.isEmpty(req.getUseWaterType())?null:req.getUseWaterType()).
                                     eq(WaterPriceManagement::getId, req.getParam().getId()).update();
                             if(update){
+                                updateCache();
                                 return RestResponse.ok("修改成功");
                             }else {
                                 TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
                                 return RestResponse.no("修改失败");
                             }
                         }else {
+                            updateCache();
                             return RestResponse.ok("修改成功");
                         }
                     }
                 }else {
+                    updateCache();
                     return RestResponse.ok("修改成功");
                 }
             }else {
@@ -238,6 +244,7 @@ public class TrendsTableParamServiceImpl extends ServiceImpl<TrendsTableParamMap
                                         set(WaterPriceManagement::getUseWaterType,  StringUtils.isEmpty(req.getUseWaterType())?null:req.getUseWaterType()).
                                         eq(WaterPriceManagement::getId, req.getParam().getId()).update();
                                 if(update){
+                                    updateCache();
                                     return RestResponse.ok("修改成功");
                                 }else {
                                     TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
@@ -253,6 +260,7 @@ public class TrendsTableParamServiceImpl extends ServiceImpl<TrendsTableParamMap
                                             set(WaterPriceManagement::getUseWaterType,  StringUtils.isEmpty(req.getUseWaterType())?null:req.getUseWaterType()).
                                             eq(WaterPriceManagement::getId, req.getParam().getId()).update();
                                     if(update){
+                                        updateCache();
                                         return RestResponse.ok("修改成功");
                                     }else {
                                         TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
@@ -261,6 +269,7 @@ public class TrendsTableParamServiceImpl extends ServiceImpl<TrendsTableParamMap
                                 }
                             }
                         }else {
+                            updateCache();
                             return RestResponse.ok("修改成功");
                         }
                     }else {
@@ -328,6 +337,15 @@ public class TrendsTableParamServiceImpl extends ServiceImpl<TrendsTableParamMap
                     res.setUseWaterType(byId != null ? byId.getUseWaterType():"");
                 }
             }
+        }
+    }
+
+    void updateCache(){
+        List<TrendsTableParam> listed = this.list();
+        redisUtil.set("trendsTableParam:list", JSONObject.toJSONString(listed));
+        for (TrendsTableParam param:listed){
+            redisUtil.set("trendsTableParam:name:"+param.getId(), param.getParamName());
+            redisUtil.set("trendsTableParam:object:"+param.getId(), JSONObject.toJSONString(param));
         }
     }
 }

@@ -25,24 +25,20 @@ public class WaterSituationStatisticsTableYesterday extends Model<WaterSituation
     private Date recordTime;
 
     //制材厂-日均流量
-    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "制材厂-日均流量")
-    private Double zccRjll;
+    private String zccRjll;
 
     //制材厂-最大流量
-    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "制材厂-最大流量")
-    private Double zccZdll;
+    private String zccZdll;
 
     //制材厂-日降雨量
-    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "制材厂-日降雨量")
-    private Double zccRjyl;
+    private String zccRjyl;
 
     //制材厂-日均气温
-    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "制材厂-日均气温")
-    private Double zccRjqw;
+    private String zccRjqw;
 
     //雨量站-八一林场
     @TableField(updateStrategy = FieldStrategy.IGNORED)
