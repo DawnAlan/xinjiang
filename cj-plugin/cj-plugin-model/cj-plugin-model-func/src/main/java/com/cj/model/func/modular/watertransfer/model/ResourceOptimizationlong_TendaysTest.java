@@ -507,13 +507,15 @@ public class ResourceOptimizationlong_TendaysTest
             }
         }
         double[]allwater=new double[period];
-
+        double[]ecologyWater=new double[period];
+        double[]ecologyFlow=new double[period];
         for (int x=0;x<period;x++){
             double sup=waterSupply_all[x];
             double eco=minOutflow*delatT*daynum[x]/1e4;
             double  all_num=eco+sup;
             allwater[x]=all_num;
-
+            ecologyWater[x]=eco;
+            ecologyFlow[x]=minOutflow;
             proportion[0][x] = (eco) / (all_num);
             proportion[1][x] = (waterSupply[0][x] + waterSupply[1][x]) / (all_num);
             proportion[2][x] = (waterSupply[2][x]) / (all_num);
@@ -763,6 +765,8 @@ public class ResourceOptimizationlong_TendaysTest
         waterTransfer.setWaterDemand4(waterdemand4);
 
         waterTransfer.setAllWater(allwater);
+        waterTransfer.setEcologyFlow(ecologyFlow);
+        waterTransfer.setEcologyWater(ecologyWater);
 
         result.add(waterTransfer);
         return  result;
