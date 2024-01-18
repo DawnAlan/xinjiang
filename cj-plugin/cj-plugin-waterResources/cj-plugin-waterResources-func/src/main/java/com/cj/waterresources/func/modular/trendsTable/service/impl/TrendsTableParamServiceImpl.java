@@ -340,7 +340,7 @@ public class TrendsTableParamServiceImpl extends ServiceImpl<TrendsTableParamMap
         }
     }
 
-    void updateCache(){
+    public void updateCache(){
         List<TrendsTableParam> listed = this.list();
         redisUtil.set("trendsTableParam:list", JSONObject.toJSONString(listed));
         for (TrendsTableParam param:listed){

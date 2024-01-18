@@ -27,10 +27,11 @@ public class WaterFeeTask {
     @Autowired
     private WaterFeeStatisticsDetailsService waterFeeStatisticsDetailsService;
 
-    @Scheduled(cron="0 05 8 ? * *")//每天8:05
+    @Scheduled(cron="0 30 8 * * ?")//每天8:30
     //@Scheduled(cron="0 */1 * * * ?")
     public void createWaterFeeTable(){
         try {
+            log.info("--------------------------------执行定时插入水费表操作----------------------------");
             LocalDateTime now = LocalDateTime.now();
             Integer year = now.getYear();
             Integer month = now.getMonth().getValue();

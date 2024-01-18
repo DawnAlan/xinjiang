@@ -87,7 +87,7 @@ public class IrrigationQuotaServiceImpl extends ServiceImpl<IrrigationQuotaMappe
                 (irrigationQuota.getNovemberLateOctoberIrrigationWaterVolume()==null?0.0:irrigationQuota.getNovemberLateOctoberIrrigationWaterVolume())
         );
         irrigationQuota.setIrrigationQuota(irrigationQuota.getTotalPlannedIrrigationArea()==null?null:irrigationQuota.getAccumulatedTotalIrrigationAmount()/irrigationQuota.getTotalPlannedIrrigationArea());
-        irrigationQuota.setAverageIrrigationAmount(irrigationQuota.getAccumulatedTotalIrrigationAmount()/irrigationQuota.getAccumulatedIrrigationArea());
+        irrigationQuota.setAverageIrrigationAmount(irrigationQuota.getAccumulatedIrrigationArea()==0.0?null:irrigationQuota.getAccumulatedTotalIrrigationAmount()/irrigationQuota.getAccumulatedIrrigationArea());
         boolean save = this.save(irrigationQuota);
         if(save){
             return RestResponse.ok();
@@ -161,7 +161,7 @@ public class IrrigationQuotaServiceImpl extends ServiceImpl<IrrigationQuotaMappe
                         (irrigationQuota.getNovemberLateOctoberIrrigationWaterVolume()==null?0.0:irrigationQuota.getNovemberLateOctoberIrrigationWaterVolume())
         );
         irrigationQuota.setIrrigationQuota(irrigationQuota.getTotalPlannedIrrigationArea()==null?null:irrigationQuota.getAccumulatedTotalIrrigationAmount()/irrigationQuota.getTotalPlannedIrrigationArea());
-        irrigationQuota.setAverageIrrigationAmount(irrigationQuota.getAccumulatedTotalIrrigationAmount()/irrigationQuota.getAccumulatedIrrigationArea());
+        irrigationQuota.setAverageIrrigationAmount(irrigationQuota.getAccumulatedIrrigationArea()==0.0?null:irrigationQuota.getAccumulatedTotalIrrigationAmount()/irrigationQuota.getAccumulatedIrrigationArea());
         boolean b = this.updateById(irrigationQuota);
         if(b){
             return RestResponse.ok();
