@@ -83,6 +83,8 @@ public class OutResult {
             option.setDeltawater(Out1.get(0).getDeltawater()[0][i]);
             option.setAllWater(Out1.get(0).getAllWater()[i]);
             option.setOutFlowWater(Out1.get(0).getOutflow_water()[0][i]);
+            option.setEcologyFlow(Out1.get(0).getEcologyFlow()[i]);
+            option.setEcologyWater(Out1.get(0).getEcologyWater()[i]);
             option1.add(option);
         }
         for (int i = 0; i < Out1.get(0).getInflow()[0].length; i++) {
@@ -109,6 +111,8 @@ public class OutResult {
             option.setDeltawater(Out1.get(0).getDeltawater()[1][i]);
             option.setAllWater(Out1.get(0).getAllWater()[i]);
             option.setOutFlowWater(Out1.get(0).getOutflow_water()[1][i]);
+            option.setEcologyFlow(Out1.get(0).getEcologyFlow()[i]);
+            option.setEcologyWater(Out1.get(0).getEcologyWater()[i]);
             option1.add(option);
         }
 
@@ -345,7 +349,8 @@ public class OutResult {
         row0.createCell(19).setCellValue("deltawater");
         row0.createCell(20).setCellValue("allwater");
         row0.createCell(21).setCellValue("outFlowWater");
-
+        row0.createCell(22).setCellValue("ecologFlow");
+        row0.createCell(23).setCellValue("ecologWater");
         // 获取 CreationHelper 对象来帮助处理日期
         CreationHelper createHelper = workbook.getCreationHelper();
 
@@ -379,7 +384,8 @@ public class OutResult {
             row.createCell(19).setCellValue(line.getDeltawater());
             row.createCell(20).setCellValue(line.getAllWater());
             row.createCell(21).setCellValue(line.getOutFlowWater());
-
+            row.createCell(22).setCellValue(line.getEcologyFlow());
+            row.createCell(23).setCellValue(line.getEcologyWater());
         }
         try {
             FileOutputStream fop = new FileOutputStream(path);

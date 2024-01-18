@@ -71,6 +71,25 @@ public class WaterTransfer {
     //绿化配水
     private double [][]waterDemandGreenEast;
 
+    public double[] getEcologyFlow() {
+        return ecologyFlow;
+    }
+
+    public void setEcologyFlow(double[] ecologyFlow) {
+        this.ecologyFlow = ecologyFlow;
+    }
+
+    public double[] getEcologyWater() {
+        return ecologyWater;
+    }
+
+    public void setEcologyWater(double[] ecologyWater) {
+        this.ecologyWater = ecologyWater;
+    }
+
+    //生态流量
+    private double[]ecologyFlow;
+    private double[]ecologyWater;
     public String[] getNameAgricultureQushou() {
         return nameAgricultureQushou;
     }
