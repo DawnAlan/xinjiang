@@ -84,8 +84,8 @@ public class WaterSituationStatisticsTableYesterdayServiceImpl extends ServiceIm
                     eq(TrendsTableParam::getUseStation,"上游雨量").eq(TrendsTableParam::getParamName,"八一林场").one();
             TrendsTableParam hgTableId = trendsTableParamService.lambdaQuery().eq(TrendsTableParam::getUseType,1).
                     eq(TrendsTableParam::getUseStation,"上游雨量").eq(TrendsTableParam::getParamName,"黑沟").one();
-            TrendsTableParam wmgTableId = trendsTableParamService.lambdaQuery().eq(TrendsTableParam::getUseType,1).
-                    eq(TrendsTableParam::getUseStation,"上游雨量").eq(TrendsTableParam::getParamName,"无名沟").one();
+            TrendsTableParam ksgTableId = trendsTableParamService.lambdaQuery().eq(TrendsTableParam::getUseType,1).
+                    eq(TrendsTableParam::getUseStation,"上游雨量").eq(TrendsTableParam::getParamName,"喀什沟").one();
             TrendsTableParam tjydTableId = trendsTableParamService.lambdaQuery().eq(TrendsTableParam::getUseType,1).
                     eq(TrendsTableParam::getUseStation,"上游雨量").eq(TrendsTableParam::getParamName,"团结一队").one();
             TrendsTableParam tthjkTableId = trendsTableParamService.lambdaQuery().eq(TrendsTableParam::getUseType,1).
@@ -100,9 +100,9 @@ public class WaterSituationStatisticsTableYesterdayServiceImpl extends ServiceIm
             if(null != hgValue && hgValue.size() > 0) {
                 waterSituationStatisticsTableYesterday.setYlzHg(hgValue.get(0));
             }
-            List<Double> wmgValue = dayWaterSituationStatisticsTableSyyls.stream().filter(t -> t.getTableHeadId().equals(wmgTableId.getId())).map(DayWaterSituationStatisticsTableSyyl::getV).collect(Collectors.toList());
-            if(null != wmgValue && wmgValue.size() > 0) {
-                waterSituationStatisticsTableYesterday.setYlzWmg(wmgValue.get(0));
+            List<Double> ksgValue = dayWaterSituationStatisticsTableSyyls.stream().filter(t -> t.getTableHeadId().equals(ksgTableId.getId())).map(DayWaterSituationStatisticsTableSyyl::getV).collect(Collectors.toList());
+            if(null != ksgValue && ksgValue.size() > 0) {
+                waterSituationStatisticsTableYesterday.setYlzKsg(ksgValue.get(0));
             }
             List<Double> tjydValue = dayWaterSituationStatisticsTableSyyls.stream().filter(t -> t.getTableHeadId().equals(tjydTableId.getId())).map(DayWaterSituationStatisticsTableSyyl::getV).collect(Collectors.toList());
             if(null != tjydValue && tjydValue.size() > 0) {

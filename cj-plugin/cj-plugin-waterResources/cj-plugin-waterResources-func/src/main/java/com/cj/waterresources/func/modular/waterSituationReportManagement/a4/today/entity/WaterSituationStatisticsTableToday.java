@@ -262,15 +262,10 @@ public class WaterSituationStatisticsTableToday extends Model<WaterSituationStat
     @ApiModelProperty(value = "河东-西缘产业合计")
     private Double hdXycyhj;
 
-    //河东-头区园林
+    //河东-河东绿化
     @TableField(updateStrategy = FieldStrategy.IGNORED)
-    @ApiModelProperty(value = "河东-头区园林")
-    private Double hdTqyl;
-
-    //河东-八钢绿化
-    @TableField(updateStrategy = FieldStrategy.IGNORED)
-    @ApiModelProperty(value = "河东-八钢绿化")
-    private Double hdBglh;
+    @ApiModelProperty(value = "河东-河东绿化")
+    private Double hdHdlh;
 
     //河东-东干合计
     @TableField(updateStrategy = FieldStrategy.IGNORED)

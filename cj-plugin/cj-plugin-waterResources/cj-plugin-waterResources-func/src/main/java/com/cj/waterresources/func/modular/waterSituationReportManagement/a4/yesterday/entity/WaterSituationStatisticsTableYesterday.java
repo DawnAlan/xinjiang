@@ -50,10 +50,10 @@ public class WaterSituationStatisticsTableYesterday extends Model<WaterSituation
     @ApiModelProperty(value = "雨量站-黑沟")
     private Double ylzHg;
 
-    //雨量站-无名沟
+    //雨量站-喀什沟
     @TableField(updateStrategy = FieldStrategy.IGNORED)
-    @ApiModelProperty(value = "雨量站-无名沟")
-    private Double ylzWmg;
+    @ApiModelProperty(value = "雨量站-喀什沟")
+    private Double ylzKsg;
 
     //雨量站-小渠子
     @TableField(updateStrategy = FieldStrategy.IGNORED)

@@ -391,6 +391,9 @@ public class SurfaceWaterFlowDetailService extends ServiceImpl<SurfaceWaterFlowD
         HashMap<String, Object> map = new HashMap<String, Object>();
         map.put("parent_id", id);
         List<SurfaceWaterFlowDetail> list = surfaceWaterFlowDetailMapper.selectByMap(map);
+        if(list.size()<=0){
+            return surfaceWaterFlowVo;
+        }
         surfaceWaterFlowVo.setAnnual_average_flow(BigDecimal.valueOf(list.stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
         BigDecimal sumflow = BigDecimal.valueOf(list.stream().mapToDouble(t -> t.getFlow().doubleValue()).sum());
         surfaceWaterFlowVo.setAnnual_runoff(BigDecimal.valueOf(sumflow.doubleValue() * 86400 / 10000 / 10000).setScale(2, RoundingMode.DOWN));
