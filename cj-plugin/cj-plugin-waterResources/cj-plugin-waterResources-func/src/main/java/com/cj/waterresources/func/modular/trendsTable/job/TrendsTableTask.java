@@ -26,15 +26,13 @@ public class TrendsTableTask {
 
     @Scheduled(cron="0 0 0/1 * * ?")//每小时执行一次，以空格分隔
     public void saveCache(){
-        String listTemp = (String)redisUtil.get("trendsTableParam:list");
-        if(StringUtils.isEmpty(listTemp)){
-            List<TrendsTableParam> listed = trendsTableParamService.list();
-            redisUtil.set("trendsTableParam:list", JSONObject.toJSONString(listed));
-            for (TrendsTableParam param:listed){
-                redisUtil.set("trendsTableParam:name:"+param.getId(), param.getParamName());
-                redisUtil.set("trendsTableParam:object:"+param.getId(), JSONObject.toJSONString(param));
-            }
+        List<TrendsTableParam> listed = trendsTableParamService.list();
+        redisUtil.set("trendsTableParam:list", JSONObject.toJSONString(listed));
+        for (TrendsTableParam param:listed){
+            redisUtil.set("trendsTableParam:name:"+param.getId(), param.getParamName());
+            redisUtil.set("trendsTableParam:object:"+param.getId(), JSONObject.toJSONString(param));
         }
+
     }
 
 }

@@ -25,6 +25,10 @@ public interface WaterFeeStatisticsDetailsService extends IService<WaterFeeStati
 
     RestResponse clearTable(WaterFeeStatisticsDetailsSelectListReq req);
 
+    void updateCache();
+
+    RestResponse addHistory(List<List<WaterFeeStatisticsDetails>> waterFeeStatisticsDetailsList);
+
 
 
 }

@@ -31,4 +31,6 @@ public interface TrendsTableParamService extends IService<TrendsTableParam> {
 
     RestResponse<List<TrendsTableParam>> selectNoParent();
 
+    void updateCache();
+
 }

@@ -47,5 +47,8 @@ public interface IrrigatedPlatformDataInfoMapper extends BaseMapper<IrrigatedPla
     @Select("SELECT * FROM IRRIGATED_PLATFORM_DATA_INFO WHERE MONITOR_NAME = #{name} AND TO_CHAR(MONITOR_TIME,'YYYY-MM-DD hh24:MI') BETWEEN #{startTime} AND #{endTime}")
     List<IrrigatedPlatformDataInfo> selectHistoryList(@Param("name")String name, @Param("startTime")String startTime, @Param("endTime")String endTime);
     List<IrrigatedPlatformDataInfo> getRealTimeWaterLevel(@Param("time")String time,@Param("id") List<String> id,@Param("num") Integer num);
+
+    @Select("select YESTERDAY_AVG_FLOW,MONITOR_NAME FROM IRRIGATED_PLATFORM_DATA_INFO WHERE MONITOR_NAME = #{name} AND TO_CHAR(MONITOR_TIME,'YYYY-MM-DD') = #{time} order by MONITOR_TIME desc limit 1")
+    SelectInfoByIrrigationNameListRes selectInfoByIrrigationNameListForHistory(@Param("name") String name,@Param("time")String time);
 }
 

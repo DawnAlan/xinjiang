@@ -1,7 +1,9 @@
 package com.cj.waterresources.func.modular.waterSituationReportManagement.a4.yesterday.service.impl;
 
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cj.common.model.RestResponse;
+import com.cj.common.util.RedisUtil;
 import com.cj.common.util.UUIDUtils;
 import com.cj.waterresources.func.modular.trendsTable.entity.TrendsTableParam;
 import com.cj.waterresources.func.modular.trendsTable.service.TrendsTableParamService;
@@ -12,6 +14,7 @@ import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.zcc.
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a4.yesterday.mapper.WaterSituationStatisticsTableYesterdayMapper;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a4.yesterday.entity.WaterSituationStatisticsTableYesterday;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a4.yesterday.service.WaterSituationStatisticsTableYesterdayService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,24 +46,40 @@ public class WaterSituationStatisticsTableYesterdayServiceImpl extends ServiceIm
     @Autowired
     private DayWaterSituationStatisticsTableSyylMapper dayWaterSituationStatisticsTableSyylMapper;
 
+    @Autowired
+    private RedisUtil redisUtil;
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public RestResponse add(WaterSituationStatisticsTableYesterday waterSituationStatisticsTableYesterday) {
+        String mk = (String) redisUtil.get("trendsTableParam:list");
+        if(StringUtils.isEmpty(mk)){
+            trendsTableParamService.updateCache();
+            mk = (String) redisUtil.get("trendsTableParam:list");
+        }
+        List<TrendsTableParam> trendsTableParamList = JSONObject.parseArray(mk, TrendsTableParam.class);
         waterSituationStatisticsTableYesterday.setId(UUIDUtils.getUUID());
         Calendar calendar = new GregorianCalendar();
         calendar.setTime(new Date());
         calendar.add(calendar.DATE, -1);
         String yesterday= sdf.format(calendar.getTime());
+        String today= sdf.format(new Date());
         List<DayWaterSituationStatisticsTableZcc> dayWaterSituationStatisticsTableZccs = dayWaterSituationStatisticsTableZccMapper.selectList(yesterday);
         if(null != dayWaterSituationStatisticsTableZccs && dayWaterSituationStatisticsTableZccs.size()>0){
-            TrendsTableParam flowTableId = trendsTableParamService.lambdaQuery().eq(TrendsTableParam::getUseType,1).
+            List<TrendsTableParam> zccList = trendsTableParamList.stream().filter(t->t.getUseType()==1).
+                    filter(t -> t.getUseStation().equals("制材厂")).collect(Collectors.toList());
+            TrendsTableParam flowTableId = zccList.stream().filter(t->t.getParamName().equals("日均流量")).collect(Collectors.toList()).get(0);
+            TrendsTableParam maxFlowTableId = zccList.stream().filter(t->t.getParamName().equals("最大流量")).collect(Collectors.toList()).get(0);
+            TrendsTableParam rainFallTableId = zccList.stream().filter(t->t.getParamName().equals("日降雨量")).collect(Collectors.toList()).get(0);
+            TrendsTableParam temperatureTableId = zccList.stream().filter(t->t.getParamName().equals("平均气温")).collect(Collectors.toList()).get(0);
+          /*  TrendsTableParam flowTableId = trendsTableParamService.lambdaQuery().eq(TrendsTableParam::getUseType,1).
                     eq(TrendsTableParam::getUseStation,"制材厂").eq(TrendsTableParam::getParamName,"日均流量").one();
             TrendsTableParam maxFlowTableId = trendsTableParamService.lambdaQuery().eq(TrendsTableParam::getUseType,1).
                     eq(TrendsTableParam::getUseStation,"制材厂").eq(TrendsTableParam::getParamName,"最大流量").one();
             TrendsTableParam rainFallTableId = trendsTableParamService.lambdaQuery().eq(TrendsTableParam::getUseType,1).
                     eq(TrendsTableParam::getUseStation,"制材厂").eq(TrendsTableParam::getParamName,"日降雨量").one();
             TrendsTableParam temperatureTableId = trendsTableParamService.lambdaQuery().eq(TrendsTableParam::getUseType,1).
-                    eq(TrendsTableParam::getUseStation,"制材厂").eq(TrendsTableParam::getParamName,"平均气温").one();
+                    eq(TrendsTableParam::getUseStation,"制材厂").eq(TrendsTableParam::getParamName,"平均气温").one();*/
             List<String> flowValue = dayWaterSituationStatisticsTableZccs.stream().filter(t -> t.getTableHeadId().equals(flowTableId.getId())).map(DayWaterSituationStatisticsTableZcc::getV).collect(Collectors.toList());
             if(null != flowValue && flowValue.size() > 0) {
                 waterSituationStatisticsTableYesterday.setZccRjll(flowValue.get(0));
@@ -80,7 +99,15 @@ public class WaterSituationStatisticsTableYesterdayServiceImpl extends ServiceIm
         }
         List<DayWaterSituationStatisticsTableSyyl> dayWaterSituationStatisticsTableSyyls = dayWaterSituationStatisticsTableSyylMapper.selectList(yesterday);
         if(null != dayWaterSituationStatisticsTableSyyls && dayWaterSituationStatisticsTableSyyls.size()>0){
-            TrendsTableParam bylcTableId = trendsTableParamService.lambdaQuery().eq(TrendsTableParam::getUseType,1).
+            List<TrendsTableParam> syylList = trendsTableParamList.stream().filter(t->t.getUseType()==1).
+                    filter(t -> t.getUseStation().equals("上游雨量")).collect(Collectors.toList());
+            TrendsTableParam bylcTableId = syylList.stream().filter(t->t.getParamName().equals("八一林场")).collect(Collectors.toList()).get(0);
+            TrendsTableParam hgTableId = syylList.stream().filter(t->t.getParamName().equals("黑沟")).collect(Collectors.toList()).get(0);
+            TrendsTableParam ksgTableId = syylList.stream().filter(t->t.getParamName().equals("喀什沟")).collect(Collectors.toList()).get(0);
+            TrendsTableParam tjydTableId = syylList.stream().filter(t->t.getParamName().equals("团结一队")).collect(Collectors.toList()).get(0);
+            TrendsTableParam tthjkTableId = syylList.stream().filter(t->t.getParamName().equals("头屯河进库")).collect(Collectors.toList()).get(0);
+            TrendsTableParam xqzTableId = syylList.stream().filter(t->t.getParamName().equals("小渠子")).collect(Collectors.toList()).get(0);
+            /*TrendsTableParam bylcTableId = trendsTableParamService.lambdaQuery().eq(TrendsTableParam::getUseType,1).
                     eq(TrendsTableParam::getUseStation,"上游雨量").eq(TrendsTableParam::getParamName,"八一林场").one();
             TrendsTableParam hgTableId = trendsTableParamService.lambdaQuery().eq(TrendsTableParam::getUseType,1).
                     eq(TrendsTableParam::getUseStation,"上游雨量").eq(TrendsTableParam::getParamName,"黑沟").one();
@@ -91,7 +118,7 @@ public class WaterSituationStatisticsTableYesterdayServiceImpl extends ServiceIm
             TrendsTableParam tthjkTableId = trendsTableParamService.lambdaQuery().eq(TrendsTableParam::getUseType,1).
                     eq(TrendsTableParam::getUseStation,"上游雨量").eq(TrendsTableParam::getParamName,"头屯河进库").one();
             TrendsTableParam xqzTableId = trendsTableParamService.lambdaQuery().eq(TrendsTableParam::getUseType,1).
-                    eq(TrendsTableParam::getUseStation,"上游雨量").eq(TrendsTableParam::getParamName,"小渠子").one();
+                    eq(TrendsTableParam::getUseStation,"上游雨量").eq(TrendsTableParam::getParamName,"小渠子").one();*/
             List<Double> bylcValue = dayWaterSituationStatisticsTableSyyls.stream().filter(t -> t.getTableHeadId().equals(bylcTableId.getId())).map(DayWaterSituationStatisticsTableSyyl::getV).collect(Collectors.toList());
             if(null != bylcValue && bylcValue.size() > 0) {
                 waterSituationStatisticsTableYesterday.setYlzBylc(bylcValue.get(0));
@@ -117,6 +144,7 @@ public class WaterSituationStatisticsTableYesterdayServiceImpl extends ServiceIm
                 waterSituationStatisticsTableYesterday.setYlzTthjkylz(xqzValue.get(0));
             }
         }
+
         boolean save = this.save(waterSituationStatisticsTableYesterday);
         if(save){
             return RestResponse.ok();

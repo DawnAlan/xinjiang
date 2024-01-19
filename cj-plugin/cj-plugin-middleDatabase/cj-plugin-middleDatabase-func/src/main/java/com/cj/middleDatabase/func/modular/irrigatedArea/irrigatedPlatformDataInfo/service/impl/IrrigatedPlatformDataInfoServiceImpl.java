@@ -46,6 +46,11 @@ public class IrrigatedPlatformDataInfoServiceImpl extends ServiceImpl<IrrigatedP
     }
 
     @Override
+    public SelectInfoByIrrigationNameListRes selectInfoByIrrigationNameForHistory(String name,String time) {
+        return this.baseMapper.selectInfoByIrrigationNameListForHistory(name,time);
+    }
+
+    @Override
     public List<IrrigatedPlatformDataInfo> selectInfoByCondition(String id, String time, String startTime, String endTime) {
         if(StringUtils.isNotEmpty(startTime) && StringUtils.isNotEmpty(endTime) && StringUtils.isEmpty(time)){
             List<IrrigatedPlatformDataInfo> irrigatedPlatformDataInfos = this.baseMapper.selectInfoByCondition1(id, startTime, endTime);

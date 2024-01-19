@@ -64,5 +64,12 @@ public class WaterFeeStatisticsDetailsController {
         return waterFeeStatisticsDetailsService.clearTable(req);
     }
 
+    @ApiOperationSupport(order = 5)
+    @ApiOperation("新增历史记录")
+    @PostMapping("/insertHistory")
+    public RestResponse insertHistory(@RequestBody List<List<WaterFeeStatisticsDetails>> waterFeeStatisticsDetailsList) {
+        return waterFeeStatisticsDetailsService.addHistory(waterFeeStatisticsDetailsList);
+    }
+
 }
 

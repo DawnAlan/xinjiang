@@ -258,6 +258,7 @@ public class IrrigatedAreaServiceImpl implements IrrigatedAreaService {
     public RestResponse importHistoryData(MultipartFile file) {
         DecimalFormat df = new DecimalFormat("0.0");
         DecimalFormat df1 = new DecimalFormat("0.00");
+        DecimalFormat df2 = new DecimalFormat("0.000");
         String tempString = (String)redisUtil.get("irrigatedPlatformTree");
         if(StringUtils.isEmpty(tempString)){
             List<IrrigatedPlatformTree> list = irrigatedPlatformTreeService.list();
@@ -277,10 +278,10 @@ public class IrrigatedAreaServiceImpl implements IrrigatedAreaService {
                     info.setMonitorName(tree.getName());
                     info.setMonitorTime(dto.getMonitorTime());
                     info.setId(info.getMonitorName()+"-"+sdf.parse(dto.getMonitorTime()).getTime());
-                    info.setSqMonitorFlowRate(dto.getSqMonitorFlowRate());
-                    info.setSqMonitorFlow(dto.getSqMonitorFlow()==null?dto.getSqMonitorFlow1():dto.getSqMonitorFlow());
-                    info.setSqTotalFlow(dto.getSqTotalFlow());
-                    info.setYqRainFallOne(dto.getYqRainFallOne());
+                    info.setSqMonitorFlowRate(dto.getSqMonitorFlowRate()==null?null:Double.valueOf(df2.format(dto.getSqMonitorFlowRate())));
+                    info.setSqMonitorFlow(dto.getSqMonitorFlow()==null?Double.valueOf(df2.format(dto.getSqMonitorFlow1())):Double.valueOf(df2.format(dto.getSqMonitorFlow())));
+                    info.setSqTotalFlow(dto.getSqTotalFlow()==null?null:Double.valueOf(df2.format(dto.getSqTotalFlow())));
+                    info.setYqRainFallOne(dto.getYqRainFallOne()==null?null:Double.valueOf(df2.format(dto.getYqRainFallOne())));
                     if(info.getMonitorName().equals("头屯河水库水位")){
                         info.setSqWaterLevel(dto.getSqWaterLevel1()<100?949.14+dto.getSqWaterLevel1():dto.getSqWaterLevel1());
                         if(dto.getSqCapacity()==null){

@@ -1,13 +1,17 @@
 package com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.job;
 
+import com.alibaba.fastjson.JSONObject;
 import com.cj.common.model.RestResponse;
+import com.cj.common.util.RedisUtil;
 import com.cj.waterresources.func.modular.trendsTable.bean.req.QueryTrendsTableParamReq;
 import com.cj.waterresources.func.modular.trendsTable.bean.res.WaterDailyParamSelectRes;
 import com.cj.waterresources.func.modular.trendsTable.entity.TrendsTableParam;
 import com.cj.waterresources.func.modular.trendsTable.service.TrendsTableParamService;
+import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.bean.res.JobRes;
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.entity.WaterFeeStatisticsDetails;
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.service.WaterFeeStatisticsDetailsService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -27,19 +31,24 @@ public class WaterFeeTask {
     @Autowired
     private WaterFeeStatisticsDetailsService waterFeeStatisticsDetailsService;
 
-    @Scheduled(cron="0 30 8 * * ?")//每天8:30
-    //@Scheduled(cron="0 */1 * * * ?")
-    public void createWaterFeeTable(){
+    @Autowired
+    private RedisUtil redisUtil;
+
+
+    public JobRes getTableHeadId(){
         try {
+            JobRes res = new JobRes();
             log.info("--------------------------------执行定时插入水费表操作----------------------------");
-            LocalDateTime now = LocalDateTime.now();
-            Integer year = now.getYear();
-            Integer month = now.getMonth().getValue();
-            Integer day = now.getDayOfMonth();
-            String tenDays = determineTenDays(day);
-            SimpleDateFormat sdf = new SimpleDateFormat("MM月dd日");
+            String mk = (String) redisUtil.get("trendsTableParam:list");
+            if(StringUtils.isEmpty(mk)){
+                waterFeeStatisticsDetailsService.updateCache();
+                mk = (String) redisUtil.get("trendsTableParam:list");
+            }
+            List<TrendsTableParam> trendsTableParamList = JSONObject.parseArray(mk, TrendsTableParam.class);
             Map<String,List<String>> map = new HashMap<>();
-            List<String> collect = trendsTableParamService.lambdaQuery().eq(TrendsTableParam::getUseType, 2).list().stream().map(TrendsTableParam::getUseStation).collect(Collectors.toList());
+            List<String> collect = trendsTableParamList.stream().filter(t -> t.getUseType() == 2).map(TrendsTableParam::getUseStation).collect(Collectors.toList());
+            res.setCollect(collect);
+            //List<String> collect = trendsTableParamService.lambdaQuery().eq(TrendsTableParam::getUseType, 2).list().stream().map(TrendsTableParam::getUseStation).collect(Collectors.toList());
             for(String s:collect){
                 List<String> tableIds = new ArrayList<>();
                 QueryTrendsTableParamReq req = new QueryTrendsTableParamReq();
@@ -68,24 +77,75 @@ public class WaterFeeTask {
                 }
                 map.put(s,tableIds);
             }
+            res.setMap(map);
+            return res;
+        }catch (Exception e){
+            e.printStackTrace();
+            log.error(e.getLocalizedMessage());
+            return null;
+        }
+    }
+    @Scheduled(cron="0 30 8 * * ?")//每天8:30
+    public void createWaterFeeTableNoHaveQs(){
+        JobRes tableHeadId = getTableHeadId();
+        if(null != tableHeadId) {
+            List<String> collect = tableHeadId.getCollect();
+            Map<String, List<String>> map = tableHeadId.getMap();
+            LocalDateTime now = LocalDateTime.now();
+            Integer year = now.getYear();
+            Integer month = now.getMonth().getValue();
+            Integer day = now.getDayOfMonth();
+            String tenDays = determineTenDays(day);
+            SimpleDateFormat sdf = new SimpleDateFormat("MM月dd日");
+            for (String s : collect) {
+                List<String> strings = map.get(s);
+                List<WaterFeeStatisticsDetails> result = new ArrayList<>();
+                for (String s1 : strings) {
+                    if (!s.equals("渠首管理站")) {
+                        WaterFeeStatisticsDetails details = new WaterFeeStatisticsDetails();
+                        details.setTableHeadId(s1);
+                        details.setStation(s);
+                        details.setMonth(month);
+                        details.setYear(year);
+                        details.setStatisticsDate(sdf.format(getDate(new Date(), -1)));
+                        details.setTenDays(tenDays);
+                        result.add(details);
+                    }
+                }
+                waterFeeStatisticsDetailsService.add(result);
+            }
+        }
+    }
+
+    @Scheduled(cron="0 35 8 * * ?")//每天8:35
+    public void createWaterFeeTableHaveQs(){
+        JobRes tableHeadId = getTableHeadId();
+        if(null != tableHeadId){
+            List<String> collect = tableHeadId.getCollect();
+            Map<String, List<String>> map = tableHeadId.getMap();
+            LocalDateTime now = LocalDateTime.now();
+            Integer year = now.getYear();
+            Integer month = now.getMonth().getValue();
+            Integer day = now.getDayOfMonth();
+            String tenDays = determineTenDays(day);
+            SimpleDateFormat sdf = new SimpleDateFormat("MM月dd日");
             for(String s:collect){
                 List<String> strings = map.get(s);
                 List<WaterFeeStatisticsDetails> result = new ArrayList<>();
                 for(String s1:strings){
-                    WaterFeeStatisticsDetails details = new WaterFeeStatisticsDetails();
-                    details.setTableHeadId(s1);
-                    details.setStation(s);
-                    details.setMonth(month);
-                    details.setYear(year);
-                    details.setStatisticsDate(sdf.format(getDate(new Date(),-1)));
-                    details.setTenDays(tenDays);
-                    result.add(details);
+                    if(s.equals("渠首管理站")){
+                        WaterFeeStatisticsDetails details = new WaterFeeStatisticsDetails();
+                        details.setTableHeadId(s1);
+                        details.setStation(s);
+                        details.setMonth(month);
+                        details.setYear(year);
+                        details.setStatisticsDate(sdf.format(getDate(new Date(),-1)));
+                        details.setTenDays(tenDays);
+                        result.add(details);
+                    }
                 }
                 waterFeeStatisticsDetailsService.add(result);
             }
-        }catch (Exception e){
-            e.printStackTrace();
-            log.error(e.getLocalizedMessage());
         }
     }
 

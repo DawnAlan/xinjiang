@@ -18,6 +18,7 @@ public interface IrrigatedPlatformDataInfoService extends IService<IrrigatedPlat
 
     List<SelectInfoByIrrigationNameListRes> selectInfoByIrrigationNameList(String[] name);
     SelectInfoByIrrigationNameListRes selectInfoByIrrigationName(String name);
+    SelectInfoByIrrigationNameListRes selectInfoByIrrigationNameForHistory(String name,String time);
 
     List<IrrigatedPlatformDataInfo> selectInfoByCondition(String id,String time,String startTime,String endTime);
     IrrigatedPlatformDataInfo selectOneByCondition(String name,String time);

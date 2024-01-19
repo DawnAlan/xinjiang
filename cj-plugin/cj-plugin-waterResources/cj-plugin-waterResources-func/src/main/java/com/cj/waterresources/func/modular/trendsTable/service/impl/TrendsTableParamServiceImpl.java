@@ -287,7 +287,14 @@ public class TrendsTableParamServiceImpl extends ServiceImpl<TrendsTableParamMap
     @Override
     public RestResponse<List<WaterDailyParamSelectRes>> select(QueryTrendsTableParamReq req) {
         List<WaterDailyParamSelectRes> resultList = new ArrayList<>();
-        List<TrendsTableParam> list = this.lambdaQuery().eq(TrendsTableParam::getUseType,req.getUseType()).eq(TrendsTableParam::getUseStation,req.getUseStation()).list();
+        String mk = (String) redisUtil.get("trendsTableParam:list");
+        if(StringUtils.isEmpty(mk)){
+            updateCache();
+            mk = (String) redisUtil.get("trendsTableParam:list");
+        }
+        List<TrendsTableParam> trendsTableParamList = JSONObject.parseArray(mk, TrendsTableParam.class);
+        List<TrendsTableParam> list = trendsTableParamList.stream().filter(t->t.getUseType()==req.getUseType()).filter(t->t.getUseStation().equals(req.getUseStation())).collect(Collectors.toList());
+        //List<TrendsTableParam> list = this.lambdaQuery().eq(TrendsTableParam::getUseType,req.getUseType()).eq(TrendsTableParam::getUseStation,req.getUseStation()).list();
         List<TrendsTableParam> collect = list.stream().filter(t -> t.getPId().equals("0")).collect(Collectors.toList());
         for (TrendsTableParam param:collect){
             WaterDailyParamSelectRes tempRes = new WaterDailyParamSelectRes();
@@ -340,6 +347,7 @@ public class TrendsTableParamServiceImpl extends ServiceImpl<TrendsTableParamMap
         }
     }
 
+    @Override
     public void updateCache(){
         List<TrendsTableParam> listed = this.list();
         redisUtil.set("trendsTableParam:list", JSONObject.toJSONString(listed));
