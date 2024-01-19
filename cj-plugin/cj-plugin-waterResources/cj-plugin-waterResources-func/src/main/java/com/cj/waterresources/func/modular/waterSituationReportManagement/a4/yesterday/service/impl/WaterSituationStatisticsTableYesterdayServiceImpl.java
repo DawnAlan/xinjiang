@@ -7,6 +7,8 @@ import com.cj.common.util.RedisUtil;
 import com.cj.common.util.UUIDUtils;
 import com.cj.waterresources.func.modular.trendsTable.entity.TrendsTableParam;
 import com.cj.waterresources.func.modular.trendsTable.service.TrendsTableParamService;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.entity.DayWaterSituationStatisticsTableLzz;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.mapper.DayWaterSituationStatisticsTableLzzMapper;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.syyl.entity.DayWaterSituationStatisticsTableSyyl;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.syyl.mapper.DayWaterSituationStatisticsTableSyylMapper;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.zcc.entity.DayWaterSituationStatisticsTableZcc;
@@ -45,6 +47,9 @@ public class WaterSituationStatisticsTableYesterdayServiceImpl extends ServiceIm
 
     @Autowired
     private DayWaterSituationStatisticsTableSyylMapper dayWaterSituationStatisticsTableSyylMapper;
+
+    @Autowired
+    private DayWaterSituationStatisticsTableLzzMapper dayWaterSituationStatisticsTableLzzMapper;
 
     @Autowired
     private RedisUtil redisUtil;
@@ -142,6 +147,24 @@ public class WaterSituationStatisticsTableYesterdayServiceImpl extends ServiceIm
             List<Double> xqzValue = dayWaterSituationStatisticsTableSyyls.stream().filter(t -> t.getTableHeadId().equals(xqzTableId.getId())).map(DayWaterSituationStatisticsTableSyyl::getV).collect(Collectors.toList());
             if(null != xqzValue && xqzValue.size() > 0) {
                 waterSituationStatisticsTableYesterday.setYlzTthjkylz(xqzValue.get(0));
+            }
+        }
+        List<DayWaterSituationStatisticsTableLzz> dayWaterSituationStatisticsTableLzzYesterdayList = dayWaterSituationStatisticsTableLzzMapper.selectList(yesterday);
+        if(null != dayWaterSituationStatisticsTableLzzYesterdayList && dayWaterSituationStatisticsTableLzzYesterdayList.size()>0){
+            List<TrendsTableParam> lzzList = trendsTableParamList.stream().filter(t->t.getUseType()==1).
+                    filter(t -> t.getUseStation().equals("楼庄子水库")).collect(Collectors.toList());
+            TrendsTableParam lzzSwTableId = lzzList.stream().filter(t -> t.getParamName().equals("水位")).collect(Collectors.toList()).get(0);
+            TrendsTableParam lzzKrTableId = lzzList.stream().filter(t -> t.getParamName().equals("库容")).collect(Collectors.toList()).get(0);
+            List<DayWaterSituationStatisticsTableLzz> collect = dayWaterSituationStatisticsTableLzzYesterdayList.stream().filter(t -> t.getTime().equals("18:00")).collect(Collectors.toList());
+            if(null != collect && collect.size()>0){
+                List<Double> lzzSwValue = collect.stream().filter(t -> t.getTableHeadId().equals(lzzSwTableId)).map(DayWaterSituationStatisticsTableLzz::getV).collect(Collectors.toList());
+                if(null != lzzSwValue && lzzSwValue.size()>0){
+                    waterSituationStatisticsTableYesterday.setLzz20Ksw(lzzSwValue.get(0));
+                }
+                List<Double> lzzKrValue = collect.stream().filter(t -> t.getTableHeadId().equals(lzzKrTableId)).map(DayWaterSituationStatisticsTableLzz::getV).collect(Collectors.toList());
+                if(null != lzzKrValue && lzzKrValue.size()>0){
+                    waterSituationStatisticsTableYesterday.setLzz20Kr(lzzKrValue.get(0));
+                }
             }
         }
 

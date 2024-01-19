@@ -279,7 +279,7 @@ public class IrrigatedAreaServiceImpl implements IrrigatedAreaService {
                     info.setMonitorTime(dto.getMonitorTime());
                     info.setId(info.getMonitorName()+"-"+sdf.parse(dto.getMonitorTime()).getTime());
                     info.setSqMonitorFlowRate(dto.getSqMonitorFlowRate()==null?null:Double.valueOf(df2.format(dto.getSqMonitorFlowRate())));
-                    info.setSqMonitorFlow(dto.getSqMonitorFlow()==null?Double.valueOf(df2.format(dto.getSqMonitorFlow1())):Double.valueOf(df2.format(dto.getSqMonitorFlow())));
+                    //info.setSqMonitorFlow(dto.getSqMonitorFlow()==null?dto.getSqMonitorFlow1()==null?null:Double.valueOf(df2.format(dto.getSqMonitorFlow1())):Double.valueOf(df2.format(dto.getSqMonitorFlow())));
                     info.setSqTotalFlow(dto.getSqTotalFlow()==null?null:Double.valueOf(df2.format(dto.getSqTotalFlow())));
                     info.setYqRainFallOne(dto.getYqRainFallOne()==null?null:Double.valueOf(df2.format(dto.getYqRainFallOne())));
                     if(info.getMonitorName().equals("头屯河水库水位")){
