@@ -1,5 +1,6 @@
 package com.cj.waterresources.func.modular.waterResourceAllcation.service.impl;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateField;
 import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSONObject;
@@ -63,7 +64,6 @@ import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * 水资源调配模型表(WaterResourceAllocation)表服务实现类
@@ -84,6 +84,8 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
     private final DayWaterUsePlanService dayWaterUsePlanService;
     private final LzzGaugingStationService lzzGaugingStationService;
     private final IrrigatedPlatformDataInfoService irrigatedPlatformDataInfoService;
+
+    private final static String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
     @Override
     public RestResponse<List<IncomingWaterForecastDto>> getIncomingWaterForecastListByTime(String startTime, String endTime, Integer bucketType) {
@@ -229,12 +231,16 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
     @Override
     public RestResponse<List<ViewModelRes>> viewModel(ViewModelReq req) {
         List<ViewModelRes> viewModelResList = new ArrayList<>();
+        extractAreaWater(req, viewModelResList);
+        extractReservoirWater(req, viewModelResList);
+        return RestResponse.ok(viewModelResList);
+    }
+
+    private void extractAreaWater(ViewModelReq req, List<ViewModelRes> viewModelResList) {
         List<Excel2> excelList = getListFromMinio(req.getAllocationDataCustomAddress(), Excel2.class);
         Map<String, Double> collect = excelList.stream().filter(n ->
                         n.getTime().getTime() <= req.getWaterDistributionEndTime().getTime()
-                                && n.getTime().getTime() >= req.getWaterDistributionStartTime().getTime()
-                                && !n.getStationType().equals("总东干渠")
-                                && !n.getStationType().equals("总西干渠"))
+                                && n.getTime().getTime() >= req.getWaterDistributionStartTime().getTime())
                 .collect(Collectors.groupingBy(n -> n.getStationType() + ":" + n.getStationName(),
                         Collectors.summingDouble(Excel2::getWater)));
         areaMap.forEach((k, v) -> {
@@ -266,29 +272,33 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
             viewModelRes.setInfo(areaDTO);
             viewModelResList.add(viewModelRes);
         });
+        addEcologyWater(viewModelResList, collect);
+    }
 
+    private void addEcologyWater(List<ViewModelRes> viewModelResList, Map<String, Double> collect) {
+        viewModelResList.add(getSpecifyKeyWater(collect, "lzzEcology", "生态用水:楼庄子生态用水"));
+        viewModelResList.add(getSpecifyKeyWater(collect, "tthEcology", "生态用水:头屯河生态用水"));
+    }
+
+    private void extractReservoirWater(ViewModelReq req, List<ViewModelRes> viewModelResList) {
         List<AllocationDisplayData> displayDataList = getListFromMinio(req.getAllocationDataDisplayAddress(), AllocationDisplayData.class);
-        Map<String, Double> collect1 = displayDataList.stream().filter(n ->
+        Map<String, Double> collect = displayDataList.stream().filter(n ->
                         n.getTime().getTime() <= req.getWaterDistributionEndTime().getTime()
                                 && n.getTime().getTime() >= req.getWaterDistributionStartTime().getTime())
                 .collect(Collectors.groupingBy(n -> n.getStationName(),
                         Collectors.summingDouble(AllocationDisplayData::getOutFlowWater)));
-        ViewModelRes viewModelLzzOut = new ViewModelRes();
-        ViewModelRes viewModelTth = new ViewModelRes();
 
-        viewModelLzzOut.setArea("lzzOut");
+        viewModelResList.add(getSpecifyKeyWater(collect, "lzzOut", "楼庄子"));
+        viewModelResList.add(getSpecifyKeyWater(collect, "tth", "头屯河"));
+    }
+
+    private ViewModelRes getSpecifyKeyWater(Map<String, Double> collect, String area, String key) {
+        ViewModelRes viewModelRes = new ViewModelRes();
+        viewModelRes.setArea(area);
         ViewModelRes.AreaDTO lzzOut = new ViewModelRes.AreaDTO();
-        lzzOut.setWater(collect1.get("楼庄子"));
-        viewModelLzzOut.setInfo(lzzOut);
-
-        ViewModelRes.AreaDTO tth = new ViewModelRes.AreaDTO();
-        tth.setWater(collect1.get("头屯河"));
-        viewModelTth.setArea("tth");
-        viewModelTth.setInfo(tth);
-
-        viewModelResList.add(viewModelLzzOut);
-        viewModelResList.add(viewModelTth);
-        return RestResponse.ok(viewModelResList);
+        lzzOut.setWater(collect.get(key));
+        viewModelRes.setInfo(lzzOut);
+        return viewModelRes;
     }
 
     @Override
@@ -600,6 +610,11 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
         List<DataInflowPrevent> dataInflowPrevents = JSONObject.parseArray(JSONObject.toJSONString(floods), DataInflowPrevent.class);
         List<DataInflowPrevent> lzzEntryStation = dataInflowPrevents.stream().filter(t -> t.getLocation().equals("楼庄子")).collect(Collectors.toList());
         List<DataInflowPrevent> interval = dataInflowPrevents.stream().filter(t -> t.getLocation().equals("楼头区间")).collect(Collectors.toList());
+        if (CollectionUtil.isEmpty(lzzEntryStation) || CollectionUtil.isEmpty(interval)) {
+            throw new CommonException(String.format("%s~%s来水预报数据异常",
+                    DateUtil.format(allocation.getWaterDistributionStartTime(), DATE_FORMAT),
+                    DateUtil.format(allocation.getWaterDistributionEndTime(), DATE_FORMAT)));
+        }
         Map<String, List<DataInflowPrevent>> data = new HashMap<>();
         data.put("lzz", lzzEntryStation);
         data.put("tth", interval);

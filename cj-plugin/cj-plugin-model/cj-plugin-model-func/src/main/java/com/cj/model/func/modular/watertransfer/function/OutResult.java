@@ -118,7 +118,31 @@ public class OutResult {
 
         File tempFile2 = File.createTempFile("WaterDistribution",".xlsx");
         String path2= tempFile2.getAbsolutePath();
+        double x1=0;
+        double p=1;
         List<Option_Water> option2 = new ArrayList<>();
+        for (int i = 0; i < Out1.get(0).getInflow()[0].length; i++) {
+            Option_Water option = new Option_Water();
+            option.setTime(Out1.get(0).getTime()[i]);
+            option.setTypeName(req.getTypeName());
+            option.setStationType("生态用水");
+            option.setStationName("楼庄子生态用水");
+            option.setWater(Out1.get(0).getEcologyWater()[i]);
+            option.setProportion(p);
+            option.setWaterLack(x1);
+            option2.add(option);
+        }
+        for (int i = 0; i < Out1.get(0).getInflow()[0].length; i++) {
+            Option_Water option = new Option_Water();
+            option.setTime(Out1.get(0).getTime()[i]);
+            option.setTypeName(req.getTypeName());
+            option.setStationType("生态用水");
+            option.setStationName("头屯河生态用水");
+            option.setWater(Out1.get(0).getEcologyWater()[i]);
+            option.setProportion(p);
+            option.setWaterLack(x1);
+            option2.add(option);
+        }
         for (int i = 0; i < Out1.get(0).getInflow()[0].length; i++)
         {
             Option_Water option = new Option_Water();
