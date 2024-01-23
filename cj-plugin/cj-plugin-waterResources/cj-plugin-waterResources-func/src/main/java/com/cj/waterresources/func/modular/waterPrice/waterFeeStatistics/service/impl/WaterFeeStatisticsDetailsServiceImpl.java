@@ -1,5 +1,6 @@
 package com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.service.impl;
 
+import cn.hutool.poi.excel.sax.ElementName;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cj.common.model.RestResponse;
@@ -11,6 +12,8 @@ import com.cj.waterresources.func.modular.quotaStatisticsManagement.dayWaterBala
 import com.cj.waterresources.func.modular.quotaStatisticsManagement.dayWaterBalance.service.DayWaterBalanceService;
 import com.cj.waterresources.func.modular.quotaStatisticsManagement.tenDaysWaterBalance.entity.TenDaysWaterBalance;
 import com.cj.waterresources.func.modular.quotaStatisticsManagement.tenDaysWaterBalance.service.TenDaysWaterBalanceService;
+import com.cj.waterresources.func.modular.trendsTable.bean.req.QueryTrendsTableParamReq;
+import com.cj.waterresources.func.modular.trendsTable.bean.res.WaterDailyParamSelectRes;
 import com.cj.waterresources.func.modular.trendsTable.entity.TrendsTableParam;
 import com.cj.waterresources.func.modular.trendsTable.service.TrendsTableParamService;
 import com.cj.waterresources.func.modular.waterPrice.paymentWaterFees.entity.PaymentWaterFees;
@@ -20,6 +23,7 @@ import com.cj.waterresources.func.modular.waterPrice.totalIdToStation.service.To
 import com.cj.waterresources.func.modular.waterPrice.waterDistributionRatio.entity.WaterDistributionRatio;
 import com.cj.waterresources.func.modular.waterPrice.waterDistributionRatio.service.WaterDistributionRatioService;
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.bean.req.WaterFeeStatisticsDetailsSelectListReq;
+import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.bean.res.JobRes;
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.entity.WaterFeeStatisticsTotal;
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.mapper.WaterFeeStatisticsDetailsMapper;
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.entity.WaterFeeStatisticsDetails;
@@ -28,6 +32,7 @@ import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.service.
 import com.cj.waterresources.func.modular.waterPrice.waterPriceManagement.entity.WaterPriceManagement;
 import com.cj.waterresources.func.modular.waterPrice.waterPriceManagement.service.WaterPriceManagementService;
 import org.apache.commons.lang3.StringUtils;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -41,6 +46,8 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static cn.hutool.poi.excel.sax.ElementName.v;
 
 /**
  * 水费统计详情(WaterFeeStatisticsDetails)表服务实现类
@@ -131,7 +138,7 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
         }
         List<TrendsTableParam> trendsTableParamList = JSONObject.parseArray(mk, TrendsTableParam.class);
         String station = waterFeeStatisticsDetails.get(0).getStation();
-        String dateTemp = waterFeeStatisticsDetails.get(0).getYear()+"-"+waterFeeStatisticsDetails.get(0).getMonth()+"-"+waterFeeStatisticsDetails.get(0).getStatisticsDate().substring(3,5);
+        String dateTemp = waterFeeStatisticsDetails.get(0).getYear()+"-"+waterFeeStatisticsDetails.get(0).getStatisticsDate().substring(0,2)+"-"+waterFeeStatisticsDetails.get(0).getStatisticsDate().substring(3,5);
         if(station.equals("渠首管理站")){
             waterFeeStatisticsDetails.forEach(t->{
                 Map<String, Double> lanternCanalInfoByDate = getLanternCanalInfoByDate(t.getYear(),t.getMonth(),t.getTenDays(),t.getStatisticsDate());
@@ -2060,15 +2067,31 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
     @Override
     @Transactional(rollbackFor=Exception.class)
     public RestResponse addHistory(List<List<WaterFeeStatisticsDetails>> waterFeeStatisticsDetailsList) {
+        WaterFeeStatisticsDetails details1 = waterFeeStatisticsDetailsList.get(0).get(0);
+        WaterFeeStatisticsDetails details2 = waterFeeStatisticsDetailsList.get(waterFeeStatisticsDetailsList.size()-1).get(0);
+        String flag = (String) redisUtil.get("waterFee:"+details1.getStation()+details1.getYear()+details1.getMonth()+details1.getTenDays());
+        if(StringUtils.isEmpty(flag)){
+            redisUtil.set("waterFee:"+details1.getStation()+details1.getYear()+details1.getMonth()+details1.getTenDays(),"1");
+        }else {
+            return RestResponse.no("已有用户在创建该旬表格，请勿重复创建");
+        }
+        String mk = (String) redisUtil.get("trendsTableParam:list");
+        if(StringUtils.isEmpty(mk)){
+            updateCache();
+            mk = (String) redisUtil.get("trendsTableParam:list");
+        }
+        List<TrendsTableParam> trendsTableParamList = JSONObject.parseArray(mk, TrendsTableParam.class);
+        String start = details1.getYear()+"-"+details1.getStatisticsDate().substring(0,2)+"-"+details1.getStatisticsDate().substring(3,5);
+        String end = details2.getYear()+"-"+details2.getStatisticsDate().substring(0,2)+"-"+details2.getStatisticsDate().substring(3,5);
+        List<TrendsTableParam> collect5 = trendsTableParamList.stream().filter(t -> t.getUseType() == 2).filter(t -> t.getUseStation().equals(details1.getStation())).collect(Collectors.toList());
+        List<String> tableHeadName = getTableHeadName(collect5);
+        long ss = System.currentTimeMillis();
+        List<IrrigatedPlatformDataInfo> list3 = irrigatedPlatformDataInfoService.lambdaQuery().in(IrrigatedPlatformDataInfo::getMonitorName,tableHeadName).between(IrrigatedPlatformDataInfo::getMonitorTime,start+" 00:00:00",end+" 23:59:59").list();
+        long ee = System.currentTimeMillis();
+        log.warn("方法耗时：" + (ee - ss) + "ms");
         for(List<WaterFeeStatisticsDetails> waterFeeStatisticsDetails:waterFeeStatisticsDetailsList){
-            String mk = (String) redisUtil.get("trendsTableParam:list");
-            if(StringUtils.isEmpty(mk)){
-                updateCache();
-                mk = (String) redisUtil.get("trendsTableParam:list");
-            }
-            List<TrendsTableParam> trendsTableParamList = JSONObject.parseArray(mk, TrendsTableParam.class);
             String station = waterFeeStatisticsDetails.get(0).getStation();
-            String dateTemp = waterFeeStatisticsDetails.get(0).getYear()+"-"+waterFeeStatisticsDetails.get(0).getMonth()+"-"+waterFeeStatisticsDetails.get(0).getStatisticsDate().substring(3,5);
+            String dateTemp = waterFeeStatisticsDetails.get(0).getYear()+"-"+waterFeeStatisticsDetails.get(0).getStatisticsDate().substring(0,2)+"-"+waterFeeStatisticsDetails.get(0).getStatisticsDate().substring(3,5);
             if(station.equals("渠首管理站")){
                 waterFeeStatisticsDetails.forEach(t->{
                     Map<String, Double> lanternCanalInfoByDate = getLanternCanalInfoByDate(t.getYear(),t.getMonth(),t.getTenDays(),t.getStatisticsDate());
@@ -2089,9 +2112,8 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                     if(!sdf.format(new Date()).equals(dateTemp)){
                         String paramName = (String)redisUtil.get("trendsTableParam:name:"+t.getTableHeadId());
                         if(!paramName.equals("合计")){
-                            irrigatedPlatformDataInfoService.selectInfoByIrrigationNameForHistory(paramName,dateTemp);
-                            Double v = (Double)redisUtil.get("irrigatedPlatform:yesterday:"+paramName);
-                            t.setV(v==null?null:v);
+                            List<Double> collect = list3.stream().filter(r -> r.getMonitorName().equals(paramName)).filter(r -> r.getMonitorTime().split(" ")[0].equals(dateTemp)).map(IrrigatedPlatformDataInfo::getYesterdayAvgFlow).collect(Collectors.toList());
+                            t.setV(collect ==null?null:collect.size()==0?null:collect.get(0));
                         }
                     }
                     t.setId(UUIDUtils.getUUID());
@@ -2698,7 +2720,7 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                             log.error("----------------------------------day--------------------------------"+day);
                             RestResponse add1 = dayWaterBalanceService.addFirst(waterFeeStatisticsDetails, day);
                             if(add1.getCode()==200){
-                                return RestResponse.ok("添加成功");
+                                continue;
                             }else {
                                 return RestResponse.no("添加失败");
                             }
@@ -3193,7 +3215,7 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                             log.error("----------------------------------day--------------------------------"+day);
                             RestResponse add1 = dayWaterBalanceService.addFirst(waterFeeStatisticsDetails, day);
                             if(add1.getCode()==200){
-                                return RestResponse.ok("添加成功");
+                                continue;
                             }else {
                                 return RestResponse.no("添加失败");
                             }
@@ -3209,7 +3231,47 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                 return RestResponse.no("添加失败");
             }
         }
-        return null;
+        redisUtil.del("waterFee:"+details1.getStation()+details1.getYear()+details1.getMonth()+details1.getTenDays());
+        return RestResponse.ok("添加成功");
+    }
+
+    public List<String> getTableHeadName(List<TrendsTableParam> trendsTableParamList){
+        try {
+            List<String> tableIds = new ArrayList<>();
+            QueryTrendsTableParamReq req = new QueryTrendsTableParamReq();
+            req.setUseType(2);
+            req.setUseStation(trendsTableParamList.get(0).getUseStation());
+            RestResponse<List<WaterDailyParamSelectRes>> select = trendsTableParamService.select(req);
+            List<WaterDailyParamSelectRes> data = select.getData();
+            for(WaterDailyParamSelectRes res1 : data){
+                List<WaterDailyParamSelectRes> children = res1.getChildren();
+                if(children != null){
+                    for(WaterDailyParamSelectRes res2:children){
+                        List<WaterDailyParamSelectRes> children1 = res2.getChildren();
+                        if(children1 !=null){
+                            for(WaterDailyParamSelectRes res3:children1){
+                                if(!res3.getParamName().equals("合计")) {
+                                    tableIds.add(res3.getParamName());
+                                }
+                            }
+                        }else {
+                            if(!res2.getParamName().equals("合计")) {
+                                tableIds.add(res2.getParamName());
+                            }
+                        }
+                    }
+                }else {
+                    if(!res1.getParamName().equals("合计")){
+                        tableIds.add(res1.getParamName());
+                    }
+                }
+            }
+            return tableIds;
+        }catch (Exception e){
+            e.printStackTrace();
+            log.error(e.getLocalizedMessage());
+            return null;
+        }
     }
 }
 
