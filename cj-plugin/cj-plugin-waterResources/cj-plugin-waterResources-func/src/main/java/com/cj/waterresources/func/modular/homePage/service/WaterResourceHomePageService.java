@@ -32,6 +32,8 @@ public class WaterResourceHomePageService {
 
     private static final String PATTERN_DAY = "yyyy-MM-dd";
     private static final String PATTERN_MINUTE_OF_DAY = "yyyy-MM-dd HH:mm";
+    private static final String PATTERN_HOUR = "HH";
+    private static final String FLOOD_RETENTION_HOUR = "08";
 
     public RestResponse<OverviewRes> overview(Date dateTime) {
         Long unpaidCount = waterFeeStatisticsTotalService.lambdaQuery()
@@ -106,7 +108,7 @@ public class WaterResourceHomePageService {
 
     private WaterStorageOverviewRes getLzz(Date dateTime) {
         List<LzzGaugingStation> lzzYear = lzzGaugingStationService.lambdaQuery()
-                .between(LzzGaugingStation::getGatherTime, DateUtil.beginOfYear(dateTime), dateTime)
+                .between(LzzGaugingStation::getGatherTime, DateUtil.offsetDay(DateUtil.beginOfYear(dateTime), -1), dateTime)
                 .eq(LzzGaugingStation::getStationName, "楼庄子库水位站")
                 .list();
         LzzGaugingStation lzzCurrent;
@@ -118,10 +120,11 @@ public class WaterResourceHomePageService {
                 lzzCurrent = null;
             }
         }
-        Map<String, Double> storageCapacityDaily = lzzYear.stream()
+        Map<String, Double> storageWaterLevelDaily = lzzYear.stream()
+                .filter(n -> DateUtil.format(n.getGatherTime(), PATTERN_HOUR).equals(FLOOD_RETENTION_HOUR))
                 .collect(Collectors.groupingBy(n -> DateUtil.format(n.getGatherTime(), PATTERN_DAY),
-                        Collectors.averagingDouble(LzzGaugingStation::getStorageCapacity)));
-        List<Double> floodRetentionCapacityList = getFloodRetentionCapacityList(storageCapacityDaily);
+                        Collectors.averagingDouble(LzzGaugingStation::getRelativeWaterLevel)));
+        List<Double> floodRetentionCapacityList = getFloodRetentionCapacityList(storageWaterLevelDaily);
 
         WaterStorageOverviewRes waterStorageOverviewResLzz = new WaterStorageOverviewRes();
         waterStorageOverviewResLzz.setWaterStorageName("楼庄子水库");
@@ -129,14 +132,14 @@ public class WaterResourceHomePageService {
         waterStorageOverviewResLzz.setInFlow(null);//
         waterStorageOverviewResLzz.setOutFlow(null);//
         waterStorageOverviewResLzz.setStorageCapacity(lzzCurrent == null ? null : lzzCurrent.getStorageCapacity());
-        waterStorageOverviewResLzz.setYesterdayFloodRetentionCapacity(lzzCurrent == null ? null : floodRetentionCapacityList.get(floodRetentionCapacityList.size() - 1));
+        waterStorageOverviewResLzz.setYesterdayFloodRetentionCapacity(getLastFloodRetention(dateTime, storageWaterLevelDaily, floodRetentionCapacityList));
         waterStorageOverviewResLzz.setYearFloodRetentionCapacity(floodRetentionCapacityList.stream().mapToDouble(n -> n == null ? 0 : n).sum());
         return waterStorageOverviewResLzz;
     }
 
     private WaterStorageOverviewRes getTth(Date dateTime) {
         List<IrrigatedPlatformDataInfo> tthList = irrigatedPlatformDataInfoService.lambdaQuery()
-                .between(IrrigatedPlatformDataInfo::getMonitorTime, DateUtil.beginOfYear(dateTime), dateTime)
+                .between(IrrigatedPlatformDataInfo::getMonitorTime, DateUtil.offsetDay(DateUtil.beginOfYear(dateTime), -1), dateTime)
                 .in(IrrigatedPlatformDataInfo::getMonitorName, "头屯河水库水位", "入库流量", "出库流量")
                 .list();
         Map<String, Optional<IrrigatedPlatformDataInfo>> tth = tthList.stream().
@@ -145,11 +148,12 @@ public class WaterResourceHomePageService {
                                 DateUtil.compare(DateUtil.parse(n1.getMonitorTime(), PATTERN_MINUTE_OF_DAY),
                                         DateUtil.parse(n2.getMonitorTime(), PATTERN_MINUTE_OF_DAY)))));
 
-        Map<String, Double> storageCapacityDaily = tthList.stream()
-                .filter(n -> n.getMonitorName().equals("头屯河水库水位"))
+        Map<String, Double> storageWaterLevelDaily = tthList.stream()
+                .filter(n -> n.getMonitorName().equals("头屯河水库水位")
+                        && DateUtil.format(DateUtil.parse(n.getMonitorTime(), PATTERN_MINUTE_OF_DAY), PATTERN_HOUR).equals(FLOOD_RETENTION_HOUR))
                 .collect(Collectors.groupingBy(n -> DateUtil.format(DateUtil.parse(n.getMonitorTime(), PATTERN_MINUTE_OF_DAY), PATTERN_DAY),
-                        Collectors.averagingDouble(n -> n.getSqCapacity() == null ? 0 : n.getSqCapacity())));
-        List<Double> floodRetentionCapacityList = getFloodRetentionCapacityList(storageCapacityDaily);
+                        Collectors.averagingDouble(n -> n.getSqWaterLevel() == null ? 0 : n.getSqWaterLevel())));
+        List<Double> floodRetentionCapacityList = getFloodRetentionCapacityList(storageWaterLevelDaily);
 
         WaterStorageOverviewRes waterStorageOverviewResTth = new WaterStorageOverviewRes();
         waterStorageOverviewResTth.setWaterStorageName("头屯河水库");
@@ -157,13 +161,13 @@ public class WaterResourceHomePageService {
         waterStorageOverviewResTth.setInFlow(tth.get("入库流量") == null ? null : tth.get("入库流量").orElse(new IrrigatedPlatformDataInfo()).getSqMonitorFlow());
         waterStorageOverviewResTth.setOutFlow(tth.get("出库流量") == null ? null : tth.get("出库流量").orElse(new IrrigatedPlatformDataInfo()).getSqMonitorFlow());
         waterStorageOverviewResTth.setStorageCapacity(tth.get("头屯河水库水位") == null ? null : tth.get("头屯河水库水位").orElse(new IrrigatedPlatformDataInfo()).getSqCapacity());
-        waterStorageOverviewResTth.setYesterdayFloodRetentionCapacity(floodRetentionCapacityList.size() == 0 ? null : floodRetentionCapacityList.get(floodRetentionCapacityList.size() - 1));
+        waterStorageOverviewResTth.setYesterdayFloodRetentionCapacity(getLastFloodRetention(dateTime, storageWaterLevelDaily, floodRetentionCapacityList));
         waterStorageOverviewResTth.setYearFloodRetentionCapacity(floodRetentionCapacityList.size() == 0 ? null : floodRetentionCapacityList.stream().mapToDouble(n -> n == null ? 0 : n).sum());
         return waterStorageOverviewResTth;
     }
 
-    private List<Double> getFloodRetentionCapacityList(Map<String, Double> storageCapacityDaily) {
-        LinkedHashMap<String, Double> storageCapacityDailySorted = storageCapacityDaily.entrySet().stream()
+    private List<Double> getFloodRetentionCapacityList(Map<String, Double> storageWaterLevelDaily) {
+        LinkedHashMap<String, Double> storageWaterLevelDailySorted = storageWaterLevelDaily.entrySet().stream()
                 .sorted(Map.Entry.comparingByKey())
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
@@ -172,7 +176,7 @@ public class WaterResourceHomePageService {
         AtomicBoolean start = new AtomicBoolean(true);
         AtomicReference<Double> last = new AtomicReference<>(0.0);
         List<Double> floodRetentionCapacityList = new ArrayList<>();
-        storageCapacityDailySorted.forEach((k, v) -> {
+        storageWaterLevelDailySorted.forEach((k, v) -> {
             if (start.get()) {
                 start.set(false);
                 last.set(v);
@@ -187,6 +191,22 @@ public class WaterResourceHomePageService {
             }
         });
         return floodRetentionCapacityList;
+    }
+
+    private Double getLastFloodRetention(Date dateTime, Map<String, Double> storageWaterLevelDaily, List<Double> floodRetentionCapacityList) {
+        Double yesterdayFloodRetention = null;
+        if (floodRetentionCapacityList.size() > 0) {
+            if (DateUtil.hour(dateTime, true) < Integer.parseInt(FLOOD_RETENTION_HOUR)) {
+                if (storageWaterLevelDaily.containsKey(DateUtil.format(DateUtil.offsetDay(dateTime, -1), PATTERN_DAY))) {
+                    yesterdayFloodRetention = floodRetentionCapacityList.get(floodRetentionCapacityList.size() - 1);
+                }
+            } else {
+                if (storageWaterLevelDaily.containsKey(DateUtil.format(dateTime, PATTERN_DAY))) {
+                    yesterdayFloodRetention = floodRetentionCapacityList.get(floodRetentionCapacityList.size() - 1);
+                }
+            }
+        }
+        return yesterdayFloodRetention;
     }
 
 }
