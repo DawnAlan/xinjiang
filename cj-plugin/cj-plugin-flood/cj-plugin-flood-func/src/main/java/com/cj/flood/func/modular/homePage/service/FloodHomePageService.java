@@ -67,11 +67,11 @@ public class FloodHomePageService {
         return RestResponse.ok(waterRainResList);
     }
 
-    public RestResponse<List<WaterRainRes>> waterSituation(Date dateTime) {
+    public RestResponse<List<WaterRainRes>> waterSituation(Date dateTime, String unitId) {
         List<WaterRainRes> waterRainResList = new ArrayList<>();
         List<IrrigatedPlatformDataInfo> list = irrigatedPlatformDataInfoService.lambdaQuery()
                 .between(IrrigatedPlatformDataInfo::getMonitorTime, DateUtil.beginOfDay(dateTime), dateTime)
-                .in(IrrigatedPlatformDataInfo::getMonitorId, getLeafStation().stream().map(IrrigatedPlatformTree::getId).collect(Collectors.toList()))
+                .in(IrrigatedPlatformDataInfo::getMonitorId, getLeafStation(unitId).stream().map(IrrigatedPlatformTree::getId).collect(Collectors.toList()))
                 .list();
         list.stream()
                 .collect(Collectors.groupingBy(IrrigatedPlatformDataInfo::getMonitorName,
@@ -88,23 +88,30 @@ public class FloodHomePageService {
         return RestResponse.ok(waterRainResList);
     }
 
-    private List<IrrigatedPlatformTree> getLeafStation() {
-        List<IrrigatedPlatformTree> list0 = irrigatedPlatformTreeService.lambdaQuery()
+    private final static List<String> storageWaterStationList = new ArrayList() {{
+        add("通泽清淤场取水口");
+        add("八钢工业用水取水口(渠道)");
+        add("井房伸缩水尺水位");
+    }};
+
+    private List<IrrigatedPlatformTree> getLeafStation(String unitId) {
+        List<IrrigatedPlatformTree> stations = getChildStation(getChildStation(getChildStation(getRootStation())).stream().filter(station -> station.getId().equals(unitId)).collect(Collectors.toList()));
+        if (stations.stream().anyMatch(station -> storageWaterStationList.contains(station.getName()))) {
+            stations = stations.stream().filter(station -> storageWaterStationList.contains(station.getName())).collect(Collectors.toList());
+        }
+        return stations;
+    }
+
+    private List<IrrigatedPlatformTree> getRootStation() {
+        return irrigatedPlatformTreeService.lambdaQuery()
                 .eq(IrrigatedPlatformTree::getParentId, "0").list();
-        List<IrrigatedPlatformTree> list1 = irrigatedPlatformTreeService.lambdaQuery()
+    }
+
+    private List<IrrigatedPlatformTree> getChildStation(List<IrrigatedPlatformTree> stations) {
+        return irrigatedPlatformTreeService.lambdaQuery()
                 .in(IrrigatedPlatformTree::getParentId,
-                        list0.stream().map(IrrigatedPlatformTree::getId).collect(Collectors.toList()))
+                        stations.stream().map(IrrigatedPlatformTree::getId).collect(Collectors.toList()))
                 .list();
-        List<IrrigatedPlatformTree> list2 = irrigatedPlatformTreeService.lambdaQuery()
-                .in(IrrigatedPlatformTree::getParentId,
-                        list1.stream().map(IrrigatedPlatformTree::getId).collect(Collectors.toList()))
-                .ne(IrrigatedPlatformTree::getName, "水库站")
-                .list();
-        List<IrrigatedPlatformTree> list3 = irrigatedPlatformTreeService.lambdaQuery()
-                .in(IrrigatedPlatformTree::getParentId,
-                        list2.stream().map(IrrigatedPlatformTree::getId).collect(Collectors.toList()))
-                .list();
-        return list3;
     }
 
     public RestResponse<List<WaterStorageOverviewRes>> waterStorageOverview(Date dateTime) {
