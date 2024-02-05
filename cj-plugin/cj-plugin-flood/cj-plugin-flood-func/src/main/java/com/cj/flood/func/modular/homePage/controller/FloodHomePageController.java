@@ -43,8 +43,9 @@ public class FloodHomePageController {
     @ApiOperationSupport(order = 3)
     @ApiOperation("今日水情")
     @PostMapping("/waterSituation")
-    public RestResponse<List<WaterRainRes>> waterSituation(@RequestParam("dateTime") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date dateTime) {
-        return floodHomePageService.waterSituation(dateTime);
+    public RestResponse<List<WaterRainRes>> waterSituation(@RequestParam("dateTime") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date dateTime,
+                                                           @RequestParam("unitId") String unitId) {
+        return floodHomePageService.waterSituation(dateTime, unitId);
     }
 
     @ApiOperationSupport(order = 4)
