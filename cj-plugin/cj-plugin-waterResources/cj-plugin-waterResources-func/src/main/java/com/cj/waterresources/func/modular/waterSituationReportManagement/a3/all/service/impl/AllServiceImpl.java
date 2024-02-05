@@ -1,6 +1,12 @@
 package com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.service.impl;
 
+import com.alibaba.fastjson.JSONObject;
 import com.cj.common.model.RestResponse;
+import com.cj.common.util.RedisUtil;
+import com.cj.waterresources.func.modular.trendsTable.entity.TrendsTableParam;
+import com.cj.waterresources.func.modular.trendsTable.service.TrendsTableParamService;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req.A3StatisticsReq;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.res.A3StatisticsRes;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.service.AllService;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.dkl.mapper.DayWaterSituationStatisticsTableDklMapper;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hd.mapper.DayWaterSituationStatisticsTableHdMapper;
@@ -12,8 +18,14 @@ import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tjc.
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tth.mapper.DayWaterSituationStatisticsTableTthMapper;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.zcc.mapper.DayWaterSituationStatisticsTableZccMapper;
 import lombok.AllArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -28,6 +40,8 @@ public class AllServiceImpl implements AllService {
     private final DayWaterSituationStatisticsTableTjcMapper dayWaterSituationStatisticsTableTjcMapper;
     private final DayWaterSituationStatisticsTableTthMapper dayWaterSituationStatisticsTableTthMapper;
     private final DayWaterSituationStatisticsTableZccMapper dayWaterSituationStatisticsTableZccMapper;
+    private final RedisUtil redisUtil;
+    private final TrendsTableParamService trendsTableParamService;
 
 
     @Override
@@ -47,5 +61,152 @@ public class AllServiceImpl implements AllService {
         } catch (Exception e){
             return RestResponse.no("error");
         }
+    }
+
+    @Override
+    public RestResponse statistics(A3StatisticsReq req) {
+        String mk = (String) redisUtil.get("trendsTableParam:list");
+        if(StringUtils.isEmpty(mk)){
+            trendsTableParamService.updateCache();
+            mk = (String) redisUtil.get("trendsTableParam:list");
+        }
+        List<TrendsTableParam> trendsTableParamList = JSONObject.parseArray(mk, TrendsTableParam.class);
+        if(req.getStation().equals("楼庄子水库")){
+            List<A3StatisticsRes> statistics = dayWaterSituationStatisticsTableLzzMapper.getStatistics(req);
+            if(null != statistics && statistics.size()>0){
+                Map<String, List<A3StatisticsRes>> collect = statistics.stream().collect(Collectors.groupingBy(A3StatisticsRes::getParamName));
+                return RestResponse.ok(change(collect));
+            }else {
+                return RestResponse.no("blank");
+            }
+        }
+        if(req.getStation().equals("头屯河水库")){
+            List<A3StatisticsRes> statistics = dayWaterSituationStatisticsTableTthMapper.getStatistics(req);
+            if(null != statistics && statistics.size()>0){
+                Map<String, List<A3StatisticsRes>> collect = statistics.stream().collect(Collectors.groupingBy(A3StatisticsRes::getParamName));
+                return RestResponse.ok(change(collect));
+            }else {
+                return RestResponse.no("blank");
+            }
+        }
+        if(req.getStation().equals("渠首管理站")){
+            List<A3StatisticsRes> statistics = dayWaterSituationStatisticsTableQsMapper.getStatistics(req);
+            if(null != statistics && statistics.size()>0){
+                Map<String, List<A3StatisticsRes>> collect = statistics.stream().collect(Collectors.groupingBy(A3StatisticsRes::getParamName));
+                return RestResponse.ok(change(collect));
+            }else {
+                return RestResponse.no("blank");
+            }
+        }
+        if(req.getStation().equals("河东管理站")){
+            if(StringUtils.isEmpty(req.getUnit())){
+                Map<String,List<String>> selectMap = new HashMap<>();
+                for(String id: req.getIds()){
+                    List<String> selectId = new ArrayList<>();
+                    List<TrendsTableParam> collect = trendsTableParamList.stream().filter(t -> t.getPId().equals(id)).collect(Collectors.toList());
+                    if(collect.size()>1){
+                        selectId.add(collect.stream().filter(t -> t.getParamName().equals("合计")).map(TrendsTableParam::getId).collect(Collectors.toList()).get(0));
+                    }else {
+                        if(collect.size()>0){
+                            selectId.add(collect.get(0).getId());
+                        }
+                    }
+                    selectMap.put((String) redisUtil.get("trendsTableParam:name:"+id),selectId);
+                }
+                Map<String, List<A3StatisticsRes>> change = change(selectHdAndChange(selectMap, req));
+                if(change.size()>0){
+                    return RestResponse.ok(change(change));
+                }else {
+                    return RestResponse.no("blank");
+                }
+            }else {
+                List<A3StatisticsRes> statistics = dayWaterSituationStatisticsTableHdMapper.getStatistics(req);
+                if(null != statistics && statistics.size()>0){
+                    Map<String, List<A3StatisticsRes>> collect = statistics.stream().collect(Collectors.groupingBy(A3StatisticsRes::getParamName));
+                    return RestResponse.ok(change(collect));
+                }else {
+                    return RestResponse.no("blank");
+                }
+            }
+        }
+        if(req.getStation().equals("河西管理站")){
+            if(StringUtils.isEmpty(req.getUnit())){
+                Map<String,List<String>> selectMap = new HashMap<>();
+                for(String id: req.getIds()){
+                    List<String> selectId = new ArrayList<>();
+                    List<TrendsTableParam> collect = trendsTableParamList.stream().filter(t -> t.getPId().equals(id)).collect(Collectors.toList());
+                    if(collect.size()>1){
+                        selectId.add(collect.stream().filter(t -> t.getParamName().equals("合计")).map(TrendsTableParam::getId).collect(Collectors.toList()).get(0));
+                    }else {
+                        if(collect.size()>0){
+                            selectId.add(collect.get(0).getId());
+                        }
+                    }
+                    selectMap.put((String) redisUtil.get("trendsTableParam:name:"+id),selectId);
+                }
+                Map<String, List<A3StatisticsRes>> change = change(selectHxAndChange(selectMap, req));
+                if(change.size()>0){
+                    return RestResponse.ok(change(change));
+                }else {
+                    return RestResponse.no("blank");
+                }
+            }else {
+                List<A3StatisticsRes> statistics = dayWaterSituationStatisticsTableHxMapper.getStatistics(req);
+                if(null != statistics && statistics.size()>0){
+                    Map<String, List<A3StatisticsRes>> collect = statistics.stream().collect(Collectors.groupingBy(A3StatisticsRes::getParamName));
+                    return RestResponse.ok(change(collect));
+                }else {
+                    return RestResponse.no("blank");
+                }
+            }
+        }
+        return null;
+    }
+
+    public Map<String, List<A3StatisticsRes>> change(Map<String, List<A3StatisticsRes>> collect){
+        Map<String, List<A3StatisticsRes>> result = new HashMap<>();
+        Set<String> strings = collect.keySet();
+        for(String s:strings){
+            List<A3StatisticsRes> resList = new ArrayList<>();
+            Map<Date, List<A3StatisticsRes>> collect1 = collect.get(s).stream().collect(Collectors.groupingBy(A3StatisticsRes::getRecordTime));
+            Set<Date> dates = collect1.keySet();
+            for(Date date : dates){
+                A3StatisticsRes res = new A3StatisticsRes();
+                Double aDouble = collect1.get(date).stream().filter(t -> t.getV() != null).map(A3StatisticsRes::getV).reduce(Double::sum).orElse(0.000);
+                res.setParamName(s);
+                res.setV(aDouble);
+                res.setRecordTime(date);
+                resList.add(res);
+                resList = resList.stream().sorted(Comparator.comparing(A3StatisticsRes::getRecordTime,Comparator.nullsFirst(Comparator.naturalOrder()))).collect(Collectors.toList());
+            }
+            result.put(s,resList);
+        }
+        return result;
+    }
+
+    private Map<String, List<A3StatisticsRes>> selectHdAndChange(Map<String,List<String>> selectMap,A3StatisticsReq req){
+        Map<String, List<A3StatisticsRes>> result = new HashMap<>();
+        Set<String> strings = selectMap.keySet();
+        for(String station:strings){
+            A3StatisticsReq tempReq = new A3StatisticsReq();
+            BeanUtils.copyProperties(req,tempReq);
+            tempReq.setIds(selectMap.get(selectMap));
+            List<A3StatisticsRes> statistics = dayWaterSituationStatisticsTableHdMapper.getStatistics(tempReq);
+            result.put(station,statistics);
+        }
+        return result;
+    }
+
+    private Map<String, List<A3StatisticsRes>> selectHxAndChange(Map<String,List<String>> selectMap,A3StatisticsReq req){
+        Map<String, List<A3StatisticsRes>> result = new HashMap<>();
+        Set<String> strings = selectMap.keySet();
+        for(String station:strings){
+            A3StatisticsReq tempReq = new A3StatisticsReq();
+            BeanUtils.copyProperties(req,tempReq);
+            tempReq.setIds(selectMap.get(selectMap));
+            List<A3StatisticsRes> statistics = dayWaterSituationStatisticsTableHxMapper.getStatistics(tempReq);
+            result.put(station,statistics);
+        }
+        return result;
     }
 }

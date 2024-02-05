@@ -8,6 +8,7 @@ import com.cj.waterresources.func.modular.surfaceWater.generator.domain.SurfaceW
 import com.cj.waterresources.func.modular.surfaceWater.generator.mapper.SurfaceWaterFlowDetailMapper;
 import com.cj.waterresources.func.modular.surfaceWater.vo.SurfaceWaterFlowDetailVo;
 import com.cj.waterresources.func.modular.surfaceWater.vo.SurfaceWaterFlowVo;
+import com.cj.waterresources.func.modular.surfaceWater.vo.TenDayVo;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -406,6 +407,62 @@ public class SurfaceWaterFlowDetailService extends ServiceImpl<SurfaceWaterFlowD
         su1.addAll(su2);
         surfaceWaterFlowVo.setFlowDetailVos(su1);
         return surfaceWaterFlowVo;
+    }
+
+    private List<TenDayVo> ten_day(String id) {
+        List<TenDayVo> surfaceWaterFlowDetailVos = new ArrayList<>();
+        /*序列化查询结构
+         * */
+        HashMap<String, Object> map = new HashMap<String, Object>();
+        map.put("parent_id", id);
+        List<SurfaceWaterFlowDetail> list = surfaceWaterFlowDetailMapper.selectByMap(map);
+        for (int i = 1; i <= 12; i++) {
+            Integer finalI = i;
+            List<SurfaceWaterFlowDetail> dayList = list.stream().filter(r -> r.getMonth().equals(finalI))
+                    .sorted(Comparator.comparing(SurfaceWaterFlowDetail::getSampleTime))
+                    .collect(Collectors.toList());
+            // 将日期转换为旬并分组
+            List<List<SurfaceWaterFlowDetail>> deciles = dayList.stream()
+                    .collect(Collectors.groupingBy(it -> DateUtil.dayOfMonth(it.getSampleTime()) == 31 ? 2 :
+                            (DateUtil.dayOfMonth(it.getSampleTime()) - 1) / 10)) // 按照旬分组
+                    .values() // 获取所有的分组
+                    .stream()
+                    .map(group -> group.stream().map(date -> date).collect(Collectors.toList())) // 将每个分组转换为一个列表
+                    .collect(Collectors.toList()); // 收集所有的列表到一个列表中
+            /*格式化数据
+            * */
+            TenDayVo sum1 = new TenDayVo();
+            TenDayVo avg1 = new TenDayVo();
+            TenDayVo sum2 = new TenDayVo();
+            TenDayVo avg2 = new TenDayVo();
+            TenDayVo sum3 = new TenDayVo();
+            TenDayVo avg3 = new TenDayVo();
+            sum1.setMonth(i);
+            avg1.setMonth(i);
+            sum2.setMonth(i);
+            avg2.setMonth(i);
+            sum3.setMonth(i);
+            avg3.setMonth(i);
+            sum1.setName("上旬总数");
+            avg1.setName("上旬平均");
+            sum2.setName("中旬总数");
+            avg2.setName("中旬平均");
+            sum3.setName("下旬总数");
+            avg3.setName("下旬平均");
+            sum1.setValue(BigDecimal.valueOf(deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+            avg1.setValue(BigDecimal.valueOf(deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
+            sum2.setValue(BigDecimal.valueOf(deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+            avg2.setValue(BigDecimal.valueOf(deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
+            sum3.setValue(BigDecimal.valueOf(deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+            avg3.setValue(BigDecimal.valueOf(deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
+            surfaceWaterFlowDetailVos.add(sum1);
+            surfaceWaterFlowDetailVos.add(avg1);
+            surfaceWaterFlowDetailVos.add(sum2);
+            surfaceWaterFlowDetailVos.add(avg2);
+            surfaceWaterFlowDetailVos.add(sum3);
+            surfaceWaterFlowDetailVos.add(avg3);
+        }
+        return surfaceWaterFlowDetailVos;
     }
 
 }

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.mapper.DayWaterSituationStatisticsTableLzzMapper">
+
+
+    <select id="getStatistics" parameterType="com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req.A3StatisticsReq" resultType="com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.res.A3StatisticsRes">
+        select d1.v,d2.PARAM_NAME,TO_CHAR(d1.RECORD_TIME,'YYYY-MM-DD') as recordTime
+        from tth.DAY_WATER_SITUATION_STATISTICS_TABLE_LZZ d1
+        left join tth.TRENDS_TABLE_PARAM d2 on d1.TABLE_HEAD_ID = d2.id
+        <where>
+            <if test="req.ids !=null and req.ids.size()>0">
+                and d1.TABLE_HEAD_ID in
+                <foreach item="item" collection="req.ids" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="req.startTime !=null and req.startTime !='' and req.endTime !=null and req.endTime !='' ">
+                and TO_CHAR(d1.RECORD_TIME,'YYYY-MM-DD') between #{req.startTime} and #{req.endTime}
+            </if>
+            and d1.TIME != '昨日均'
+        </where>
+    </select>
+</mapper>

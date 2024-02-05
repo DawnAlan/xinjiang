@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.cj.waterresources.func.modular.surfaceWater.generator.domain.SurfaceWaterFlowDetail;
 import org.apache.ibatis.annotations.Mapper;
 
-
 /**
 * @author Administrator
 * @description 针对表【surface_water_flow_detail(地表水水情数据子表)】的数据库操作Mapper

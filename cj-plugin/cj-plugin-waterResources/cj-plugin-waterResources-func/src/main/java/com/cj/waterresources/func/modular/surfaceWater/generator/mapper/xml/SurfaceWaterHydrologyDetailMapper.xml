@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.surfaceWater.generator.mapper.SurfaceWaterHydrologyDetailMapper">
+
+    <resultMap id="BaseResultMap" type="org.jeecg.modules.surfaceWater.generator.domain.SurfaceWaterHydrologyDetail">
+            <id property="id" column="id" jdbcType="VARCHAR"/>
+            <result property="parentId" column="parent_id" jdbcType="VARCHAR"/>
+            <result property="sampleTime" column="sample_time" jdbcType="TIMESTAMP"/>
+            <result property="flow" column="flow" jdbcType="DECIMAL"/>
+            <result property="level" column="level" jdbcType="DECIMAL"/>
+            <result property="siteCode" column="site_code" jdbcType="VARCHAR"/>
+            <result property="siteName" column="site_name" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,parent_id,sample_time,
+        flow,level,site_code,
+        site_name
+    </sql>
+</mapper>

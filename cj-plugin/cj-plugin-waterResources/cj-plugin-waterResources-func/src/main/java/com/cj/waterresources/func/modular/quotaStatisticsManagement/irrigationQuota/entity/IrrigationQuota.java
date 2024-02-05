@@ -56,6 +56,7 @@ public class IrrigationQuota extends Model<IrrigationQuota> {
     @ApiModelProperty(value = "四月上旬灌溉水量")
     private Double aprilEarlyOctoberIrrigationWaterVolume;
 
+
     //四月中旬灌溉面积
     @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "四月中旬灌溉面积")
@@ -76,6 +77,12 @@ public class IrrigationQuota extends Model<IrrigationQuota> {
     @ApiModelProperty(value = "四月下旬灌溉水量")
     private Double aprilLateOctoberIrrigationWaterVolume;
 
+    private String aprilEarlyOctoberId;
+
+    private String aprilMidDayId;
+
+    private String aprilLateOctoberId;
+
     @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double mayEarlyOctoberIrrigationArea;
 
@@ -93,6 +100,12 @@ public class IrrigationQuota extends Model<IrrigationQuota> {
 
     @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double mayLateOctoberIrrigationWaterVolume;
+
+    private String mayEarlyOctoberId;
+
+    private String mayMidDayId;
+
+    private String mayLateOctoberId;
 
     @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double juneEarlyOctoberIrrigationArea;
@@ -112,6 +125,12 @@ public class IrrigationQuota extends Model<IrrigationQuota> {
     @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double juneLateOctoberIrrigationWaterVolume;
 
+    private String juneEarlyOctoberId;
+
+    private String juneMidDayId;
+
+    private String juneLateOctoberId;
+
     @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double julyEarlyOctoberIrrigationArea;
 
@@ -129,6 +148,12 @@ public class IrrigationQuota extends Model<IrrigationQuota> {
 
     @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double julyLateOctoberIrrigationWaterVolume;
+
+    private String julyEarlyOctoberId;
+
+    private String julyMidDayId;
+
+    private String julyLateOctoberId;
 
     @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double augustEarlyOctoberIrrigationArea;
@@ -148,6 +173,12 @@ public class IrrigationQuota extends Model<IrrigationQuota> {
     @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double augustLateOctoberIrrigationWaterVolume;
 
+    private String augustEarlyOctoberId;
+
+    private String augustMidDayId;
+
+    private String augustLateOctoberId;
+
     @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double septemberEarlyOctoberIrrigationArea;
 
@@ -165,6 +196,12 @@ public class IrrigationQuota extends Model<IrrigationQuota> {
 
     @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double septemberLateOctoberIrrigationWaterVolume;
+
+    private String septemberEarlyOctoberId;
+
+    private String septemberMidDayId;
+
+    private String septemberLateOctoberId;
 
     @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double octoberEarlyOctoberIrrigationArea;
@@ -184,6 +221,12 @@ public class IrrigationQuota extends Model<IrrigationQuota> {
     @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double octoberLateOctoberIrrigationWaterVolume;
 
+    private String octoberEarlyOctoberId;
+
+    private String octoberMidDayId;
+
+    private String octoberLateOctoberId;
+
     @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double novemberEarlyOctoberIrrigationArea;
 
@@ -201,6 +244,12 @@ public class IrrigationQuota extends Model<IrrigationQuota> {
 
     @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double novemberLateOctoberIrrigationWaterVolume;
+
+    private String novemberEarlyOctoberId;
+
+    private String novemberMidDayId;
+
+    private String novemberLateOctoberId;
 
     //累计灌溉面积
     @TableField(updateStrategy = FieldStrategy.IGNORED)

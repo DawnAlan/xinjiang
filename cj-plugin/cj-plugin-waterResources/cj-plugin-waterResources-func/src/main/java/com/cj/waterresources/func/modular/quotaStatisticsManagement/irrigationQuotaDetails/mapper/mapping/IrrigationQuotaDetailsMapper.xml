@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuotaDetails.mapper.IrrigationQuotaDetailsMapper">
+
+
+    <select id="statistics" parameterType="com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuotaDetails.bean.req.StatisticsReq" resultType="com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuotaDetails.entity.IrrigationQuotaDetails">
+        select * from IRRIGATION_QUOTA_DETAILS
+        <where>
+            <if test="req.station !=null and req.station !=''">
+                and STATION = #{req.station}
+            </if>
+            <if test="req.unit !=null and req.unit !=''">
+                and WATER_USER = #{req.unit}
+            </if>
+            <if test="req.cropType !=null and req.cropType !=''">
+                and CROP_TYPE = #{req.cropType}
+            </if>
+            <if test="req.startTime !=null and req.startTime !='' and req.endTime !=null and req.endTime !='' ">
+                and TO_CHAR(CREATE_TIME,'YYYY-MM') between #{req.startTime} and #{req.endTime}
+            </if>
+        </where>
+    </select>
+</mapper>

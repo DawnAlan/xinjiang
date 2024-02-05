@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.surfaceWater.generator.mapper.SurfaceWaterMapper">
+
+    <resultMap id="BaseResultMap" type="org.jeecg.modules.surfaceWater.generator.domain.SurfaceWater">
+            <id property="id" column="id" jdbcType="CHAR"/>
+            <result property="type" column="type" jdbcType="VARCHAR"/>
+            <result property="year" column="year" jdbcType="INTEGER"/>
+            <result property="tableName" column="table_name" jdbcType="VARCHAR"/>
+            <result property="siteCode" column="site_code" jdbcType="VARCHAR"/>
+            <result property="siteName" column="site_name" jdbcType="VARCHAR"/>
+            <result property="managerCode" column="manager_code" jdbcType="VARCHAR"/>
+            <result property="managerName" column="manager_name" jdbcType="VARCHAR"/>
+            <result property="unit" column="unit" jdbcType="VARCHAR"/>
+            <result property="filePath" column="file_path" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,type,year,
+        table_name,site_code,site_name,
+        manager_code,manager_name,unit,
+        file_path
+    </sql>
+</mapper>

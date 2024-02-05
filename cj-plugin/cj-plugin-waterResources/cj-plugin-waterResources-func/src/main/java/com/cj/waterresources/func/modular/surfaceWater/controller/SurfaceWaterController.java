@@ -17,7 +17,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 @Api(tags = "地表水情数据")
@@ -90,12 +89,6 @@ public class SurfaceWaterController {
             e.printStackTrace();
             return RestResponse.no("错误");
         }
-    }
-
-    @ApiOperation(value = "文件下载", notes = "文件下载")
-    @GetMapping(value = "/download")
-    public void download(@RequestParam("id")String id, HttpServletResponse response) {
-        surfaceWaterService.download(id,response);
     }
 
 }

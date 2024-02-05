@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.surfaceWater.generator.mapper.SurfaceWaterWaterregimenDetailMapper">
+
+    <resultMap id="BaseResultMap" type="org.jeecg.modules.surfaceWater.generator.domain.SurfaceWaterWaterregimenDetail">
+            <id property="id" column="id" jdbcType="VARCHAR"/>
+            <result property="parentId" column="parent_id" jdbcType="VARCHAR"/>
+            <result property="sampleTime" column="sample_time" jdbcType="DATE"/>
+            <result property="inReservoirAm" column="in_reservoir_am" jdbcType="DECIMAL"/>
+            <result property="inReservoirMean" column="in_reservoir_mean" jdbcType="DECIMAL"/>
+            <result property="outReservoirAm" column="out_reservoir_am" jdbcType="DECIMAL"/>
+            <result property="outReservoirMean" column="out_reservoir_mean" jdbcType="DECIMAL"/>
+            <result property="outRiverAm" column="out_river_am" jdbcType="DECIMAL"/>
+            <result property="outRiverMean" column="out_river_mean" jdbcType="DECIMAL"/>
+            <result property="outConcealedAm" column="out_concealed_am" jdbcType="DECIMAL"/>
+            <result property="outConcealedMean" column="out_concealed_mean" jdbcType="DECIMAL"/>
+            <result property="waterLevelAm" column="water_level_am" jdbcType="DECIMAL"/>
+            <result property="waterLevelPm" column="water_level_pm" jdbcType="DECIMAL"/>
+            <result property="capacityAm" column="capacity_am" jdbcType="DECIMAL"/>
+            <result property="capacityPm" column="capacity_pm" jdbcType="DECIMAL"/>
+            <result property="seepageFlow" column="seepage_flow" jdbcType="VARCHAR"/>
+            <result property="bagangTurbidity" column="bagang_turbidity" jdbcType="INTEGER"/>
+            <result property="outTurbidityAm" column="out_turbidity_am" jdbcType="INTEGER"/>
+            <result property="outTurbidityPm" column="out_turbidity_pm" jdbcType="INTEGER"/>
+            <result property="longkouTurbidityAm" column="longkou_turbidity_am" jdbcType="INTEGER"/>
+            <result property="longkouTurbidityPm" column="longkou_turbidity_pm" jdbcType="INTEGER"/>
+            <result property="year" column="year" jdbcType="INTEGER"/>
+            <result property="month" column="month" jdbcType="INTEGER"/>
+            <result property="day" column="day" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,parent_id,sample_time,
+        in_reservoir_am,in_reservoir_mean,out_reservoir_am,
+        out_reservoir_mean,out_river_am,out_river_mean,
+        out_concealed_am,out_concealed_mean,water_level_am,
+        water_level_pm,capacity_am,capacity_pm,
+        bagang_turbidity,out_turbidity_am,out_turbidity_pm,
+        seepage_flow,longkou_turbidity_am,longkou_turbidity_pm,
+        year,month,day
+    </sql>
+</mapper>

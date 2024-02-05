@@ -65,10 +65,9 @@ public class DayWaterSituationStatisticsTableQsServiceImpl extends ServiceImpl<D
             calendar.setTime(new Date());
             calendar.add(calendar.DATE, -1);
             String yesterday= sdf.format(calendar.getTime());
-            List<DayWaterSituationStatisticsTableQs> yesterdayList = this.baseMapper.selectList(yesterday);
+            List<DayWaterSituationStatisticsTableQs> yesterdayList = this.baseMapper.selectList(yesterday).stream().filter(t->!t.getTime().equals("昨日均")).collect(Collectors.toList());
             Map<String, List<DayWaterSituationStatisticsTableQs>> collect = yesterdayList.stream().collect(Collectors.groupingBy(DayWaterSituationStatisticsTableQs::getTableHeadId));
-            Set<String> strings = collect.keySet();
-            for(String s:strings){
+            for(String s:dayWaterSituationStatisticsTableQsList.get(0).getEndTableList().split(",")){
                 DayWaterSituationStatisticsTableQs yesterdayBean = new DayWaterSituationStatisticsTableQs();
                 yesterdayBean.setTime("昨日均");
                 yesterdayBean.setId(UUIDUtils.getUUID());

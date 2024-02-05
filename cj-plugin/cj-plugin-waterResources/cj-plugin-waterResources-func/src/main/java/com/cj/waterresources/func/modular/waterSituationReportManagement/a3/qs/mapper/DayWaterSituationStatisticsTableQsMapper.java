@@ -1,6 +1,8 @@
 package com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req.A3StatisticsReq;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.res.A3StatisticsRes;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hx.entity.DayWaterSituationStatisticsTableHx;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.entity.DayWaterSituationStatisticsTableQs;
 import org.apache.ibatis.annotations.Delete;
@@ -22,5 +24,7 @@ public interface DayWaterSituationStatisticsTableQsMapper extends BaseMapper<Day
 
     @Delete("DELETE FROM DAY_WATER_SITUATION_STATISTICS_TABLE_QS WHERE TO_CHAR(RECORD_TIME,'YYYY-MM-DD') = #{date}")
     Boolean deleteByTime(@Param("date")String date);
+
+    List<A3StatisticsRes> getStatistics(@Param("req") A3StatisticsReq req);
 }
 

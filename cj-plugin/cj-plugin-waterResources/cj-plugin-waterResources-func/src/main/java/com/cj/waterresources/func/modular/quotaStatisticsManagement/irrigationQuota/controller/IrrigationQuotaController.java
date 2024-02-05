@@ -4,6 +4,8 @@ import com.cj.common.model.RestResponse;
 import com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuota.bean.req.IrrigationQuotaListReq;
 import com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuota.entity.IrrigationQuota;
 import com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuota.service.IrrigationQuotaService;
+import com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuotaDetails.bean.req.StatisticsReq;
+import com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuotaDetails.service.IrrigationQuotaDetailsService;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.dkl.entity.DayWaterSituationStatisticsTableDkl;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSupport;
@@ -32,6 +34,9 @@ public class IrrigationQuotaController {
     @Autowired
     private IrrigationQuotaService irrigationQuotaService;
 
+    @Autowired
+    private IrrigationQuotaDetailsService irrigationQuotaDetailsService;
+
 
     @ApiOperationSupport(order = 1)
     @ApiOperation("新增")
@@ -59,6 +64,13 @@ public class IrrigationQuotaController {
     @PostMapping("/update")
     public RestResponse update(@RequestBody IrrigationQuota irrigationQuota) {
         return irrigationQuotaService.update(irrigationQuota);
+    }
+
+    @ApiOperationSupport(order = 5)
+    @ApiOperation("统计")
+    @PostMapping("/statistics")
+    public RestResponse statistics(@RequestBody StatisticsReq req) {
+        return irrigationQuotaDetailsService.statistics(req);
     }
 
 }

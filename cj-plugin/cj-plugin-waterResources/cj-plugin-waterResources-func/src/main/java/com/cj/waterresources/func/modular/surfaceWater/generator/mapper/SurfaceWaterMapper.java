@@ -1,9 +1,8 @@
 package com.cj.waterresources.func.modular.surfaceWater.generator.mapper;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.cj.waterresources.func.modular.surfaceWater.generator.domain.SurfaceWater;
 import org.apache.ibatis.annotations.Mapper;
-
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**
 * @author Administrator

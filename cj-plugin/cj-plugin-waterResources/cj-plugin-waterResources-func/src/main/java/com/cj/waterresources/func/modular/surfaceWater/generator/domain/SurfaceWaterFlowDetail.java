@@ -2,6 +2,7 @@ package com.cj.waterresources.func.modular.surfaceWater.generator.domain;
 
 import java.io.Serializable;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.math.BigDecimal;
 import com.baomidou.mybatisplus.annotation.TableField;

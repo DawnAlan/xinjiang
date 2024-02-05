@@ -1,7 +1,6 @@
 package com.cj.waterresources.func.modular.waterSituationReportManagement.a3.zcc.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tth.entity.DayWaterSituationStatisticsTableTth;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.zcc.entity.DayWaterSituationStatisticsTableZcc;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Param;

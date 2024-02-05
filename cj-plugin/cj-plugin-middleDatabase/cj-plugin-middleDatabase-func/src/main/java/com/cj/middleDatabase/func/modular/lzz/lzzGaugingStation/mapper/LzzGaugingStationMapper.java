@@ -18,13 +18,13 @@ import java.util.List;
 @DS("master")
 public interface LzzGaugingStationMapper extends BaseMapper<LzzGaugingStation> {
 
-    @Select("SELECT * FROM LZZ_GAUGING_STATION WHERE TREE_ID = #{id}")
+    @Select("SELECT * FROM LZZ_GAUGING_STATION WHERE TREE_ID = #{id} order by GATHER_TIME ASC")
     List<LzzGaugingStation> selectInfoByCondition1(@Param("id") String id);
 
-    @Select("SELECT * FROM LZZ_GAUGING_STATION WHERE TREE_ID = #{id} AND TO_CHAR(GATHER_TIME,'YYYY-MM-DD') = #{time}")
+    @Select("SELECT * FROM LZZ_GAUGING_STATION WHERE TREE_ID = #{id} AND TO_CHAR(GATHER_TIME,'YYYY-MM-DD') = #{time} order by GATHER_TIME ASC")
     List<LzzGaugingStation> selectInfoByCondition2(@Param("id")String id, @Param("time")String time);
 
-    @Select("SELECT * FROM LZZ_GAUGING_STATION WHERE TREE_ID = #{id} AND TO_CHAR(GATHER_TIME,'YYYY-MM-DD') BETWEEN #{startTime} AND #{endTime}")
+    @Select("SELECT * FROM LZZ_GAUGING_STATION WHERE TREE_ID = #{id} AND TO_CHAR(GATHER_TIME,'YYYY-MM-DD') BETWEEN #{startTime} AND #{endTime} order by GATHER_TIME ASC")
     List<LzzGaugingStation> selectInfoByCondition3(@Param("id")String id,@Param("startTime")String startTime, @Param("endTime")String endTime);
 
     @Select("SELECT * FROM LZZ_GAUGING_STATION WHERE TO_CHAR(GATHER_TIME,'yyyy-MM-dd hh24:MI') = #{time} AND STATION_NAME = #{name}")
