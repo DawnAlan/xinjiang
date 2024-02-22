@@ -4,4 +4,20 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.mapper.YearWaterUsePlanTrunkCanalMapper">
 
+    <select id="selectListForSum" resultType="com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.res.SelectYearWaterUsePlanTrunkCanalForSum" parameterType="com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.req.TrunkCanalSelectListReq">
+        select sum(JANUARY) as JANUARY,
+               sum(FEBRUARY) as FEBRUARY,
+               sum(MARCH) as MARCH,
+               sum(APRIL) as APRIL,
+               sum(MAY) as MAY,
+               sum(JUNE) as JUNE,
+               sum(JULY) as JULY,
+               sum(AUGUST) as AUGUST,
+               sum(SEPTEMBER) as SEPTEMBER,
+               sum(OCTOBER) as OCTOBER,
+               sum(NOVEMBER) as NOVEMBER,
+               sum(DECEMBER) as DECEMBER
+        from YEAR_WATER_USE_PLAN_TRUNK_CANAL
+        where year = #{year} and use_water_plan = #{useWaterPlan} and area like concat ('%',#{area},'%')
+    </select>
 </mapper>

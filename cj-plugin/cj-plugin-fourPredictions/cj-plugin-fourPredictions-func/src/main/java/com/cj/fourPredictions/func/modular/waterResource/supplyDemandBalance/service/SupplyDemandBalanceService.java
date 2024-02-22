@@ -5,4 +5,8 @@ import com.cj.common.model.RestResponse;
 public interface SupplyDemandBalanceService {
 
     RestResponse getSupplyDemandBalance();
+
+    RestResponse getFormList();
+
+    RestResponse getSupplyDemandBalanceByFormId(String id);
 }

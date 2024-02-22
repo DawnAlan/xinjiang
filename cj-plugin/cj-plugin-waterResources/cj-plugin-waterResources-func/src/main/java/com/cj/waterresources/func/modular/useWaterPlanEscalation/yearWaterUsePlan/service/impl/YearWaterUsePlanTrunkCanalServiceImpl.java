@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.UUIDUtils;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.req.TrunkCanalSelectListReq;
+import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.res.SelectYearWaterUsePlanTrunkCanalForSum;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.mapper.YearWaterUsePlanTrunkCanalMapper;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.entity.YearWaterUsePlanTrunkCanal;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.service.YearWaterUsePlanTrunkCanalService;
@@ -58,6 +59,11 @@ public class YearWaterUsePlanTrunkCanalServiceImpl extends ServiceImpl<YearWater
         }else {
             return RestResponse.no("新增失败");
         }
+    }
+
+    @Override
+    public SelectYearWaterUsePlanTrunkCanalForSum selectListForSum(TrunkCanalSelectListReq req) {
+        return this.baseMapper.selectListForSum(req);
     }
 }
 

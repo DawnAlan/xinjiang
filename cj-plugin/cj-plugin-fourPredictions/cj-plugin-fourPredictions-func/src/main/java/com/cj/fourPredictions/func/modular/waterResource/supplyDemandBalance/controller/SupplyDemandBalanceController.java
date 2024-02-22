@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Api(tags = "供水保障-供需平衡")
@@ -27,5 +28,19 @@ public class SupplyDemandBalanceController {
     @GetMapping("/getSupplyDemandBalance")
     public RestResponse getSupplyDemandBalance() {
         return supplyDemandBalanceService.getSupplyDemandBalance();
+    }
+
+    @ApiOperationSupport(order = 2)
+    @ApiOperation("获取方案列表")
+    @GetMapping("/getFormList")
+    public RestResponse getFormList() {
+        return supplyDemandBalanceService.getFormList();
+    }
+
+    @ApiOperationSupport(order = 3)
+    @ApiOperation("获取2库水量平衡")
+    @GetMapping("/getSupplyDemandBalanceByFormId")
+    public RestResponse getSupplyDemandBalanceByFormId(@RequestParam("formId") String formId) {
+        return supplyDemandBalanceService.getSupplyDemandBalanceByFormId(formId);
     }
 }

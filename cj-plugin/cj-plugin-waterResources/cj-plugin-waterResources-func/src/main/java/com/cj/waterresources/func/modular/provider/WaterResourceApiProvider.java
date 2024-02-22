@@ -42,6 +42,8 @@ import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tth.
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tth.service.DayWaterSituationStatisticsTableTthService;
 import com.cj.waterresources.func.modular.waterStorageScheduling.waterStorageSchedulingLzz.entity.WaterStorageSchedulingLzz;
 import com.cj.waterresources.func.modular.waterStorageScheduling.waterStorageSchedulingLzz.service.WaterStorageSchedulingLzzService;
+import com.cj.waterresources.func.modular.waterStorageScheduling.waterStorageSchedulingTotalForm.entity.WaterStorageSchedulingTotalForm;
+import com.cj.waterresources.func.modular.waterStorageScheduling.waterStorageSchedulingTotalForm.service.WaterStorageSchedulingTotalFormService;
 import com.cj.waterresources.func.modular.waterStorageScheduling.waterStorageSchedulingTth.entity.WaterStorageSchedulingTth;
 import com.cj.waterresources.func.modular.waterStorageScheduling.waterStorageSchedulingTth.service.WaterStorageSchedulingTthService;
 import lombok.AllArgsConstructor;
@@ -74,6 +76,7 @@ public class WaterResourceApiProvider implements WaterResourceApi {
     private final IrrigationQuotaService irrigationQuotaService;
     private final WaterFeeStatisticsTotalService waterFeeStatisticsTotalService;
     private final InspectionInterface inspectionInterface;
+    private final WaterStorageSchedulingTotalFormService waterStorageSchedulingTotalFormService;
 
     @Override
     public String getYearWaterPlan(String area) {
@@ -732,6 +735,36 @@ public class WaterResourceApiProvider implements WaterResourceApi {
             result.put("inspectionMap",inspectionMap);
         }
         return JSONObject.toJSONString(result);
+    }
+
+    @Override
+    public String getFormList() {
+        List<WaterStorageSchedulingTotalForm> list = waterStorageSchedulingTotalFormService.list();
+        if(!list.isEmpty()){
+            return JSONObject.toJSONString(list);
+        }
+        return null;
+    }
+
+    @Override
+    public String getSupplyDemandBalanceByFormId(String id) {
+        Map<String,Object> result = new HashMap<>();
+        List<WaterStorageSchedulingLzz> lzz = waterStorageSchedulingLzzService.lambdaQuery().eq(WaterStorageSchedulingLzz::getFormId, id).list();
+        List<WaterStorageSchedulingTth> tth = waterStorageSchedulingTthService.lambdaQuery().eq(WaterStorageSchedulingTth::getFormId, id).list();
+        if(lzz.isEmpty()){
+            result.put("lzz",null);
+        }else {
+            result.put("lzz",lzz);
+        }
+        if(tth.isEmpty()){
+            result.put("tth",null);
+        }else {
+            result.put("tth",tth);
+        }
+        if(result.size()>0){
+            return JSONObject.toJSONString(result);
+        }
+        return null;
     }
 
     public String determineTenDays(Integer day){

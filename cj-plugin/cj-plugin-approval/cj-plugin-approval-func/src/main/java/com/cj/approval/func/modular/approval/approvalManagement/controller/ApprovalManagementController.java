@@ -110,5 +110,19 @@ public class ApprovalManagementController{
     public RestResponse getUserInfo() {
         return approvalManagementService.getUserInfo();
     }
+
+    @ApiOperationSupport(order = 12)
+    @ApiOperation("更换审批人")
+    @PostMapping("/replacePerson")
+    public RestResponse replacePerson(@RequestBody ApprovalManagement approvalManagement) {
+        return approvalManagementService.replacePerson(approvalManagement);
+    }
+
+    @ApiOperationSupport(order = 13)
+    @ApiOperation("撤销指令")
+    @GetMapping("/revoke")
+    public RestResponse revoke(@RequestParam("id") String id) {
+        return approvalManagementService.revoke(id);
+    }
 }
 

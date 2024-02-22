@@ -126,4 +126,14 @@ public class WaterResourceFeignProvider implements WaterResourceFeign {
     public String getTodayInspectionStatistics() {
         return waterResourceApiProvider.getTodayInspectionStatistics();
     }
+
+    @Override
+    public String getFormList() {
+        return waterResourceApiProvider.getFormList();
+    }
+
+    @Override
+    public String getSupplyDemandBalanceByFormId(String id) {
+        return waterResourceApiProvider.getSupplyDemandBalanceByFormId(id);
+    }
 }

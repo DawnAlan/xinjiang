@@ -7,6 +7,8 @@ import com.baomidou.mybatisplus.extension.activerecord.Model;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.util.Date;
+
 /**
  * 水费统计详情(WaterFeeStatisticsDetails)表实体类
  *
@@ -47,6 +49,10 @@ public class WaterFeeStatisticsDetails extends Model<WaterFeeStatisticsDetails> 
     //旬
     @ApiModelProperty(value = "旬")
     private String tenDays;
+
+    //记录时间
+    @ApiModelProperty(value = "记录时间")
+    private Date recordTime;
 
 }
 

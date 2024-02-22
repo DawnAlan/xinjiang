@@ -409,7 +409,7 @@ public class SurfaceWaterFlowDetailService extends ServiceImpl<SurfaceWaterFlowD
         return surfaceWaterFlowVo;
     }
 
-    private List<TenDayVo> ten_day(String id) {
+    public List<TenDayVo> ten_day(String id) {
         List<TenDayVo> surfaceWaterFlowDetailVos = new ArrayList<>();
         /*序列化查询结构
          * */
@@ -432,35 +432,20 @@ public class SurfaceWaterFlowDetailService extends ServiceImpl<SurfaceWaterFlowD
             /*格式化数据
             * */
             TenDayVo sum1 = new TenDayVo();
-            TenDayVo avg1 = new TenDayVo();
             TenDayVo sum2 = new TenDayVo();
-            TenDayVo avg2 = new TenDayVo();
             TenDayVo sum3 = new TenDayVo();
-            TenDayVo avg3 = new TenDayVo();
             sum1.setMonth(i);
-            avg1.setMonth(i);
             sum2.setMonth(i);
-            avg2.setMonth(i);
             sum3.setMonth(i);
-            avg3.setMonth(i);
-            sum1.setName("上旬总数");
-            avg1.setName("上旬平均");
-            sum2.setName("中旬总数");
-            avg2.setName("中旬平均");
-            sum3.setName("下旬总数");
-            avg3.setName("下旬平均");
-            sum1.setValue(BigDecimal.valueOf(deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
-            avg1.setValue(BigDecimal.valueOf(deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
-            sum2.setValue(BigDecimal.valueOf(deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
-            avg2.setValue(BigDecimal.valueOf(deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
-            sum3.setValue(BigDecimal.valueOf(deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
-            avg3.setValue(BigDecimal.valueOf(deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
+            sum1.setName(1);
+            sum2.setName(2);
+            sum3.setName(3);
+            sum1.setValue(BigDecimal.valueOf(deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()*86400/10000));
+            sum2.setValue(BigDecimal.valueOf(deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()*86400/10000));
+            sum3.setValue(BigDecimal.valueOf(deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()*86400/10000));
             surfaceWaterFlowDetailVos.add(sum1);
-            surfaceWaterFlowDetailVos.add(avg1);
             surfaceWaterFlowDetailVos.add(sum2);
-            surfaceWaterFlowDetailVos.add(avg2);
             surfaceWaterFlowDetailVos.add(sum3);
-            surfaceWaterFlowDetailVos.add(avg3);
         }
         return surfaceWaterFlowDetailVos;
     }

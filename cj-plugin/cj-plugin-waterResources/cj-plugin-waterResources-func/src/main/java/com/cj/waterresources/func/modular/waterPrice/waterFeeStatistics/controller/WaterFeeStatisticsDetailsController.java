@@ -5,6 +5,7 @@ import com.cj.common.model.RestResponse;
 import com.cj.waterresources.func.modular.waterPrice.paymentWaterFees.bean.req.PaymentWaterFeesAddReq;
 import com.cj.waterresources.func.modular.waterPrice.paymentWaterFees.bean.req.PaymentWaterFeesSelectListReq;
 import com.cj.waterresources.func.modular.waterPrice.paymentWaterFees.bean.res.PaymentWaterFeesSelectListRes;
+import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.bean.req.UseWaterTypeStatisticsReq;
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.bean.req.WaterFeeStatisticsDetailsSelectListReq;
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.entity.WaterFeeStatisticsDetails;
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.service.WaterFeeStatisticsDetailsService;
@@ -69,6 +70,13 @@ public class WaterFeeStatisticsDetailsController {
     @PostMapping("/insertHistory")
     public RestResponse insertHistory(@RequestBody List<List<WaterFeeStatisticsDetails>> waterFeeStatisticsDetailsList) {
         return waterFeeStatisticsDetailsService.addHistory(waterFeeStatisticsDetailsList);
+    }
+
+    @ApiOperationSupport(order = 6)
+    @ApiOperation("用水类型统计")
+    @PostMapping("/useWaterTypeStatistics")
+    public RestResponse useWaterTypeStatistics(@RequestBody UseWaterTypeStatisticsReq req) {
+        return waterFeeStatisticsDetailsService.useWaterTypeStatistics(req);
     }
 
 }

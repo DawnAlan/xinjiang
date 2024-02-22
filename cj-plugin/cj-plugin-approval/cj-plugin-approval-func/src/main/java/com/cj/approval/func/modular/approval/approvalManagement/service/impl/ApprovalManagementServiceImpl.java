@@ -24,8 +24,10 @@ import com.cj.sys.api.SysOrgApi;
 import com.cj.sys.api.SysUserApi;
 import com.deepoove.poi.XWPFTemplate;
 import io.minio.ObjectWriteResponse;
+import lombok.SneakyThrows;
 import org.apache.commons.compress.utils.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mock.web.MockMultipartFile;
@@ -140,8 +142,12 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
     @Transactional(rollbackFor = Exception.class)
     public RestResponse update(ApprovalManagement approvalManagement) {
         SaBaseLoginUser saBaseLoginUser = StpLoginUserUtil.getLoginUser();
+        ApprovalManagement byId1 = this.getById(approvalManagement.getId());
+        if(!Arrays.asList(byId1.getApprovedById().split(",")).contains(saBaseLoginUser.getId())){
+            return RestResponse.no("当前用户没有审批权限");
+        }
         String approvalTemp= (String) redisUtil.get("approvalManagement_"+approvalManagement.getId());
-        if(StringUtils.isNotEmpty(approvalTemp)&&approvalTemp.contains(saBaseLoginUser.getId())){
+        if(StringUtils.isNotEmpty(approvalTemp)&&Arrays.asList(approvalTemp.split(",")).contains(saBaseLoginUser.getId())){
             return RestResponse.no("当前用户已审批，请勿再审批");
         }
         if(StringUtils.isEmpty(approvalTemp)){
@@ -159,8 +165,7 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
         boolean b = this.updateById(approvalManagement);
         if(b){
             try {
-                ApprovalManagement byId1 = this.getById(approvalManagement.getId());
-                if(byId1.getApprovalStatus()==2){
+                if(approvalManagement.getApprovalStatus()==2){
                     if(!byId1.getInstructionType().equals("水库调水")){
                         String[] lssuedById = byId1.getLssuedById().split(",");
                         for(String s:lssuedById){
@@ -189,6 +194,58 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
             return RestResponse.ok();
         }else{
             return RestResponse.no("error");
+        }
+    }
+
+    @SneakyThrows
+    @Override
+    public RestResponse revoke(String id) {
+        ApprovalManagement byId = this.getById(id);
+        boolean update = this.lambdaUpdate().set(ApprovalManagement::getInstructionStatus, 4).eq(ApprovalManagement::getId, id).update();
+        if(update){
+            if(byId.getApprovalStatus()==1){
+                String[] split = byId.getApprovedById().split(",");
+                for(String s:split){
+                    WebSocketServer.sendInfo(sdf1.format(byId.getCreateTime())+byId.getDispatchingObjectives()+"已撤销",s);
+                }
+            }
+            if(byId.getApprovalStatus()==2){
+                String[] split1 = byId.getApprovedById().split(",");
+                for(String s:split1){
+                    WebSocketServer.sendInfo(sdf1.format(byId.getCreateTime())+byId.getDispatchingObjectives()+"已撤销",s);
+                }
+                String[] split2 = byId.getRecipientId().split(",");
+                for(String s:split2){
+                    WebSocketServer.sendInfo(sdf1.format(byId.getCreateTime())+byId.getDispatchingObjectives()+"已撤销",s);
+                }
+            }
+            return RestResponse.ok("撤销成功");
+        }else {
+            return RestResponse.no("撤销失败");
+        }
+    }
+
+    @SneakyThrows
+    @Override
+    public RestResponse replacePerson(ApprovalManagement approvalManagement) {
+        ApprovalManagement byId = this.getById(approvalManagement.getId());
+        SaBaseLoginUser saBaseLoginUser = StpLoginUserUtil.getLoginUser();
+        if(!saBaseLoginUser.getId().equals(byId.getLssuedById())){
+            return RestResponse.no("您无权限修改审批人");
+        }
+        if(byId.getApprovalStatus()==2){
+            return RestResponse.no("该指令已审批，请勿修改审批人");
+        }
+        boolean update = this.lambdaUpdate().set(ApprovalManagement::getApprovedById, approvalManagement.getApprovedById()).set(ApprovalManagement::getApprovedBy, approvalManagement.getApprovedBy()).
+                eq(ApprovalManagement::getId, approvalManagement.getId()).update();
+        if(update) {
+            String[] approvedById = approvalManagement.getApprovedById().split(",");
+            for (String s:approvedById){
+                WebSocketServer.sendInfo("您有一条待审批的指令",s);
+            }
+            return RestResponse.ok();
+        }else {
+            return RestResponse.no("修改失败");
         }
     }
 
@@ -339,7 +396,7 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
 
     public static void main(String[] args) {
         String s= "123,456";
-        System.out.println(s.contains("123"));
+        System.out.println(Arrays.asList(s.split(",")).contains("12"));
     }
 }
 

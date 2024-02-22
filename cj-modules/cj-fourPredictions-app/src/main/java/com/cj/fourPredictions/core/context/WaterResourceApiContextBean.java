@@ -149,4 +149,16 @@ public class WaterResourceApiContextBean implements WaterResourceApi {
         String data = waterResourceFeign.getTodayInspectionStatistics();
         return data;
     }
+
+    @Override
+    public String getFormList() {
+        String data = waterResourceFeign.getFormList();
+        return data;
+    }
+
+    @Override
+    public String getSupplyDemandBalanceByFormId(String id) {
+        String data = waterResourceFeign.getSupplyDemandBalanceByFormId(id);
+        return data;
+    }
 }

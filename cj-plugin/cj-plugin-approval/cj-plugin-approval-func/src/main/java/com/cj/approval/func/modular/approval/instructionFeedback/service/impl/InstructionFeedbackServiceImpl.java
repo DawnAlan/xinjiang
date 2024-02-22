@@ -64,7 +64,7 @@ public class InstructionFeedbackServiceImpl extends ServiceImpl<InstructionFeedb
                 try {
                     String[] split = instructionFeedback.getRecipientId().split(",");
                     for (String s : split){
-                        WebSocketServer.sendInfo(instructionFeedback.getFeedbackBy()+"已反馈",s);
+                        WebSocketServer.sendInfo(instructionFeedback.getFeedbackBy()+"已反馈，反馈的信息："+instructionFeedback.getFeedbackContext(),s);
                     }
                 }catch (Exception e){
                     e.printStackTrace();

@@ -41,5 +41,8 @@ public class IrrigatedPlatformTree extends Model<IrrigatedPlatformTree> {
     private String selfCode;
     
     private String waterlevelNotnormal;
+
+    //系统单位名称
+    private String systemUnitName;
 }
 

@@ -83,4 +83,10 @@ public interface WaterResourceFeign {
 
     @RequestMapping("/feign/provider/waterResource/getTodayInspectionStatistics")
     String getTodayInspectionStatistics();
+
+    @RequestMapping("/feign/provider/waterResource/getFormList")
+    String getFormList();
+
+    @RequestMapping("/feign/provider/waterResource/getSupplyDemandBalanceByFormId")
+    String getSupplyDemandBalanceByFormId(@RequestParam(value = "id", required =true)String id);
 }

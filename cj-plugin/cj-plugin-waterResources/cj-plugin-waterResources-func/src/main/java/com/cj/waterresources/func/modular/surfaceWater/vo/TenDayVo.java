@@ -11,7 +11,7 @@ public class TenDayVo {
     @ApiModelProperty(value = "月份")
     private Integer month;
     @ApiModelProperty(value = "名称")
-    private String name;
+    private Integer name;
     @ApiModelProperty(value = "值")
     private BigDecimal value;
 }

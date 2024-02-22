@@ -2,8 +2,9 @@ package com.cj.waterresources.func.modular.waterStorageScheduling.waterStorageSc
 
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.UUIDUtils;
-import com.cj.waterresources.func.modular.waterStorageScheduling.waterStorageSchedulingLzz.entity.WaterStorageSchedulingLzz;
 import com.cj.waterresources.func.modular.waterStorageScheduling.waterStorageSchedulingLzz.service.WaterStorageSchedulingLzzService;
+import com.cj.waterresources.func.modular.waterStorageScheduling.waterStorageSchedulingLzz.entity.WaterStorageSchedulingLzz;
+import com.cj.waterresources.func.modular.waterStorageScheduling.waterStorageSchedulingTth.entity.WaterStorageSchedulingTth;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSupport;
 import io.swagger.annotations.Api;
@@ -46,39 +47,22 @@ public class WaterStorageSchedulingLzzController {
     @ApiOperationSupport(order = 2)
     @ApiOperation("新增")
     @PostMapping("/add")
-    public RestResponse add(@RequestBody List<WaterStorageSchedulingLzz> waterStorageSchedulingLzzList) {
-        waterStorageSchedulingLzzList.forEach(waterStorageSchedulingLzz->{
-            waterStorageSchedulingLzz.setCreateTime(new Date());
-            waterStorageSchedulingLzz.setDel(0);
-            waterStorageSchedulingLzz.setId(UUIDUtils.getUUID());
-        });
-
-        boolean save = waterStorageSchedulingLzzService.saveBatch(waterStorageSchedulingLzzList);
-        if(save){
-            return RestResponse.ok("添加成功");
-        }else {
-            return RestResponse.no("添加失败");
-        }
+    public RestResponse add(@RequestParam("formId") String formId) {
+        return waterStorageSchedulingLzzService.add(formId);
     }
     @ApiOperationSupport(order = 3)
     @ApiOperation("修改")
     @PostMapping("/update")
-    public RestResponse update(@RequestBody WaterStorageSchedulingLzz waterStorageSchedulingLzz) {
-        waterStorageSchedulingLzz.setUpdateTime(new Date());
-        boolean b = waterStorageSchedulingLzzService.updateById(waterStorageSchedulingLzz);
-        if(b){
-            return RestResponse.ok("编辑成功");
-        }else {
-            return RestResponse.no("编辑失败");
-        }
+    public RestResponse update(@RequestBody List<WaterStorageSchedulingLzz> waterStorageSchedulingLzz) {
+        return waterStorageSchedulingLzzService.edit(waterStorageSchedulingLzz);
     }
 
 
     @ApiOperationSupport(order = 4)
     @ApiOperation("查询列表")
     @GetMapping("/select")
-    public RestResponse<List<WaterStorageSchedulingLzz>> select(@RequestParam(value = "year") Integer year) {
-        List<WaterStorageSchedulingLzz> list = waterStorageSchedulingLzzService.lambdaQuery().eq(WaterStorageSchedulingLzz::getYear, year).eq(WaterStorageSchedulingLzz::getDel, 0).list();
+    public RestResponse<List<WaterStorageSchedulingLzz>> select(@RequestParam(value = "formId") String formId) {
+        List<WaterStorageSchedulingLzz> list = waterStorageSchedulingLzzService.lambdaQuery().eq(WaterStorageSchedulingLzz::getFormId, formId).eq(WaterStorageSchedulingLzz::getDel, 0).list();
         if(null != list && list.size()>0){
             return RestResponse.ok(list);
         }else {

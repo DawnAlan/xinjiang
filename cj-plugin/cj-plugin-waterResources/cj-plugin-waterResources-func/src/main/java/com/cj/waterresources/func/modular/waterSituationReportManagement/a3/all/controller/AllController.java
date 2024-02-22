@@ -32,7 +32,7 @@ public class AllController {
     }
 
     @ApiOperationSupport(order = 1)
-    @ApiOperation("统计")
+    @ApiOperation("水情查询统计")
     @PostMapping("/statistics")
     public RestResponse statistics(@RequestBody A3StatisticsReq req) {
         return allService.statistics(req);

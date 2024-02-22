@@ -92,9 +92,10 @@ public class WaterFeeTask {
             List<String> collect = tableHeadId.getCollect();
             Map<String, List<String>> map = tableHeadId.getMap();
             LocalDateTime now = LocalDateTime.now();
-            Integer year = now.getYear();
-            Integer month = now.getMonth().getValue();
-            Integer day = now.getDayOfMonth();
+            LocalDateTime yesterday = now.minusDays(1);
+            Integer year = yesterday.getYear();
+            Integer month = yesterday.getMonth().getValue();
+            Integer day = yesterday.getDayOfMonth();
             String tenDays = determineTenDays(day);
             SimpleDateFormat sdf = new SimpleDateFormat("MM月dd日");
             for (String s : collect) {
@@ -124,9 +125,10 @@ public class WaterFeeTask {
             List<String> collect = tableHeadId.getCollect();
             Map<String, List<String>> map = tableHeadId.getMap();
             LocalDateTime now = LocalDateTime.now();
-            Integer year = now.getYear();
-            Integer month = now.getMonth().getValue();
-            Integer day = now.getDayOfMonth();
+            LocalDateTime yesterday = now.minusDays(1);
+            Integer year = yesterday.getYear();
+            Integer month = yesterday.getMonth().getValue();
+            Integer day = yesterday.getDayOfMonth();
             String tenDays = determineTenDays(day);
             SimpleDateFormat sdf = new SimpleDateFormat("MM月dd日");
             for(String s:collect){

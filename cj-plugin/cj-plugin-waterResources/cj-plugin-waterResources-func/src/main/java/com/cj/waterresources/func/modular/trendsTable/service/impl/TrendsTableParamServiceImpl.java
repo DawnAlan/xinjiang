@@ -148,6 +148,8 @@ public class TrendsTableParamServiceImpl extends ServiceImpl<TrendsTableParamMap
                         }else {
                             return RestResponse.no("删除失败");
                         }
+                    }else {
+                        waterPriceManagementService.removeById(id);
                     }
                     updateCache();
                     return RestResponse.ok("删除成功");

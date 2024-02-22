@@ -2,6 +2,7 @@ package com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.service
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.cj.common.model.RestResponse;
+import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.bean.req.UseWaterTypeStatisticsReq;
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.bean.req.WaterFeeStatisticsDetailsSelectListReq;
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.entity.WaterFeeStatisticsDetails;
 
@@ -29,6 +30,8 @@ public interface WaterFeeStatisticsDetailsService extends IService<WaterFeeStati
 
     RestResponse addHistory(List<List<WaterFeeStatisticsDetails>> waterFeeStatisticsDetailsList);
 
+
+    RestResponse useWaterTypeStatistics(UseWaterTypeStatisticsReq req);
 
 
 }

@@ -1,6 +1,8 @@
 package com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.req.TrunkCanalSelectListReq;
+import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.res.SelectYearWaterUsePlanTrunkCanalForSum;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.entity.YearWaterUsePlanTrunkCanal;
 
 /**
@@ -10,6 +12,8 @@ import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePla
  * @since 2023-12-01 18:26:47
  */
 public interface YearWaterUsePlanTrunkCanalMapper extends BaseMapper<YearWaterUsePlanTrunkCanal> {
+
+    SelectYearWaterUsePlanTrunkCanalForSum selectListForSum(TrunkCanalSelectListReq req);
 
 }
 

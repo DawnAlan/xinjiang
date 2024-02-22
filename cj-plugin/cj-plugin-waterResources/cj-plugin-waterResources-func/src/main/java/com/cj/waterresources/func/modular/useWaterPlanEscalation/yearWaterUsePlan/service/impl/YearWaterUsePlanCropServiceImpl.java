@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.UUIDUtils;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.req.YearCropSelectListReq;
+import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.res.SelectYearWaterUsePlanCropForSum;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.entity.YearWaterUsePlanCrop;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.mapper.YearWaterUsePlanCropMapper;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.entity.YearWaterUsePlanTrunkCanal;
@@ -213,6 +214,11 @@ public class YearWaterUsePlanCropServiceImpl extends ServiceImpl<YearWaterUsePla
         }else {
             return RestResponse.no("删除失败");
         }
+    }
+
+    @Override
+    public SelectYearWaterUsePlanCropForSum selectListForSum(Integer year, String area) {
+        return this.baseMapper.selectListForSum(year, area);
     }
 }
 

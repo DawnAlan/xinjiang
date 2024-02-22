@@ -48,6 +48,9 @@ public interface WaterResourceApi {
 
     String getTodayInspectionStatistics();
 
+    String getFormList();
+
+    String getSupplyDemandBalanceByFormId(String id);
 
 
 }

@@ -16,14 +16,17 @@ import com.cj.waterresources.func.modular.trendsTable.bean.req.QueryTrendsTableP
 import com.cj.waterresources.func.modular.trendsTable.bean.res.WaterDailyParamSelectRes;
 import com.cj.waterresources.func.modular.trendsTable.entity.TrendsTableParam;
 import com.cj.waterresources.func.modular.trendsTable.service.TrendsTableParamService;
+import com.cj.waterresources.func.modular.waterPrice.industrialWaterFee.service.IndustrialWaterFeeService;
 import com.cj.waterresources.func.modular.waterPrice.paymentWaterFees.entity.PaymentWaterFees;
 import com.cj.waterresources.func.modular.waterPrice.paymentWaterFees.service.PaymentWaterFeesService;
 import com.cj.waterresources.func.modular.waterPrice.totalIdToStation.entity.TotalIdToStation;
 import com.cj.waterresources.func.modular.waterPrice.totalIdToStation.service.TotalIdToStationService;
 import com.cj.waterresources.func.modular.waterPrice.waterDistributionRatio.entity.WaterDistributionRatio;
 import com.cj.waterresources.func.modular.waterPrice.waterDistributionRatio.service.WaterDistributionRatioService;
+import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.bean.req.UseWaterTypeStatisticsReq;
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.bean.req.WaterFeeStatisticsDetailsSelectListReq;
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.bean.res.JobRes;
+import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.bean.res.UseWaterTypeStatisticsRes;
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.entity.WaterFeeStatisticsTotal;
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.mapper.WaterFeeStatisticsDetailsMapper;
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.entity.WaterFeeStatisticsDetails;
@@ -31,6 +34,7 @@ import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.service.
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.service.WaterFeeStatisticsTotalService;
 import com.cj.waterresources.func.modular.waterPrice.waterPriceManagement.entity.WaterPriceManagement;
 import com.cj.waterresources.func.modular.waterPrice.waterPriceManagement.service.WaterPriceManagementService;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.service.DayWaterSituationStatisticsTableQsService;
 import org.apache.commons.lang3.StringUtils;
 import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.BeanUtils;
@@ -40,6 +44,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -47,6 +52,7 @@ import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static cn.hutool.poi.excel.sax.ElementName.c;
 import static cn.hutool.poi.excel.sax.ElementName.v;
 
 /**
@@ -89,6 +95,12 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
 
     @Autowired
     private TenDaysWaterBalanceService tenDaysWaterBalanceService;
+
+    @Autowired
+    private IndustrialWaterFeeService industrialWaterFeeService;
+
+    @Autowired
+    private DayWaterSituationStatisticsTableQsService dayWaterSituationStatisticsTableQsService;
 
     @Autowired
     private RedisUtil redisUtil;
@@ -164,6 +176,11 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                     }
                 }
                 t.setId(UUIDUtils.getUUID());
+                try {
+                    t.setRecordTime(sdf.parse(dateTemp));
+                } catch (ParseException e) {
+                    throw new RuntimeException(e);
+                }
             });
         }
 
@@ -2116,6 +2133,11 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                             t.setV(collect ==null?null:collect.size()==0?null:collect.get(0));
                         }
                     }
+                    try {
+                        t.setRecordTime(sdf.parse(dateTemp));
+                    } catch (ParseException e) {
+                        throw new RuntimeException(e);
+                    }
                     t.setId(UUIDUtils.getUUID());
                 });
             }
@@ -3235,6 +3257,304 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
         return RestResponse.ok("添加成功");
     }
 
+    @Override
+    public RestResponse useWaterTypeStatistics(UseWaterTypeStatisticsReq req) {
+        String mk = (String) redisUtil.get("trendsTableParam:list");
+        if(StringUtils.isEmpty(mk)){
+            updateCache();
+            mk = (String) redisUtil.get("trendsTableParam:list");
+        }
+        List<TrendsTableParam> trendsTableParamList = JSONObject.parseArray(mk, TrendsTableParam.class);
+        if(req.getStation().equals("楼庄子水库")){
+            req.setStationList(Arrays.asList("楼庄子水厂"));
+            List<UseWaterTypeStatisticsRes> statistics = industrialWaterFeeService.statistics(req);
+            if(null != statistics){
+                Map<String, List<UseWaterTypeStatisticsRes>> result = new HashMap<>();
+                if(StringUtils.isNotEmpty(req.getUseType())){
+                    result = statistics.stream().collect(Collectors.groupingBy(UseWaterTypeStatisticsRes::getParamName));
+                    return RestResponse.ok(result);
+                }else {
+                    statistics.forEach(t->t.setParamName("城镇生活"));
+                    result.put("城镇生活",statistics);
+                    return RestResponse.ok(result);
+                }
+            }else {
+                return RestResponse.no("blank");
+            }
+        }
+        if(req.getStation().equals("头屯河水库")){
+            req.setStationList(Arrays.asList("红岩水库","八钢"));
+            List<UseWaterTypeStatisticsRes> statistics = industrialWaterFeeService.statistics(req);
+            if(null != statistics){
+                Map<String, List<UseWaterTypeStatisticsRes>> result = new HashMap<>();
+                if(StringUtils.isNotEmpty(req.getUseType())){
+                    result = statistics.stream().collect(Collectors.groupingBy(UseWaterTypeStatisticsRes::getParamName));
+                    List<UseWaterTypeStatisticsRes> bgTemp = result.get("八钢");
+                    if(req.getUseType().equals("工业")){
+                        List<UseWaterTypeStatisticsRes> bg = new ArrayList<>();
+                        bgTemp.forEach(t->{
+                            UseWaterTypeStatisticsRes res = new UseWaterTypeStatisticsRes();
+                            BeanUtils.copyProperties(t,res);
+                            res.setV((t.getV()==null?0.00:t.getV())*0.7);
+                            bg.add(res);
+                        });
+                        List<UseWaterTypeStatisticsRes> collect = bg.stream().sorted(Comparator.comparing(UseWaterTypeStatisticsRes::getRecordTime, Comparator.nullsFirst(Comparator.naturalOrder()))).collect(Collectors.toList());
+                        result.put("八钢",collect);
+                        List<UseWaterTypeStatisticsRes> nyTemp = result.get("红岩水库");
+                        if(null != nyTemp && nyTemp.size()>0){
+                            List<UseWaterTypeStatisticsRes> ny = nyTemp.stream().sorted(Comparator.comparing(UseWaterTypeStatisticsRes::getRecordTime, Comparator.nullsFirst(Comparator.naturalOrder()))).collect(Collectors.toList());
+                            result.put("红岩水库",ny);
+                        }else {
+                            result.put("红岩水库",null);
+                        }
+                    }
+                    if(req.getUseType().equals("农业")){
+                        result.remove("红岩水库");
+                        List<UseWaterTypeStatisticsRes> bg = new ArrayList<>();
+                        bgTemp.forEach(t->{
+                            UseWaterTypeStatisticsRes res = new UseWaterTypeStatisticsRes();
+                            BeanUtils.copyProperties(t,res);
+                            res.setV((t.getV()==null?0.00:t.getV())*0.3);
+                            bg.add(res);
+                        });
+                        List<UseWaterTypeStatisticsRes> collect = bg.stream().sorted(Comparator.comparing(UseWaterTypeStatisticsRes::getRecordTime, Comparator.nullsFirst(Comparator.naturalOrder()))).collect(Collectors.toList());
+                        result.put("八钢",collect);
+                    }
+                    return RestResponse.ok(result);
+                }else {
+                    Map<Date, List<UseWaterTypeStatisticsRes>> collect = statistics.stream().collect(Collectors.groupingBy(UseWaterTypeStatisticsRes::getRecordTime));
+                    Set<Date> dates = collect.keySet();
+                    List<UseWaterTypeStatisticsRes> gyList = new ArrayList<>();
+                    List<UseWaterTypeStatisticsRes> nyList = new ArrayList<>();
+                    for(Date date : dates){
+                        UseWaterTypeStatisticsRes res = new UseWaterTypeStatisticsRes();
+                        Double aDouble = 0.0;
+                        for(UseWaterTypeStatisticsRes temp : collect.get(date)){
+                            if(temp.getParamName().equals("八钢")){
+                                aDouble += (temp.getV()==null?0.00:temp.getV())*0.7;
+                            }else {
+                                aDouble += temp.getV()==null?0.00:temp.getV();
+                            }
+                        }
+                        res.setV(aDouble);
+                        res.setRecordTime(date);
+                        res.setParamName("工业");
+                        gyList.add(res);
+                        List<UseWaterTypeStatisticsRes> collect1 = gyList.stream().sorted(Comparator.comparing(UseWaterTypeStatisticsRes::getRecordTime, Comparator.nullsFirst(Comparator.naturalOrder()))).collect(Collectors.toList());
+                        result.put("工业",collect1);
+                    }
+                    for(Date date : dates){
+                        UseWaterTypeStatisticsRes res = new UseWaterTypeStatisticsRes();
+                        Double aDouble = 0.0;
+                        for(UseWaterTypeStatisticsRes temp : collect.get(date)){
+                            if(temp.getParamName().equals("八钢")) {
+                                aDouble += (temp.getV()==null?0.00:temp.getV()) * 0.3;
+                            }
+                        }
+                        res.setV(aDouble);
+                        res.setRecordTime(date);
+                        res.setParamName("农业");
+                        nyList.add(res);
+                        List<UseWaterTypeStatisticsRes> collect1 = nyList.stream().sorted(Comparator.comparing(UseWaterTypeStatisticsRes::getRecordTime, Comparator.nullsFirst(Comparator.naturalOrder()))).collect(Collectors.toList());
+                        result.put("农业",collect1);
+                    }
+                    return RestResponse.ok(result);
+                }
+            }else {
+                return RestResponse.no("blank");
+            }
+        }
+        if(req.getStation().equals("渠首管理站")){
+            Map<String, List<UseWaterTypeStatisticsRes>> collect = new HashMap<>();
+            List<TrendsTableParam> dlqParamList = trendsTableParamList.stream().filter(t -> t.getUseStation().equals("渠首管理站") && t.getUseType() == 2).collect(Collectors.toList());
+            if(StringUtils.isEmpty(req.getUseType())){
+                TrendsTableParam dlqParam = dlqParamList.stream().filter(t -> t.getParamName().equals("灯笼渠")).collect(Collectors.toList()).get(0);
+                List<String> ids1 = trendsTableParamList.stream().filter(t -> t.getPId().equals(dlqParam.getId()) && !t.getParamName().equals("合计")).map(TrendsTableParam::getId).collect(Collectors.toList());
+                req.setStationList(ids1);
+                List<UseWaterTypeStatisticsRes> statistics1 = this.baseMapper.statistics(req);
+                if(null != statistics1 && statistics1.size()>0){
+                    collect = statistics1.stream().collect(Collectors.groupingBy(UseWaterTypeStatisticsRes::getParamName));
+                }
+                TrendsTableParam ldParam = dlqParamList.stream().filter(t -> t.getParamName().equals("漏斗")).collect(Collectors.toList()).get(0);
+                TrendsTableParam xhParam = dlqParamList.stream().filter(t -> t.getParamName().equals("泄洪")).collect(Collectors.toList()).get(0);
+                List<String> ids2 = new ArrayList<>();
+                ids2.add(ldParam.getId());
+                ids2.add(xhParam.getId());
+                req.setStationList(ids2);
+                List<UseWaterTypeStatisticsRes> statistics2 = this.baseMapper.statistics(req);
+                if(null != statistics2 && statistics2.size()>0){
+                    statistics2.forEach(t->t.setParamName("生态用水"));
+                    collect.put("生态用水",statistics2);
+                }
+                if(collect.size()<0){
+                    return RestResponse.no("blank");
+                }else{
+                    return RestResponse.ok(collect);
+                }
+            }else {
+                if(req.getUseType().equals("生态用水")){
+                    TrendsTableParam ldParam = dlqParamList.stream().filter(t -> t.getParamName().equals("漏斗")).collect(Collectors.toList()).get(0);
+                    TrendsTableParam xhParam = dlqParamList.stream().filter(t -> t.getParamName().equals("泄洪")).collect(Collectors.toList()).get(0);
+                    List<String> ids2 = new ArrayList<>();
+                    ids2.add(ldParam.getId());
+                    ids2.add(xhParam.getId());
+                    req.setStationList(ids2);
+                    List<UseWaterTypeStatisticsRes> statistics2 = this.baseMapper.statistics(req);
+                    if(null != statistics2 && statistics2.size()>0){
+                        collect = statistics2.stream().collect(Collectors.groupingBy(UseWaterTypeStatisticsRes::getParamName));
+                    }
+                }else {
+                    TrendsTableParam dlqParam = dlqParamList.stream().filter(t -> t.getParamName().equals("灯笼渠")).collect(Collectors.toList()).get(0);
+                    List<String> ids1 = trendsTableParamList.stream().filter(t -> t.getPId().equals(dlqParam.getId()) && t.getParamName().equals(req.getUseType())).map(TrendsTableParam::getId).collect(Collectors.toList());
+                    req.setStationList(ids1);
+                    List<UseWaterTypeStatisticsRes> statistics1 = this.baseMapper.statistics(req);
+                    if(null != statistics1 && statistics1.size()>0){
+                        collect = statistics1.stream().collect(Collectors.groupingBy(UseWaterTypeStatisticsRes::getParamName));
+                    }
+                }
+                if(collect.size()<0){
+                    return RestResponse.no("blank");
+                }else{
+                    return RestResponse.ok(collect);
+                }
+            }
+        }
+        if(req.getStation().equals("河东管理站")){
+            Map<String, List<UseWaterTypeStatisticsRes>> collect = new HashMap<>();
+            List<TrendsTableParam> hdNy = trendsTableParamList.stream().filter(t -> t.getUseType() == 2 && t.getUseStation().equals("河东管理站农业")).collect(Collectors.toList());
+            List<TrendsTableParam> hdLh = trendsTableParamList.stream().filter(t -> t.getUseType() == 2 && t.getUseStation().equals("河东管理站绿化")).collect(Collectors.toList());
+            if(StringUtils.isEmpty(req.getUseType())){
+                TrendsTableParam totalNyParam = hdNy.stream().filter(t -> t.getPId().equals("0") && t.getParamName().equals("合计")).collect(Collectors.toList()).get(0);
+                req.setStationList(Arrays.asList(totalNyParam.getId()));
+                List<UseWaterTypeStatisticsRes> statistics1 = this.baseMapper.statistics(req);
+                if(null != statistics1 && statistics1.size()>0){
+                    statistics1.forEach(t->t.setParamName("农业"));
+                    collect.put("农业",statistics1);
+                }
+                TrendsTableParam totalLhParam = hdLh.stream().filter(t -> t.getPId().equals("0") && t.getParamName().equals("合计")).collect(Collectors.toList()).get(0);
+                req.setStationList(Arrays.asList(totalLhParam.getId()));
+                List<UseWaterTypeStatisticsRes> statistics2 = this.baseMapper.statistics(req);
+                if(null != statistics2 && statistics2.size()>0){
+                    statistics2.forEach(t->t.setParamName("绿化"));
+                    collect.put("绿化",statistics2);
+                }
+                if(collect.size()>0){
+                    return RestResponse.ok(collect);
+                }else {
+                    return RestResponse.no("blank");
+                }
+            }else {
+                if(req.getUseType().equals("农业")){
+                    req.setStationList(getTableIds(hdNy));
+                    List<UseWaterTypeStatisticsRes> statistics = this.baseMapper.statistics(req);
+                    if(null != statistics && statistics.size()>0){
+                        Map<String, List<UseWaterTypeStatisticsRes>> collect1 = statistics.stream().collect(Collectors.groupingBy(UseWaterTypeStatisticsRes::getParamName));
+                        return RestResponse.ok(collect1);
+                    }else {
+                        return RestResponse.no("blank");
+                    }
+                }
+                if(req.getUseType().equals("绿化")){
+                    req.setStationList(getTableIds(hdLh));
+                    List<UseWaterTypeStatisticsRes> statistics = this.baseMapper.statistics(req);
+                    if(null != statistics && statistics.size()>0){
+                        Map<String, List<UseWaterTypeStatisticsRes>> collect1 = statistics.stream().collect(Collectors.groupingBy(UseWaterTypeStatisticsRes::getParamName));
+                        return RestResponse.ok(collect1);
+                    }else {
+                        return RestResponse.no("blank");
+                    }
+                }
+                return RestResponse.no("请传入正确的用水类型");
+            }
+        }
+        if(req.getStation().equals("河西管理站")){
+            Map<String, List<UseWaterTypeStatisticsRes>> collect = new HashMap<>();
+            List<TrendsTableParam> hx = trendsTableParamList.stream().filter(t -> t.getUseType() == 2 && t.getUseStation().equals("河西管理站")).collect(Collectors.toList());
+            if(StringUtils.isEmpty(req.getUseType())){
+                List<String> ids1 = new ArrayList<>();
+                List<String> nyAll = hx.stream().filter(t -> t.getPId().equals("0") && !t.getParamName().equals("合计") && !t.getParamName().equals("城绿化")).map(TrendsTableParam::getId).collect(Collectors.toList());
+                for(String pid:nyAll){
+                    List<String> collect1 = hx.stream().filter(t -> t.getPId().equals(pid) && !t.getParamName().equals("合计")).map(TrendsTableParam::getId).collect(Collectors.toList());
+                    for(String pid1:collect1){
+                        List<String> collect2 = hx.stream().filter(t -> t.getPId().equals(pid1) && !t.getParamName().equals("合计")).map(TrendsTableParam::getId).collect(Collectors.toList());
+                        if(null != collect2 && collect2.size()>0){
+                            ids1.addAll(collect2);
+                        }else {
+                            ids1.add(pid1);
+                        }
+                    }
+                }
+                req.setStationList(ids1);
+                List<UseWaterTypeStatisticsRes> statistics = this.baseMapper.statistics(req);
+                if(null != statistics && statistics.size()>0){
+                    List<UseWaterTypeStatisticsRes> resList = new ArrayList<>();
+                    Map<Date, List<UseWaterTypeStatisticsRes>> collect1 = statistics.stream().collect(Collectors.groupingBy(UseWaterTypeStatisticsRes::getRecordTime));
+                    Set<Date> dates = collect1.keySet();
+                    for(Date date:dates){
+                        UseWaterTypeStatisticsRes res = new UseWaterTypeStatisticsRes();
+                        Double aDouble = collect1.get(date).stream().filter(t -> t.getV() != null).map(UseWaterTypeStatisticsRes::getV).reduce(Double::sum).orElse(0.00);
+                        res.setParamName("农业");
+                        res.setV(aDouble);
+                        res.setRecordTime(date);
+                        resList.add(res);
+                    }
+                    collect.put("农业",resList);
+                }
+                TrendsTableParam lhTemp = hx.stream().filter(t -> t.getPId().equals("0") && t.getParamName().equals("城绿化")).collect(Collectors.toList()).get(0);
+                TrendsTableParam lh = hx.stream().filter(t -> t.getPId().equals(lhTemp.getId()) && t.getParamName().equals("合计")).collect(Collectors.toList()).get(0);
+                req.setStationList(Arrays.asList(lh.getId()));
+                List<UseWaterTypeStatisticsRes> statistics1 = this.baseMapper.statistics(req);
+                if(null != statistics1 && statistics1.size()>0){
+                    statistics1.forEach(t->t.setParamName("绿化"));
+                    collect.put("绿化",statistics1);
+                }
+                if(collect.size()>0){
+                    return RestResponse.ok(collect);
+                }else {
+                    return RestResponse.no("blank");
+                }
+            }else {
+                if(req.getUseType().equals("农业")){
+                    List<String> ids = new ArrayList<>();
+                    List<String> nyAll = hx.stream().filter(t -> t.getPId().equals("0") && !t.getParamName().equals("合计") && !t.getParamName().equals("城绿化")).map(TrendsTableParam::getId).collect(Collectors.toList());
+                    for(String pid:nyAll){
+                        List<String> collect1 = hx.stream().filter(t -> t.getPId().equals(pid) && !t.getParamName().equals("合计")).map(TrendsTableParam::getId).collect(Collectors.toList());
+                        for(String pid1:collect1){
+                            List<String> collect2 = hx.stream().filter(t -> t.getPId().equals(pid1) && !t.getParamName().equals("合计")).map(TrendsTableParam::getId).collect(Collectors.toList());
+                            if(null != collect2 && collect2.size()>0){
+                                ids.addAll(collect2);
+                            }else {
+                                ids.add(pid1);
+                            }
+                        }
+                    }
+                    req.setStationList(ids);
+                    List<UseWaterTypeStatisticsRes> statistics = this.baseMapper.statistics(req);
+                    if(null != statistics && statistics.size()>0){
+                        Map<String, List<UseWaterTypeStatisticsRes>> collect1 = statistics.stream().collect(Collectors.groupingBy(UseWaterTypeStatisticsRes::getParamName));
+                        return RestResponse.ok(collect1);
+                    }else {
+                        return RestResponse.no("blank");
+                    }
+                }
+                if(req.getUseType().equals("绿化")){
+                    TrendsTableParam lhTemp = hx.stream().filter(t -> t.getPId().equals("0") && t.getParamName().equals("城绿化")).collect(Collectors.toList()).get(0);
+                    List<String> strings = hx.stream().filter(t -> t.getPId().equals(lhTemp.getId()) && !t.getParamName().equals("合计")).map(TrendsTableParam::getId).collect(Collectors.toList());
+                    req.setStationList(strings);
+                    List<UseWaterTypeStatisticsRes> statistics = this.baseMapper.statistics(req);
+                    if(null != statistics && statistics.size()>0){
+                        Map<String, List<UseWaterTypeStatisticsRes>> collect1 = statistics.stream().collect(Collectors.groupingBy(UseWaterTypeStatisticsRes::getParamName));
+                        return RestResponse.ok(collect1);
+                    }else {
+                        return RestResponse.no("blank");
+                    }
+                }
+                return RestResponse.no("请传入正确的用水类型");
+            }
+        }
+        return RestResponse.no("请传入正确的管理站");
+    }
+
     public List<String> getTableHeadName(List<TrendsTableParam> trendsTableParamList){
         try {
             List<String> tableIds = new ArrayList<>();
@@ -3272,6 +3592,27 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
             log.error(e.getLocalizedMessage());
             return null;
         }
+    }
+
+    public List<String> getTableIds(List<TrendsTableParam> trendsTableParamList){
+        List<String> ids = new ArrayList<>();
+        List<String> pIdCollect = trendsTableParamList.stream().filter(t -> !t.getParamName().equals("合计") && t.getPId().equals("0")).map(TrendsTableParam::getId).collect(Collectors.toList());
+        for(String pid:pIdCollect){
+            List<String> pIdCollect1 = trendsTableParamList.stream().filter(t -> !t.getParamName().equals("合计") && t.getPId().equals(pid)).map(TrendsTableParam::getId).collect(Collectors.toList());
+            if(null != pIdCollect1 && pIdCollect1.size()>0){
+                for(String pid1:pIdCollect1) {
+                    List<String> pIdCollect2 = trendsTableParamList.stream().filter(t -> !t.getParamName().equals("合计") && t.getPId().equals(pid1)).map(TrendsTableParam::getId).collect(Collectors.toList());
+                    if(null != pIdCollect2 && pIdCollect2.size()>0){
+                        ids.addAll(pIdCollect2);
+                    }else {
+                        ids.add(pid1);
+                    }
+                }
+            }else {
+                ids.add(pid);
+            }
+        }
+        return ids;
     }
 }
 

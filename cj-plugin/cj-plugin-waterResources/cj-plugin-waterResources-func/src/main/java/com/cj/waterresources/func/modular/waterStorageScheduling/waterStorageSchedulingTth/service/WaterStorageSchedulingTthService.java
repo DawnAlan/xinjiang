@@ -1,6 +1,7 @@
 package com.cj.waterresources.func.modular.waterStorageScheduling.waterStorageSchedulingTth.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.cj.common.model.RestResponse;
 import com.cj.waterresources.func.modular.waterStorageScheduling.waterStorageSchedulingTth.entity.WaterStorageSchedulingTth;
 
 /**
@@ -10,6 +11,10 @@ import com.cj.waterresources.func.modular.waterStorageScheduling.waterStorageSch
  * @since 2023-12-12 10:20:46
  */
 public interface WaterStorageSchedulingTthService extends IService<WaterStorageSchedulingTth> {
+
+    RestResponse add(String formId);
+
+    RestResponse edit(WaterStorageSchedulingTth waterStorageSchedulingTth);
 
 }
 

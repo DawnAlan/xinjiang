@@ -20,5 +20,8 @@ public class LzzPlatformTree extends Model<LzzPlatformTree> {
     //父ID
     private String pId;
 
+    //系统单位名称
+    private String systemUnitName;
+
 }
 

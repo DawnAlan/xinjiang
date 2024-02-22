@@ -23,4 +23,24 @@ public class SupplyDemandBalanceServiceImpl implements SupplyDemandBalanceServic
             return RestResponse.no("blank");
         }
     }
+
+    @Override
+    public RestResponse getFormList() {
+        String data = waterResourceApi.getFormList();
+        if(StringUtils.isNotEmpty(data)){
+            return RestResponse.ok(JSONObject.parseArray(data));
+        }else {
+            return RestResponse.no("blank");
+        }
+    }
+
+    @Override
+    public RestResponse getSupplyDemandBalanceByFormId(String id) {
+        String data = waterResourceApi.getSupplyDemandBalanceByFormId(id);
+        if(StringUtils.isNotEmpty(data)){
+            return RestResponse.ok(JSONObject.parseObject(data));
+        }else {
+            return RestResponse.no("blank");
+        }
+    }
 }

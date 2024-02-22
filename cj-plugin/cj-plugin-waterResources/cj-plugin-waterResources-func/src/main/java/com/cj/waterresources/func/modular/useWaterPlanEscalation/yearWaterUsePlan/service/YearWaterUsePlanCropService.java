@@ -3,6 +3,7 @@ package com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePl
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.cj.common.model.RestResponse;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.req.YearCropSelectListReq;
+import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.res.SelectYearWaterUsePlanCropForSum;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.entity.YearWaterUsePlanCrop;
 
 import java.util.List;
@@ -22,6 +23,8 @@ public interface YearWaterUsePlanCropService extends IService<YearWaterUsePlanCr
     RestResponse add(YearWaterUsePlanCrop yearWaterUsePlanCrop);
 
     RestResponse delete(String id);
+
+    SelectYearWaterUsePlanCropForSum selectListForSum(Integer year, String area);
 
 }
 

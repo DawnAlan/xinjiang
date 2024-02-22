@@ -4,6 +4,7 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -118,6 +119,7 @@ public class SurfaceWaterService extends ServiceImpl<SurfaceWaterMapper, Surface
                 .eq(input.getYear() != null && input.getYear() > 0, SurfaceWater::getYear, input.getYear())
                 .eq(input.getSiteName() != null && !input.getSiteName().isEmpty(), SurfaceWater::getSiteName, input.getSiteName())
                 .eq(input.getManagerName() != null && !input.getManagerName().isEmpty(), SurfaceWater::getManagerName, input.getManagerName())
+                .eq(StringUtils.isNotEmpty(input.getTableName()), SurfaceWater::getTableName, input.getTableName())
                 .orderBy(true, false, SurfaceWater::getYear);
         return wrapper;
     }

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cj.waterresources.func.modular.waterPrice.industrialWaterFee.mapper.IndustrialWaterFeeMapper">
+
+    <select id="statistics" parameterType="com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.bean.req.UseWaterTypeStatisticsReq" resultType="com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.bean.res.UseWaterTypeStatisticsRes">
+        select station as paramName,RECORD_TIME as recordTime,flow as v
+        from INDUSTRIAL_WATER_FEE
+        <where>
+            <if test="req.stationList !=null and req.stationList.size()>0">
+                and station in
+                <foreach item="item" collection="req.stationList" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="req.startTime !=null and req.startTime !='' and req.endTime != null and req.endTime != ''">
+                and TO_CHAR(RECORD_TIME,'YYYY-MM-DD') between #{req.startTime} and #{req.endTime}
+            </if>
+        </where>
+        order by RECORD_TIME
+    </select>
+
+</mapper>

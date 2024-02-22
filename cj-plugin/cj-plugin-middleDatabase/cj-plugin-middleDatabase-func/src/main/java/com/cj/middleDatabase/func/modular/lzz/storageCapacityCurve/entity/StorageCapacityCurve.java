@@ -21,5 +21,7 @@ public class StorageCapacityCurve extends Model<StorageCapacityCurve> {
     //水库代码
     private String reservoir;
 
+    private Double rate;
+
 }
 
