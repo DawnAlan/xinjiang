@@ -6,7 +6,7 @@ spring:
   cloud:
     nacos:
       config:
-        server-addr: 192.168.31.154:8848
+        server-addr: localhost:8848
         namespace: cj-cloud-2x-${spring.profiles.active}
         group: ${spring.profiles.active}
         prefix: ${spring.application.name}
@@ -14,7 +14,7 @@ spring:
         username: nacos
         password: nacos
 minio:
-  url: http://192.168.31.154:9000  #对象存储服务的URL
+  url: http://192.168.101.144:9000  #对象存储服务的URL
   accessKey: minioadmin #账户
   secretKey: minioadmin #密码
   bucket: tth
