@@ -88,7 +88,8 @@ public class DayWaterSituationStatisticsTableDklServiceImpl extends ServiceImpl<
             trendsTableParamService.updateCache();
             mk = (String) redisUtil.get("trendsTableParam:list");
         }
-        List<TrendsTableParam> trendsTableParamList = JSONObject.parseArray(mk, TrendsTableParam.class);
+        List<TrendsTableParam> trendsTableParamListTemp = JSONObject.parseArray(mk, TrendsTableParam.class);
+        List<TrendsTableParam> trendsTableParamList = trendsTableParamListTemp.stream().filter(t -> t.getUseType() == 1).collect(Collectors.toList());
         dayWaterSituationStatisticsTableDklList.forEach(t->t.setId(UUIDUtils.getUUID()));
         List<DayWaterSituationStatisticsTableDkl> result = new ArrayList<>();
         List<DayWaterSituationStatisticsTableDkl> list = this.baseMapper.selectList(sdf.format(dayWaterSituationStatisticsTableDklList.get(0).getRecordTime()));
@@ -261,7 +262,8 @@ public class DayWaterSituationStatisticsTableDklServiceImpl extends ServiceImpl<
             trendsTableParamService.updateCache();
             mk = (String) redisUtil.get("trendsTableParam:list");
         }
-        List<TrendsTableParam> trendsTableParamList = JSONObject.parseArray(mk, TrendsTableParam.class);
+        List<TrendsTableParam> trendsTableParamListTemp = JSONObject.parseArray(mk, TrendsTableParam.class);
+        List<TrendsTableParam> trendsTableParamList = trendsTableParamListTemp.stream().filter(t -> t.getUseType() == 1).collect(Collectors.toList());
         List<TotalIdToStation> totalIdToStationList = totalIdToStationService.lambdaQuery().eq(TotalIdToStation::getUseType, 1).eq(TotalIdToStation::getStation, "对口率").list();
         //计算行合计
         if(null != totalIdToStationList && totalIdToStationList.size()>0){

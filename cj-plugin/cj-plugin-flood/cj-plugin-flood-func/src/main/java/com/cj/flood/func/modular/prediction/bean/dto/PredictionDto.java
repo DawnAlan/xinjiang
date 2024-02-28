@@ -1,5 +1,7 @@
 package com.cj.flood.func.modular.prediction.bean.dto;
 
+import cn.afterturn.easypoi.excel.annotation.Excel;
+import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -20,4 +22,7 @@ public class PredictionDto implements Serializable {
 
     @ApiModelProperty(value = "来水过程\\入库流量")
     private Double outQ;
+
+    @ApiModelProperty("洪量")
+    private Double floodVolume;
 }

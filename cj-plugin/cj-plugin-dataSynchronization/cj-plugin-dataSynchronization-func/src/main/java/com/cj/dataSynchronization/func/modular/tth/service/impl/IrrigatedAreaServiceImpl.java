@@ -7,10 +7,7 @@ import com.cj.common.util.ExcelUtils;
 import com.cj.common.util.NumberUtil;
 import com.cj.common.util.RedisUtil;
 import com.cj.dataSynchronization.func.modular.tth.IrrigatedAreaInvoke;
-import com.cj.dataSynchronization.func.modular.tth.dtos.AllHistoryDataDto;
-import com.cj.dataSynchronization.func.modular.tth.dtos.AllTreeDto;
-import com.cj.dataSynchronization.func.modular.tth.dtos.ImportHistoryDataDto;
-import com.cj.dataSynchronization.func.modular.tth.dtos.QueryRealTimeDataDto;
+import com.cj.dataSynchronization.func.modular.tth.dtos.*;
 import com.cj.dataSynchronization.func.modular.tth.service.IrrigatedAreaService;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformData.entity.IrrigatedPlatformData;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformData.service.IrrigatedPlatformDataService;
@@ -20,6 +17,7 @@ import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformTree.en
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformTree.service.IrrigatedPlatformTreeService;
 import com.cj.middleDatabase.func.modular.lzz.storageCapacityCurve.entity.StorageCapacityCurve;
 import com.cj.middleDatabase.func.modular.lzz.storageCapacityCurve.service.StorageCapacityCurveService;
+import com.cj.waterresources.api.WaterResourceApi;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -237,8 +235,8 @@ public class IrrigatedAreaServiceImpl implements IrrigatedAreaService {
                     info.setGdMonitorFlowRate(dto.getGD_MONITOR_FLOW_RATE());
                     info.setGdTotalFlow(dto.getGD_TOTAL_FLOW());
                     result.add(info);
-                    redisUtil.set("irrigatedPlatform:yesterday:"+info.getMonitorName(),info.getYesterdayAvgFlow());
-                    redisUtil.set("irrigatedPlatform:sq:"+info.getMonitorName(),info.getSqMonitorFlow());
+                    redisUtil.set("irrigatedPlatform:yesterday:"+dto.getID(),info.getYesterdayAvgFlow());
+                    redisUtil.set("irrigatedPlatform:sq:date:id"+sdf.format(sdf.parse(info.getMonitorTime()))+"|"+dto.getID(),info.getSqMonitorFlow());
                 }
             }
             boolean b = irrigatedPlatformDataInfoService.saveOrUpdateBatch(result);
@@ -289,9 +287,9 @@ public class IrrigatedAreaServiceImpl implements IrrigatedAreaService {
                             if(StringUtils.isEmpty(tthString)){
                                 List<StorageCapacityCurve> tth = storageCapacityCurveService.lambdaQuery().eq(StorageCapacityCurve::getReservoir, "tth").list();
                                 redisUtil.set("storageCapacityCurveTth", JSONObject.toJSONString(tth));
+                                tthString = JSONObject.toJSONString(tth);
                             }
-                            String tthStringTemp= (String)redisUtil.get("storageCapacityCurveTth");
-                            List<StorageCapacityCurve> tthList = JSONObject.parseArray(tthStringTemp, StorageCapacityCurve.class);
+                            List<StorageCapacityCurve> tthList = JSONObject.parseArray(tthString, StorageCapacityCurve.class);
                             Double sqWaterLevel = info.getSqWaterLevel();
                             String[] split = df1.format(sqWaterLevel).split("\\.");
                             List<String> strings = NumberUtil.roundDecimal(split[0], split[1]);

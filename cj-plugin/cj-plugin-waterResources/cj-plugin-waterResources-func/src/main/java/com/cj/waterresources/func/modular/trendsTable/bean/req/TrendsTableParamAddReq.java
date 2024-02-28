@@ -9,6 +9,9 @@ import java.io.Serializable;
 @Data
 public class TrendsTableParamAddReq implements Serializable {
 
+    @ApiModelProperty(value = "iD")
+    private String id;
+
     /**
      * 父ID
      */

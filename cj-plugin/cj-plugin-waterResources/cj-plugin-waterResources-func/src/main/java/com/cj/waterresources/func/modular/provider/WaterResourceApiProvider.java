@@ -2,6 +2,7 @@ package com.cj.waterresources.func.modular.provider;
 
 import com.alibaba.fastjson.JSONObject;
 import com.cj.common.model.RestResponse;
+import com.cj.common.util.RedisUtil;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.entity.IrrigatedPlatformDataInfo;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.service.IrrigatedPlatformDataInfoService;
 import com.cj.waterresources.api.WaterResourceApi;
@@ -10,6 +11,8 @@ import com.cj.waterresources.func.modular.homePage.inspection.InspectionInterfac
 import com.cj.waterresources.func.modular.homePage.inspection.response.AbnormalRes;
 import com.cj.waterresources.func.modular.homePage.inspection.response.InspectionRes;
 import com.cj.waterresources.func.modular.homePage.service.WaterResourceHomePageService;
+import com.cj.waterresources.func.modular.overallSituationUnitMgr.entity.OverallSituationUnitMgr;
+import com.cj.waterresources.func.modular.overallSituationUnitMgr.service.OverallSituationUnitMgrService;
 import com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuota.entity.IrrigationQuota;
 import com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuota.service.IrrigationQuotaService;
 import com.cj.waterresources.func.modular.trendsTable.entity.TrendsTableParam;
@@ -47,6 +50,7 @@ import com.cj.waterresources.func.modular.waterStorageScheduling.waterStorageSch
 import com.cj.waterresources.func.modular.waterStorageScheduling.waterStorageSchedulingTth.entity.WaterStorageSchedulingTth;
 import com.cj.waterresources.func.modular.waterStorageScheduling.waterStorageSchedulingTth.service.WaterStorageSchedulingTthService;
 import lombok.AllArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
@@ -77,6 +81,8 @@ public class WaterResourceApiProvider implements WaterResourceApi {
     private final WaterFeeStatisticsTotalService waterFeeStatisticsTotalService;
     private final InspectionInterface inspectionInterface;
     private final WaterStorageSchedulingTotalFormService waterStorageSchedulingTotalFormService;
+    private final OverallSituationUnitMgrService overallSituationUnitMgrService;
+    private final RedisUtil redisUtil;
 
     @Override
     public String getYearWaterPlan(String area) {
@@ -765,6 +771,17 @@ public class WaterResourceApiProvider implements WaterResourceApi {
             return JSONObject.toJSONString(result);
         }
         return null;
+    }
+
+    @Override
+    public String getOverallSituationUnitMgrList() {
+        String overall = (String) redisUtil.get("overallSituationUnitMgr:list");
+        if(StringUtils.isEmpty(overall)){
+            List<OverallSituationUnitMgr> list = overallSituationUnitMgrService.list();
+            redisUtil.set("overallSituationUnitMgr:list", JSONObject.toJSONString(list));
+            overall = JSONObject.toJSONString(list);
+        }
+        return overall;
     }
 
     public String determineTenDays(Integer day){

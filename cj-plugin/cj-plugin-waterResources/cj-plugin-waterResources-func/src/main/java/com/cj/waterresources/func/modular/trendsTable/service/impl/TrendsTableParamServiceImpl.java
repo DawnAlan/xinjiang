@@ -66,9 +66,9 @@ public class TrendsTableParamServiceImpl extends ServiceImpl<TrendsTableParamMap
         }
         TrendsTableParam param = new TrendsTableParam();
         BeanUtils.copyProperties(req, param);
-        param.setId(UUIDUtils.getUUID());
         if(StringUtils.isEmpty(param.getPId())){
             param.setPId("0");
+            param.setId(UUIDUtils.getUUID());
         }
         boolean save = this.save(param);
         if(save){

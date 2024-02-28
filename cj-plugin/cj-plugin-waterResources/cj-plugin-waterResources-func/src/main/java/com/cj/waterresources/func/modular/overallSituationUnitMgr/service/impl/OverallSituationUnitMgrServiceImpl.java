@@ -1,21 +1,18 @@
 package com.cj.waterresources.func.modular.overallSituationUnitMgr.service.impl;
 
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.cj.DataSynchronization.api.DataSynchronizationApi;
 import com.cj.auth.core.pojo.SaBaseLoginUser;
 import com.cj.auth.core.util.StpLoginUserUtil;
 import com.cj.common.model.RestResponse;
+import com.cj.common.util.RedisUtil;
 import com.cj.common.util.UUIDUtils;
-import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformTree.entity.IrrigatedPlatformTree;
-import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformTree.service.IrrigatedPlatformTreeService;
-import com.cj.middleDatabase.func.modular.lzz.lzzPlatformTree.entity.LzzPlatformTree;
-import com.cj.middleDatabase.func.modular.lzz.lzzPlatformTree.service.LzzPlatformTreeService;
 import com.cj.waterresources.func.modular.overallSituationUnitMgr.bean.res.OverallSituationUnitMgrTreeRes;
 import com.cj.waterresources.func.modular.overallSituationUnitMgr.mapper.OverallSituationUnitMgrMapper;
 import com.cj.waterresources.func.modular.overallSituationUnitMgr.entity.OverallSituationUnitMgr;
 import com.cj.waterresources.func.modular.overallSituationUnitMgr.service.OverallSituationUnitMgrService;
-import com.cj.waterresources.func.modular.trendsTable.bean.res.WaterDailyParamSelectRes;
-import com.cj.waterresources.func.modular.trendsTable.entity.TrendsTableParam;
-import com.cj.waterresources.func.modular.waterPrice.waterPriceManagement.entity.WaterPriceManagement;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,37 +32,25 @@ import java.util.stream.Collectors;
 public class OverallSituationUnitMgrServiceImpl extends ServiceImpl<OverallSituationUnitMgrMapper, OverallSituationUnitMgr> implements OverallSituationUnitMgrService {
 
     @Autowired
-    private LzzPlatformTreeService lzzPlatformTreeService;
+    private DataSynchronizationApi dataSynchronizationApi;
 
     @Autowired
-    private IrrigatedPlatformTreeService irrigatedPlatformTreeService;
+    private RedisUtil redisUtil;
 
     @Override
     public RestResponse add(OverallSituationUnitMgr overallSituationUnitMgr) {
+        List<OverallSituationUnitMgr> list1 = this.lambdaQuery().eq(OverallSituationUnitMgr::getMonitorId, overallSituationUnitMgr.getMonitorId()).list();
+        if(!list1.isEmpty()){
+            return RestResponse.no("请勿重复绑定监测点");
+        }
         SaBaseLoginUser saBaseLoginUser = StpLoginUserUtil.getLoginUser();
         overallSituationUnitMgr.setId(UUIDUtils.getUUID());
         overallSituationUnitMgr.setCreateTime(new Date());
         overallSituationUnitMgr.setCreateBy(saBaseLoginUser.getName());
         boolean save = this.save(overallSituationUnitMgr);
         if(save){
-            if(overallSituationUnitMgr.getDataResource()!=null){
-                //1-灌区e平台 2-楼庄子平台 3-其他
-                if(overallSituationUnitMgr.getDataResource()==1){
-                    boolean update = irrigatedPlatformTreeService.lambdaUpdate().set(IrrigatedPlatformTree::getSystemUnitName, overallSituationUnitMgr.getUnitName()).
-                            eq(IrrigatedPlatformTree::getId, overallSituationUnitMgr.getMonitorId()).update();
-                    if(!update){
-                        return RestResponse.no("tth error");
-                    }
-                }
-                if(overallSituationUnitMgr.getDataResource()==2){
-                    boolean update = lzzPlatformTreeService.lambdaUpdate().set(LzzPlatformTree::getSystemUnitName, overallSituationUnitMgr.getUnitName()).
-                            eq(LzzPlatformTree::getId, overallSituationUnitMgr.getMonitorId()).update();
-                    if(!update){
-                        return RestResponse.no("lzz error");
-                    }
-                }
-            }
-
+            List<OverallSituationUnitMgr> list = this.list();
+            redisUtil.set("overallSituationUnitMgr:list", JSONObject.toJSONString(list));
             return RestResponse.ok();
         }else {
             return RestResponse.no("error");
@@ -74,26 +59,10 @@ public class OverallSituationUnitMgrServiceImpl extends ServiceImpl<OverallSitua
 
     @Override
     public RestResponse delete(String id) {
-        OverallSituationUnitMgr overallSituationUnitMgr = this.getById(id);
         boolean b = this.removeById(id);
         if(b){
-            if(overallSituationUnitMgr.getDataResource()!=null) {
-                //1-灌区e平台 2-楼庄子平台 3-其他
-                if (overallSituationUnitMgr.getDataResource() == 1) {
-                    boolean update = irrigatedPlatformTreeService.lambdaUpdate().set(IrrigatedPlatformTree::getSystemUnitName, null).
-                            eq(IrrigatedPlatformTree::getId, overallSituationUnitMgr.getMonitorId()).update();
-                    if (!update) {
-                        return RestResponse.no("tth error");
-                    }
-                }
-                if (overallSituationUnitMgr.getDataResource() == 2) {
-                    boolean update = lzzPlatformTreeService.lambdaUpdate().set(LzzPlatformTree::getSystemUnitName, null).
-                            eq(LzzPlatformTree::getId, overallSituationUnitMgr.getMonitorId()).update();
-                    if (!update) {
-                        return RestResponse.no("lzz error");
-                    }
-                }
-            }
+            List<OverallSituationUnitMgr> list = this.list();
+            redisUtil.set("overallSituationUnitMgr:list", JSONObject.toJSONString(list));
             return RestResponse.ok();
         }else {
             return RestResponse.no("error");
@@ -102,25 +71,14 @@ public class OverallSituationUnitMgrServiceImpl extends ServiceImpl<OverallSitua
 
     @Override
     public RestResponse update(OverallSituationUnitMgr overallSituationUnitMgr) {
+        List<OverallSituationUnitMgr> list1 = this.lambdaQuery().eq(OverallSituationUnitMgr::getMonitorId, overallSituationUnitMgr.getMonitorId()).list();
+        if(!list1.isEmpty()){
+            return RestResponse.no("请勿重复绑定监测点");
+        }
         boolean b = this.updateById(overallSituationUnitMgr);
         if(b){
-            if(overallSituationUnitMgr.getDataResource()!=null) {
-                //1-灌区e平台 2-楼庄子平台 3-其他
-                if (overallSituationUnitMgr.getDataResource() == 1) {
-                    boolean update = irrigatedPlatformTreeService.lambdaUpdate().set(IrrigatedPlatformTree::getSystemUnitName, overallSituationUnitMgr.getUnitName()).
-                            eq(IrrigatedPlatformTree::getId, overallSituationUnitMgr.getMonitorId()).update();
-                    if (!update) {
-                        return RestResponse.no("tth error");
-                    }
-                }
-                if (overallSituationUnitMgr.getDataResource() == 2) {
-                    boolean update = lzzPlatformTreeService.lambdaUpdate().set(LzzPlatformTree::getSystemUnitName, overallSituationUnitMgr.getUnitName()).
-                            eq(LzzPlatformTree::getId, overallSituationUnitMgr.getMonitorId()).update();
-                    if (!update) {
-                        return RestResponse.no("lzz error");
-                    }
-                }
-            }
+            List<OverallSituationUnitMgr> list = this.list();
+            redisUtil.set("overallSituationUnitMgr:list", JSONObject.toJSONString(list));
             return RestResponse.ok();
         }else {
             return RestResponse.no("error");
@@ -129,8 +87,14 @@ public class OverallSituationUnitMgrServiceImpl extends ServiceImpl<OverallSitua
 
     @Override
     public RestResponse selectTree() {
+        String overall = (String) redisUtil.get("overallSituationUnitMgr:list");
+        if(StringUtils.isEmpty(overall)){
+            List<OverallSituationUnitMgr> list = this.list();
+            redisUtil.set("overallSituationUnitMgr:list", JSONObject.toJSONString(list));
+            overall = JSONObject.toJSONString(list);
+        }
+        List<OverallSituationUnitMgr> list = JSONObject.parseArray(overall, OverallSituationUnitMgr.class);
         List<OverallSituationUnitMgrTreeRes> resultList = new ArrayList<>();
-        List<OverallSituationUnitMgr> list = this.list();
         for(OverallSituationUnitMgr param :list){
             if(param.getPId().equals("0")){
                 OverallSituationUnitMgrTreeRes res = new OverallSituationUnitMgrTreeRes();
@@ -143,6 +107,16 @@ public class OverallSituationUnitMgrServiceImpl extends ServiceImpl<OverallSitua
             return RestResponse.ok(resultList);
         }else {
             return RestResponse.no("暂无数据");
+        }
+    }
+
+    @Override
+    public RestResponse updateMonitor() {
+        String s = dataSynchronizationApi.updateMonitor();
+        if(s.equals("200")){
+            return RestResponse.ok();
+        }else {
+            return RestResponse.no("error");
         }
     }
 

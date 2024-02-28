@@ -26,5 +26,8 @@ public interface DayWaterSituationStatisticsTableLzzMapper extends BaseMapper<Da
 
     List<A3StatisticsRes> getStatistics(@Param("req") A3StatisticsReq req);
 
+    @Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_LZZ WHERE TO_DAYS( NOW( ) ) - TO_DAYS(\"RECORD_TIME\") = 1 and TIME != '昨日均'")
+    List<DayWaterSituationStatisticsTableLzz> selectYesterdayList();
+
 }
 

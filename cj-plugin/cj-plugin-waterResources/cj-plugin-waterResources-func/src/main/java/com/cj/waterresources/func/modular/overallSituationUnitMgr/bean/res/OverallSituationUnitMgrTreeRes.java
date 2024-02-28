@@ -61,6 +61,10 @@ public class OverallSituationUnitMgrTreeRes {
     @ApiModelProperty(value = "更新人")
     private String updateBy;
 
+    //排序字段
+    @ApiModelProperty(value = "排序字段")
+    private Integer sortNum;
+
     @ApiModelProperty(value = "子节点")
     private List<OverallSituationUnitMgrTreeRes> children;
 }

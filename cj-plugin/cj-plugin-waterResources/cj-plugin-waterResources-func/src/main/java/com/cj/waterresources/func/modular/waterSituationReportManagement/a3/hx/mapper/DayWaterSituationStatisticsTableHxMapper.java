@@ -3,7 +3,6 @@ package com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hx.
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req.A3StatisticsReq;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.res.A3StatisticsRes;
-import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hd.entity.DayWaterSituationStatisticsTableHd;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hx.entity.DayWaterSituationStatisticsTableHx;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Param;
@@ -26,5 +25,8 @@ public interface DayWaterSituationStatisticsTableHxMapper extends BaseMapper<Day
     Boolean deleteByTime(@Param("date")String date);
 
     List<A3StatisticsRes> getStatistics(@Param("req") A3StatisticsReq req);
+
+    @Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_HX WHERE TO_DAYS( NOW( ) ) - TO_DAYS(\"RECORD_TIME\") = 1 and TIME != '昨日均'")
+    List<DayWaterSituationStatisticsTableHx> selectYesterdayList();
 }
 

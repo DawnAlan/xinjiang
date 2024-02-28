@@ -29,4 +29,5 @@ public interface LzzPlatformService {
     RestResponse insertGaugingStationBetweenTime(Date startTime, Date endTime);
 
     RestResponse insertTree();
+    RestResponse updateTree();
 }

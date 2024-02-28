@@ -556,7 +556,7 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                         for(PredictionDto dto:collect){
                             ForecastPredictionDto forecastPredictionDto = new ForecastPredictionDto();
                             forecastPredictionDto.setTime(sdf.format(dto.getTime()));
-                            forecastPredictionDto.setWaterAmount(Double.parseDouble(decimalFormat.format((dto.getPreQ()*60*60*24)/10000)));
+                            forecastPredictionDto.setWaterAmount(dto.getFloodVolume());
                             list.add(forecastPredictionDto);
                         }
                     }else if(incomingWaterForecast.getPeriodTimeType()==3) {
@@ -567,14 +567,14 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                         for(PredictionDto dto:collect){
                             ForecastPredictionDto forecastPredictionDto = new ForecastPredictionDto();
                             forecastPredictionDto.setTime(sdf.format(dto.getTime()));
-                            forecastPredictionDto.setWaterAmount(Double.parseDouble(decimalFormat.format((dto.getPreQ()*60*60*24)/10000)));
+                            forecastPredictionDto.setWaterAmount(dto.getFloodVolume());
                             list.add(forecastPredictionDto);
                         }
                     }else {
                         for(PredictionDto dto:predictionProcess){
                             ForecastPredictionDto forecastPredictionDto = new ForecastPredictionDto();
                             forecastPredictionDto.setTime(sdf.format(dto.getTime()));
-                            forecastPredictionDto.setWaterAmount(Double.parseDouble(decimalFormat.format((dto.getPreQ()*60*60*24)/10000)));
+                            forecastPredictionDto.setWaterAmount(dto.getFloodVolume());
                             list.add(forecastPredictionDto);
                         }
                     }
@@ -617,6 +617,7 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                 predictionProcessDto.setTime(flood.getTime());
                 predictionProcessDto.setWaterLevel(flood.getWaterLevel());
                 predictionProcessDto.setOutQ(flood.getOutQ());
+                predictionProcessDto.setFloodVolume(flood.getFloodVolume());
                 predictionProcess.add(predictionProcessDto);
             }
             incomingWaterForecastViewDto.setPredictionProcess(predictionProcess);

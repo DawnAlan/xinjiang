@@ -1,5 +1,6 @@
 package com.cj.dataSynchronization.func.modular.lzz.service.impl;
 
+import com.alibaba.fastjson.JSONObject;
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.NumberUtil;
 import com.cj.common.util.RedisUtil;
@@ -21,6 +22,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -54,7 +57,7 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
     private RedisUtil redisUtil;
 
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-    private SimpleDateFormat time = new SimpleDateFormat("HH:mm");
+    private SimpleDateFormat timeData = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 
 
 
@@ -83,10 +86,12 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
                         station.setTemperature(paramDto.getV());
                     }
                 }
+                redisUtil.set("lzz:rainfallStation:time:id"+timeData.format(station.getTime())+"|"+userPidParam.getId(),station.getRainfall(),86400 * 30);
             }
             if(StringUtils.isNotEmpty(station.getId())){
                 rainfallStationList.add(station);
             }
+
         }
         boolean b = lzzRainfallStationService.saveOrUpdateBatch(rainfallStationList);
         if(b){
@@ -98,6 +103,7 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
 
     @Override
     public RestResponse insertReservoirLevel(Date time) {
+        DecimalFormat df = new DecimalFormat("0.0");
         List<UserIdParam> rainfallStationPidList = pubUserService.selectPidList("水位站").stream().filter(t->t.getName().equals("库水位水位站")).collect(Collectors.toList());
         List<UserIdParam> userIdParams = pubUserService.selectReservoirLevelIdList(rainfallStationPidList.get(0).getId());
         LzzGaugingStation lzz = new LzzGaugingStation();
@@ -110,13 +116,16 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
                     lzz.setGatherTime(paramDto.getTime());
                     lzz.setStationName("楼庄子库水位站");
                     lzz.setRelativeWaterLevel(paramDto.getV().doubleValue());
+                    String lzzString = (String)redisUtil.get("storageCapacityCurvelzz");
+                    if(StringUtils.isEmpty(lzzString)){
+                        List<StorageCapacityCurve> tth = storageCapacityCurveService.lambdaQuery().eq(StorageCapacityCurve::getReservoir, "lzz").list();
+                        redisUtil.set("storageCapacityCurvelzz", JSONObject.toJSONString(tth));
+                        lzzString = JSONObject.toJSONString(tth);
+                    }
+                    List<StorageCapacityCurve> lzzList = JSONObject.parseArray(lzzString, StorageCapacityCurve.class);
                     String[] lzzSplit = paramDto.getV().toString().split("\\.");
                     List<String> strings = NumberUtil.roundDecimal(lzzSplit[0], lzzSplit[1]);
-                    List<StorageCapacityCurve> LZZlist = storageCapacityCurveService.lambdaQuery().
-                            eq(StorageCapacityCurve::getWaterLevel, strings.get(0)).
-                            eq(StorageCapacityCurve::getInterpolation, strings.get(1)).
-                            eq(StorageCapacityCurve::getReservoir, "lzz").
-                            list();
+                    List<StorageCapacityCurve> LZZlist = lzzList.stream().filter(t -> t.getWaterLevel().compareTo(new BigDecimal(strings.get(0))) == 0 && df.format(t.getInterpolation()).equals(strings.get(1).length()<2?"0.0":strings.get(1).split("\\.")[0]+"."+strings.get(1).split("\\.")[1].substring(0,1))).collect(Collectors.toList());
                     if (null != LZZlist && LZZlist.size() > 0) {
                         StorageCapacityCurve storageCapacityCurve = LZZlist.get(0);
                         lzz.setStorageCapacity(storageCapacityCurve.getStorageCapacity().doubleValue());
@@ -135,6 +144,8 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
         if(StringUtils.isNotEmpty(lzz.getId())){
             boolean b = lzzGaugingStationService.saveOrUpdate(lzz);
             if(b){
+                redisUtil.set("lzz:time:waterLevel:"+timeData.format(lzz.getGatherTime()),lzz.getRelativeWaterLevel(),86400 * 30);
+                redisUtil.set("lzz:time:capacity:"+timeData.format(lzz.getGatherTime()),lzz.getStorageCapacity(),86400 * 30);
                 return RestResponse.ok("ok");
             }else {
                 return RestResponse.no("error");
@@ -294,8 +305,6 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
                     } else {
                         lzz.setStorageCapacity(0.00);
                     }
-                    redisUtil.set("lzz:time:waterLevel:"+time.format(lzz.getGatherTime()),lzz.getRelativeWaterLevel());
-                    redisUtil.set("lzz:time:capacity:"+time.format(lzz.getGatherTime()),lzz.getStorageCapacity());
                     reservoirLevelList.add(lzz);
                 }
 
@@ -519,6 +528,22 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
             lzzPlatformTrees.add(tree);
         });
         boolean save = lzzPlatformTreeService.saveBatch(lzzPlatformTrees);
+        if(save){
+            return RestResponse.ok("ok");
+        }else {
+            return RestResponse.no("error");
+        }
+    }
+    @Override
+    public RestResponse updateTree() {
+        List<UserIdParam> userIdParams = pubUserService.selectPidList();
+        List<LzzPlatformTree> lzzPlatformTrees = new ArrayList<>();
+        userIdParams.forEach(t->{
+            LzzPlatformTree tree = new LzzPlatformTree();
+            BeanUtils.copyProperties(tree,t);
+            lzzPlatformTrees.add(tree);
+        });
+        boolean save = lzzPlatformTreeService.saveOrUpdateBatch(lzzPlatformTrees);
         if(save){
             return RestResponse.ok("ok");
         }else {

@@ -58,6 +58,11 @@ public class OverallSituationUnitMgrController{
     public RestResponse<List<OverallSituationUnitMgrTreeRes>> select() {
         return overallSituationUnitMgrService.selectTree();
     }
-
+    @ApiOperationSupport(order = 5)
+    @ApiOperation("更新监测点数据")
+    @PostMapping("/updateMonitor")
+    public RestResponse updateMonitor() {
+        return overallSituationUnitMgrService.updateMonitor();
+    }
 }
 

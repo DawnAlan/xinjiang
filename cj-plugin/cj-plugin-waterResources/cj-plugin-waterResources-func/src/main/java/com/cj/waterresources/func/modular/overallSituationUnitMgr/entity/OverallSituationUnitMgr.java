@@ -1,6 +1,9 @@
 package com.cj.waterresources.func.modular.overallSituationUnitMgr.entity;
 
 import java.util.Date;
+
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.extension.activerecord.Model;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -36,6 +39,7 @@ public class OverallSituationUnitMgr extends Model<OverallSituationUnitMgr> {
     private String pName;
 
     //数据来源（1-灌区e平台 2-楼庄子平台 3-其他）
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "数据来源（1-灌区e平台 2-楼庄子平台 3-其他）")
     private Integer dataResource;
 
@@ -66,6 +70,10 @@ public class OverallSituationUnitMgr extends Model<OverallSituationUnitMgr> {
     //更新人
     @ApiModelProperty(value = "更新人")
     private String updateBy;
+
+    //排序字段
+    @ApiModelProperty(value = "排序字段")
+    private Integer sortNum;
 
 }
 

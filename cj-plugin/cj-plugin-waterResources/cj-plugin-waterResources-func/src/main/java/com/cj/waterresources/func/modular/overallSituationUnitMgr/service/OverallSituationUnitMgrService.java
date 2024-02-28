@@ -20,5 +20,7 @@ public interface OverallSituationUnitMgrService extends IService<OverallSituatio
 
     RestResponse selectTree();
 
+    RestResponse updateMonitor();
+
 }
 
