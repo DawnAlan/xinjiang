@@ -53,6 +53,9 @@ public class IrrigatedAreaServiceImpl implements IrrigatedAreaService {
     @Autowired
     private StorageCapacityCurveService storageCapacityCurveService;
 
+    @Autowired
+    private WaterResourceApi waterResourceApi;
+
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 
     @Override
@@ -192,6 +195,11 @@ public class IrrigatedAreaServiceImpl implements IrrigatedAreaService {
     @Override
     public RestResponse getDataById(){
         try {
+            String overall = (String) redisUtil.get("overallSituationUnitMgr:list");
+            if(StringUtils.isEmpty(overall)){
+                overall = waterResourceApi.getOverallSituationUnitMgrList();
+            }
+            List<OverallSituationUnitMgrDto> overallSituationUnitMgrDtoList = JSONObject.parseArray(overall, OverallSituationUnitMgrDto.class);
             List<IrrigatedPlatformTree> list = irrigatedPlatformTreeService.list();
             List<IrrigatedPlatformDataInfo> result = new ArrayList<>();
             if(null == list || list.size()<0){
@@ -235,8 +243,12 @@ public class IrrigatedAreaServiceImpl implements IrrigatedAreaService {
                     info.setGdMonitorFlowRate(dto.getGD_MONITOR_FLOW_RATE());
                     info.setGdTotalFlow(dto.getGD_TOTAL_FLOW());
                     result.add(info);
-                    redisUtil.set("irrigatedPlatform:yesterday:"+dto.getID(),info.getYesterdayAvgFlow());
-                    redisUtil.set("irrigatedPlatform:sq:date:id"+sdf.format(sdf.parse(info.getMonitorTime()))+"|"+dto.getID(),info.getSqMonitorFlow());
+                    List<OverallSituationUnitMgrDto> collect = overallSituationUnitMgrDtoList.stream().filter(t -> t.getMonitorId().equals(dto.getID())).collect(Collectors.toList());
+                    if(!collect.isEmpty()){
+                        OverallSituationUnitMgrDto overallSituationUnitMgrDto = collect.get(0);
+                        redisUtil.set("irrigatedPlatform:yesterday:"+overallSituationUnitMgrDto.getId(),info.getYesterdayAvgFlow());
+                        redisUtil.set("irrigatedPlatform:sq:date:id:"+sdf.format(sdf.parse(info.getMonitorTime()))+":"+overallSituationUnitMgrDto.getId(),info.getSqMonitorFlow());
+                    }
                 }
             }
             boolean b = irrigatedPlatformDataInfoService.saveOrUpdateBatch(result);

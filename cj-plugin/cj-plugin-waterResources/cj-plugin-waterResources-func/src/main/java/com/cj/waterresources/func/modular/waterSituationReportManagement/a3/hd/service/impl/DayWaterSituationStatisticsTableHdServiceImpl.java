@@ -18,9 +18,11 @@ import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hd.m
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hd.entity.DayWaterSituationStatisticsTableHd;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hd.service.DayWaterSituationStatisticsTableHdService;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.entity.DayWaterSituationStatisticsTableLzz;
+import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -62,19 +64,20 @@ public class DayWaterSituationStatisticsTableHdServiceImpl extends ServiceImpl<D
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public RestResponse add(List<DayWaterSituationStatisticsTableHd> dayWaterSituationStatisticsTableHdList) {
         dayWaterSituationStatisticsTableHdList.forEach(t->{
             t.setId(UUIDUtils.getUUID());
             String tableParamString = (String)redisUtil.get("trendsTableParam:object:"+t.getTableHeadId());
             TrendsTableParam tableParam = JSONObject.parseObject(tableParamString, TrendsTableParam.class);
-            Double flow = (Double) redisUtil.get("irrigatedPlatform:sq:date:id"+sdf.format(t.getRecordTime())+" "+t.getTime()+"|"+tableParam.getUnitId());
+            Double flow = (Double) redisUtil.get("irrigatedPlatform:sq:date:id:"+sdf.format(t.getRecordTime())+" "+t.getTime()+":"+tableParam.getUnitId());
             t.setV(flow==null?null:flow);
         });
         List<DayWaterSituationStatisticsTableHd> result = new ArrayList<>();
         List<DayWaterSituationStatisticsTableHd> list = this.baseMapper.selectList(sdf.format(dayWaterSituationStatisticsTableHdList.get(0).getRecordTime()));
         List<DayWaterSituationStatisticsTableHd> tempList = list.stream().filter(t -> t.getTime().equals("昨日均")).collect(Collectors.toList());
         if(null != tempList && tempList.size()==0){
-            List<DayWaterSituationStatisticsTableHd> dayWaterSituationStatisticsTableHds = this.baseMapper.selectYesterdayList();
+            List<DayWaterSituationStatisticsTableHd> dayWaterSituationStatisticsTableHds = this.baseMapper.selectInfoList(getDate(dayWaterSituationStatisticsTableHdList.get(0).getRecordTime(),-1));
             DayWaterSituationStatisticsTableHd hd = dayWaterSituationStatisticsTableHdList.get(0);
             String[] split = hd.getEndTableList().split(",");
             for(String s:split){
@@ -82,11 +85,16 @@ public class DayWaterSituationStatisticsTableHdServiceImpl extends ServiceImpl<D
                 yesterdayBean.setTime("昨日均");
                 yesterdayBean.setId(UUIDUtils.getUUID());
                 yesterdayBean.setTableHeadId(s);
-                yesterdayBean.setRecordTime(new Date());
+                yesterdayBean.setRecordTime(hd.getRecordTime());
                 yesterdayBean.setV(dayWaterSituationStatisticsTableHds.stream().filter(t->t.getTableHeadId().equals(s) && t.getV()!=null).map(DayWaterSituationStatisticsTableHd::getV).reduce(Double::sum).orElse(0.00));
                 yesterdayBean.setEndTableList(hd.getEndTableList());
                 yesterdayBean.setFrontTableList(hd.getFrontTableList());
                 result.add(yesterdayBean);
+                String tableParamString = (String)redisUtil.get("trendsTableParam:object:"+yesterdayBean.getTableHeadId());
+                TrendsTableParam tableParam = JSONObject.parseObject(tableParamString, TrendsTableParam.class);
+                if(StringUtils.isNotEmpty(tableParam.getUnitId())){
+                    redisUtil.set("A3:data:hd:yesterday:"+getDate(hd.getRecordTime(),-1)+":"+tableParam.getUnitId(),yesterdayBean.getV());
+                }
             }
         }
         String mk = (String) redisUtil.get("trendsTableParam:list");
@@ -158,13 +166,6 @@ public class DayWaterSituationStatisticsTableHdServiceImpl extends ServiceImpl<D
         result.addAll(dayWaterSituationStatisticsTableHdList);
         boolean b = this.saveBatch(result);
         if (b) {
-            Set<String> allKeys = redisUtil.getAllKeys("A3:data:hd:yesterday:");
-            if(allKeys.isEmpty()){
-                List<DayWaterSituationStatisticsTableHd> yesterdayData = result.stream().filter(t -> t.getTime().equals("昨日均")).collect(Collectors.toList());
-                yesterdayData.forEach(t->{
-                    redisUtil.set("A3:data:hd:yesterday:"+t.getTableHeadId(),t.getV());
-                });
-            }
             return RestResponse.ok();
         }else {
             return RestResponse.no("error");
@@ -253,14 +254,36 @@ public class DayWaterSituationStatisticsTableHdServiceImpl extends ServiceImpl<D
         }
         boolean b = this.updateBatchById(dayWaterSituationStatisticsTableHdList);
         if (b) {
+            DayWaterSituationStatisticsTableHd dayWaterSituationStatisticsTableHd = dayWaterSituationStatisticsTableHdList.get(0);
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(dayWaterSituationStatisticsTableHd.getRecordTime());
+            calendar.add(Calendar.DAY_OF_MONTH,-1);
+            Date time = calendar.getTime();
             if(dayWaterSituationStatisticsTableHdList.get(0).getTime().equals("昨日均")){
                 dayWaterSituationStatisticsTableHdList.forEach(t->{
-                    redisUtil.set("A3:data:hd:yesterday:"+t.getTableHeadId(),t.getV());
+                    String tableParamString = (String)redisUtil.get("trendsTableParam:object:"+t.getTableHeadId());
+                    TrendsTableParam tableParam = JSONObject.parseObject(tableParamString, TrendsTableParam.class);
+                    if(StringUtils.isNotEmpty(tableParam.getUnitId())){
+                        redisUtil.set("A3:data:hd:yesterday:"+sdf.format(time)+":"+tableParam.getUnitId(),t.getV());
+                    }
                 });
             }
+            updateYesterdayData(dayWaterSituationStatisticsTableHdList.get(0).getRecordTime());
             return RestResponse.ok();
         }else {
             return RestResponse.no("error");
+        }
+    }
+
+    private void updateYesterdayData(Date now){
+        List<DayWaterSituationStatisticsTableHd> dayWaterSituationStatisticsTableHdList = this.baseMapper.selectInfoList(sdf.format(now));
+        List<DayWaterSituationStatisticsTableHd> dayWaterSituationStatisticsTableHds = this.baseMapper.selectList(getDate(now, 1));
+        if(!dayWaterSituationStatisticsTableHds.isEmpty()){
+            List<DayWaterSituationStatisticsTableHd> hdList = dayWaterSituationStatisticsTableHds.stream().filter(t -> t.getTime().equals("昨日均")).collect(Collectors.toList());
+            hdList.forEach(t->{
+                t.setV(dayWaterSituationStatisticsTableHdList.stream().filter(p->p.getTableHeadId().equals(t.getTableHeadId()) && p.getV() !=null).map(DayWaterSituationStatisticsTableHd::getV).reduce(Double::sum).orElse(0.00));
+            });
+            this.updateBatchById(hdList);
         }
     }
     public void updateCache(){
@@ -270,6 +293,18 @@ public class DayWaterSituationStatisticsTableHdServiceImpl extends ServiceImpl<D
             redisUtil.set("trendsTableParam:name:"+param.getId(), param.getParamName());
             redisUtil.set("trendsTableParam:object:"+param.getId(), JSONObject.toJSONString(param));
         }
+    }
+
+    private String getDate(Date date, Integer num){
+        // 创建 Calendar 对象并设置为当前时间
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        // 将日期向前调整一天（即昨天）
+        calendar.add(Calendar.DAY_OF_MONTH, num);
+        // 格式化日期输出
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        String result = dateFormat.format(calendar.getTime());
+        return result;
     }
 }
 

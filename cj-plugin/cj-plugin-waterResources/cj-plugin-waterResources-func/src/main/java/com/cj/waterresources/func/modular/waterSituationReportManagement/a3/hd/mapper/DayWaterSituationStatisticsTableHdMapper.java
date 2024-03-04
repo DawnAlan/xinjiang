@@ -26,7 +26,8 @@ public interface DayWaterSituationStatisticsTableHdMapper extends BaseMapper<Day
 
     List<A3StatisticsRes> getStatistics(@Param("req") A3StatisticsReq req);
 
-    @Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_HD WHERE TO_DAYS( NOW( ) ) - TO_DAYS(\"RECORD_TIME\") = 1 and TIME != '昨日均'")
-    List<DayWaterSituationStatisticsTableHd> selectYesterdayList();
+    @Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_HD WHERE TO_CHAR(RECORD_TIME,'YYYY-MM-DD') = #{date} and TIME != '昨日均'")
+    //@Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_HD WHERE TO_DAYS( NOW( ) ) - TO_DAYS(\"RECORD_TIME\") = 1 and TIME != '昨日均'")
+    List<DayWaterSituationStatisticsTableHd> selectInfoList(@Param("date")String date);
 }
 

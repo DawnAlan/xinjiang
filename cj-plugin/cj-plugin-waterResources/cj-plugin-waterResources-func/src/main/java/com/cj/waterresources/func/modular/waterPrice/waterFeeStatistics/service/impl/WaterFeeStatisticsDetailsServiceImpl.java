@@ -100,9 +100,6 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
     private IndustrialWaterFeeService industrialWaterFeeService;
 
     @Autowired
-    private DayWaterSituationStatisticsTableQsService dayWaterSituationStatisticsTableQsService;
-
-    @Autowired
     private RedisUtil redisUtil;
 
 
@@ -148,7 +145,8 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
             updateCache();
             mk = (String) redisUtil.get("trendsTableParam:list");
         }
-        List<TrendsTableParam> trendsTableParamList = JSONObject.parseArray(mk, TrendsTableParam.class);
+        List<TrendsTableParam> trendsTableParamListTemp = JSONObject.parseArray(mk, TrendsTableParam.class);
+        List<TrendsTableParam> trendsTableParamList = trendsTableParamListTemp.stream().filter(t -> t.getUseType() == 2).collect(Collectors.toList());
         String station = waterFeeStatisticsDetails.get(0).getStation();
         String dateTemp = waterFeeStatisticsDetails.get(0).getYear()+"-"+waterFeeStatisticsDetails.get(0).getStatisticsDate().substring(0,2)+"-"+waterFeeStatisticsDetails.get(0).getStatisticsDate().substring(3,5);
         if(station.equals("渠首管理站")){
@@ -171,8 +169,20 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                 if(!sdf.format(new Date()).equals(dateTemp)){
                     String paramName = (String)redisUtil.get("trendsTableParam:name:"+t.getTableHeadId());
                     if(!paramName.equals("合计")){
-                        Double v = (Double)redisUtil.get("irrigatedPlatform:yesterday:"+paramName);
-                        t.setV(v==null?null:v);
+                        String tableParamString = (String)redisUtil.get("trendsTableParam:object:"+t.getTableHeadId());
+                        TrendsTableParam tableParam = JSONObject.parseObject(tableParamString, TrendsTableParam.class);
+                        if(t.getStation().contains("河东")){
+                            Double v = (Double)redisUtil.get("A3:data:hd:yesterday:"+dateTemp+":"+tableParam.getUnitId());
+                            t.setV(v==null?null:v);
+                        }
+                        if(t.getStation().contains("河西")){
+                            Double v = (Double)redisUtil.get("A3:data:hx:yesterday:"+dateTemp+":"+tableParam.getUnitId());
+                            t.setV(v==null?null:v);
+                        }
+                        if(t.getStation().contains("渠首")){
+                            Double v = (Double)redisUtil.get("A3:data:qs:yesterday:"+dateTemp+":"+tableParam.getUnitId());
+                            t.setV(v==null?null:v);
+                        }
                     }
                 }
                 t.setId(UUIDUtils.getUUID());
@@ -1304,7 +1314,8 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
             updateCache();
             mk = (String) redisUtil.get("trendsTableParam:list");
         }
-        List<TrendsTableParam> trendsTableParamList = JSONObject.parseArray(mk, TrendsTableParam.class);
+        List<TrendsTableParam> trendsTableParamListTemp = JSONObject.parseArray(mk, TrendsTableParam.class);
+        List<TrendsTableParam> trendsTableParamList = trendsTableParamListTemp.stream().filter(t -> t.getUseType() == 2).collect(Collectors.toList());
         try {
             String station = waterFeeStatisticsDetails.get(0).getStation();
             List<TotalIdToStation> list = totalIdToStationService.lambdaQuery().eq(TotalIdToStation::getUseType, 2).eq(TotalIdToStation::getStation, waterFeeStatisticsDetails.get(0).getStation()).list();
@@ -1435,7 +1446,8 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
             updateCache();
             mk = (String) redisUtil.get("trendsTableParam:list");
         }
-        List<TrendsTableParam> trendsTableParamList = JSONObject.parseArray(mk, TrendsTableParam.class);
+        List<TrendsTableParam> trendsTableParamListTemp = JSONObject.parseArray(mk, TrendsTableParam.class);
+        List<TrendsTableParam> trendsTableParamList = trendsTableParamListTemp.stream().filter(t -> t.getUseType() == 2).collect(Collectors.toList());
         RestResponse restResponse = this.updateInfo(waterFeeStatisticsDetails);
         if(restResponse.getCode()==200){
             Double payableWaterFeeCount = 0.0;
@@ -2097,7 +2109,8 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
             updateCache();
             mk = (String) redisUtil.get("trendsTableParam:list");
         }
-        List<TrendsTableParam> trendsTableParamList = JSONObject.parseArray(mk, TrendsTableParam.class);
+        List<TrendsTableParam> trendsTableParamListTemp = JSONObject.parseArray(mk, TrendsTableParam.class);
+        List<TrendsTableParam> trendsTableParamList = trendsTableParamListTemp.stream().filter(t -> t.getUseType() == 2).collect(Collectors.toList());
         String start = details1.getYear()+"-"+details1.getStatisticsDate().substring(0,2)+"-"+details1.getStatisticsDate().substring(3,5);
         String end = details2.getYear()+"-"+details2.getStatisticsDate().substring(0,2)+"-"+details2.getStatisticsDate().substring(3,5);
         List<TrendsTableParam> collect5 = trendsTableParamList.stream().filter(t -> t.getUseType() == 2).filter(t -> t.getUseStation().equals(details1.getStation())).collect(Collectors.toList());
@@ -2129,8 +2142,20 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                     if(!sdf.format(new Date()).equals(dateTemp)){
                         String paramName = (String)redisUtil.get("trendsTableParam:name:"+t.getTableHeadId());
                         if(!paramName.equals("合计")){
-                            List<Double> collect = list3.stream().filter(r -> r.getMonitorName().equals(paramName)).filter(r -> r.getMonitorTime().split(" ")[0].equals(dateTemp)).map(IrrigatedPlatformDataInfo::getYesterdayAvgFlow).collect(Collectors.toList());
-                            t.setV(collect ==null?null:collect.size()==0?null:collect.get(0));
+                            String tableParamString = (String)redisUtil.get("trendsTableParam:object:"+t.getTableHeadId());
+                            TrendsTableParam tableParam = JSONObject.parseObject(tableParamString, TrendsTableParam.class);
+                            if(t.getStation().contains("河东")){
+                                Double v = (Double)redisUtil.get("A3:data:hd:yesterday:"+dateTemp+":"+tableParam.getUnitId());
+                                t.setV(v==null?null:v);
+                            }
+                            if(t.getStation().contains("河西")){
+                                Double v = (Double)redisUtil.get("A3:data:hx:yesterday:"+dateTemp+":"+tableParam.getUnitId());
+                                t.setV(v==null?null:v);
+                            }
+                            if(t.getStation().contains("渠首")){
+                                Double v = (Double)redisUtil.get("A3:data:qs:yesterday:"+dateTemp+":"+tableParam.getUnitId());
+                                t.setV(v==null?null:v);
+                            }
                         }
                     }
                     try {
@@ -3264,7 +3289,8 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
             updateCache();
             mk = (String) redisUtil.get("trendsTableParam:list");
         }
-        List<TrendsTableParam> trendsTableParamList = JSONObject.parseArray(mk, TrendsTableParam.class);
+        List<TrendsTableParam> trendsTableParamListTemp = JSONObject.parseArray(mk, TrendsTableParam.class);
+        List<TrendsTableParam> trendsTableParamList = trendsTableParamListTemp.stream().filter(t -> t.getUseType() == 2).collect(Collectors.toList());
         if(req.getStation().equals("楼庄子水库")){
             req.setStationList(Arrays.asList("楼庄子水厂"));
             List<UseWaterTypeStatisticsRes> statistics = industrialWaterFeeService.statistics(req);

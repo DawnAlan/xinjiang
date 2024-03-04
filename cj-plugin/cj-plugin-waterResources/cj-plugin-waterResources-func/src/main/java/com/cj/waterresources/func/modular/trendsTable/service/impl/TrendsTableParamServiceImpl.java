@@ -68,8 +68,9 @@ public class TrendsTableParamServiceImpl extends ServiceImpl<TrendsTableParamMap
         BeanUtils.copyProperties(req, param);
         if(StringUtils.isEmpty(param.getPId())){
             param.setPId("0");
-            param.setId(UUIDUtils.getUUID());
+
         }
+        param.setId(UUIDUtils.getUUID());
         boolean save = this.save(param);
         if(save){
             if(!param.getPId().equals("0")){
@@ -325,6 +326,7 @@ public class TrendsTableParamServiceImpl extends ServiceImpl<TrendsTableParamMap
     }
 
     public void getParamTree(List<WaterDailyParamSelectRes> resultList,List<TrendsTableParam> list){
+        List<WaterPriceManagement> list1 = waterPriceManagementService.list();
         if(resultList.size()>0){
             for(WaterDailyParamSelectRes res : resultList){
                 List<TrendsTableParam> collect = list.stream().filter(t -> t.getPId().equals(res.getId())).collect(Collectors.toList());
@@ -333,17 +335,17 @@ public class TrendsTableParamServiceImpl extends ServiceImpl<TrendsTableParamMap
                     for (TrendsTableParam param:collect){
                         WaterDailyParamSelectRes tempRes = new WaterDailyParamSelectRes();
                         BeanUtils.copyProperties(param,tempRes);
-                        WaterPriceManagement byId = waterPriceManagementService.getById(tempRes.getId());
-                        tempRes.setUseWaterType(byId != null ? byId.getUseWaterType():"");
+                        List<WaterPriceManagement> collect1 = list1.stream().filter(t -> t.getId().equals(tempRes.getId())).collect(Collectors.toList());
+                        tempRes.setUseWaterType(collect1 != null && collect1.size()>0 ? collect1.get(0).getUseWaterType():"");
                         tempList.add(tempRes);
                     }
-                    WaterPriceManagement byId = waterPriceManagementService.getById(res.getId());
-                    res.setUseWaterType(byId != null ? byId.getUseWaterType():"");
+                    List<WaterPriceManagement> collect1 = list1.stream().filter(t -> t.getId().equals(res.getId())).collect(Collectors.toList());
+                    res.setUseWaterType(collect1 != null && collect1.size()>0 ? collect1.get(0).getUseWaterType():"");
                     res.setChildren(tempList);
                     getParamTree(tempList,list);
                 }else {
-                    WaterPriceManagement byId = waterPriceManagementService.getById(res.getId());
-                    res.setUseWaterType(byId != null ? byId.getUseWaterType():"");
+                    List<WaterPriceManagement> collect1 = list1.stream().filter(t -> t.getId().equals(res.getId())).collect(Collectors.toList());
+                    res.setUseWaterType(collect1 != null && collect1.size()>0 ? collect1.get(0).getUseWaterType():"");
                 }
             }
         }

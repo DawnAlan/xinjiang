@@ -510,7 +510,7 @@ public class GlobalConfigure implements WebMvcConfigurer {
      * @author xuyuxiang
      * @date 2022/1/8 2:16
      */
-    @Component
+   /* @Component
     public static class CustomDbIdProvider implements DatabaseIdProvider {
 
         @Override
@@ -536,7 +536,7 @@ public class GlobalConfigure implements WebMvcConfigurer {
                 JdbcUtils.closeConnection(conn);
             }
         }
-    }
+    }*/
 
     /**
      * 自定义公共字段自动注入
@@ -646,12 +646,12 @@ public class GlobalConfigure implements WebMvcConfigurer {
     /**
      * 启用分页插件
      */
-    @Bean
+    /*@Bean
     public MybatisPlusInterceptor mybatisPlusInterceptor() {
         MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
         interceptor.addInnerInterceptor(new PaginationInnerInterceptor());
         return interceptor;
-    }
+    }*/
 
     /**
      * 注册数据变化事件中心 事件发布器
