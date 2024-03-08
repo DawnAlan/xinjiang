@@ -48,6 +48,10 @@ public class WaterResourceAllocation extends Model<WaterResourceAllocation> {
     private String updateBy;
     //逻辑删除(0-正常 1-删除)
     private Integer del;
+    //方案状态,0-成功,1-生成中,2-异常
+    private Integer state;
+    //方案异常原因
+    private String exceptionCause;
     //业务用数据
     private String AllocationDataCustomAddress;
     //大屏用数据
