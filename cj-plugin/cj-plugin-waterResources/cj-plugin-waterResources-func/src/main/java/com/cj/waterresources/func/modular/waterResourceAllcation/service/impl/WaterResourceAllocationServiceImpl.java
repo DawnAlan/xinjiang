@@ -142,18 +142,24 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
         Date now = new Date();
         waterResourceAllocation.setId(UUIDUtils.getUUID());
         waterResourceAllocation.setDel(0);
+        waterResourceAllocation.setState(1);
         // todo 登陆用户
         waterResourceAllocation.setCreateBy(null);
         waterResourceAllocation.setCreateTime(now);
+        this.save(waterResourceAllocation);
 
-        doAllocation(waterResourceAllocation, now);
+        new Thread(() -> {
+            try {
+                doAllocation(waterResourceAllocation, now);
+                waterResourceAllocation.setState(0);
+            } catch (Exception e) {
+                waterResourceAllocation.setState(2);
+                waterResourceAllocation.setExceptionCause(e.getMessage());
+            }
+            this.updateById(waterResourceAllocation);
+        }).start();
 
-        boolean save = this.save(waterResourceAllocation);
-        if (save) {
-            return RestResponse.ok(waterResourceAllocation);
-        } else {
-            return RestResponse.no("水资源调配生成失败");
-        }
+        return RestResponse.ok();
     }
 
     @Override
@@ -171,6 +177,7 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
             wrapper.le(WaterResourceAllocation::getWaterDistributionStartTime, req.getDateTime())
                     .ge(WaterResourceAllocation::getWaterDistributionEndTime, req.getDateTime());
         }
+        wrapper.orderBy(true, false, WaterResourceAllocation::getCreateTime);
         return RestResponse.ok(baseMapper.selectPage(page, wrapper));
     }
 
@@ -803,7 +810,7 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
         for (int i = 0; i < maps.size(); i++) {
             Map<String, Object> tenDays = maps.get(i);
             if (tenDays == null || tenDays.get("DEMAND") == null) {
-                throw new CommonException("旬需水计划数据异常");
+                throw new CommonException(tenDays.get("USE_WATER_USER") + "旬需水计划数据异常");
             }
             Waterdemand waterdemand = new Waterdemand();
             waterdemand.setUseWaterPlan("tenDays");
