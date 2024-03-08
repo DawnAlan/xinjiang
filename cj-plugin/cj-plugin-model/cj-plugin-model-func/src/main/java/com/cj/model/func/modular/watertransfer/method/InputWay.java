@@ -104,19 +104,19 @@ public class InputWay {
             }
             data1.put(nameGreenQushou[x], demandGreenQushou[x]);
         }
-        double[] demand_bagang = setDataYearCity(waterDemandData, "月水量(万m³)", "八钢工业");
+        double[] demand_bagang = setDataYearCity(waterDemandData, "八钢", "八钢工业");
         double n1 = getDataMonthPlan(waterDemandData, "水量", "八钢工业");
         if (n1 != -100) {
             demand_bagang[monthNum] = n1;
         }
 
-        double[] demand_hongyan = setDataYearCity(waterDemandData, "月水量", "红岩");
-        double n2 = getDataMonthPlan(waterDemandData, "水量", "红岩");
+        double[] demand_hongyan = setDataYearCity(waterDemandData, "用水量", "红岩");
+        double n2 = getDataMonthPlan(waterDemandData, "水量", "红岩城市");
         if (n2 != -100) {
             demand_hongyan[monthNum] = n2;
         }
 
-        double[] demand_lzz = setDataYearCity(waterDemandData, "月水量", "楼庄子水厂");
+        double[] demand_lzz = setDataYearCity(waterDemandData, "用水量", "楼庄子水厂");
         double n3 = getDataMonthPlan(waterDemandData, "水量", "楼庄子水厂");
         if (n3 != -100) {
             demand_lzz[monthNum] = n3;
@@ -219,15 +219,24 @@ public class InputWay {
             data1.put(nameIndustryQushou[x], demandIndustryQushou[x]);
         }
 
-
         double[] demand_bagang = new double[3];
         double[] demand_hongyan= new double[3];
         double[] demand_lzz =new double[3];
         for (int i=0;i<demand_bagang.length;i++){
             demand_bagang[i]=getDataMonthPlan(waterDemandData, "水量", "八钢工业")/3;
+            if (demand_bagang[i]<=0){
+                demand_bagang[i]=0;
+            }
             demand_hongyan[i]=getDataMonthPlan(waterDemandData, "水量", "红岩")/3;
+            if (demand_hongyan[i]<=0){
+                demand_hongyan[i]=0;
+            }
             demand_lzz[i]=getDataMonthPlan(waterDemandData, "水量", "楼庄子水厂")/3;
+            if (demand_lzz[i]<=0){
+                demand_lzz[i]=0;
+            }
         }
+
         data1.put("八钢", demand_bagang);
         data1.put("红岩", demand_hongyan);
         data1.put("楼庄子水厂", demand_lzz);
@@ -418,6 +427,13 @@ public class InputWay {
         return data;
     }
 
+    /**
+     * 获得当月用水计划
+     * @param data
+     * @param name
+     * @param tableName
+     * @return
+     */
     public static double getDataMonthPlan(List<Waterdemand> data, String name, String tableName) {
         double n = -100;
         for (int i = 0; i < data.size(); i++) {
@@ -431,6 +447,7 @@ public class InputWay {
                 }
             }
         }
+
         return n;
     }
 
@@ -452,6 +469,7 @@ public class InputWay {
                 }
             }
         }
+
         return n;
     }
 
@@ -573,9 +591,11 @@ public class InputWay {
         double[] demanddata = new double[12];
         if (demand.size()==0)
         {
-            for (int i = 0; i < demanddata.length; i++) {
+            for (int i = 0; i < demanddata.length; i++)
+            {
                 demanddata[i] =0;
             }
+            System.out.println("警告：请判断不同尺度同一供水点是否名字是否相同或者没有该供水点数据，建议提供有效的数据");
         }
         else
         {

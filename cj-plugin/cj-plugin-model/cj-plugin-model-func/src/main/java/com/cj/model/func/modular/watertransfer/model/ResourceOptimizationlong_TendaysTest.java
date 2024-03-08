@@ -945,6 +945,7 @@ public class ResourceOptimizationlong_TendaysTest
                     }
                     if (outflow_term[m][t] >= minOutflow + watershortage_allQ[t] ){
                         //大于它  说明不缺水
+                        fitness2+=(outflow_term[m][t]-(minOutflow+ watershortage_allQ[t]))* (delatT * daynum[t]) / 1e4;
 
                         water_shortage1[m][t] =0;
                         water_Supply_tth[t]=waterDemand[1][t]+waterDemand[2][t]+waterDemand[3][t]+waterDemand[4][t];
@@ -1084,7 +1085,7 @@ public class ResourceOptimizationlong_TendaysTest
 
         fitness1_penalty = fitness1 + penaltyFactor * constraintViolation;//
         fitness2_penalty = fitness2 - penaltyFactor * constraintViolation;//
-        double[] fitness = new double[]{constraintViolation, fitness1, fitness1_penalty};
+        double[] fitness = new double[]{constraintViolation, fitness1, fitness1_penalty,fitness2};
         //适应度，1水库下泄流量，2水库下泄，1水库缺额，2水库缺额,2水库实际来水，0楼庄子供水，1红岩城市用水，2八钢工业，3西干，4东干
         result=new double[][]{fitness,outflow_term[0],outflow_term[1],water_shortage[0],water_shortage[1],inflow_toutunhe
                 ,waterSupply[0],waterSupply[1],waterSupply[2],waterSupply[3],waterSupply[4],watersupply_lzz};
@@ -1246,8 +1247,21 @@ public class ResourceOptimizationlong_TendaysTest
             }
             else if (fitnessA[1] == fitnessB[1])
             {
-                flag = 0;
-                return  flag;
+                if (fitnessA[3] < fitnessB[3])
+                {
+                    flag = -1;
+                    return  flag;
+                }
+                else if (fitnessA[3] == fitnessB[3])
+                {
+                    flag = 0;
+                    return  flag;
+                }
+                else
+                {
+                    flag = 1;
+                    return  flag;
+                }
             }
             else
             {
