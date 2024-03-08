@@ -79,5 +79,11 @@ public class WaterFeeStatisticsDetailsController {
         return waterFeeStatisticsDetailsService.useWaterTypeStatistics(req);
     }
 
+    @ApiOperationSupport(order = 7)
+    @ApiOperation("删除用户创建缓存")
+    @PostMapping("/deleteRedisData")
+    public RestResponse deleteRedisData(@RequestBody WaterFeeStatisticsDetailsSelectListReq req) {
+        return waterFeeStatisticsDetailsService.deleteRedisData(req);
+    }
 }
 

@@ -34,9 +34,17 @@ public class WaterFeeTask {
     @Autowired
     private RedisUtil redisUtil;
 
+    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+
 
     public JobRes getTableHeadId(){
         try {
+            String flag = (String) redisUtil.get("waterFee:everyday:"+sdf.format(new Date()));
+            if(StringUtils.isEmpty(flag)){
+                redisUtil.set("waterFee:everyday:"+sdf.format(new Date()),"1");
+            }else {
+                return null;
+            }
             JobRes res = new JobRes();
             log.info("--------------------------------执行定时插入水费表操作----------------------------");
             String mk = (String) redisUtil.get("trendsTableParam:list");

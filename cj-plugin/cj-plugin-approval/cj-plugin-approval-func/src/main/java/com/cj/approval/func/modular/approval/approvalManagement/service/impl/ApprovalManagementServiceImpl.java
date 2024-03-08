@@ -268,8 +268,11 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
         IPage<ApprovalManagement> p = new Page<>(req.getPageNum(),req.getPageSize());
         IPage<ApprovalManagement> page = this.lambdaQuery().
                 between(req.getStartTime() !=null && req.getEndTime()!=null,ApprovalManagement::getCreateTime, req.getStartTime(),req.getEndTime()).
+                ne(ApprovalManagement::getInstructionType, "水库调水").
                 eq(StringUtils.isNotEmpty(req.getInstructionType()),ApprovalManagement::getInstructionType, req.getInstructionType()).eq(ApprovalManagement::getApprovalStatus,2).
-                eq(ApprovalManagement::getDel, 0).orderByDesc(ApprovalManagement::getCreateTime).page(p);
+                eq(ApprovalManagement::getDel, 0).orderByDesc(ApprovalManagement::getCreateTime).
+                like(StringUtils.isNotEmpty(req.getUnit()),ApprovalManagement::getDispatchingUnit,req.getUnit()).
+                page(p);
         if(page.getTotal()>0){
             return RestResponse.ok(page);
         }else {

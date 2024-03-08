@@ -2,6 +2,7 @@ package com.cj.waterresources.func.modular.waterSituationReportManagement.a3.dkl
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.dkl.entity.DayWaterSituationStatisticsTableDkl;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tth.entity.DayWaterSituationStatisticsTableTth;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -19,7 +20,14 @@ public interface DayWaterSituationStatisticsTableDklMapper extends BaseMapper<Da
     @Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_DKL WHERE TO_CHAR(RECORD_TIME,'YYYY-MM-DD') = #{date}")
     List<DayWaterSituationStatisticsTableDkl> selectList(@Param("date")String date);
 
+    @Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_DKL WHERE TO_CHAR(RECORD_TIME,'YYYY-MM-DD') = #{date} and TIME != '昨日均'")
+    List<DayWaterSituationStatisticsTableDkl> selectList1(@Param("date")String date);
+
     @Delete("DELETE FROM DAY_WATER_SITUATION_STATISTICS_TABLE_DKL WHERE TO_CHAR(RECORD_TIME,'YYYY-MM-DD') = #{date}")
     Boolean deleteByTime(@Param("date")String date);
+
+    @Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_DKL WHERE TABLE_HEAD_ID = #{tableHeadId} TIME = '昨日均' and  TO_CHAR(RECORD_TIME,'YYYY-MM-DD') between = #{startTime} and #{endTime}")
+    List<DayWaterSituationStatisticsTableDkl> selectList2(@Param("tableHeadId")String tableHeadId,@Param("startTime")String startTime,@Param("endTime")String endTime);
+
 }
 

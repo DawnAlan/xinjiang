@@ -70,7 +70,7 @@ public class DayWaterSituationStatisticsTableQsServiceImpl extends ServiceImpl<D
         List<DayWaterSituationStatisticsTableQs> list = this.baseMapper.selectList(sdf.format(dayWaterSituationStatisticsTableQsList.get(0).getRecordTime()));
         List<DayWaterSituationStatisticsTableQs> tempList = list.stream().filter(t -> t.getTime().equals("昨日均")).collect(Collectors.toList());
         if(null != tempList && tempList.size()==0){
-            List<DayWaterSituationStatisticsTableQs> dayWaterSituationStatisticsTableQss = this.baseMapper.selectYesterdayList();
+            List<DayWaterSituationStatisticsTableQs> dayWaterSituationStatisticsTableQss = this.baseMapper.selectInfoList(getDate(dayWaterSituationStatisticsTableQsList.get(0).getRecordTime(),-1));
             DayWaterSituationStatisticsTableQs qs = dayWaterSituationStatisticsTableQsList.get(0);
             String[] split = qs.getEndTableList().split(",");
             for(String s:split){
@@ -78,7 +78,7 @@ public class DayWaterSituationStatisticsTableQsServiceImpl extends ServiceImpl<D
                 yesterdayBean.setTime("昨日均");
                 yesterdayBean.setId(UUIDUtils.getUUID());
                 yesterdayBean.setTableHeadId(s);
-                yesterdayBean.setRecordTime(new Date());
+                yesterdayBean.setRecordTime(dayWaterSituationStatisticsTableQsList.get(0).getRecordTime());
                 yesterdayBean.setV(dayWaterSituationStatisticsTableQss.stream().filter(t->t.getTableHeadId().equals(s) && t.getV()!=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00));
                 yesterdayBean.setEndTableList(qs.getEndTableList());
                 yesterdayBean.setFrontTableList(qs.getFrontTableList());
@@ -261,12 +261,24 @@ public class DayWaterSituationStatisticsTableQsServiceImpl extends ServiceImpl<D
                     }
                 });
             }
+            updateYesterdayData(dayWaterSituationStatisticsTableQsList.get(0).getRecordTime());
             return RestResponse.ok();
         }else {
             return RestResponse.no("error");
         }
     }
 
+    private void updateYesterdayData(Date now){
+        List<DayWaterSituationStatisticsTableQs> dayWaterSituationStatisticsTableQsList = this.baseMapper.selectInfoList(sdf.format(now));
+        List<DayWaterSituationStatisticsTableQs> dayWaterSituationStatisticsTableQss = this.baseMapper.selectList(getDate(now, 1));
+        if(!dayWaterSituationStatisticsTableQss.isEmpty()){
+            List<DayWaterSituationStatisticsTableQs> hdList = dayWaterSituationStatisticsTableQss.stream().filter(t -> t.getTime().equals("昨日均")).collect(Collectors.toList());
+            hdList.forEach(t->{
+                t.setV(dayWaterSituationStatisticsTableQsList.stream().filter(p->p.getTableHeadId().equals(t.getTableHeadId()) && p.getV() !=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00));
+            });
+            this.updateBatchById(hdList);
+        }
+    }
     public void updateCache(){
         List<TrendsTableParam> listed = trendsTableParamService.list();
         redisUtil.set("trendsTableParam:list", JSONObject.toJSONString(listed));

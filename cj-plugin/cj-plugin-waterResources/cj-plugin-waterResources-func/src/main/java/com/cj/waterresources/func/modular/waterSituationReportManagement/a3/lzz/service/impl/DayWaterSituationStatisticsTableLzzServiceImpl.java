@@ -82,7 +82,7 @@ public class DayWaterSituationStatisticsTableLzzServiceImpl extends ServiceImpl<
         List<DayWaterSituationStatisticsTableLzz> list = this.baseMapper.selectList(sdf.format(dayWaterSituationStatisticsTableLzzList.get(0).getRecordTime()));
         List<DayWaterSituationStatisticsTableLzz> tempList = list.stream().filter(t -> t.getTime().equals("昨日均")).collect(Collectors.toList());
         if(null != tempList && tempList.size()==0){
-            List<DayWaterSituationStatisticsTableLzz> dayWaterSituationStatisticsTableLzzes = this.baseMapper.selectYesterdayList();
+            List<DayWaterSituationStatisticsTableLzz> dayWaterSituationStatisticsTableLzzes = this.baseMapper.selectInfoList(getDate(dayWaterSituationStatisticsTableLzzList.get(0).getRecordTime(),-1));
             DayWaterSituationStatisticsTableLzz dayWaterSituationStatisticsTableLzz = dayWaterSituationStatisticsTableLzzList.get(0);
             String endTableList = dayWaterSituationStatisticsTableLzz.getEndTableList();
             String[] split = endTableList.split(",");
@@ -91,7 +91,7 @@ public class DayWaterSituationStatisticsTableLzzServiceImpl extends ServiceImpl<
                 yesterdayBean.setTime("昨日均");
                 yesterdayBean.setId(UUIDUtils.getUUID());
                 yesterdayBean.setTableHeadId(s);
-                yesterdayBean.setRecordTime(new Date());
+                yesterdayBean.setRecordTime(dayWaterSituationStatisticsTableLzzList.get(0).getRecordTime());
                 yesterdayBean.setV(dayWaterSituationStatisticsTableLzzes.stream().filter(t->t.getTableHeadId().equals(s) && t.getV()!=null).map(DayWaterSituationStatisticsTableLzz::getV).reduce(Double::sum).orElse(0.00));
                 yesterdayBean.setEndTableList(dayWaterSituationStatisticsTableLzz.getEndTableList());
                 yesterdayBean.setFrontTableList(dayWaterSituationStatisticsTableLzz.getFrontTableList());
@@ -254,9 +254,22 @@ public class DayWaterSituationStatisticsTableLzzServiceImpl extends ServiceImpl<
         }
         boolean b = this.updateBatchById(dayWaterSituationStatisticsTableLzzList);
         if (b) {
+            updateYesterdayData(dayWaterSituationStatisticsTableLzzList.get(0).getRecordTime());
             return RestResponse.ok();
         }else {
             return RestResponse.no("error");
+        }
+    }
+
+    private void updateYesterdayData(Date now){
+        List<DayWaterSituationStatisticsTableLzz> dayWaterSituationStatisticsTablelzzList = this.baseMapper.selectInfoList(sdf.format(now));
+        List<DayWaterSituationStatisticsTableLzz> dayWaterSituationStatisticsTablelzzs = this.baseMapper.selectList(getDate(now, 1));
+        if(!dayWaterSituationStatisticsTablelzzs.isEmpty()){
+            List<DayWaterSituationStatisticsTableLzz> hdList = dayWaterSituationStatisticsTablelzzs.stream().filter(t -> t.getTime().equals("昨日均")).collect(Collectors.toList());
+            hdList.forEach(t->{
+                t.setV(dayWaterSituationStatisticsTablelzzList.stream().filter(p->p.getTableHeadId().equals(t.getTableHeadId()) && p.getV() !=null).map(DayWaterSituationStatisticsTableLzz::getV).reduce(Double::sum).orElse(0.00));
+            });
+            this.updateBatchById(hdList);
         }
     }
 
@@ -267,6 +280,18 @@ public class DayWaterSituationStatisticsTableLzzServiceImpl extends ServiceImpl<
             redisUtil.set("trendsTableParam:name:"+param.getId(), param.getParamName());
             redisUtil.set("trendsTableParam:object:"+param.getId(), JSONObject.toJSONString(param));
         }
+    }
+
+    private String getDate(Date date, Integer num){
+        // 创建 Calendar 对象并设置为当前时间
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        // 将日期向前调整一天（即昨天）
+        calendar.add(Calendar.DAY_OF_MONTH, num);
+        // 格式化日期输出
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        String result = dateFormat.format(calendar.getTime());
+        return result;
     }
 }
 

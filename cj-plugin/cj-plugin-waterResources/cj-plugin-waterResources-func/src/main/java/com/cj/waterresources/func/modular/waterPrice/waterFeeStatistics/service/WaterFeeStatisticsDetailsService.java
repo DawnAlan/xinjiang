@@ -33,6 +33,8 @@ public interface WaterFeeStatisticsDetailsService extends IService<WaterFeeStati
 
     RestResponse useWaterTypeStatistics(UseWaterTypeStatisticsReq req);
 
+    RestResponse deleteRedisData(WaterFeeStatisticsDetailsSelectListReq req);
+
 
 }
 

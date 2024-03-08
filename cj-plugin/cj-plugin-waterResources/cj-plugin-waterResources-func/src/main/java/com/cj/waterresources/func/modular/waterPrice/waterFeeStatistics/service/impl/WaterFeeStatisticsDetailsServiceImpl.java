@@ -3581,6 +3581,12 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
         return RestResponse.no("请传入正确的管理站");
     }
 
+    @Override
+    public RestResponse deleteRedisData(WaterFeeStatisticsDetailsSelectListReq req) {
+        redisUtil.del("waterFee:"+req.getStation()+req.getYear()+req.getMonth()+req.getTenDays());
+        return RestResponse.ok();
+    }
+
     public List<String> getTableHeadName(List<TrendsTableParam> trendsTableParamList){
         try {
             List<String> tableIds = new ArrayList<>();

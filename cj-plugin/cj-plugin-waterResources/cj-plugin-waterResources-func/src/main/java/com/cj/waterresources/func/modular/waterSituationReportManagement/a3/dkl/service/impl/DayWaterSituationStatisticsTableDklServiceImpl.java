@@ -95,11 +95,7 @@ public class DayWaterSituationStatisticsTableDklServiceImpl extends ServiceImpl<
         List<DayWaterSituationStatisticsTableDkl> list = this.baseMapper.selectList(sdf.format(dayWaterSituationStatisticsTableDklList.get(0).getRecordTime()));
         List<DayWaterSituationStatisticsTableDkl> tempList = list.stream().filter(t -> t.getTime().equals("昨日均")).collect(Collectors.toList());
         if(null != tempList && tempList.size()==0){
-            Calendar calendar = new GregorianCalendar();
-            calendar.setTime(new Date());
-            calendar.add(calendar.DATE, -1);
-            String yesterday= sdf.format(calendar.getTime());
-            List<DayWaterSituationStatisticsTableDkl> yesterdayList = this.baseMapper.selectList(yesterday).stream().filter(t->!t.getTime().equals("昨日均")).collect(Collectors.toList());
+            List<DayWaterSituationStatisticsTableDkl> yesterdayList = this.baseMapper.selectList1(getDate(dayWaterSituationStatisticsTableDklList.get(0).getRecordTime(),-1));
             DayWaterSituationStatisticsTableDkl dkl = dayWaterSituationStatisticsTableDklList.get(0);
             String[] split = dkl.getEndTableList().split(",");
             for(String s:split){
@@ -107,7 +103,7 @@ public class DayWaterSituationStatisticsTableDklServiceImpl extends ServiceImpl<
                 yesterdayBean.setTime("昨日均");
                 yesterdayBean.setId(UUIDUtils.getUUID());
                 yesterdayBean.setTableHeadId(s);
-                yesterdayBean.setRecordTime(new Date());
+                yesterdayBean.setRecordTime(dayWaterSituationStatisticsTableDklList.get(0).getRecordTime());
                 Double v = yesterdayList.stream().filter(t -> t.getTableHeadId().equals(s)).filter(t->t.getV()!=null).map(t -> t.getV()).reduce(Double::sum).orElse(0.00);
                 yesterdayBean.setV(v==null?0.0:v);
                 yesterdayBean.setEndTableList(dkl.getEndTableList());
@@ -320,10 +316,35 @@ public class DayWaterSituationStatisticsTableDklServiceImpl extends ServiceImpl<
         }
         boolean b = this.updateBatchById(dayWaterSituationStatisticsTableDklList);
         if (b) {
+            updateYesterdayData(dayWaterSituationStatisticsTableDklList.get(0).getRecordTime());
             return RestResponse.ok();
         }else {
             return RestResponse.no("error");
         }
+    }
+
+    private void updateYesterdayData(Date now){
+        List<DayWaterSituationStatisticsTableDkl> dayWaterSituationStatisticsTableDklList = this.baseMapper.selectList1(sdf.format(now));
+        List<DayWaterSituationStatisticsTableDkl> dayWaterSituationStatisticsTableDkls = this.baseMapper.selectList(getDate(now, 1));
+        if(!dayWaterSituationStatisticsTableDkls.isEmpty()){
+            List<DayWaterSituationStatisticsTableDkl> hdList = dayWaterSituationStatisticsTableDkls.stream().filter(t -> t.getTime().equals("昨日均")).collect(Collectors.toList());
+            hdList.forEach(t->{
+                t.setV(dayWaterSituationStatisticsTableDklList.stream().filter(p->p.getTableHeadId().equals(t.getTableHeadId()) && p.getV() !=null).map(DayWaterSituationStatisticsTableDkl::getV).reduce(Double::sum).orElse(0.00));
+            });
+            this.updateBatchById(hdList);
+        }
+    }
+
+    private String getDate(Date date, Integer num){
+        // 创建 Calendar 对象并设置为当前时间
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        // 将日期向前调整一天（即昨天）
+        calendar.add(Calendar.DAY_OF_MONTH, num);
+        // 格式化日期输出
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        String result = dateFormat.format(calendar.getTime());
+        return result;
     }
 }
 

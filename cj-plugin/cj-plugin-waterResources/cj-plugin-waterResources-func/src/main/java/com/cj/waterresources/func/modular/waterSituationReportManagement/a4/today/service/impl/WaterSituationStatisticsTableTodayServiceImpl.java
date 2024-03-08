@@ -98,6 +98,7 @@ public class WaterSituationStatisticsTableTodayServiceImpl extends ServiceImpl<W
             List<TrendsTableParam> lzzTableParam = trendsTableParamList.stream().filter(t -> t.getUseType() == 1 && t.getUseStation().equals("楼庄子水库")).collect(Collectors.toList());
             TrendsTableParam sw = lzzTableParam.stream().filter(t -> t.getParamName().equals("水位") && t.getPId().equals("0")).collect(Collectors.toList()).get(0);
             TrendsTableParam kr = lzzTableParam.stream().filter(t -> t.getParamName().equals("库容") && t.getPId().equals("0")).collect(Collectors.toList()).get(0);
+            List<TrendsTableParam> jkCollect = lzzTableParam.stream().filter(t -> t.getParamName().equals("进库") && t.getPId().equals("0")).collect(Collectors.toList());
             TrendsTableParam jkTemp = lzzTableParam.stream().filter(t -> t.getParamName().equals("进库") && t.getPId().equals("0")).collect(Collectors.toList()).get(0);
             TrendsTableParam rkll = lzzTableParam.stream().filter(t -> t.getPId().equals(jkTemp.getId()) && t.getParamName().equals("进库流量")).collect(Collectors.toList()).get(0);
             TrendsTableParam ckTemp = lzzTableParam.stream().filter(t -> t.getParamName().equals("出库") && t.getPId().equals("0")).collect(Collectors.toList()).get(0);

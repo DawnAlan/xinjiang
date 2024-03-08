@@ -11,6 +11,9 @@ public class SelectInfoListReq {
     @ApiModelProperty(value = "树节点id")
     private String treeId;
 
+    @ApiModelProperty(value = "名称")
+    private String treeName;
+
     @ApiModelProperty(value = "树类型(头屯河灌区-irrigated  楼庄子水库-lzz)")
     private String treeType;
 

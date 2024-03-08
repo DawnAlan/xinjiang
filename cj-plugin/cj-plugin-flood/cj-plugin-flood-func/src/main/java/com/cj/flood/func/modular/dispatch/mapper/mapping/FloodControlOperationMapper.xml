@@ -18,5 +18,6 @@
                 AND iwf.PREDICTION_TIME BETWEEN #{req.startTime} and #{req.endTime}
             </if>
         </where>
+        order by fco.CREATE_TIME
     </select>
 </mapper>

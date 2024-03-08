@@ -5,16 +5,22 @@ import com.cj.common.model.RestResponse;
 import com.cj.common.util.RedisUtil;
 import com.cj.waterresources.func.modular.trendsTable.entity.TrendsTableParam;
 import com.cj.waterresources.func.modular.trendsTable.service.TrendsTableParamService;
+import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.req.SelectInfoListReq;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req.A3StatisticsReq;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.res.A3StatisticsRes;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.service.AllService;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.dkl.mapper.DayWaterSituationStatisticsTableDklMapper;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hd.entity.DayWaterSituationStatisticsTableHd;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hd.mapper.DayWaterSituationStatisticsTableHdMapper;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hx.entity.DayWaterSituationStatisticsTableHx;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hx.mapper.DayWaterSituationStatisticsTableHxMapper;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.entity.DayWaterSituationStatisticsTableLzz;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.mapper.DayWaterSituationStatisticsTableLzzMapper;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.entity.DayWaterSituationStatisticsTableQs;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.mapper.DayWaterSituationStatisticsTableQsMapper;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.syyl.mapper.DayWaterSituationStatisticsTableSyylMapper;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tjc.mapper.DayWaterSituationStatisticsTableTjcMapper;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tth.entity.DayWaterSituationStatisticsTableTth;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tth.mapper.DayWaterSituationStatisticsTableTthMapper;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.zcc.mapper.DayWaterSituationStatisticsTableZccMapper;
 import lombok.AllArgsConstructor;
@@ -161,6 +167,65 @@ public class AllServiceImpl implements AllService {
             }
         }
         return null;
+    }
+
+    @Override
+    public RestResponse selectInfoList(SelectInfoListReq req) {
+        if(StringUtils.isEmpty(req.getTreeName())){
+            return RestResponse.no("暂无数据");
+        }
+        String mk = (String) redisUtil.get("trendsTableParam:list");
+        if(StringUtils.isEmpty(mk)){
+            trendsTableParamService.updateCache();
+            mk = (String) redisUtil.get("trendsTableParam:list");
+        }
+        List<TrendsTableParam> trendsTableParamList = JSONObject.parseArray(mk, TrendsTableParam.class);
+        List<TrendsTableParam> collect = trendsTableParamList.stream().filter(t -> t.getParamName().equals(req.getTreeName())).collect(Collectors.toList());
+        if(collect.isEmpty()){
+            return RestResponse.no("暂无监测点数据");
+        }
+        TrendsTableParam trendsTableParam = collect.get(0);
+        if(trendsTableParam.getUseStation().equals("河东管理站")){
+            List<DayWaterSituationStatisticsTableHd> dayWaterSituationStatisticsTableHds = dayWaterSituationStatisticsTableHdMapper.selectList2(trendsTableParam.getId(), req.getStartTime(), req.getEndTime());
+            if(dayWaterSituationStatisticsTableHds.isEmpty()){
+                return RestResponse.no("暂无数据");
+            }else {
+                return RestResponse.ok(dayWaterSituationStatisticsTableHds);
+            }
+        }
+        if(trendsTableParam.getUseStation().equals("河西管理站")){
+            List<DayWaterSituationStatisticsTableHx> dayWaterSituationStatisticsTableHxes = dayWaterSituationStatisticsTableHxMapper.selectList2(trendsTableParam.getId(), req.getStartTime(), req.getEndTime());
+            if(dayWaterSituationStatisticsTableHxes.isEmpty()){
+                return RestResponse.no("暂无数据");
+            }else {
+                return RestResponse.ok(dayWaterSituationStatisticsTableHxes);
+            }
+        }
+        if(trendsTableParam.getUseStation().equals("渠首管理站")){
+            List<DayWaterSituationStatisticsTableQs> dayWaterSituationStatisticsTableQs = dayWaterSituationStatisticsTableQsMapper.selectList2(trendsTableParam.getId(), req.getStartTime(), req.getEndTime());
+            if(dayWaterSituationStatisticsTableQs.isEmpty()){
+                return RestResponse.no("暂无数据");
+            }else {
+                return RestResponse.ok(dayWaterSituationStatisticsTableQs);
+            }
+        }
+        if(trendsTableParam.getUseStation().equals("头屯河水库")){
+            List<DayWaterSituationStatisticsTableTth> dayWaterSituationStatisticsTableTths = dayWaterSituationStatisticsTableTthMapper.selectList2(trendsTableParam.getId(), req.getStartTime(), req.getEndTime());
+            if(dayWaterSituationStatisticsTableTths.isEmpty()){
+                return RestResponse.no("暂无数据");
+            }else {
+                return RestResponse.ok(dayWaterSituationStatisticsTableTths);
+            }
+        }
+        if(trendsTableParam.getUseStation().equals("楼庄子水库")){
+            List<DayWaterSituationStatisticsTableLzz> dayWaterSituationStatisticsTableLzzes = dayWaterSituationStatisticsTableLzzMapper.selectList2(trendsTableParam.getId(), req.getStartTime(), req.getEndTime());
+            if(dayWaterSituationStatisticsTableLzzes.isEmpty()){
+                return RestResponse.no("暂无数据");
+            }else {
+                return RestResponse.ok(dayWaterSituationStatisticsTableLzzes);
+            }
+        }
+        return RestResponse.no("暂无数据");
     }
 
     public Map<String, List<A3StatisticsRes>> change(Map<String, List<A3StatisticsRes>> collect){

@@ -247,7 +247,7 @@ public class IrrigatedAreaServiceImpl implements IrrigatedAreaService {
                     if(!collect.isEmpty()){
                         OverallSituationUnitMgrDto overallSituationUnitMgrDto = collect.get(0);
                         redisUtil.set("irrigatedPlatform:yesterday:"+overallSituationUnitMgrDto.getId(),info.getYesterdayAvgFlow());
-                        redisUtil.set("irrigatedPlatform:sq:date:id:"+sdf.format(sdf.parse(info.getMonitorTime()))+":"+overallSituationUnitMgrDto.getId(),info.getSqMonitorFlow());
+                        redisUtil.set("irrigatedPlatform:sq:date:id:"+info.getMonitorTime()+":"+overallSituationUnitMgrDto.getId(),info.getSqMonitorFlow());
                     }
                 }
             }

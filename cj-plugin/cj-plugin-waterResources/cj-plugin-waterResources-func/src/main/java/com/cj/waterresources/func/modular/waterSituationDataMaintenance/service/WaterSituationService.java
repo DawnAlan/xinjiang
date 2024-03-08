@@ -12,4 +12,6 @@ public interface WaterSituationService {
     RestResponse selectInfoList(SelectInfoListReq req);
 
     RestResponse update(UpdateInfoReq req);
+
+    RestResponse selectInfoListAll(SelectInfoListReq req);
 }

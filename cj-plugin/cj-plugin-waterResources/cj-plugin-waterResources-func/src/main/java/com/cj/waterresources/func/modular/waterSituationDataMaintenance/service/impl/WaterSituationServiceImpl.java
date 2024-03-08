@@ -11,12 +11,15 @@ import com.cj.middleDatabase.func.modular.lzz.lzzPlatformTree.entity.LzzPlatform
 import com.cj.middleDatabase.func.modular.lzz.lzzPlatformTree.service.LzzPlatformTreeService;
 import com.cj.middleDatabase.func.modular.lzz.lzzRainfallStation.entity.LzzRainfallStation;
 import com.cj.middleDatabase.func.modular.lzz.lzzRainfallStation.service.LzzRainfallStationService;
+import com.cj.waterresources.func.modular.waterPrice.industrialWaterFee.service.IndustrialWaterFeeService;
+import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.bean.res.UseWaterTypeStatisticsRes;
 import com.cj.waterresources.func.modular.waterPrice.waterPriceManagement.bean.res.WaterPriceSelectListRes;
 import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.req.SelectInfoListReq;
 import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.req.UpdateInfoReq;
 import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.res.IrrigatedPlatformTreeRes;
 import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.res.LzzPlatformTreeRes;
 import com.cj.waterresources.func.modular.waterSituationDataMaintenance.service.WaterSituationService;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.service.AllService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -44,6 +47,12 @@ public class WaterSituationServiceImpl implements WaterSituationService {
 
     @Autowired
     private LzzGaugingStationService lzzGaugingStationService;
+
+    @Autowired
+    private AllService allService;
+
+    @Autowired
+    private IndustrialWaterFeeService industrialWaterFeeService;
 
     @Override
     public RestResponse<Map<String, Object>> selectTree() {
@@ -127,6 +136,23 @@ public class WaterSituationServiceImpl implements WaterSituationService {
             }
         }
         return RestResponse.no("请上传修改数据");
+    }
+
+    @Override
+    public RestResponse selectInfoListAll(SelectInfoListReq req) {
+        RestResponse restResponse1 = this.selectInfoList(req);
+        if(restResponse1.getCode()==200){
+            return restResponse1;
+        }
+        RestResponse<List<UseWaterTypeStatisticsRes>> listRestResponse = industrialWaterFeeService.selectInfoList(req);
+        if(listRestResponse.getCode()==200){
+            return RestResponse.ok(listRestResponse);
+        }
+        RestResponse restResponse = allService.selectInfoList(req);
+        if(restResponse.getCode()==200){
+            return RestResponse.ok(restResponse);
+        }
+        return RestResponse.no("查无数据");
     }
 
     public void getIrrigatedTree(List<IrrigatedPlatformTreeRes> resultList, List<IrrigatedPlatformTreeRes> list){

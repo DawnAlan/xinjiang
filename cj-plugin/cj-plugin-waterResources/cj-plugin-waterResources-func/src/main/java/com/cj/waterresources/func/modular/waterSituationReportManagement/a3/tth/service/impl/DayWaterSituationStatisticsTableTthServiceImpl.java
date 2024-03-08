@@ -14,6 +14,7 @@ import com.cj.waterresources.func.modular.waterPrice.totalIdToStation.entity.Tot
 import com.cj.waterresources.func.modular.waterPrice.totalIdToStation.service.TotalIdToStationService;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hd.entity.DayWaterSituationStatisticsTableHd;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.entity.DayWaterSituationStatisticsTableLzz;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.entity.DayWaterSituationStatisticsTableQs;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tth.mapper.DayWaterSituationStatisticsTableTthMapper;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tth.entity.DayWaterSituationStatisticsTableTth;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tth.service.DayWaterSituationStatisticsTableTthService;
@@ -92,7 +93,7 @@ public class DayWaterSituationStatisticsTableTthServiceImpl extends ServiceImpl<
         List<DayWaterSituationStatisticsTableTth> list = this.baseMapper.selectList(sdf.format(dayWaterSituationStatisticsTableTthList.get(0).getRecordTime()));
         List<DayWaterSituationStatisticsTableTth> tempList = list.stream().filter(t -> t.getTime().equals("昨日均")).collect(Collectors.toList());
         if(null != tempList && tempList.size()==0){
-            List<DayWaterSituationStatisticsTableTth> dayWaterSituationStatisticsTableTths = this.baseMapper.selectYesterdayList();
+            List<DayWaterSituationStatisticsTableTth> dayWaterSituationStatisticsTableTths = this.baseMapper.selectInfoList(getDate(dayWaterSituationStatisticsTableTthList.get(0).getRecordTime(),-1));
             DayWaterSituationStatisticsTableTth tth = dayWaterSituationStatisticsTableTthList.get(0);
             String endTableList = tth.getEndTableList();
             String[] split = endTableList.split(",");
@@ -101,7 +102,7 @@ public class DayWaterSituationStatisticsTableTthServiceImpl extends ServiceImpl<
                 yesterdayBean.setTime("昨日均");
                 yesterdayBean.setId(UUIDUtils.getUUID());
                 yesterdayBean.setTableHeadId(s);
-                yesterdayBean.setRecordTime(new Date());
+                yesterdayBean.setRecordTime(dayWaterSituationStatisticsTableTthList.get(0).getRecordTime());
                 yesterdayBean.setV(dayWaterSituationStatisticsTableTths.stream().filter(t->t.getTableHeadId().equals(s) && t.getV()!=null).map(DayWaterSituationStatisticsTableTth::getV).reduce(Double::sum).orElse(0.00));
                 yesterdayBean.setEndTableList(tth.getEndTableList());
                 yesterdayBean.setFrontTableList(tth.getFrontTableList());
@@ -265,9 +266,22 @@ public class DayWaterSituationStatisticsTableTthServiceImpl extends ServiceImpl<
         }
         boolean b = this.updateBatchById(dayWaterSituationStatisticsTableTthList);
         if (b) {
+            updateYesterdayData(dayWaterSituationStatisticsTableTthList.get(0).getRecordTime());
             return RestResponse.ok();
         }else {
             return RestResponse.no("error");
+        }
+    }
+
+    private void updateYesterdayData(Date now){
+        List<DayWaterSituationStatisticsTableTth> dayWaterSituationStatisticsTableTthList = this.baseMapper.selectInfoList(sdf.format(now));
+        List<DayWaterSituationStatisticsTableTth> dayWaterSituationStatisticsTableTths = this.baseMapper.selectList(getDate(now, 1));
+        if(!dayWaterSituationStatisticsTableTths.isEmpty()){
+            List<DayWaterSituationStatisticsTableTth> hdList = dayWaterSituationStatisticsTableTths.stream().filter(t -> t.getTime().equals("昨日均")).collect(Collectors.toList());
+            hdList.forEach(t->{
+                t.setV(dayWaterSituationStatisticsTableTthList.stream().filter(p->p.getTableHeadId().equals(t.getTableHeadId()) && p.getV() !=null).map(DayWaterSituationStatisticsTableTth::getV).reduce(Double::sum).orElse(0.00));
+            });
+            this.updateBatchById(hdList);
         }
     }
 
@@ -278,6 +292,18 @@ public class DayWaterSituationStatisticsTableTthServiceImpl extends ServiceImpl<
             redisUtil.set("trendsTableParam:name:"+param.getId(), param.getParamName());
             redisUtil.set("trendsTableParam:object:"+param.getId(), JSONObject.toJSONString(param));
         }
+    }
+
+    private String getDate(Date date, Integer num){
+        // 创建 Calendar 对象并设置为当前时间
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        // 将日期向前调整一天（即昨天）
+        calendar.add(Calendar.DAY_OF_MONTH, num);
+        // 格式化日期输出
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        String result = dateFormat.format(calendar.getTime());
+        return result;
     }
 }
 

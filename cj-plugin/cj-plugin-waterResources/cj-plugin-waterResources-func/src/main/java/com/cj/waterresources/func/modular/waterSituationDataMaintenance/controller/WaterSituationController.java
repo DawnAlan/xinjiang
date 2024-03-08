@@ -44,4 +44,11 @@ public class WaterSituationController {
     public RestResponse update(@RequestBody UpdateInfoReq req) {
         return waterSituationService.update(req);
     }
+
+    @ApiOperationSupport(order = 6)
+    @ApiOperation("查询地图上监测点信息")
+    @PostMapping("/selectInfoAllList")
+    public RestResponse selectInfoAllList(@RequestBody SelectInfoListReq req) {
+        return waterSituationService.selectInfoListAll(req);
+    }
 }

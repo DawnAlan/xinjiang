@@ -24,4 +24,7 @@ public class SelectListReq extends PageToolUtil implements Serializable {
 
     @ApiModelProperty(value = "指令类型")
     private String instructionType;
+
+    @ApiModelProperty(value = "调度单位")
+    private String unit;
 }
