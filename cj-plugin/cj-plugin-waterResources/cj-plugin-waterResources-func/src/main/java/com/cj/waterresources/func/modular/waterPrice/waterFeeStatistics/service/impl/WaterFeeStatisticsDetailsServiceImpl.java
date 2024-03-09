@@ -163,6 +163,11 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                     t.setV(lanternCanalInfoByDate ==null?null:lanternCanalInfoByDate.get("greenValue")==null?null:lanternCanalInfoByDate.get("greenValue"));
                 }
                 t.setId(UUIDUtils.getUUID());
+                try {
+                    t.setRecordTime(sdf.parse(dateTemp));
+                } catch (ParseException e) {
+                    throw new RuntimeException(e);
+                }
             });
         }else {
             waterFeeStatisticsDetails.forEach(t->{

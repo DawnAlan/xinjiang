@@ -13,6 +13,7 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.cj.auth.modular.login.service.AuthService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import com.cj.auth.api.SaBaseLoginUserApi;
 import com.cj.auth.core.enums.SaClientTypeEnum;
@@ -45,6 +46,7 @@ import java.util.stream.Collectors;
  * @date 2021/12/23 21:52
  */
 @Service
+@Slf4j
 public class AuthServiceImpl implements AuthService {
 
     private static final String SNOWY_SYS_DEFAULT_CAPTCHA_OPEN_KEY = "SNOWY_SYS_DEFAULT_CAPTCHA_OPEN";
@@ -76,16 +78,16 @@ public class AuthServiceImpl implements AuthService {
         String validCode = circleCaptcha.getCode();
         // 获取验证码的base64
         String validCodeBase64 = circleCaptcha.getImageBase64Data();
-        // 生成请求号
-        String validCodeReqNo = IdWorker.getIdStr();
         // 将base64返回前端
         authPicValidCodeResult.setValidCodeBase64(validCodeBase64);
         // 将请求号返回前端
-        authPicValidCodeResult.setValidCodeReqNo(validCodeReqNo);
+        authPicValidCodeResult.setValidCodeReqNo(type);
         // 将请求号作为key，验证码的值作为value放到redis，用于校验，5分钟有效
-        commonCacheOperator.put(AUTH_VALID_CODE_CACHE_KEY + validCodeReqNo, validCode, 5 * 60);
+        commonCacheOperator.put(AUTH_VALID_CODE_CACHE_KEY + type, validCode, 5 * 60);
         return authPicValidCodeResult;
     }
+
+
 
     @Override
     public String getPhoneValidCode(AuthGetPhoneValidCodeParam authGetPhoneValidCodeParam, String type) {
@@ -192,24 +194,21 @@ public class AuthServiceImpl implements AuthService {
             AuthDeviceTypeEnum.validate(device);
         }
         // 校验验证码
-        String defaultCaptchaOpen = devConfigApi.getValueByKey(SNOWY_SYS_DEFAULT_CAPTCHA_OPEN_KEY);
-        if(ObjectUtil.isNotEmpty(defaultCaptchaOpen)) {
-            if(Convert.toBool(defaultCaptchaOpen)) {
-                // 获取验证码
-                String validCode = authAccountPasswordLoginParam.getValidCode();
-                // 获取验证码请求号
-                String validCodeReqNo = authAccountPasswordLoginParam.getValidCodeReqNo();
-                // 开启验证码则必须传入验证码
-                if(ObjectUtil.isEmpty(validCode)) {
-                    throw new CommonException(AuthExceptionEnum.VALID_CODE_EMPTY.getValue());
-                }
-                // 开启验证码则必须传入验证码请求号
-                if(ObjectUtil.isEmpty(validCodeReqNo)) {
-                    throw new CommonException(AuthExceptionEnum.VALID_CODE_REQ_NO_EMPTY.getValue());
-                }
-                // 执行校验验证码
-                validValidCode(null, validCode, validCodeReqNo);
-            }
+        // 获取验证码
+        String validCode = authAccountPasswordLoginParam.getValidCode();
+        // 获取验证码请求号
+        String validCodeReqNo = authAccountPasswordLoginParam.getValidCodeReqNo();
+        // 开启验证码则必须传入验证码
+        if(ObjectUtil.isEmpty(validCode)) {
+            throw new CommonException(AuthExceptionEnum.VALID_CODE_EMPTY.getValue());
+        }
+        // 开启验证码则必须传入验证码请求号
+        if(ObjectUtil.isEmpty(validCodeReqNo)) {
+            throw new CommonException(AuthExceptionEnum.VALID_CODE_REQ_NO_EMPTY.getValue());
+        }
+        String code = (String) commonCacheOperator.get(AUTH_VALID_CODE_CACHE_KEY + validCodeReqNo);
+        if(!code.equals(validCode)){
+            throw new CommonException(AuthExceptionEnum.VALID_CODE_ERROR.getValue());
         }
         // SM2解密并获得前端传来的密码哈希值
         String passwordHash;

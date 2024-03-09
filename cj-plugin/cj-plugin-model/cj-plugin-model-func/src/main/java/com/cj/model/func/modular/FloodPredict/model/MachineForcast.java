@@ -337,7 +337,7 @@ public class MachineForcast {
                 month = DataUtils.getSpecificDate(date).get("月");
                 switch (month){
                     case 1:
-                        input[i][1]=(1-(double) input[i][1])*1.29;
+                        input[i][1]=(1-(double) input[i][1])*1.99;
                         if ((double) input[i][1]<0.66){
                             input[i][1]=0.66;
                         }
@@ -346,7 +346,7 @@ public class MachineForcast {
                         }
                         break;
                     case 2:
-                        input[i][1]=(1-(double) input[i][1])*1.19;
+                        input[i][1]=(1-(double) input[i][1])*1.79;
                         if ((double) input[i][1]<0.57){
                             input[i][1]=0.57;
                         }
@@ -355,7 +355,7 @@ public class MachineForcast {
                         }
                         break;
                     case 3:
-                        input[i][1]=(1-(double) input[i][1])*1.77;
+                        input[i][1]=(1-(double) input[i][1])*2.77;
                         if ((double) input[i][1]<0.68){
                             input[i][1]=0.68;
                         }
@@ -364,7 +364,7 @@ public class MachineForcast {
                         }
                         break;
                     case 4:
-                        input[i][1]=(1-(double) input[i][1])*2.78;
+                        input[i][1]=(1-(double) input[i][1])*3.78;
                         if ((double) input[i][1]<1.38){
                             input[i][1]=1.38;
                         }
@@ -373,7 +373,7 @@ public class MachineForcast {
                         }
                         break;
                     case 5:
-                        input[i][1]=(1-(double) input[i][1])*8.13;
+                        input[i][1]=(1-(double) input[i][1])*8.93;
                         if ((double) input[i][1]<3.61){
                             input[i][1]=3.61;
                         }
@@ -382,7 +382,7 @@ public class MachineForcast {
                         }
                         break;
                     case 6:
-                        input[i][1]=(1-(double) input[i][1])*17.92;
+                        input[i][1]=(1-(double) input[i][1])*18.92;
                         if ((double) input[i][1]<9.54){
                             input[i][1]=9.54;
                         }
@@ -391,7 +391,7 @@ public class MachineForcast {
                         }
                         break;
                     case 7:
-                        input[i][1]=(1-(double) input[i][1])*22.05;
+                        input[i][1]=(1-(double) input[i][1])*23.05;
                         if ((double) input[i][1]<12.1){
                             input[i][1]=12.1;
                         }
@@ -400,7 +400,7 @@ public class MachineForcast {
                         }
                         break;
                     case 8:
-                        input[i][1]=(1-(double) input[i][1])*16.13;
+                        input[i][1]=(1-(double) input[i][1])*17.13;
                         if ((double) input[i][1]<9.19){
                             input[i][1]=9.19;
                         }
@@ -409,7 +409,7 @@ public class MachineForcast {
                         }
                         break;
                     case 9:
-                        input[i][1]=(1-(double) input[i][1])*7.84;
+                        input[i][1]=(1-(double) input[i][1])*8.84;
                         if ((double) input[i][1]<3.62){
                             input[i][1]=3.62;
                         }
@@ -418,7 +418,7 @@ public class MachineForcast {
                         }
                         break;
                     case 10:
-                        input[i][1]=(1-(double) input[i][1])*3.85;
+                        input[i][1]=(1-(double) input[i][1])*4.85;
                         if ((double) input[i][1]<1.95){
                             input[i][1]=1.95;
                         }
@@ -427,7 +427,7 @@ public class MachineForcast {
                         }
                         break;
                     case 11:
-                        input[i][1]=(1-(double) input[i][1])*2.23;
+                        input[i][1]=(1-(double) input[i][1])*3.23;
                         if ((double) input[i][1]<1.13){
                             input[i][1]=1.13;
                         }
@@ -436,7 +436,7 @@ public class MachineForcast {
                         }
                         break;
                     case 12:
-                        input[i][1]=(1-(double) input[i][1])*1.52;
+                        input[i][1]=(1-(double) input[i][1])*1.82;
                         if ((double) input[i][1]<0.86){
                             input[i][1]=0.86;
                         }

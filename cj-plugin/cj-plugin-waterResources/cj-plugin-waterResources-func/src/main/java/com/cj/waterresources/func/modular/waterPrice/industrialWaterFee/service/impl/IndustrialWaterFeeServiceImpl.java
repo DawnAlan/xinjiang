@@ -8,9 +8,12 @@ import com.cj.waterresources.func.modular.waterPrice.industrialWaterFee.service.
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.bean.req.UseWaterTypeStatisticsReq;
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.bean.res.UseWaterTypeStatisticsRes;
 import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.req.SelectInfoListReq;
+import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.res.HydrographRes;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -22,19 +25,29 @@ import java.util.List;
 @Service("industrialWaterFeeService")
 public class IndustrialWaterFeeServiceImpl extends ServiceImpl<IndustrialWaterFeeMapper, IndustrialWaterFee> implements IndustrialWaterFeeService {
 
+    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
     @Override
     public List<UseWaterTypeStatisticsRes> statistics(UseWaterTypeStatisticsReq req) {
         return this.baseMapper.statistics(req);
     }
 
     @Override
-    public RestResponse<List<UseWaterTypeStatisticsRes>> selectInfoList(SelectInfoListReq req) {
+    public RestResponse<List<HydrographRes>> selectInfoList(SelectInfoListReq req) {
+        List<HydrographRes> hydrographResList = new ArrayList<>();
         if(StringUtils.isNotEmpty(req.getTreeName())){
             List<UseWaterTypeStatisticsRes> useWaterTypeStatisticsRes = this.baseMapper.selectInfoList(req);
             if(useWaterTypeStatisticsRes.isEmpty()){
                 return RestResponse.no("暂无数据");
             }else {
-                return RestResponse.ok(useWaterTypeStatisticsRes);
+                useWaterTypeStatisticsRes.forEach(t->{
+                    HydrographRes res = new HydrographRes();
+                    res.setFlow(t.getV());
+                    res.setName(t.getParamName());
+                    res.setTime(sdf.format(t.getRecordTime()));
+                    hydrographResList.add(res);
+                });
+                return RestResponse.ok(hydrographResList);
             }
         }else {
             return RestResponse.no("暂无数据");

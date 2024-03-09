@@ -101,7 +101,7 @@ public class TenDaysWaterBalanceServiceImpl extends ServiceImpl<TenDaysWaterBala
                 //盈亏水量
                 balance.setProfitAndLossWaterVolume(balance.getActualWaterVolume()-(balance.getProportionalWaterQuantity()==null?0.0:balance.getProportionalWaterQuantity()));
                 //盈亏比例
-                balance.setProfitAndLossRatio((balance.getActualProportion()==null?0.0:balance.getActualProportion())-(ratio.getV()==null?0.0:ratio.getV()));
+                balance.setProfitAndLossRatio((balance.getActualProportion()==null?0.0:balance.getActualProportion())-(ratio==null?0.0:ratio.getV()));
                 result.add(balance);
             }
         }else {

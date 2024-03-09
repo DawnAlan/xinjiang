@@ -6,6 +6,7 @@ import com.cj.common.util.RedisUtil;
 import com.cj.waterresources.func.modular.trendsTable.entity.TrendsTableParam;
 import com.cj.waterresources.func.modular.trendsTable.service.TrendsTableParamService;
 import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.req.SelectInfoListReq;
+import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.res.HydrographRes;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req.A3StatisticsReq;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.res.A3StatisticsRes;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.service.AllService;
@@ -30,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -48,7 +50,6 @@ public class AllServiceImpl implements AllService {
     private final DayWaterSituationStatisticsTableZccMapper dayWaterSituationStatisticsTableZccMapper;
     private final RedisUtil redisUtil;
     private final TrendsTableParamService trendsTableParamService;
-
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -171,6 +172,8 @@ public class AllServiceImpl implements AllService {
 
     @Override
     public RestResponse selectInfoList(SelectInfoListReq req) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        List<HydrographRes> hydrographResList = new ArrayList<>();
         if(StringUtils.isEmpty(req.getTreeName())){
             return RestResponse.no("暂无数据");
         }
@@ -190,7 +193,13 @@ public class AllServiceImpl implements AllService {
             if(dayWaterSituationStatisticsTableHds.isEmpty()){
                 return RestResponse.no("暂无数据");
             }else {
-                return RestResponse.ok(dayWaterSituationStatisticsTableHds);
+                dayWaterSituationStatisticsTableHds.forEach(t->{
+                    HydrographRes res = new HydrographRes();
+                    res.setName((String)redisUtil.get("trendsTableParam:name:"+t.getTableHeadId()));
+                    res.setFlow(t.getV());
+                    res.setTime(sdf.format(t.getRecordTime()));
+                    hydrographResList.add(res);
+                });
             }
         }
         if(trendsTableParam.getUseStation().equals("河西管理站")){
@@ -198,7 +207,13 @@ public class AllServiceImpl implements AllService {
             if(dayWaterSituationStatisticsTableHxes.isEmpty()){
                 return RestResponse.no("暂无数据");
             }else {
-                return RestResponse.ok(dayWaterSituationStatisticsTableHxes);
+                dayWaterSituationStatisticsTableHxes.forEach(t->{
+                    HydrographRes res = new HydrographRes();
+                    res.setName((String)redisUtil.get("trendsTableParam:name:"+t.getTableHeadId()));
+                    res.setFlow(t.getV());
+                    res.setTime(sdf.format(t.getRecordTime()));
+                    hydrographResList.add(res);
+                });
             }
         }
         if(trendsTableParam.getUseStation().equals("渠首管理站")){
@@ -206,7 +221,13 @@ public class AllServiceImpl implements AllService {
             if(dayWaterSituationStatisticsTableQs.isEmpty()){
                 return RestResponse.no("暂无数据");
             }else {
-                return RestResponse.ok(dayWaterSituationStatisticsTableQs);
+                dayWaterSituationStatisticsTableQs.forEach(t->{
+                    HydrographRes res = new HydrographRes();
+                    res.setName((String)redisUtil.get("trendsTableParam:name:"+t.getTableHeadId()));
+                    res.setFlow(t.getV());
+                    res.setTime(sdf.format(t.getRecordTime()));
+                    hydrographResList.add(res);
+                });
             }
         }
         if(trendsTableParam.getUseStation().equals("头屯河水库")){
@@ -214,7 +235,13 @@ public class AllServiceImpl implements AllService {
             if(dayWaterSituationStatisticsTableTths.isEmpty()){
                 return RestResponse.no("暂无数据");
             }else {
-                return RestResponse.ok(dayWaterSituationStatisticsTableTths);
+                dayWaterSituationStatisticsTableTths.forEach(t->{
+                    HydrographRes res = new HydrographRes();
+                    res.setName((String)redisUtil.get("trendsTableParam:name:"+t.getTableHeadId()));
+                    res.setFlow(t.getV());
+                    res.setTime(sdf.format(t.getRecordTime()));
+                    hydrographResList.add(res);
+                });
             }
         }
         if(trendsTableParam.getUseStation().equals("楼庄子水库")){
@@ -222,10 +249,19 @@ public class AllServiceImpl implements AllService {
             if(dayWaterSituationStatisticsTableLzzes.isEmpty()){
                 return RestResponse.no("暂无数据");
             }else {
-                return RestResponse.ok(dayWaterSituationStatisticsTableLzzes);
+                dayWaterSituationStatisticsTableLzzes.forEach(t->{
+                    HydrographRes res = new HydrographRes();
+                    res.setName((String)redisUtil.get("trendsTableParam:name:"+t.getTableHeadId()));
+                    res.setFlow(t.getV());
+                    res.setTime(sdf.format(t.getRecordTime()));
+                    hydrographResList.add(res);
+                });
             }
         }
-        return RestResponse.no("暂无数据");
+        if(hydrographResList.isEmpty()){
+            return RestResponse.no("暂无数据");
+        }
+        return RestResponse.ok(hydrographResList);
     }
 
     public Map<String, List<A3StatisticsRes>> change(Map<String, List<A3StatisticsRes>> collect){

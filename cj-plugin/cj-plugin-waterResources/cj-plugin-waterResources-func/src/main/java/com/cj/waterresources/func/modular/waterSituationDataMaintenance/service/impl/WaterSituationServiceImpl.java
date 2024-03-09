@@ -16,6 +16,7 @@ import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.bean.res
 import com.cj.waterresources.func.modular.waterPrice.waterPriceManagement.bean.res.WaterPriceSelectListRes;
 import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.req.SelectInfoListReq;
 import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.req.UpdateInfoReq;
+import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.res.HydrographRes;
 import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.res.IrrigatedPlatformTreeRes;
 import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.res.LzzPlatformTreeRes;
 import com.cj.waterresources.func.modular.waterSituationDataMaintenance.service.WaterSituationService;
@@ -24,6 +25,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -53,6 +55,8 @@ public class WaterSituationServiceImpl implements WaterSituationService {
 
     @Autowired
     private IndustrialWaterFeeService industrialWaterFeeService;
+
+    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     @Override
     public RestResponse<Map<String, Object>> selectTree() {
@@ -110,6 +114,52 @@ public class WaterSituationServiceImpl implements WaterSituationService {
     }
 
     @Override
+    public RestResponse<List<HydrographRes>> selectInfoList1(SelectInfoListReq req) {
+        List<HydrographRes> hydrographResList = new ArrayList<>();
+        if(req.getTreeType().equals("irrigated")){
+            List<IrrigatedPlatformDataInfo> list = irrigatedPlatformDataInfoService.selectInfoByCondition(req.getTreeId(),req.getTime(),req.getStartTime(),req.getEndTime());
+            if(null != list && list.size()>0) {
+                list.forEach(t->{
+                    HydrographRes res = new HydrographRes();
+                    res.setName(t.getMonitorName());
+                    res.setTime(t.getMonitorTime());
+                    res.setFlow(t.getSqMonitorFlow());
+                    res.setWaterLevel(t.getSqWaterLevel());
+                    hydrographResList.add(res);
+                });
+            }
+        }
+        if(req.getTreeType().equals("lzz")){
+            List<LzzRainfallStation> list = lzzRainfallStationService.selectInfoByCondition(req.getTreeId(),req.getTime(),req.getStartTime(),req.getEndTime());
+            if(null != list && list.size()>0){
+                list.forEach(t->{
+                    HydrographRes res = new HydrographRes();
+                    res.setName(t.getStationName());
+                    res.setTime(sdf.format(t.getTime()));
+                    res.setRainfall(t.getRainfall());
+                    res.setTemperature(t.getTemperature());
+                    hydrographResList.add(res);
+                });
+            }
+            List<LzzGaugingStation> list1 = lzzGaugingStationService.selectInfoByCondition(req.getTreeId(),req.getTime(),req.getStartTime(),req.getEndTime());
+            if(null != list1 && list1.size()>0){
+                list1.forEach(t->{
+                    HydrographRes res = new HydrographRes();
+                    res.setName(t.getStationName());
+                    res.setTime(sdf.format(t.getGatherTime()));
+                    res.setFlow(t.getFlow());
+                    res.setWaterLevel(t.getRelativeWaterLevel());
+                    hydrographResList.add(res);
+                });
+            }
+        }
+        if(hydrographResList.isEmpty()){
+            return RestResponse.no("暂无数据");
+        }
+        return RestResponse.ok(hydrographResList);
+    }
+
+    @Override
     public RestResponse update(UpdateInfoReq req) {
         if(null != req.getIrrigatedPlatformDataInfo()){
             boolean b = irrigatedPlatformDataInfoService.updateById(req.getIrrigatedPlatformDataInfo());
@@ -140,17 +190,17 @@ public class WaterSituationServiceImpl implements WaterSituationService {
 
     @Override
     public RestResponse selectInfoListAll(SelectInfoListReq req) {
-        RestResponse restResponse1 = this.selectInfoList(req);
+        RestResponse restResponse1 = this.selectInfoList1(req);
         if(restResponse1.getCode()==200){
             return restResponse1;
         }
-        RestResponse<List<UseWaterTypeStatisticsRes>> listRestResponse = industrialWaterFeeService.selectInfoList(req);
+        RestResponse listRestResponse = industrialWaterFeeService.selectInfoList(req);
         if(listRestResponse.getCode()==200){
-            return RestResponse.ok(listRestResponse);
+            return listRestResponse;
         }
         RestResponse restResponse = allService.selectInfoList(req);
         if(restResponse.getCode()==200){
-            return RestResponse.ok(restResponse);
+            return restResponse;
         }
         return RestResponse.no("查无数据");
     }

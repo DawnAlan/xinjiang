@@ -6,6 +6,7 @@ import com.cj.waterresources.func.modular.waterPrice.industrialWaterFee.entity.I
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.bean.req.UseWaterTypeStatisticsReq;
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.bean.res.UseWaterTypeStatisticsRes;
 import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.req.SelectInfoListReq;
+import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.res.HydrographRes;
 
 import java.util.List;
 
@@ -19,7 +20,7 @@ public interface IndustrialWaterFeeService extends IService<IndustrialWaterFee> 
 
     List<UseWaterTypeStatisticsRes> statistics(UseWaterTypeStatisticsReq req);
 
-    RestResponse<List<UseWaterTypeStatisticsRes>> selectInfoList(SelectInfoListReq req);
+    RestResponse<List<HydrographRes>> selectInfoList(SelectInfoListReq req);
 
 }
 

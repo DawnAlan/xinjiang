@@ -10,8 +10,10 @@ import com.cj.waterresources.func.modular.trendsTable.service.TrendsTableParamSe
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.bean.res.JobRes;
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.entity.WaterFeeStatisticsDetails;
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.service.WaterFeeStatisticsDetailsService;
+import com.cj.waterresources.func.modular.waterPrice.waterPriceManagement.entity.WaterPriceManagement;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -27,44 +29,41 @@ import java.util.stream.Collectors;
 @Slf4j
 public class WaterFeeTask {
     @Autowired
-    private TrendsTableParamService trendsTableParamService;
-    @Autowired
     private WaterFeeStatisticsDetailsService waterFeeStatisticsDetailsService;
 
     @Autowired
     private RedisUtil redisUtil;
 
-    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
-
-    public JobRes getTableHeadId(){
+    public JobRes getTableHeadIdNoHaveQs(){
         try {
-            String flag = (String) redisUtil.get("waterFee:everyday:"+sdf.format(new Date()));
-            if(StringUtils.isEmpty(flag)){
-                redisUtil.set("waterFee:everyday:"+sdf.format(new Date()),"1");
-            }else {
-                return null;
-            }
             JobRes res = new JobRes();
-            log.info("--------------------------------执行定时插入水费表操作----------------------------");
             String mk = (String) redisUtil.get("trendsTableParam:list");
             if(StringUtils.isEmpty(mk)){
                 waterFeeStatisticsDetailsService.updateCache();
                 mk = (String) redisUtil.get("trendsTableParam:list");
             }
             List<TrendsTableParam> trendsTableParamList = JSONObject.parseArray(mk, TrendsTableParam.class);
+            List<String> resList = new ArrayList<>();
             Map<String,List<String>> map = new HashMap<>();
-            List<String> collect = trendsTableParamList.stream().filter(t -> t.getUseType() == 2).map(TrendsTableParam::getUseStation).collect(Collectors.toList());
-            res.setCollect(collect);
-            //List<String> collect = trendsTableParamService.lambdaQuery().eq(TrendsTableParam::getUseType, 2).list().stream().map(TrendsTableParam::getUseStation).collect(Collectors.toList());
-            for(String s:collect){
+            Map<String, List<TrendsTableParam>> collect = trendsTableParamList.stream().filter(t -> t.getUseType() == 2).collect(Collectors.groupingBy(TrendsTableParam::getUseStation));
+            Set<String> strings = collect.keySet();
+            for(String s:strings){
+                if (s.equals("渠首管理站") || s.equals("零星水费") || s.equals("工业水费")) {
+                    continue;
+                }
+                resList.add(s);
+                List<WaterDailyParamSelectRes> resultList = new ArrayList<>();
                 List<String> tableIds = new ArrayList<>();
-                QueryTrendsTableParamReq req = new QueryTrendsTableParamReq();
-                req.setUseType(2);
-                req.setUseStation(s);
-                RestResponse<List<WaterDailyParamSelectRes>> select = trendsTableParamService.select(req);
-                List<WaterDailyParamSelectRes> data = select.getData();
-                for(WaterDailyParamSelectRes res1 : data){
+                List<TrendsTableParam> list = trendsTableParamList.stream().filter(t->t.getUseType()==2).filter(t->t.getUseStation().equals(s)).collect(Collectors.toList());
+                List<TrendsTableParam> collectTemp = list.stream().filter(t -> t.getPId().equals("0")).collect(Collectors.toList());
+                for (TrendsTableParam param:collectTemp){
+                    WaterDailyParamSelectRes tempRes = new WaterDailyParamSelectRes();
+                    BeanUtils.copyProperties(param,tempRes);
+                    resultList.add(tempRes);
+                }
+                getParamTree(resultList,list);
+                for(WaterDailyParamSelectRes res1 : resultList){
                     List<WaterDailyParamSelectRes> children = res1.getChildren();
                     //
                     if(children != null){
@@ -85,7 +84,10 @@ public class WaterFeeTask {
                 }
                 map.put(s,tableIds);
             }
-            res.setMap(map);
+            if(null !=map && map.size()>0){
+                res.setMap(map);
+                res.setCollect(resList);
+            }
             return res;
         }catch (Exception e){
             e.printStackTrace();
@@ -93,9 +95,71 @@ public class WaterFeeTask {
             return null;
         }
     }
-    @Scheduled(cron="0 30 8 * * ?")//每天8:30
+
+    public JobRes getTableHeadIdHaveQs(){
+        try {
+            JobRes res = new JobRes();
+            String mk = (String) redisUtil.get("trendsTableParam:list");
+            if(StringUtils.isEmpty(mk)){
+                waterFeeStatisticsDetailsService.updateCache();
+                mk = (String) redisUtil.get("trendsTableParam:list");
+            }
+            List<TrendsTableParam> trendsTableParamList = JSONObject.parseArray(mk, TrendsTableParam.class);
+            Map<String,List<String>> map = new HashMap<>();
+            List<String> resList = new ArrayList<>();
+            Map<String, List<TrendsTableParam>> collect = trendsTableParamList.stream().filter(t -> t.getUseType() == 2).collect(Collectors.groupingBy(TrendsTableParam::getUseStation));
+            Set<String> strings = collect.keySet();
+            for(String s:strings){
+                if (s.equals("渠首灯笼渠") || s.equals("零星水费") || s.equals("工业水费") || s.equals("渠首砂厂") || s.equals("河东管理站农业") || s.equals("河东管理站绿化") || s.equals("河西管理站")) {
+                    continue;
+                }
+                resList.add(s);
+                List<WaterDailyParamSelectRes> resultList = new ArrayList<>();
+                List<String> tableIds = new ArrayList<>();
+                List<TrendsTableParam> list = trendsTableParamList.stream().filter(t->t.getUseType()==2).filter(t->t.getUseStation().equals(s)).collect(Collectors.toList());
+                List<TrendsTableParam> collectTemp = list.stream().filter(t -> t.getPId().equals("0")).collect(Collectors.toList());
+                for (TrendsTableParam param:collectTemp){
+                    WaterDailyParamSelectRes tempRes = new WaterDailyParamSelectRes();
+                    BeanUtils.copyProperties(param,tempRes);
+                    resultList.add(tempRes);
+                }
+                getParamTree(resultList,list);
+                for(WaterDailyParamSelectRes res1 : resultList){
+                    List<WaterDailyParamSelectRes> children = res1.getChildren();
+                    //
+                    if(children != null){
+                        for(WaterDailyParamSelectRes res2:children){
+                            List<WaterDailyParamSelectRes> children1 = res2.getChildren();
+                            //
+                            if(children1 !=null){
+                                for(WaterDailyParamSelectRes res3:children1){
+                                    tableIds.add(res3.getId());
+                                }
+                            }else {
+                                tableIds.add(res2.getId());
+                            }
+                        }
+                    }else {
+                        tableIds.add(res1.getId());
+                    }
+                }
+                map.put(s,tableIds);
+            }
+            if(null !=map && map.size()>0){
+                res.setMap(map);
+                res.setCollect(resList);
+            }
+            return res;
+        }catch (Exception e){
+            e.printStackTrace();
+            log.error(e.getLocalizedMessage());
+            return null;
+        }
+    }
+    @Scheduled(cron="0 30 08 * * ?")//每天8:30
     public void createWaterFeeTableNoHaveQs(){
-        JobRes tableHeadId = getTableHeadId();
+        log.info("--------------------------------执行定时插入水费表操作(无渠首管理站)----------------------------");
+        JobRes tableHeadId = getTableHeadIdNoHaveQs();
         if(null != tableHeadId) {
             List<String> collect = tableHeadId.getCollect();
             Map<String, List<String>> map = tableHeadId.getMap();
@@ -110,7 +174,7 @@ public class WaterFeeTask {
                 List<String> strings = map.get(s);
                 List<WaterFeeStatisticsDetails> result = new ArrayList<>();
                 for (String s1 : strings) {
-                    if (!s.equals("渠首管理站")) {
+                    if (!s.equals("渠首管理站") && !s.equals("零星水费") && !s.equals("工业水费")) {
                         WaterFeeStatisticsDetails details = new WaterFeeStatisticsDetails();
                         details.setTableHeadId(s1);
                         details.setStation(s);
@@ -126,9 +190,10 @@ public class WaterFeeTask {
         }
     }
 
-    @Scheduled(cron="0 35 8 * * ?")//每天8:35
+    @Scheduled(cron="0 32 08 * * ?")//每天8:35
     public void createWaterFeeTableHaveQs(){
-        JobRes tableHeadId = getTableHeadId();
+        log.info("--------------------------------执行定时插入水费表操作（仅渠首管理站）----------------------------");
+        JobRes tableHeadId = getTableHeadIdHaveQs();
         if(null != tableHeadId){
             List<String> collect = tableHeadId.getCollect();
             Map<String, List<String>> map = tableHeadId.getMap();
@@ -177,5 +242,23 @@ public class WaterFeeTask {
         calendar.setTime(date);
         calendar.add(Calendar.DATE,i);
         return calendar.getTime();
+    }
+
+    public void getParamTree(List<WaterDailyParamSelectRes> resultList,List<TrendsTableParam> list){
+        if(resultList.size()>0){
+            for(WaterDailyParamSelectRes res : resultList){
+                List<TrendsTableParam> collect = list.stream().filter(t -> t.getPId().equals(res.getId())).collect(Collectors.toList());
+                if(collect.size()>0){
+                    List<WaterDailyParamSelectRes> tempList = new ArrayList<>();
+                    for (TrendsTableParam param:collect){
+                        WaterDailyParamSelectRes tempRes = new WaterDailyParamSelectRes();
+                        BeanUtils.copyProperties(param,tempRes);
+                        tempList.add(tempRes);
+                    }
+                    res.setChildren(tempList);
+                    getParamTree(tempList,list);
+                }
+            }
+        }
     }
 }

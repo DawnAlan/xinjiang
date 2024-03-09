@@ -90,6 +90,7 @@ public class GatewayConfigure {
             "/api/inspectionapp/v2/api-docs",
             "/api/floodapp/v2/api-docs",
             "/api/datasynchronizationapp/v2/api-docs",
+            "/api/extractionapp/v2/api-docs",
             "/api/approvalapp/v2/api-docs",
             "/api/fourPredictionsapp/v2/api-docs",
 

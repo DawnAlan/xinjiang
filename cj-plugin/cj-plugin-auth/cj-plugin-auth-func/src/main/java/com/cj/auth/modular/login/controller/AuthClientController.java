@@ -8,11 +8,9 @@ import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSupport;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import com.cj.auth.core.annotation.SaClientCheckLogin;
 import com.cj.auth.core.enums.SaClientTypeEnum;
 import com.cj.auth.core.pojo.SaBaseClientLoginUser;
@@ -47,8 +45,11 @@ public class AuthClientController {
     @ApiOperationSupport(order = 1)
     @ApiOperation("C端获取图片验证码")
     @GetMapping("/auth/c/getPicCaptcha")
-    public CommonResult<AuthPicValidCodeResult> getPicCaptcha() {
-        return CommonResult.data(authService.getPicCaptcha(SaClientTypeEnum.C.getValue()));
+    public CommonResult<AuthPicValidCodeResult> getPicCaptcha(@RequestParam("key") String key) {
+        if(StringUtils.isEmpty(key)){
+            return CommonResult.error("随机字符串不能为空");
+        }
+        return CommonResult.data(authService.getPicCaptcha(key));
     }
 
     /**

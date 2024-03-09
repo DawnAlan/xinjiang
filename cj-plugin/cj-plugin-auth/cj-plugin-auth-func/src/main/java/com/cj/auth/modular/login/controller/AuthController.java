@@ -12,10 +12,7 @@ import com.github.xiaoymin.knife4j.annotations.ApiSupport;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import com.cj.auth.core.enums.SaClientTypeEnum;
 import com.cj.auth.core.pojo.SaBaseLoginUser;
 import com.cj.common.pojo.CommonResult;
@@ -47,8 +44,8 @@ public class AuthController {
     @ApiOperationSupport(order = 1)
     @ApiOperation("B端获取图片验证码")
     @GetMapping("/auth/b/getPicCaptcha")
-    public CommonResult<AuthPicValidCodeResult> getPicCaptcha() {
-        return CommonResult.data(authService.getPicCaptcha(SaClientTypeEnum.B.getValue()));
+    public CommonResult<AuthPicValidCodeResult> getPicCaptcha(@RequestParam("key") String key) {
+        return CommonResult.data(authService.getPicCaptcha(key));
     }
 
     /**

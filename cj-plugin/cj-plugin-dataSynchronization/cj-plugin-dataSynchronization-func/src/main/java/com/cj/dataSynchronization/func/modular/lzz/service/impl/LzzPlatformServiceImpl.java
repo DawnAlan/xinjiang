@@ -523,9 +523,12 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
         List<UserIdParam> userIdParams = pubUserService.selectPidList();
         List<LzzPlatformTree> lzzPlatformTrees = new ArrayList<>();
         userIdParams.forEach(t->{
-            LzzPlatformTree tree = new LzzPlatformTree();
-            BeanUtils.copyProperties(tree,t);
-            lzzPlatformTrees.add(tree);
+            if(StringUtils.isNotEmpty(t.getName())){
+                LzzPlatformTree tree = new LzzPlatformTree();
+                BeanUtils.copyProperties(tree,t);
+                lzzPlatformTrees.add(tree);
+            }
+
         });
         boolean save = lzzPlatformTreeService.saveBatch(lzzPlatformTrees);
         if(save){
@@ -539,9 +542,11 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
         List<UserIdParam> userIdParams = pubUserService.selectPidList();
         List<LzzPlatformTree> lzzPlatformTrees = new ArrayList<>();
         userIdParams.forEach(t->{
-            LzzPlatformTree tree = new LzzPlatformTree();
-            BeanUtils.copyProperties(tree,t);
-            lzzPlatformTrees.add(tree);
+            if(StringUtils.isNotEmpty(t.getName())) {
+                LzzPlatformTree tree = new LzzPlatformTree();
+                BeanUtils.copyProperties(tree, t);
+                lzzPlatformTrees.add(tree);
+            }
         });
         boolean save = lzzPlatformTreeService.saveOrUpdateBatch(lzzPlatformTrees);
         if(save){
