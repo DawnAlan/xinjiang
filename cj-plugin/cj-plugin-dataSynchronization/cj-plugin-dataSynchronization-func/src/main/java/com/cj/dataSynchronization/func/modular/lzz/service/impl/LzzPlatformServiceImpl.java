@@ -25,9 +25,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -144,8 +142,6 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
         if(StringUtils.isNotEmpty(lzz.getId())){
             boolean b = lzzGaugingStationService.saveOrUpdate(lzz);
             if(b){
-                redisUtil.set("lzz:time:waterLevel:"+timeData.format(lzz.getGatherTime()),lzz.getRelativeWaterLevel(),86400 * 30);
-                redisUtil.set("lzz:time:capacity:"+timeData.format(lzz.getGatherTime()),lzz.getStorageCapacity(),86400 * 30);
                 return RestResponse.ok("ok");
             }else {
                 return RestResponse.no("error");
@@ -201,6 +197,62 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
         boolean b = lzzGaugingStationService.saveOrUpdateBatch(gaugingStationList);
         if(b){
             return RestResponse.ok("ok");
+        }else {
+            return RestResponse.no("error");
+        }
+    }
+
+    @Override
+    public RestResponse insertLzzInfo(Date time) {
+        ParamDto oneTemp = lzzPlatformMapper.selectLzzInfoByTime("9210201700600", sdf.format(time));
+        ParamDto twoTemp = lzzPlatformMapper.selectLzzInfoByTime("9210201710600", sdf.format(time));
+        LzzGaugingStation one = new LzzGaugingStation();
+        one.setId("楼庄子水厂1号管道"+":"+oneTemp.getTime().getTime());
+        one.setFlow(oneTemp.getV().doubleValue());
+        one.setStationName("楼庄子水厂1号管道");
+        one.setTreeId(oneTemp.getSenid());
+        one.setGatherTime(oneTemp.getTime());
+        boolean save1 = lzzGaugingStationService.save(one);
+        LzzGaugingStation two = new LzzGaugingStation();
+        two.setId("楼庄子水厂2号管道"+":"+twoTemp.getTime().getTime());
+        two.setFlow(twoTemp.getV().doubleValue());
+        two.setStationName("楼庄子水厂2号管道");
+        two.setTreeId(twoTemp.getSenid());
+        two.setGatherTime(twoTemp.getTime());
+        boolean save2 = lzzGaugingStationService.save(two);
+        if(save1 && save2){
+            return RestResponse.ok();
+        }else {
+            return RestResponse.no("error");
+        }
+    }
+
+    @Override
+    public RestResponse insertLzzBetweenTime(Date startTime, Date endTime) {
+        List<LzzGaugingStation> lzzGaugingStationList = new ArrayList<>();
+        List<ParamDto> one = lzzPlatformMapper.selectLzzInfoBetweenTime("9210201700600", sdf.format(startTime), sdf.format(endTime));
+        List<ParamDto> two = lzzPlatformMapper.selectLzzInfoBetweenTime("9210201710600", sdf.format(startTime), sdf.format(endTime));
+        for(ParamDto dto:one){
+            LzzGaugingStation station = new LzzGaugingStation();
+            station.setId("楼庄子水厂1号管道"+":"+dto.getTime().getTime());
+            station.setFlow(dto.getV().doubleValue());
+            station.setStationName("楼庄子水厂1号管道");
+            station.setTreeId(dto.getSenid());
+            station.setGatherTime(dto.getTime());
+            lzzGaugingStationList.add(station);
+        }
+        for(ParamDto dto:two){
+            LzzGaugingStation station = new LzzGaugingStation();
+            station.setId("楼庄子水厂2号管道"+":"+dto.getTime().getTime());
+            station.setFlow(dto.getV().doubleValue());
+            station.setStationName("楼庄子水厂2号管道");
+            station.setTreeId(dto.getSenid());
+            station.setGatherTime(dto.getTime());
+            lzzGaugingStationList.add(station);
+        }
+        boolean b = lzzGaugingStationService.saveOrUpdateBatch(lzzGaugingStationList);
+        if(b){
+            return RestResponse.ok();
         }else {
             return RestResponse.no("error");
         }
@@ -353,6 +405,60 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
         }
         if(reservoirLevelList.size()>0){
             return RestResponse.ok(reservoirLevelList);
+        }else {
+            return RestResponse.no("error");
+        }
+    }
+
+    @Override
+    public RestResponse<LzzGaugingStation> getReservoirLevelWaterLevelByTime(Date time) {
+        List<UserIdParam> rainfallStationPidList = pubUserService.selectPidList("水位站").stream().filter(t->t.getName().equals("库水位水位站")).collect(Collectors.toList());
+        List<UserIdParam> userIdParams = pubUserService.selectReservoirLevelIdList(rainfallStationPidList.get(0).getId());
+        LzzGaugingStation lzz = null;
+        for(UserIdParam userIdParam :userIdParams) {
+            if (userIdParam.getName().substring(userIdParam.getName().length() - 2).contains("水位")) {
+                ParamDto paramDto= lzzPlatformMapper.selectInfoByTime(userIdParam.getId(), sdf.format(time));
+                lzz = new LzzGaugingStation();
+                lzz.setTreeId(rainfallStationPidList.get(0).getId());
+                lzz.setId("楼庄子库水位站:" + paramDto.getTime().getTime());
+                lzz.setGatherTime(paramDto.getTime());
+                lzz.setStationName("楼庄子库水位站");
+                lzz.setRelativeWaterLevel(paramDto.getV().doubleValue());
+                String[] lzzSplit = paramDto.getV().toString().split("\\.");
+                List<String> strings = NumberUtil.roundDecimal(lzzSplit[0], lzzSplit[1]);
+                List<StorageCapacityCurve> LZZlist = storageCapacityCurveService.lambdaQuery().
+                        eq(StorageCapacityCurve::getWaterLevel, strings.get(0)).
+                        eq(StorageCapacityCurve::getInterpolation, strings.get(1)).
+                        eq(StorageCapacityCurve::getReservoir, "lzz").
+                        list();
+                if (null != LZZlist && LZZlist.size() > 0) {
+                    StorageCapacityCurve storageCapacityCurve = LZZlist.get(0);
+                    lzz.setStorageCapacity(storageCapacityCurve.getStorageCapacity().doubleValue());
+                } else {
+                    lzz.setStorageCapacity(0.00);
+                }
+            }
+        }
+        if(null !=lzz){
+            return RestResponse.ok(lzz);
+        }else {
+            return RestResponse.no("error");
+        }
+    }
+
+    @Override
+    public RestResponse<Map<String,ParamDto>> getLzzInfoByTime(Date time) {
+        Map<String,ParamDto> resultMap = new HashMap<>();
+        ParamDto oneTemp = lzzPlatformMapper.selectLzzInfoByTime("9210201700600", sdf.format(time));
+        ParamDto twoTemp = lzzPlatformMapper.selectLzzInfoByTime("9210201710600", sdf.format(time));
+        if(null != oneTemp){
+            resultMap.put("one",oneTemp);
+        }
+        if(null != twoTemp){
+            resultMap.put("two",twoTemp);
+        }
+        if(resultMap.size()>0){
+            return RestResponse.ok(resultMap);
         }else {
             return RestResponse.no("error");
         }

@@ -269,4 +269,9 @@ public class SysUser extends CommonEntity implements TransPojo {
     @ApiModelProperty(value = "主管名称", position = 50)
     @TableField(exist = false)
     private String directorName;
+
+    /** 电子签名 */
+    @ApiModelProperty(value = "电子签名", position = 51)
+    @TableField(insertStrategy = FieldStrategy.IGNORED, updateStrategy = FieldStrategy.IGNORED)
+    private String digitalSignature;
 }

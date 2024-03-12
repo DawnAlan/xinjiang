@@ -4,6 +4,7 @@ package com.cj.sys.modular.user.controller;
 import cn.hutool.core.lang.tree.Tree;
 import cn.hutool.json.JSONObject;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.cj.common.model.RestResponse;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSupport;
 import io.swagger.annotations.Api;
@@ -29,6 +30,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -370,5 +372,18 @@ public class SysUserController {
     @GetMapping("/sys/user/userSelector")
     public CommonResult<Page<SysUser>> userSelector(SysUserSelectorUserParam sysUserSelectorUserParam) {
         return CommonResult.data(sysUserService.userSelector(sysUserSelectorUserParam));
+    }
+
+    /**
+     * 上传电子签
+     *
+     * @author leoluoxu
+     * @date 2022/4/24 20:00
+     */
+    @ApiOperationSupport(order = 24)
+    @ApiOperation("上传电子签")
+    @GetMapping("/sys/user/uploadDigitalSignature")
+    public RestResponse uploadDigitalSignature(@RequestParam("file")MultipartFile file,@RequestParam("id") String id) {
+        return sysUserService.uploadDigitalSignature(file,id);
     }
 }

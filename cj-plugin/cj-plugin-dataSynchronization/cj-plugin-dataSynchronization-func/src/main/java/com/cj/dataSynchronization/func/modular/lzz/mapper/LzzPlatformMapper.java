@@ -18,4 +18,10 @@ public interface LzzPlatformMapper {
 
     @Select("select time,v,SENID from wds.HOURDB where SENID = #{senId} and CONVERT(nvarchar(21),[TIME],121) BETWEEN #{startTime} AND #{endTime}")
     List<ParamDto> selectInfoBetweenTime(@Param("senId") String senId, @Param("startTime") String startTime, @Param("endTime") String endTime);
+
+    @Select("select time,FACTV/3600 as v,SENID from wds.HOURDB where SENID = #{senId} and CONVERT(nvarchar(13),[TIME],121) = #{time}")
+    ParamDto selectLzzInfoByTime(@Param("senId") String senId, @Param("time") String time);
+
+    @Select("select time,FACTV/3600 as v,SENID from wds.RTSQ where SENID = #{senId} and CONVERT(nvarchar(21),[TIME],121) BETWEEN #{startTime} AND #{endTime}")
+    List<ParamDto> selectLzzInfoBetweenTime(@Param("senId") String senId, @Param("startTime") String startTime, @Param("endTime") String endTime);
 }

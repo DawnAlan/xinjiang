@@ -3,6 +3,7 @@ package com.cj.approval.func.modular.approval.approvalManagement.service.impl;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.lang.UUID;
 import cn.hutool.core.lang.tree.Tree;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -23,6 +24,9 @@ import com.cj.common.util.UUIDUtils;
 import com.cj.sys.api.SysOrgApi;
 import com.cj.sys.api.SysUserApi;
 import com.deepoove.poi.XWPFTemplate;
+import com.deepoove.poi.data.PictureRenderData;
+import com.deepoove.poi.data.PictureType;
+import com.deepoove.poi.data.Pictures;
 import io.minio.ObjectWriteResponse;
 import lombok.SneakyThrows;
 import org.apache.commons.compress.utils.IOUtils;
@@ -38,14 +42,19 @@ import org.springframework.web.multipart.MultipartFile;
 import sun.applet.Main;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
+import java.net.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static org.springframework.core.io.buffer.DataBufferUtils.readInputStream;
 
 /**
  * 审批管理表(ApprovalManagement)表服务实现类
@@ -166,7 +175,7 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
         if(b){
             try {
                 if(approvalManagement.getApprovalStatus()==2){
-                    if(!byId1.getInstructionType().equals("水库调水")){
+                    if(!byId1.getInstructionType().equals("指令签批")){
                         String[] lssuedById = byId1.getLssuedById().split(",");
                         for(String s:lssuedById){
                             WebSocketServer.sendInfo("您创建的指令已审批",s);
@@ -189,6 +198,7 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
             }catch (Exception e){
                 e.printStackTrace();
                 TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                redisUtil.set("approvalManagement_"+approvalManagement.getId(),approvalTemp);
                 return RestResponse.no("send msg fail");
             }
             return RestResponse.ok();
@@ -292,7 +302,7 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void thymeleafExport(HttpServletResponse response, String id) {
+    public void thymeleafExport(HttpServletResponse response, String id,HttpServletRequest request) {
         ApprovalManagement byId = this.getById(id);
         if(StringUtils.isNotEmpty(byId.getFileAddress())){
             try {
@@ -335,6 +345,21 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
                         put("lssuedBy", byId.getLssuedBy());
                         put("approvedBy", byId.getApprovedBy());
                         put("createTime", sdf.format(byId.getCreateTime()));
+                        try {
+                            String approvedById = byId.getApprovedById();
+                            String[] split = approvedById.split(",");
+                            for(int a=0;a<split.length;a++) {
+                                JSONObject userByIdWithoutException = sysUserApi.getUserByIdWithoutException(split[a]);
+                                String digitalSignature = (String) userByIdWithoutException.get("digitalSignature");
+                                String filePath = "http://192.168.31.154:9000/tth/"+digitalSignature;
+                                String fileResultPath = System.getProperty("java.io.tmpdir")+"/"+UUIDUtils.getUUID()+".png";
+                                downloadAndSaveFile(filePath,fileResultPath);
+                                put("pic"+(a+1), Pictures.ofStream(new FileInputStream(fileResultPath), PictureType.PNG)
+                                        .size(50, 25).create());
+                            }
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
                     }});
             try {
                 // 将完成数据渲染的文档写出
@@ -397,9 +422,69 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
         return RestResponse.ok(saBaseLoginUser);
     }
 
-    public static void main(String[] args) {
-        String s= "123,456";
-        System.out.println(Arrays.asList(s.split(",")).contains("12"));
+    @Override
+    public void download(String path, HttpServletResponse response) {
+        //从minio下载
+        minioUtils.download("tth",path,response);
+    }
+
+    public String getIp(HttpServletRequest request) {
+        /*String remoteAddr = request.getRemoteAddr();
+        String forwarded = request.getHeader("X-Forwarded-For");
+        String realIp = request.getHeader("X-Real-IP");
+        String ip = null;
+        if (realIp == null){
+            if (forwarded == null) {
+                ip = remoteAddr;
+            } else {
+                ip = remoteAddr + "/" + forwarded.split(",")[0];
+            }
+        } else{
+            if (realIp.equals(forwarded)){
+                ip = realIp;
+            } else {
+                if (forwarded != null) {
+                    forwarded = forwarded.split(",")[0];
+                }
+                ip = realIp + "/" + forwarded;
+            }
+        }
+         return ip;
+        */
+        try {
+            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+            while (interfaces.hasMoreElements()) {
+                NetworkInterface networkInterface = interfaces.nextElement();
+                if (!networkInterface.isLoopback() && networkInterface.isUp()) {
+                    Enumeration<InetAddress> addresses = networkInterface.getInetAddresses();
+                    while (addresses.hasMoreElements()) {
+                        InetAddress address = addresses.nextElement();
+                        if (address.isSiteLocalAddress()) {
+                            return address.getHostAddress();
+                        }
+                    }
+                }
+            }
+        } catch (SocketException e) {
+            e.printStackTrace();
+            return null;
+        }
+       return null;
+    }
+
+    @SneakyThrows
+    public static void downloadAndSaveFile(String fileUrl, String destinationFilePath) {
+        try (InputStream in = new URL(fileUrl).openStream();
+             FileOutputStream out = new FileOutputStream(destinationFilePath)) {
+
+            byte[] buffer = new byte[4096];
+            int n;
+            while ((n = in.read(buffer)) != -1) {
+                out.write(buffer, 0, n);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
 

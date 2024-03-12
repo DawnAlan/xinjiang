@@ -17,6 +17,7 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.img.ImgUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.IoUtil;
+import cn.hutool.core.lang.UUID;
 import cn.hutool.core.lang.tree.Tree;
 import cn.hutool.core.lang.tree.TreeNode;
 import cn.hutool.core.lang.tree.TreeNodeConfig;
@@ -44,7 +45,12 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.cj.auth.core.pojo.SaBaseLoginUser;
+import com.cj.auth.core.util.StpLoginUserUtil;
+import com.cj.common.model.RestResponse;
+import com.cj.sys.core.util.MinioUtils;
 import com.fhs.trans.service.impl.TransService;
+import io.minio.ObjectWriteResponse;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.springframework.stereotype.Service;
@@ -153,6 +159,9 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
     @Resource
     private SysRelationService sysRelationService;
+
+    @Resource
+    private MinioUtils minioUtils;
 
 
     @Override
@@ -1526,5 +1535,24 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
                 SysRole::getCategory, SysRole::getSortCode)
                 .in(SysRole::getId, sysUserIdListParam.getIdList()).orderByAsc(SysRole::getSortCode);
         return sysRoleService.list(lambdaQueryWrapper);
+    }
+
+    @Override
+    public RestResponse uploadDigitalSignature(MultipartFile file,String id) {
+        SysUser byId = this.getById(id);
+        String s = ImageHandleUtil.transferAlpha(file, byId.getName());
+        Date date = new Date();
+        String yyyyMMdd = DateUtil.format(date, "yyyyMMdd");
+        String hh = DateUtil.format(date, "HH");
+        String mm = DateUtil.format(date, "mm");
+        String ss = DateUtil.format(date, "ss");
+        ObjectWriteResponse objectWriteResponse = minioUtils.putObject("tth", yyyyMMdd + "/" + hh + "/" + mm + "/" + ss + "/" + UUID.fastUUID().toString(true) + "/" + byId.getName()+".png", s);
+        String object = objectWriteResponse.object();
+        boolean update = this.lambdaUpdate().set(SysUser::getDigitalSignature, object).eq(SysUser::getId, id).update();
+        if(update){
+            return RestResponse.ok();
+        }else {
+            return RestResponse.no("上传失败");
+        }
     }
 }

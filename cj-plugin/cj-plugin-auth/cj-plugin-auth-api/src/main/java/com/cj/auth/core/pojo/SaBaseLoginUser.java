@@ -1,5 +1,7 @@
 package com.cj.auth.core.pojo;
 
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
+import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
@@ -232,6 +234,10 @@ public abstract class SaBaseLoginUser {
     /** 用户密码hash值 */
     @ApiModelProperty(value = "用户密码hash值", position = 54)
     private String password;
+
+    /** 电子签名 */
+    @ApiModelProperty(value = "电子签名", position = 55)
+    private String digitalSignature;
 
     /** 是否可登录，由继承类实现 */
     public abstract Boolean getEnabled();

@@ -87,8 +87,8 @@ public class ApprovalManagementController{
     @ApiOperationSupport(order = 8)
     @ApiOperation("预览调度指令单")
     @GetMapping("/thymeleafExport")
-    public void thymeleafExport(HttpServletResponse response,@RequestParam("id") String id) {
-         approvalManagementService.thymeleafExport(response,id);
+    public void thymeleafExport(HttpServletResponse response,HttpServletRequest request,@RequestParam("id") String id) {
+         approvalManagementService.thymeleafExport(response,id,request);
     }
 
     @ApiOperationSupport(order = 9)
@@ -123,6 +123,13 @@ public class ApprovalManagementController{
     @GetMapping("/revoke")
     public RestResponse revoke(@RequestParam("id") String id) {
         return approvalManagementService.revoke(id);
+    }
+
+    @ApiOperationSupport(order = 14)
+    @ApiOperation("下载图片")
+    @GetMapping("/download")
+    public void download(@RequestParam("path") String path, HttpServletResponse response) {
+        approvalManagementService.download(path,response);
     }
 }
 

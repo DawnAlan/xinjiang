@@ -3,6 +3,8 @@ package com.cj.model.func.core.util;
 import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
+
+import org.apache.commons.io.FileUtils;
 import org.springframework.lang.Nullable;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.multipart.MultipartFile;

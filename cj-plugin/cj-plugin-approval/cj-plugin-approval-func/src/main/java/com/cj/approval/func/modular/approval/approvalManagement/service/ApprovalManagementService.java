@@ -36,7 +36,7 @@ public interface ApprovalManagementService extends IService<ApprovalManagement> 
 
     RestResponse<List<ApprovalManagement>> selectByIds(String ids);
 
-    void thymeleafExport(HttpServletResponse response, String id);
+    void thymeleafExport(HttpServletResponse response, String id,HttpServletRequest request);
 
     void testView(HttpServletResponse response);
 
@@ -45,5 +45,7 @@ public interface ApprovalManagementService extends IService<ApprovalManagement> 
     RestResponse getOrgList();
 
     RestResponse<SaBaseLoginUser> getUserInfo();
+
+    void download(String path, HttpServletResponse response);
 }
 

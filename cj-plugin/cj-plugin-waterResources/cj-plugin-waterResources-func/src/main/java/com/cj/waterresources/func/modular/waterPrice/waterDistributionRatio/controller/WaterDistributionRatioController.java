@@ -48,65 +48,77 @@ public class WaterDistributionRatioController{
     @Autowired
     private TotalIdToStationService totalIdToStationService;
 
+    private Object lock = new Object();
+
 
     @ApiOperationSupport(order = 1)
     @ApiOperation("新增")
     @PostMapping("/add")
     public RestResponse add(@RequestBody List<WaterDistributionRatio> waterDistributionRatios) {
-        waterDistributionRatios.forEach(t->{t.setId(UUIDUtils.getUUID());});
-        List<TotalIdToStation> list = totalIdToStationService.lambdaQuery().eq(TotalIdToStation::getUseType, 2).eq(TotalIdToStation::getStation, waterDistributionRatios.get(0).getStation()).list();
-        //计算行合计
-        if(null != list && list.size()>0){
-            Double total = 0.0;
-            List<String> collect = list.stream().filter(t->t.getName().equals("合计")).map(TotalIdToStation::getTotalId).collect(Collectors.toList());
-            for(String id:collect){
-                Double value = 0.0;
-                TrendsTableParam tableParam = trendsTableParamService.getById(id);
-                if(!tableParam.getPId().equals("0")){
-                    List<TrendsTableParam> noTotalList = trendsTableParamService.lambdaQuery().eq(TrendsTableParam::getPId, tableParam.getPId()).ne(TrendsTableParam::getParamName, "合计").list();
-                    for(TrendsTableParam param:noTotalList){
-                        for(WaterDistributionRatio t:waterDistributionRatios){
-                            if(t.getTableBeadId().equals(param.getId())){
-                                value+=t.getV()==null?0.0:t.getV();
-                            }
-                            List<TrendsTableParam> listed = trendsTableParamService.lambdaQuery().eq(TrendsTableParam::getPId, param.getId()).ne(TrendsTableParam::getParamName, "合计").list();
-                            if(null != listed && listed.size()>0){
-                                for (TrendsTableParam param1:listed){
-                                    if(t.getTableBeadId().equals(param1.getId())){
+        WaterDistributionRatio waterDistributionRatio = waterDistributionRatios.get(0);
+        synchronized (lock){
+            WaterDistributionRatio ratio = waterDistributionRatioService.lambdaQuery().eq(WaterDistributionRatio::getStation, waterDistributionRatio.getStation()).
+                    eq(WaterDistributionRatio::getYear, waterDistributionRatio.getYear()).
+                    eq(WaterDistributionRatio::getMonth, waterDistributionRatio.getMonth()).
+                    eq(WaterDistributionRatio::getTenDays, waterDistributionRatio.getTenDays()).one();
+            if(null ==ratio){
+                waterDistributionRatios.forEach(t->{t.setId(UUIDUtils.getUUID());});
+                List<TotalIdToStation> list = totalIdToStationService.lambdaQuery().eq(TotalIdToStation::getUseType, 2).eq(TotalIdToStation::getStation, waterDistributionRatios.get(0).getStation()).list();
+                //计算行合计
+                if(null != list && list.size()>0){
+                    Double total = 0.0;
+                    List<String> collect = list.stream().filter(t->t.getName().equals("合计")).map(TotalIdToStation::getTotalId).collect(Collectors.toList());
+                    for(String id:collect){
+                        Double value = 0.0;
+                        TrendsTableParam tableParam = trendsTableParamService.getById(id);
+                        if(!tableParam.getPId().equals("0")){
+                            List<TrendsTableParam> noTotalList = trendsTableParamService.lambdaQuery().eq(TrendsTableParam::getPId, tableParam.getPId()).ne(TrendsTableParam::getParamName, "合计").list();
+                            for(TrendsTableParam param:noTotalList){
+                                for(WaterDistributionRatio t:waterDistributionRatios){
+                                    if(t.getTableBeadId().equals(param.getId())){
                                         value+=t.getV()==null?0.0:t.getV();
+                                    }
+                                    List<TrendsTableParam> listed = trendsTableParamService.lambdaQuery().eq(TrendsTableParam::getPId, param.getId()).ne(TrendsTableParam::getParamName, "合计").list();
+                                    if(null != listed && listed.size()>0){
+                                        for (TrendsTableParam param1:listed){
+                                            if(t.getTableBeadId().equals(param1.getId())){
+                                                value+=t.getV()==null?0.0:t.getV();
+                                            }
+                                        }
                                     }
                                 }
                             }
+                            for(WaterDistributionRatio t:waterDistributionRatios){
+                                if(t.getTableBeadId().equals(id)){
+                                    t.setV(value);
+                                }
+                            }
+
                         }
                     }
                     for(WaterDistributionRatio t:waterDistributionRatios){
-                        if(t.getTableBeadId().equals(id)){
-                            t.setV(value);
+                        if(!list.stream().map(TotalIdToStation::getTotalId).collect(Collectors.toList()).contains(t.getTableBeadId())){
+                            total+=t.getV()==null?0.0:t.getV();
                         }
                     }
-
-                }
-            }
-            for(WaterDistributionRatio t:waterDistributionRatios){
-                if(!list.stream().map(TotalIdToStation::getTotalId).collect(Collectors.toList()).contains(t.getTableBeadId())){
-                    total+=t.getV()==null?0.0:t.getV();
-                }
-            }
-            TrendsTableParam one = trendsTableParamService.lambdaQuery().eq(TrendsTableParam::getPId, "0").eq(TrendsTableParam::getUseType,2).in(TrendsTableParam::getId, collect).one();
-            if(null != one){
-                for(WaterDistributionRatio t:waterDistributionRatios){
-                    if(t.getTableBeadId().equals(one.getId())){
-                        t.setV(total);
+                    TrendsTableParam one = trendsTableParamService.lambdaQuery().eq(TrendsTableParam::getPId, "0").eq(TrendsTableParam::getUseType,2).in(TrendsTableParam::getId, collect).one();
+                    if(null != one){
+                        for(WaterDistributionRatio t:waterDistributionRatios){
+                            if(t.getTableBeadId().equals(one.getId())){
+                                t.setV(total);
+                            }
+                        }
                     }
                 }
+                boolean b = waterDistributionRatioService.saveBatch(waterDistributionRatios);
+                if(b) {
+                    return RestResponse.ok("新增成功");
+                }else {
+                    return RestResponse.no("新增失败");
+                }
             }
         }
-        boolean b = waterDistributionRatioService.saveBatch(waterDistributionRatios);
-        if(b) {
-            return RestResponse.ok("新增成功");
-        }else {
-            return RestResponse.no("新增失败");
-        }
+        throw new RuntimeException("正在新建请勿重复插入！");
     }
 
     @ApiOperationSupport(order = 2)

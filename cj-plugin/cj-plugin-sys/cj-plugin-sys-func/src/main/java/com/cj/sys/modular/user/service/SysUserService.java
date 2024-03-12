@@ -5,6 +5,7 @@ import cn.hutool.core.lang.tree.Tree;
 import cn.hutool.json.JSONObject;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.cj.common.model.RestResponse;
 import org.springframework.web.multipart.MultipartFile;
 import com.cj.auth.core.pojo.SysLoginUser;
 import com.cj.sys.modular.org.entity.SysOrg;
@@ -15,6 +16,7 @@ import com.cj.sys.modular.user.param.*;
 import com.cj.sys.modular.user.result.*;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -454,4 +456,6 @@ public interface SysUserService extends IService<SysUser> {
      * @date 2023/6/25 11:03
      **/
     List<SysRole> getRoleListByIdList(SysUserIdListParam sysUserIdListParam);
+
+    RestResponse uploadDigitalSignature(MultipartFile file,String id);
 }
