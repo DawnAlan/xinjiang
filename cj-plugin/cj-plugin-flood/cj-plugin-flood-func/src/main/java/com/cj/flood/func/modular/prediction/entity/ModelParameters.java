@@ -20,26 +20,19 @@ public class ModelParameters extends Model<ModelParameters> {
     private Double area;
     //透水系数
     private Double fb;
-    //张力水蓄水
-容量
+    //张力水蓄水容量
     private Double wm;
-    //蒸散发折
-减系数
+    //蒸散发折减系数
     private Double kc;
-    //流域土壤稳定下
-渗率
+    //流域土壤稳定下渗率
     private Double fc;
-    //流域土壤最大
-下渗率
+    //流域土壤最大下渗率
     private Double fm;
-    //霍尔顿下渗曲
-线方程
+    //霍尔顿下渗曲线方程
     private Double k;
-    //下渗能力分
-布系数
+    //下渗能力分布系数
     private Double b;
-    //地面径流消
-退系数
+    //地面径流消退系数
     private Double cs;
     //汇流滞时
     private Double l;
