@@ -12,6 +12,9 @@ public class RainFallDto {
     @ApiModelProperty(value = "降雨量")
     private Double rainFall;
 
+    @ApiModelProperty(value = "气温")
+    private Double temperature;
+
     @ApiModelProperty(value = "降雨地区")
     private String area;
 }
