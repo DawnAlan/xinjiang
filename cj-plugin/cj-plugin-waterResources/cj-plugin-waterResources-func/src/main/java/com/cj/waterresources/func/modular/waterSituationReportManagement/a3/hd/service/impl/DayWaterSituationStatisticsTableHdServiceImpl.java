@@ -283,6 +283,9 @@ public class DayWaterSituationStatisticsTableHdServiceImpl extends ServiceImpl<D
                 dayWaterSituationStatisticsTableHdList.add(hd);
             }
         }
+        if(dayWaterSituationStatisticsTableHdList.isEmpty()){
+            return RestResponse.no("今日无数据");
+        }
         List<TotalIdToStation> totalIdToStationList = totalIdToStationService.lambdaQuery().eq(TotalIdToStation::getUseType, 1).eq(TotalIdToStation::getStation, "河东管理站").list();
         String mk = (String) redisUtil.get("trendsTableParam:list");
         if(StringUtils.isEmpty(mk)){
