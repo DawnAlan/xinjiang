@@ -125,9 +125,9 @@ public class TouTunHe {
      * @throws InvalidFormatException
      */
     public static TemporaryXlsx getFloodList(ForcastInputParamNew paramForcastInputParamNew) throws IOException, ParseException, InvalidFormatException {
-        List<RainFallDto> rainPre = rainPredict(paramForcastInputParamNew);
+//        List<RainFallDto> rainPre = rainPredict(paramForcastInputParamNew);
         paramForcastInputParamNew = emptyProcessing(paramForcastInputParamNew);//异常值处理
-        paramForcastInputParamNew.setRainFallDtos(rainPre);
+//        paramForcastInputParamNew.setRainFallDtos(rainPre);
         ForcastInputParam param = new ForcastInputParam();
         TemporaryXlsx temporaryXlsx;
        //模型类型
