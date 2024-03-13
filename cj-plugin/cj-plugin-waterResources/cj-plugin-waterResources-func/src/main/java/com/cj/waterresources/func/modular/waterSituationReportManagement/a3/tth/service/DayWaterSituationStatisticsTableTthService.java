@@ -23,5 +23,7 @@ public interface DayWaterSituationStatisticsTableTthService extends IService<Day
     RestResponse delete(String ids);
 
     RestResponse update(List<DayWaterSituationStatisticsTableTth> dayWaterSituationStatisticsTableTthList);
+
+    RestResponse insertTodayMeanValue();
 }
 

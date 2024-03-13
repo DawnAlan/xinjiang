@@ -269,6 +269,101 @@ public class DayWaterSituationStatisticsTableHxServiceImpl extends ServiceImpl<D
             return RestResponse.no("error");
         }
     }
+
+    @Override
+    public RestResponse insertTodayMeanValue() {
+        List<DayWaterSituationStatisticsTableHx> dayWaterSituationStatisticsTableHxList = new ArrayList<>();
+        List<DayWaterSituationStatisticsTableHx> dayWaterSituationStatisticsTableHxes = this.baseMapper.selectList(sdf.format(new Date()));
+        if(null!=dayWaterSituationStatisticsTableHxes && dayWaterSituationStatisticsTableHxes.size()>0){
+            DayWaterSituationStatisticsTableHx dayWaterSituationStatisticsTableHx = dayWaterSituationStatisticsTableHxes.get(0);
+            String endTableList = dayWaterSituationStatisticsTableHx.getEndTableList();
+            String[] split = endTableList.split(",");
+            for(String t :split){
+                DayWaterSituationStatisticsTableHx hx = new DayWaterSituationStatisticsTableHx();
+                hx.setId(UUIDUtils.getUUID());
+                String tableParamString = (String)redisUtil.get("trendsTableParam:object:"+t);
+                TrendsTableParam tableParam = JSONObject.parseObject(tableParamString, TrendsTableParam.class);
+                Double flow = (Double) redisUtil.get("irrigatedPlatform:today:"+tableParam.getUnitId());
+                hx.setV(flow==null?null:flow);
+                hx.setTime("今日均");
+                hx.setRecordTime(new Date());
+                hx.setTableHeadId(dayWaterSituationStatisticsTableHx.getTableHeadId());
+                hx.setFrontTableList(dayWaterSituationStatisticsTableHx.getFrontTableList());
+                hx.setEndTableList(dayWaterSituationStatisticsTableHx.getEndTableList());
+                dayWaterSituationStatisticsTableHxList.add(hx);
+            }
+        }
+        List<TotalIdToStation> totalIdToStationList = totalIdToStationService.lambdaQuery().eq(TotalIdToStation::getUseType, 1).eq(TotalIdToStation::getStation, "河西管理站").list();
+        String mk = (String) redisUtil.get("trendsTableParam:list");
+        if(StringUtils.isEmpty(mk)){
+            updateCache();
+            mk = (String) redisUtil.get("trendsTableParam:list");
+        }
+        List<TrendsTableParam> trendsTableParamListTemp = JSONObject.parseArray(mk, TrendsTableParam.class);
+        List<TrendsTableParam> trendsTableParamList = trendsTableParamListTemp.stream().filter(t -> t.getUseType() == 1 && t.getUseStation().equals("河西管理站")).collect(Collectors.toList());
+        //计算行合计
+        if(null != totalIdToStationList && totalIdToStationList.size()>0){
+            Double total = 0.0;
+            List<String> totalCollect = totalIdToStationList.stream().filter(t->t.getName().equals("合计")).map(TotalIdToStation::getTotalId).collect(Collectors.toList());
+            for(String id:totalCollect){
+                Double value = 0.0;
+                String tableParamString = (String)redisUtil.get("trendsTableParam:object:"+id);
+                TrendsTableParam tableParam = JSONObject.parseObject(tableParamString, TrendsTableParam.class);
+                if(!tableParam.getPId().equals("0")){
+                    List<TrendsTableParam> noTotalList = trendsTableParamList.stream().filter(t->t.getPId().equals(tableParam.getPId()) && !t.getParamName().equals("合计")).collect(Collectors.toList());
+                    for(TrendsTableParam param:noTotalList){
+                        for(DayWaterSituationStatisticsTableHx t:dayWaterSituationStatisticsTableHxList){
+                            if(t.getTableHeadId().equals(param.getId())){
+                                value+=t.getV()==null?0.0:t.getV();
+                            }
+                            List<TrendsTableParam> listed = trendsTableParamList.stream().filter(p->p.getPId().equals(param.getId()) && !p.getParamName().equals("合计")).collect(Collectors.toList());
+                            if(null != listed && listed.size()>0){
+                                for (TrendsTableParam param1:listed){
+                                    if(t.getTableHeadId().equals(param1.getId())){
+                                        value+=t.getV()==null?0.0:t.getV();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    for(DayWaterSituationStatisticsTableHx t:dayWaterSituationStatisticsTableHxList){
+                        if(t.getTableHeadId().equals(id)){
+                            t.setV(value);
+                        }
+                    }
+
+                }
+            }
+            for(DayWaterSituationStatisticsTableHx t:dayWaterSituationStatisticsTableHxList){
+                if(!totalIdToStationList.stream().map(TotalIdToStation::getTotalId).collect(Collectors.toList()).contains(t.getTableHeadId())){
+                    total+=t.getV()==null?0.0:t.getV();
+                }
+            }
+            TrendsTableParam one = null;
+            List<TrendsTableParam> TrendsTableParamTemp = trendsTableParamList.stream().filter(t -> t.getPId().equals("0") && t.getUseType() == 1).collect(Collectors.toList());
+            for(TrendsTableParam param : TrendsTableParamTemp){
+                for(String s:totalCollect){
+                    if(param.getId().equals(s)){
+                        one = param;
+                    }
+                }
+            }
+            if(null != one){
+                for(DayWaterSituationStatisticsTableHx t:dayWaterSituationStatisticsTableHxList){
+                    if(t.getTableHeadId().equals(one.getId())){
+                        t.setV(total);
+                    }
+                }
+            }
+        }
+        boolean b = this.saveBatch(dayWaterSituationStatisticsTableHxList);
+        if (b) {
+            return RestResponse.ok();
+        }else {
+            return RestResponse.no("error");
+        }
+    }
+
     private void updateYesterdayData(Date now){
         List<DayWaterSituationStatisticsTableHx> dayWaterSituationStatisticsTableHxList = this.baseMapper.selectInfoList(sdf.format(now));
         List<DayWaterSituationStatisticsTableHx> dayWaterSituationStatisticsTableHxs = this.baseMapper.selectList(getDate(now, 1));

@@ -24,5 +24,7 @@ public interface DayWaterSituationStatisticsTableHdService extends IService<DayW
 
     RestResponse update(List<DayWaterSituationStatisticsTableHd> dayWaterSituationStatisticsTableHdList);
 
+    RestResponse insertTodayMeanValue();
+
 }
 

@@ -23,5 +23,7 @@ public interface DayWaterSituationStatisticsTableQsService extends IService<DayW
     RestResponse delete(String ids);
 
     RestResponse update(List<DayWaterSituationStatisticsTableQs> dayWaterSituationStatisticsTableQsList);
+
+    RestResponse insertTodayMeanValue();
 }
 

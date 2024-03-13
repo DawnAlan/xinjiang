@@ -108,22 +108,19 @@ public class DayWaterSituationStatisticsTableHdServiceImpl extends ServiceImpl<D
         //计算行合计
         if(null != totalIdToStationList && totalIdToStationList.size()>0){
             Double total = 0.0;
-            List<String> totalCollect = totalIdToStationList.stream().filter(t->t.getName().equals("合计")).map(TotalIdToStation::getTotalId).collect(Collectors.toList());
+            List<String> totalCollect = totalIdToStationList.stream().map(TotalIdToStation::getTotalId).collect(Collectors.toList());
             for(String id:totalCollect){
                 Double value = 0.0;
                 String tableParamString = (String)redisUtil.get("trendsTableParam:object:"+id);
                 TrendsTableParam tableParam = JSONObject.parseObject(tableParamString, TrendsTableParam.class);
-                //TrendsTableParam tableParam = trendsTableParamService.getById(id);
                 if(!tableParam.getPId().equals("0")){
                     List<TrendsTableParam> noTotalList = trendsTableParamList.stream().filter(t->t.getPId().equals(tableParam.getPId()) && !t.getParamName().equals("合计")).collect(Collectors.toList());
-                    //List<TrendsTableParam> noTotalList = trendsTableParamService.lambdaQuery().eq(TrendsTableParam::getPId, tableParam.getPId()).ne(TrendsTableParam::getParamName, "合计").list();
                     for(TrendsTableParam param:noTotalList){
                         for(DayWaterSituationStatisticsTableHd t:dayWaterSituationStatisticsTableHdList){
                             if(t.getTableHeadId().equals(param.getId())){
                                 value+=t.getV()==null?0.0:t.getV();
                             }
                             List<TrendsTableParam> listed = trendsTableParamList.stream().filter(p->p.getPId().equals(param.getId()) && !p.getParamName().equals("合计")).collect(Collectors.toList());
-                            //List<TrendsTableParam> listed = trendsTableParamService.lambdaQuery().eq(TrendsTableParam::getPId, param.getId()).ne(TrendsTableParam::getParamName, "合计").list();
                             if(null != listed && listed.size()>0){
                                 for (TrendsTableParam param1:listed){
                                     if(t.getTableHeadId().equals(param1.getId())){
@@ -141,8 +138,11 @@ public class DayWaterSituationStatisticsTableHdServiceImpl extends ServiceImpl<D
                 }
             }
             for(DayWaterSituationStatisticsTableHd t:dayWaterSituationStatisticsTableHdList){
-                if(!totalIdToStationList.stream().map(TotalIdToStation::getTotalId).collect(Collectors.toList()).contains(t.getTableHeadId())){
-                    total+=t.getV()==null?0.0:t.getV();
+                if(!totalCollect.contains(t.getTableHeadId())){
+                    String name = (String)redisUtil.get("trendsTableParam:name:"+t.getTableHeadId());
+                    if(!name.equals("红岩水库")){
+                        total+=t.getV()==null?0.0:t.getV();
+                    }
                 }
             }
             TrendsTableParam one = null;
@@ -154,7 +154,6 @@ public class DayWaterSituationStatisticsTableHdServiceImpl extends ServiceImpl<D
                     }
                 }
             }
-            //TrendsTableParam one = trendsTableParamService.lambdaQuery().eq(TrendsTableParam::getPId, "0").eq(TrendsTableParam::getUseType,1).in(TrendsTableParam::getId, totalCollect).one();
             if(null != one){
                 for(DayWaterSituationStatisticsTableHd t:dayWaterSituationStatisticsTableHdList){
                     if(t.getTableHeadId().equals(one.getId())){
@@ -196,22 +195,19 @@ public class DayWaterSituationStatisticsTableHdServiceImpl extends ServiceImpl<D
         //计算行合计
         if(null != totalIdToStationList && totalIdToStationList.size()>0){
             Double total = 0.0;
-            List<String> totalCollect = totalIdToStationList.stream().filter(t->t.getName().equals("合计")).map(TotalIdToStation::getTotalId).collect(Collectors.toList());
+            List<String> totalCollect = totalIdToStationList.stream().map(TotalIdToStation::getTotalId).collect(Collectors.toList());
             for(String id:totalCollect){
                 Double value = 0.0;
                 String tableParamString = (String)redisUtil.get("trendsTableParam:object:"+id);
                 TrendsTableParam tableParam = JSONObject.parseObject(tableParamString, TrendsTableParam.class);
-                //TrendsTableParam tableParam = trendsTableParamService.getById(id);
                 if(!tableParam.getPId().equals("0")){
                     List<TrendsTableParam> noTotalList = trendsTableParamList.stream().filter(t->t.getPId().equals(tableParam.getPId()) && !t.getParamName().equals("合计")).collect(Collectors.toList());
-                    //List<TrendsTableParam> noTotalList = trendsTableParamService.lambdaQuery().eq(TrendsTableParam::getPId, tableParam.getPId()).ne(TrendsTableParam::getParamName, "合计").list();
                     for(TrendsTableParam param:noTotalList){
                         for(DayWaterSituationStatisticsTableHd t:dayWaterSituationStatisticsTableHdList){
                             if(t.getTableHeadId().equals(param.getId())){
                                 value+=t.getV()==null?0.0:t.getV();
                             }
                             List<TrendsTableParam> listed = trendsTableParamList.stream().filter(p->p.getPId().equals(param.getId()) && !p.getParamName().equals("合计")).collect(Collectors.toList());
-                            //List<TrendsTableParam> listed = trendsTableParamService.lambdaQuery().eq(TrendsTableParam::getPId, param.getId()).ne(TrendsTableParam::getParamName, "合计").list();
                             if(null != listed && listed.size()>0){
                                 for (TrendsTableParam param1:listed){
                                     if(t.getTableHeadId().equals(param1.getId())){
@@ -226,12 +222,14 @@ public class DayWaterSituationStatisticsTableHdServiceImpl extends ServiceImpl<D
                             t.setV(value);
                         }
                     }
-
                 }
             }
             for(DayWaterSituationStatisticsTableHd t:dayWaterSituationStatisticsTableHdList){
-                if(!totalIdToStationList.stream().map(TotalIdToStation::getTotalId).collect(Collectors.toList()).contains(t.getTableHeadId())){
-                    total+=t.getV()==null?0.0:t.getV();
+                if(!totalCollect.contains(t.getTableHeadId())){
+                    String name = (String)redisUtil.get("trendsTableParam:name:"+t.getTableHeadId());
+                    if(!name.equals("红岩水库")){
+                        total+=t.getV()==null?0.0:t.getV();
+                    }
                 }
             }
             TrendsTableParam one = null;
@@ -243,7 +241,6 @@ public class DayWaterSituationStatisticsTableHdServiceImpl extends ServiceImpl<D
                     }
                 }
             }
-            //TrendsTableParam one = trendsTableParamService.lambdaQuery().eq(TrendsTableParam::getPId, "0").eq(TrendsTableParam::getUseType,1).in(TrendsTableParam::getId, totalCollect).one();
             if(null != one){
                 for(DayWaterSituationStatisticsTableHd t:dayWaterSituationStatisticsTableHdList){
                     if(t.getTableHeadId().equals(one.getId())){
@@ -254,36 +251,118 @@ public class DayWaterSituationStatisticsTableHdServiceImpl extends ServiceImpl<D
         }
         boolean b = this.updateBatchById(dayWaterSituationStatisticsTableHdList);
         if (b) {
-            DayWaterSituationStatisticsTableHd dayWaterSituationStatisticsTableHd = dayWaterSituationStatisticsTableHdList.get(0);
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTime(dayWaterSituationStatisticsTableHd.getRecordTime());
-            calendar.add(Calendar.DAY_OF_MONTH,-1);
-            Date time = calendar.getTime();
-            if(dayWaterSituationStatisticsTableHdList.get(0).getTime().equals("昨日均")){
-                dayWaterSituationStatisticsTableHdList.forEach(t->{
-                    String tableParamString = (String)redisUtil.get("trendsTableParam:object:"+t.getTableHeadId());
-                    TrendsTableParam tableParam = JSONObject.parseObject(tableParamString, TrendsTableParam.class);
-                    if(StringUtils.isNotEmpty(tableParam.getUnitId())){
-                        redisUtil.set("A3:data:hd:yesterday:"+sdf.format(time)+":"+tableParam.getUnitId(),t.getV());
-                    }
-                });
+            if(dayWaterSituationStatisticsTableHdList.get(0).getTime().equals("今日均")){
+                updateYesterdayData(dayWaterSituationStatisticsTableHdList.get(0).getRecordTime(),dayWaterSituationStatisticsTableHdList);
             }
-            updateYesterdayData(dayWaterSituationStatisticsTableHdList.get(0).getRecordTime());
             return RestResponse.ok();
         }else {
             return RestResponse.no("error");
         }
     }
 
-    private void updateYesterdayData(Date now){
-        List<DayWaterSituationStatisticsTableHd> dayWaterSituationStatisticsTableHdList = this.baseMapper.selectInfoList(sdf.format(now));
-        List<DayWaterSituationStatisticsTableHd> dayWaterSituationStatisticsTableHds = this.baseMapper.selectList(getDate(now, 1));
-        if(!dayWaterSituationStatisticsTableHds.isEmpty()){
-            List<DayWaterSituationStatisticsTableHd> hdList = dayWaterSituationStatisticsTableHds.stream().filter(t -> t.getTime().equals("昨日均")).collect(Collectors.toList());
-            hdList.forEach(t->{
-                t.setV(dayWaterSituationStatisticsTableHdList.stream().filter(p->p.getTableHeadId().equals(t.getTableHeadId()) && p.getV() !=null).map(DayWaterSituationStatisticsTableHd::getV).reduce(Double::sum).orElse(0.00));
+    @Override
+    public RestResponse insertTodayMeanValue() {
+        List<DayWaterSituationStatisticsTableHd> dayWaterSituationStatisticsTableHdList = new ArrayList<>();
+        List<DayWaterSituationStatisticsTableHd> dayWaterSituationStatisticsTableHds = this.baseMapper.selectList(sdf.format(new Date()));
+        if(null!=dayWaterSituationStatisticsTableHds && dayWaterSituationStatisticsTableHds.size()>0){
+            DayWaterSituationStatisticsTableHd dayWaterSituationStatisticsTableHd = dayWaterSituationStatisticsTableHds.get(0);
+            String endTableList = dayWaterSituationStatisticsTableHd.getEndTableList();
+            String[] split = endTableList.split(",");
+            for(String t :split){
+                DayWaterSituationStatisticsTableHd hd = new DayWaterSituationStatisticsTableHd();
+                hd.setId(UUIDUtils.getUUID());
+                String tableParamString = (String)redisUtil.get("trendsTableParam:object:"+t);
+                TrendsTableParam tableParam = JSONObject.parseObject(tableParamString, TrendsTableParam.class);
+                Double flow = (Double) redisUtil.get("irrigatedPlatform:today:"+tableParam.getUnitId());
+                hd.setV(flow==null?null:flow);
+                hd.setTime("今日均");
+                hd.setRecordTime(new Date());
+                hd.setTableHeadId(dayWaterSituationStatisticsTableHd.getTableHeadId());
+                hd.setFrontTableList(dayWaterSituationStatisticsTableHd.getFrontTableList());
+                hd.setEndTableList(dayWaterSituationStatisticsTableHd.getEndTableList());
+                dayWaterSituationStatisticsTableHdList.add(hd);
+            }
+        }
+        List<TotalIdToStation> totalIdToStationList = totalIdToStationService.lambdaQuery().eq(TotalIdToStation::getUseType, 1).eq(TotalIdToStation::getStation, "河东管理站").list();
+        String mk = (String) redisUtil.get("trendsTableParam:list");
+        if(StringUtils.isEmpty(mk)){
+            updateCache();
+            mk = (String) redisUtil.get("trendsTableParam:list");
+        }
+        List<TrendsTableParam> trendsTableParamListTemp = JSONObject.parseArray(mk, TrendsTableParam.class);
+        List<TrendsTableParam> trendsTableParamList = trendsTableParamListTemp.stream().filter(t -> t.getUseType() == 1 && t.getUseStation().equals("河东管理站")).collect(Collectors.toList());
+        //计算行合计
+        if(null != totalIdToStationList && totalIdToStationList.size()>0){
+            Double total = 0.0;
+            List<String> totalCollect = totalIdToStationList.stream().map(TotalIdToStation::getTotalId).collect(Collectors.toList());
+            for(String id:totalCollect){
+                Double value = 0.0;
+                String tableParamString = (String)redisUtil.get("trendsTableParam:object:"+id);
+                TrendsTableParam tableParam = JSONObject.parseObject(tableParamString, TrendsTableParam.class);
+                if(!tableParam.getPId().equals("0")){
+                    List<TrendsTableParam> noTotalList = trendsTableParamList.stream().filter(t->t.getPId().equals(tableParam.getPId()) && !t.getParamName().equals("合计")).collect(Collectors.toList());
+                    for(TrendsTableParam param:noTotalList){
+                        for(DayWaterSituationStatisticsTableHd t:dayWaterSituationStatisticsTableHdList){
+                            if(t.getTableHeadId().equals(param.getId())){
+                                value+=t.getV()==null?0.0:t.getV();
+                            }
+                            List<TrendsTableParam> listed = trendsTableParamList.stream().filter(p->p.getPId().equals(param.getId()) && !p.getParamName().equals("合计")).collect(Collectors.toList());
+                            if(null != listed && listed.size()>0){
+                                for (TrendsTableParam param1:listed){
+                                    if(t.getTableHeadId().equals(param1.getId())){
+                                        value+=t.getV()==null?0.0:t.getV();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    for(DayWaterSituationStatisticsTableHd t:dayWaterSituationStatisticsTableHdList){
+                        if(t.getTableHeadId().equals(id)){
+                            t.setV(value);
+                        }
+                    }
+                }
+            }
+            for(DayWaterSituationStatisticsTableHd t:dayWaterSituationStatisticsTableHdList){
+                if(!totalCollect.contains(t.getTableHeadId())){
+                    String name = (String)redisUtil.get("trendsTableParam:name:"+t.getTableHeadId());
+                    if(!name.equals("红岩水库")){
+                        total+=t.getV()==null?0.0:t.getV();
+                    }
+                }
+            }
+            TrendsTableParam one = null;
+            List<TrendsTableParam> TrendsTableParamTemp = trendsTableParamList.stream().filter(t -> t.getPId().equals("0") && t.getUseType() == 1).collect(Collectors.toList());
+            for(TrendsTableParam param : TrendsTableParamTemp){
+                for(String s:totalCollect){
+                    if(param.getId().equals(s)){
+                        one = param;
+                    }
+                }
+            }
+            if(null != one){
+                for(DayWaterSituationStatisticsTableHd t:dayWaterSituationStatisticsTableHdList){
+                    if(t.getTableHeadId().equals(one.getId())){
+                        t.setV(total);
+                    }
+                }
+            }
+        }
+        boolean b = this.saveBatch(dayWaterSituationStatisticsTableHdList);
+        if (b) {
+            return RestResponse.ok();
+        }else {
+            return RestResponse.no("error");
+        }
+    }
+
+    private void updateYesterdayData(Date now,List<DayWaterSituationStatisticsTableHd> hdList){
+        List<DayWaterSituationStatisticsTableHd> dayWaterSituationStatisticsTableHdList = this.baseMapper.selectInfoAfterDayList(getDate(now,1));
+        if(!dayWaterSituationStatisticsTableHdList.isEmpty()){
+            dayWaterSituationStatisticsTableHdList.forEach(t->{
+                t.setV(hdList.stream().filter(p->p.getTableHeadId().equals(t.getTableHeadId()) && p.getV() !=null).map(DayWaterSituationStatisticsTableHd::getV).reduce(Double::sum).orElse(0.00));
             });
-            this.updateBatchById(hdList);
+            this.updateBatchById(dayWaterSituationStatisticsTableHdList);
         }
     }
     public void updateCache(){

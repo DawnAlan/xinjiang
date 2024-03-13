@@ -24,5 +24,7 @@ public interface DayWaterSituationStatisticsTableLzzService extends IService<Day
 
     RestResponse update(List<DayWaterSituationStatisticsTableLzz> dayWaterSituationStatisticsTableLzzList);
 
+    RestResponse insertTodayMeanValue();
+
 }
 

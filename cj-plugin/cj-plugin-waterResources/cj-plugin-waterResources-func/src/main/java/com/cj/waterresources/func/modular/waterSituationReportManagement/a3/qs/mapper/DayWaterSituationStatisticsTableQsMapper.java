@@ -27,9 +27,12 @@ public interface DayWaterSituationStatisticsTableQsMapper extends BaseMapper<Day
 
     List<A3StatisticsRes> getStatistics(@Param("req") A3StatisticsReq req);
 
-    @Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_QS WHERE TO_CHAR(RECORD_TIME,'YYYY-MM-DD') = #{date} and TIME != '昨日均'")
+    @Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_QS WHERE TO_CHAR(RECORD_TIME,'YYYY-MM-DD') = #{date} and TIME = '今日均'")
     //@Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_QS WHERE TO_DAYS( NOW( ) ) - TO_DAYS(\"RECORD_TIME\") = 1 and TIME != '昨日均'")
     List<DayWaterSituationStatisticsTableQs> selectInfoList(@Param("date")String date);
+    @Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_QS WHERE TO_CHAR(RECORD_TIME,'YYYY-MM-DD') = #{date} and TIME = '昨日均'")
+        //@Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_QS WHERE TO_DAYS( NOW( ) ) - TO_DAYS(\"RECORD_TIME\") = 1 and TIME != '昨日均'")
+    List<DayWaterSituationStatisticsTableQs> selectInfoAfterDayList(@Param("date")String date);
 
     @Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_QS WHERE TABLE_HEAD_ID = #{tableHeadId} and TIME != '昨日均' and  TO_CHAR(RECORD_TIME,'YYYY-MM-DD') between = #{startTime} and #{endTime}")
     List<DayWaterSituationStatisticsTableQs> selectList2(@Param("tableHeadId")String tableHeadId, @Param("startTime")String startTime, @Param("endTime")String endTime);

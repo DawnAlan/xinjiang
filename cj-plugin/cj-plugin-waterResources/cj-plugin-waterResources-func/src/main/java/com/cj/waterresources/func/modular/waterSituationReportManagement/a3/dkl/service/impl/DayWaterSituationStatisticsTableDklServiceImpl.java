@@ -95,7 +95,7 @@ public class DayWaterSituationStatisticsTableDklServiceImpl extends ServiceImpl<
         List<DayWaterSituationStatisticsTableDkl> list = this.baseMapper.selectList(sdf.format(dayWaterSituationStatisticsTableDklList.get(0).getRecordTime()));
         List<DayWaterSituationStatisticsTableDkl> tempList = list.stream().filter(t -> t.getTime().equals("昨日均")).collect(Collectors.toList());
         if(null != tempList && tempList.size()==0){
-            List<DayWaterSituationStatisticsTableDkl> yesterdayList = this.baseMapper.selectList1(getDate(dayWaterSituationStatisticsTableDklList.get(0).getRecordTime(),-1));
+            List<DayWaterSituationStatisticsTableDkl> yesterdayList = this.baseMapper.selectInfoList(getDate(dayWaterSituationStatisticsTableDklList.get(0).getRecordTime(),-1));
             DayWaterSituationStatisticsTableDkl dkl = dayWaterSituationStatisticsTableDklList.get(0);
             String[] split = dkl.getEndTableList().split(",");
             for(String s:split){
