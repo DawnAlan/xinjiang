@@ -1,7 +1,11 @@
 package com.cj.flood.func.modular.prediction.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.cj.common.model.RestResponse;
 import com.cj.flood.func.modular.prediction.entity.ModelParameters;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * 陕北模型参数(ModelParameters)表服务接口
@@ -11,5 +15,6 @@ import com.cj.flood.func.modular.prediction.entity.ModelParameters;
  */
 public interface ModelParametersService extends IService<ModelParameters> {
 
+    Map<String, List<ModelParameters>> queryList();
 }
 
