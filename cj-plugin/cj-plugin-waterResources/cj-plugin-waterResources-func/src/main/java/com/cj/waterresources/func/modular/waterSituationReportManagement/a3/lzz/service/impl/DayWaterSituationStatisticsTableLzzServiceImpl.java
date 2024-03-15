@@ -69,12 +69,20 @@ public class DayWaterSituationStatisticsTableLzzServiceImpl extends ServiceImpl<
         for(DayWaterSituationStatisticsTableLzz t:dayWaterSituationStatisticsTableLzzList){
             t.setId(UUIDUtils.getUUID());
             String paramName = trendsTableParamService.getById(t.getTableHeadId()).getParamName();
-            if(paramName.equals("水位")){
+            if(paramName.equals("库水位")){
                 Double v = (Double)redisUtil.get("lzz:time:waterLevel:"+sdf.format(t.getRecordTime())+" "+t.getTime());
                 t.setV(v==null?null:v);
             }
             if(paramName.equals("库容")){
                 Double v = (Double)redisUtil.get("lzz:time:capacity:"+sdf.format(t.getRecordTime())+" "+t.getTime());
+                t.setV(v==null?null:v);
+            }
+            if(paramName.equals("楼庄子水厂管道1")){
+                Double v = (Double)redisUtil.get("lzz:waterworks:1:"+sdf.format(t.getRecordTime())+" "+t.getTime());
+                t.setV(v==null?null:v);
+            }
+            if(paramName.equals("楼庄子水厂管道2")){
+                Double v = (Double)redisUtil.get("lzz:waterworks:2:"+sdf.format(t.getRecordTime())+" "+t.getTime());
                 t.setV(v==null?null:v);
             }
         }

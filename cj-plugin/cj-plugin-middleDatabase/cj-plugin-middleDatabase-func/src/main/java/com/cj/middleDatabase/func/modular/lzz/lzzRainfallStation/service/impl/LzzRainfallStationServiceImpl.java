@@ -44,6 +44,11 @@ public class LzzRainfallStationServiceImpl extends ServiceImpl<LzzRainfallStatio
     }
 
     @Override
+    public List<LzzRainfallStation> selectYesterday(String time) {
+        return this.baseMapper.selectYesterday(time);
+    }
+
+    @Override
     public List<RealTimeRainfallRes> getRealTimeRainfall(String startTime, String endTime) {
         return this.baseMapper.getRealTimeRainfall(startTime, endTime);
     }

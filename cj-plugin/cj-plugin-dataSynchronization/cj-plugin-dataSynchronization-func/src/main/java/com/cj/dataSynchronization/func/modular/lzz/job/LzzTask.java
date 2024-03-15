@@ -28,7 +28,7 @@ public class LzzTask {
     @Autowired
     private RedisUtil redisUtil;
 
-    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH");
+    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 
 
     @Scheduled(cron="0 0 0/1 * * ?")//每小时执行一次，以空格分隔

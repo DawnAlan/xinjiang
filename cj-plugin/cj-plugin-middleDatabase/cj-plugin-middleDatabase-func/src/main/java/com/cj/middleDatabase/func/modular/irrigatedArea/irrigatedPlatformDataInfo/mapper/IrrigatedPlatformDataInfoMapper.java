@@ -41,6 +41,9 @@ public interface IrrigatedPlatformDataInfoMapper extends BaseMapper<IrrigatedPla
     @Select("SELECT * FROM IRRIGATED_PLATFORM_DATA_INFO WHERE MONITOR_NAME = #{name} AND TO_CHAR(MONITOR_TIME,'YYYY-MM-DD') = #{time} order by MONITOR_TIME DESC")
     List<IrrigatedPlatformDataInfo> selectOneByCondition2(@Param("name") String name, @Param("time")String time);
 
+    @Select("SELECT * FROM IRRIGATED_PLATFORM_DATA_INFO WHERE TO_CHAR(MONITOR_TIME,'YYYY-MM-DD') = #{time} order by MONITOR_TIME DESC")
+    List<IrrigatedPlatformDataInfo> selectOneByCondition2( @Param("time")String time);
+
     @Select("SELECT MONITOR_NAME as stationName,ROUND(AVG(YQ_RAIN_FALL_ONE),2) as RAINFALL FROM IRRIGATED_PLATFORM_DATA_INFO WHERE MONITOR_NAME like CONCAT('%','雨量站') and (TO_CHAR(MONITOR_TIME,'YYYY-MM-DD hh24') BETWEEN #{startTime} AND #{endTime} ) GROUP BY MONITOR_NAME")
     List<RealTimeRainfallRes> getRealTimeRainfall(@Param("startTime")String startTime, @Param("endTime")String endTime);
 

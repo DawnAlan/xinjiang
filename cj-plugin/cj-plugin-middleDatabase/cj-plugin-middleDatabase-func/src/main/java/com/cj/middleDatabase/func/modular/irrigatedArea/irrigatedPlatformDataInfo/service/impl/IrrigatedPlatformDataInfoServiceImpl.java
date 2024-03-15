@@ -88,6 +88,11 @@ public class IrrigatedPlatformDataInfoServiceImpl extends ServiceImpl<IrrigatedP
     }
 
     @Override
+    public List<IrrigatedPlatformDataInfo> selectOneByCondition2(String time) {
+        return this.baseMapper.selectOneByCondition2(time);
+    }
+
+    @Override
     public List<RealTimeRainfallRes> getRealTimeRainfall(String startTime, String endTime) {
         return this.baseMapper.getRealTimeRainfall(startTime,endTime);
     }

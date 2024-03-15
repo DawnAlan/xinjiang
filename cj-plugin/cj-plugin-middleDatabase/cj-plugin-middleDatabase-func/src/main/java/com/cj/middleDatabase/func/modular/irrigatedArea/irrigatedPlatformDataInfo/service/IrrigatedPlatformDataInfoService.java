@@ -27,6 +27,7 @@ public interface IrrigatedPlatformDataInfoService extends IService<IrrigatedPlat
     List<IrrigatedPlatformDataInfo> selectOneByConditionNotName(String time);
 
     List<IrrigatedPlatformDataInfo> selectOneByCondition2(String name,String time);
+    List<IrrigatedPlatformDataInfo> selectOneByCondition2(String time);
 
     List<RealTimeRainfallRes> getRealTimeRainfall(String startTime, String endTime);
 
