@@ -23,6 +23,8 @@ public interface SysOrgApi {
      **/
     String getNameById(String orgId);
 
+    String getIdByName(String name);
+
     /**
      * 根据组织id获取部门主管id
      *

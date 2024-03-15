@@ -86,6 +86,8 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
     private SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
+    private Object lock = new Object();
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public RestResponse add(ApprovalManagement approvalManagement) {
@@ -150,60 +152,62 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
     @Override
     @Transactional(rollbackFor = Exception.class)
     public RestResponse update(ApprovalManagement approvalManagement) {
-        SaBaseLoginUser saBaseLoginUser = StpLoginUserUtil.getLoginUser();
-        ApprovalManagement byId1 = this.getById(approvalManagement.getId());
-        if(!Arrays.asList(byId1.getApprovedById().split(",")).contains(saBaseLoginUser.getId())){
-            return RestResponse.no("当前用户没有审批权限");
-        }
-        String approvalTemp= (String) redisUtil.get("approvalManagement_"+approvalManagement.getId());
-        if(StringUtils.isNotEmpty(approvalTemp)&&Arrays.asList(approvalTemp.split(",")).contains(saBaseLoginUser.getId())){
-            return RestResponse.no("当前用户已审批，请勿再审批");
-        }
-        if(StringUtils.isEmpty(approvalTemp)){
-            redisUtil.set("approvalManagement_"+approvalManagement.getId(),saBaseLoginUser.getId());
-        }else {
-            redisUtil.set("approvalManagement_"+approvalManagement.getId(),approvalTemp+","+saBaseLoginUser.getId());
-        }
-        String approval= (String) redisUtil.get("approvalManagement_"+approvalManagement.getId());
-        ApprovalManagement byId = this.getById(approvalManagement.getId());
-        if(byId.getApprovedById().equals(approval)){
-            approvalManagement.setApprovalStatus(2);
-        }else {
-            approvalManagement.setApprovalStatus(1);
-        }
-        boolean b = this.updateById(approvalManagement);
-        if(b){
-            try {
-                if(approvalManagement.getApprovalStatus()==2){
-                    if(!byId1.getInstructionType().equals("指令签批")){
-                        String[] lssuedById = byId1.getLssuedById().split(",");
-                        for(String s:lssuedById){
-                            WebSocketServer.sendInfo("您创建的指令已审批",s);
-                        }
-                        String[] split = byId1.getRecipientId().split(",");
-                        for(String s:split){
-                            JSONObject userByIdWithoutException = sysUserApi.getUserByIdWithoutException(s);
-                            String orgId = (String) userByIdWithoutException.get("orgId");
-                            InstructionViewing one = instructionViewingService.lambdaQuery().eq(InstructionViewing::getInstructionId, approvalManagement.getId()).
-                                    eq(InstructionViewing::getUnitId, orgId).one();
-                            WebSocketServer.sendInfo("您有一条待执行的指令,"+one.getId(),s);
-                        }
-                    }else {
-                        String[] lssuedById = byId1.getLssuedById().split(",");
-                        for(String s:lssuedById){
-                            WebSocketServer.sendInfo("您创建的指令已审批",s);
+        synchronized (lock){
+            SaBaseLoginUser saBaseLoginUser = StpLoginUserUtil.getLoginUser();
+            ApprovalManagement byId1 = this.getById(approvalManagement.getId());
+            if(!Arrays.asList(byId1.getApprovedById().split(",")).contains(saBaseLoginUser.getId())){
+                return RestResponse.no("当前用户没有审批权限");
+            }
+            String approvalTemp= (String) redisUtil.get("approvalManagement_"+approvalManagement.getId());
+            if(StringUtils.isNotEmpty(approvalTemp)&&Arrays.asList(approvalTemp.split(",")).contains(saBaseLoginUser.getId())){
+                return RestResponse.no("当前用户已审批，请勿再审批");
+            }
+            if(StringUtils.isEmpty(approvalTemp)){
+                redisUtil.set("approvalManagement_"+approvalManagement.getId(),saBaseLoginUser.getId());
+            }else {
+                redisUtil.set("approvalManagement_"+approvalManagement.getId(),approvalTemp+","+saBaseLoginUser.getId());
+            }
+            String approval= (String) redisUtil.get("approvalManagement_"+approvalManagement.getId());
+            ApprovalManagement byId = this.getById(approvalManagement.getId());
+            if(byId.getApprovedById().equals(approval)){
+                approvalManagement.setApprovalStatus(2);
+            }else {
+                approvalManagement.setApprovalStatus(1);
+            }
+            boolean b = this.updateById(approvalManagement);
+            if(b){
+                try {
+                    if(approvalManagement.getApprovalStatus()==2){
+                        if(!byId1.getInstructionType().equals("指令签批")){
+                            String[] lssuedById = byId1.getLssuedById().split(",");
+                            for(String s:lssuedById){
+                                WebSocketServer.sendInfo("您创建的指令已审批",s);
+                            }
+                            String[] split = byId1.getRecipientId().split(",");
+                            for(String s:split){
+                                JSONObject userByIdWithoutException = sysUserApi.getUserByIdWithoutException(s);
+                                String orgId = (String) userByIdWithoutException.get("orgId");
+                                InstructionViewing one = instructionViewingService.lambdaQuery().eq(InstructionViewing::getInstructionId, approvalManagement.getId()).
+                                        eq(InstructionViewing::getUnitId, orgId).one();
+                                WebSocketServer.sendInfo("您有一条待执行的指令,"+one.getId(),s);
+                            }
+                        }else {
+                            String[] lssuedById = byId1.getLssuedById().split(",");
+                            for(String s:lssuedById){
+                                WebSocketServer.sendInfo("您创建的指令已审批",s);
+                            }
                         }
                     }
+                }catch (Exception e){
+                    e.printStackTrace();
+                    TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                    redisUtil.set("approvalManagement_"+approvalManagement.getId(),approvalTemp);
+                    return RestResponse.no("send msg fail");
                 }
-            }catch (Exception e){
-                e.printStackTrace();
-                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-                redisUtil.set("approvalManagement_"+approvalManagement.getId(),approvalTemp);
-                return RestResponse.no("send msg fail");
+                return RestResponse.ok();
+            }else{
+                return RestResponse.no("error");
             }
-            return RestResponse.ok();
-        }else{
-            return RestResponse.no("error");
         }
     }
 

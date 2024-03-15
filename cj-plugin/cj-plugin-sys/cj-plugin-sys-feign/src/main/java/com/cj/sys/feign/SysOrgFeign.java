@@ -23,6 +23,9 @@ public interface SysOrgFeign {
     @RequestMapping("/feign/sys/org/getNameById")
     String getNameById(@RequestParam(value = "orgId",required = false) String orgId);
 
+    @RequestMapping("/feign/sys/org/getIdByName")
+    String getIdByName(@RequestParam(value = "name",required = false) String name);
+
     /**
      * 根据组织id获取部门主管id
      *

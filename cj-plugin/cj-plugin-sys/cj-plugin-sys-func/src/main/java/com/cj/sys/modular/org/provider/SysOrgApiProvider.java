@@ -5,7 +5,6 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.lang.tree.Tree;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.json.JSONObject;
-import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.stereotype.Service;
 import com.cj.sys.api.SysOrgApi;
@@ -15,7 +14,6 @@ import com.cj.sys.modular.org.service.SysOrgService;
 
 import javax.annotation.Resource;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * 组织API接口提供者
@@ -32,6 +30,15 @@ public class SysOrgApiProvider implements SysOrgApi {
     @Override
     public String getNameById(String orgId) {
         return sysOrgService.queryEntity(orgId).getName();
+    }
+
+    @Override
+    public String getIdByName(String name) {
+        SysOrg one = sysOrgService.lambdaQuery().eq(SysOrg::getName, name).last("limit 1").one();
+        if(null != one) {
+            return one.getId();
+        }
+        return null;
     }
 
     @Override

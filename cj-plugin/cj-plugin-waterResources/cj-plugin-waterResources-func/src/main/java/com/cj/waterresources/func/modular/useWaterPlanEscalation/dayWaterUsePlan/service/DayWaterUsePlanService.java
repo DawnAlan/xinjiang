@@ -25,7 +25,7 @@ public interface DayWaterUsePlanService extends IService<DayWaterUsePlan> {
 
     RestResponse<DayWaterUsePlan> select(DayWaterUsePlanSelectReq req);
 
-    RestResponse<List<SelectInfoByIrrigationNameListRes>> selectValue(String names);
+    RestResponse<List<SelectInfoByIrrigationNameListRes>> selectValue(String names,String station);
 
     List getWaterNeedDetail(Date startTime, Date endTime);
 }

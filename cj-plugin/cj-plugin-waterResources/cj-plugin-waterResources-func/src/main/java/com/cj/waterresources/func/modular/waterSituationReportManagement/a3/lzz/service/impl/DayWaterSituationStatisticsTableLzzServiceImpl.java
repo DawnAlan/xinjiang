@@ -271,7 +271,7 @@ public class DayWaterSituationStatisticsTableLzzServiceImpl extends ServiceImpl<
                 lzz.setV(null);
                 lzz.setTime("今日均");
                 lzz.setRecordTime(new Date());
-                lzz.setTableHeadId(dayWaterSituationStatisticsTableLzz.getTableHeadId());
+                lzz.setTableHeadId(t);
                 lzz.setFrontTableList(dayWaterSituationStatisticsTableLzz.getFrontTableList());
                 lzz.setEndTableList(dayWaterSituationStatisticsTableLzz.getEndTableList());
                 dayWaterSituationStatisticsTableLzzList.add(lzz);

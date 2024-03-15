@@ -58,8 +58,8 @@ public class DayWaterUsePlanController {
     @ApiOperationSupport(order = 5)
     @ApiOperation("查询实时流量")
     @GetMapping("/selectValue")
-    public RestResponse<List<SelectInfoByIrrigationNameListRes>> selectValue(@RequestParam String names) {
-        return dayWaterUsePlanService.selectValue(names);
+    public RestResponse<List<SelectInfoByIrrigationNameListRes>> selectValue(@RequestParam("names") String names,@RequestParam("station") String station) {
+        return dayWaterUsePlanService.selectValue(names,station);
     }
 
 }

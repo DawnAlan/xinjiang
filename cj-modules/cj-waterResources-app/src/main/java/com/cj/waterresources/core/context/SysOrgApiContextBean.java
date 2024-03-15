@@ -1,22 +1,16 @@
-package com.cj.approval.core.context;
+package com.cj.waterresources.core.context;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.lang.tree.Tree;
-import cn.hutool.core.lang.tree.TreeNode;
-import cn.hutool.core.lang.tree.TreeUtil;
 import cn.hutool.json.JSONObject;
-import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cj.sys.api.SysOrgApi;
-import com.cj.sys.api.SysRoleApi;
 import com.cj.sys.feign.SysOrgFeign;
-import com.cj.sys.feign.SysRoleFeign;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * 角色API上下文Bean

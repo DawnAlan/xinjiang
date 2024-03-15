@@ -109,5 +109,10 @@ public class WaterStorageSchedulingLzz extends Model<WaterStorageSchedulingLzz> 
 
     @ApiModelProperty(value = "排序字段")
     private Integer sortNum;
+
+    //损失水量
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
+    @ApiModelProperty(value = "损失水量")
+    private Double waterLoss;
 }
 

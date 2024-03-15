@@ -128,7 +128,8 @@ public class GatewayConfigure {
             /* actuator */
             "/actuator",
             "/actuator/**",
-            "/websocket/**",
+            "/websocketApproval/**",
+            "/websocketWater/**",
             "**"
 
     };

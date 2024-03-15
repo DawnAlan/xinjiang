@@ -1090,10 +1090,8 @@ public class DataUtils {
 	}
 
 
-	/**
-	 *
+	/**各个雨量站点雨量
 	 * @param pointData
-	 * 各个雨量站点雨量
 	 * 后续更改（各个雨量站权重）
 	 * @return surfaceData
 	 * 该流域的面雨量
@@ -1205,6 +1203,7 @@ public class DataUtils {
 		result.setPeriodTimeStep(paramForcastInputParamNew.getPeriodTimeStep());
 		result.setPeriodTimeType(paramForcastInputParamNew.getPeriodTimeType());
 		result.setPredictionTime(paramForcastInputParamNew.getPredictionTime());
+		result.setRainFallDtos(paramForcastInputParamNew.getRainFallDtos());
 		//输入数据的转化
 		LzzHydrologyParam lzzHydrologyParam = paramForcastInputParamNew.getLzzHydrologyParam();
 		/**

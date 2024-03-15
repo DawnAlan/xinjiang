@@ -465,6 +465,16 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
     }
 
     @Override
+    public RestResponse<List<LzzRainfallStation>> selectRainfallStationDataByTime(Date time) {
+        return null;
+    }
+
+    @Override
+    public RestResponse<LzzGaugingStation> getLevelWaterLevelByTime(Date time) {
+        return null;
+    }
+
+    @Override
     public RestResponse insertReservoirLevelTemperatureBetweenTime(Date startTime, Date endTime) {
         List<UserIdParam> rainfallStationPidList = pubUserService.selectPidList("水位站").stream().filter(t->t.getName().equals("库水位水位站")).collect(Collectors.toList());
         List<UserIdParam> userIdParams = pubUserService.selectReservoirLevelIdList(rainfallStationPidList.get(0).getId());
@@ -515,7 +525,7 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
                         if(userPidParam.getName().equals("出库自动水位站")){
                             gaugingStation.setStationName("楼庄子出库水位站");
                         }
-                        if(userPidParam.getName().equals("入库自动水位站")){
+                        if(userPidParam.getName().equals("天谷自动水位站")){
                             gaugingStation.setStationName("楼庄子入库水位站");
                         }
                         if(!userPidParam.getName().equals("出库自动水位站") && !userPidParam.getName().equals("入库自动水位站")){
@@ -650,7 +660,7 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
         userIdParams.forEach(t->{
             if(StringUtils.isNotEmpty(t.getName())) {
                 LzzPlatformTree tree = new LzzPlatformTree();
-                BeanUtils.copyProperties(tree, t);
+                BeanUtils.copyProperties(t,tree);
                 lzzPlatformTrees.add(tree);
             }
         });

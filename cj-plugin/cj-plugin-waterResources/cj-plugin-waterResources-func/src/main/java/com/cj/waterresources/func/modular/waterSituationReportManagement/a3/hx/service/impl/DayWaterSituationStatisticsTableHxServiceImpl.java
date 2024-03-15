@@ -87,8 +87,9 @@ public class DayWaterSituationStatisticsTableHxServiceImpl extends ServiceImpl<D
                 result.add(yesterdayBean);
                 String tableParamString = (String)redisUtil.get("trendsTableParam:object:"+yesterdayBean.getTableHeadId());
                 TrendsTableParam tableParam = JSONObject.parseObject(tableParamString, TrendsTableParam.class);
-                if(StringUtils.isNotEmpty(tableParam.getUnitId())){
+                if(null != tableParam && !tableParam.getParamName().equals("合计")){
                     redisUtil.set("A3:data:hx:yesterday:"+getDate(hx.getRecordTime(),-1)+":"+tableParam.getUnitId(),yesterdayBean.getV());
+                    redisUtil.set("A3:data:hx:yesterday:forPlan:"+tableParam.getParamName(),yesterdayBean.getV());
                 }
             }
         }
@@ -287,7 +288,7 @@ public class DayWaterSituationStatisticsTableHxServiceImpl extends ServiceImpl<D
                 hx.setV(flow==null?null:flow);
                 hx.setTime("今日均");
                 hx.setRecordTime(new Date());
-                hx.setTableHeadId(dayWaterSituationStatisticsTableHx.getTableHeadId());
+                hx.setTableHeadId(t);
                 hx.setFrontTableList(dayWaterSituationStatisticsTableHx.getFrontTableList());
                 hx.setEndTableList(dayWaterSituationStatisticsTableHx.getEndTableList());
                 dayWaterSituationStatisticsTableHxList.add(hx);

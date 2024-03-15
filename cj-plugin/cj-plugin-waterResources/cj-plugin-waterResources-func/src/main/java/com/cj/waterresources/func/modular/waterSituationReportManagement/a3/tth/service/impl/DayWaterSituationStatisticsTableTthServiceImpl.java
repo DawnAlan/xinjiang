@@ -70,22 +70,13 @@ public class DayWaterSituationStatisticsTableTthServiceImpl extends ServiceImpl<
         for(DayWaterSituationStatisticsTableTth t:dayWaterSituationStatisticsTableTthList){
             t.setId(UUIDUtils.getUUID());
             String paramName = (String)redisUtil.get("trendsTableParam:name:"+t.getTableHeadId());
-            //String paramName = trendsTableParamService.getById(t.getTableHeadId()).getParamName();
-            if(paramName.equals("水位")){
-                IrrigatedPlatformDataInfo waterLevel = irrigatedPlatformDataInfoService.selectOneByCondition1(sdf.format(t.getRecordTime()) + " " + t.getTime(),"头屯河水库水位");
-                t.setV(waterLevel==null?null:waterLevel.getAvgWaterLevel()==null?null:waterLevel.getAvgWaterLevel());
+            if(paramName.equals("库水位")){
+                Double waterLevel = (Double) redisUtil.get("irrigatedPlatform:sq:tth:waterLevel");
+                t.setV(waterLevel==null?null:waterLevel);
             }
-            if(paramName.equals("库容")){
-                IrrigatedPlatformDataInfo waterLevel = irrigatedPlatformDataInfoService.selectOneByCondition1(sdf.format(t.getRecordTime()) + " " + t.getTime(),"头屯河水库水位");
-                t.setV(waterLevel==null?null:waterLevel.getSqCapacity()==null?null:waterLevel.getSqCapacity());
-            }
-            /*if(paramName.equals("进库流量")){
-                IrrigatedPlatformDataInfo waterLevel = irrigatedPlatformDataInfoService.selectOneByCondition1(sdf.format(t.getRecordTime()) + " " + t.getTime(),"头屯河水库水位");
-                t.setV(waterLevel==null?null:waterLevel.getStorageCapacity()==null?null:waterLevel.getStorageCapacity());
-            }*/
-            if(paramName.equals("暗管")){
-                IrrigatedPlatformDataInfo waterLevel = irrigatedPlatformDataInfoService.selectOneByCondition1(sdf.format(t.getRecordTime()) + " " + t.getTime(),"八钢工业用水取水口(渠道)");
-                t.setV(waterLevel==null?null:waterLevel.getSqMonitorFlow()==null?null:waterLevel.getSqMonitorFlow());
+            if(paramName.equals("水库库容")){
+                Double capacity = (Double)redisUtil.get("irrigatedPlatform:sq:tth:capacity");
+                t.setV(capacity==null?null:capacity);
             }
         }
         dayWaterSituationStatisticsTableTthList.forEach(t->t.setId(UUIDUtils.getUUID()));
@@ -286,7 +277,7 @@ public class DayWaterSituationStatisticsTableTthServiceImpl extends ServiceImpl<
                 tth.setV(flow==null?null:flow);
                 tth.setTime("今日均");
                 tth.setRecordTime(new Date());
-                tth.setTableHeadId(dayWaterSituationStatisticsTableTth.getTableHeadId());
+                tth.setTableHeadId(t);
                 tth.setFrontTableList(dayWaterSituationStatisticsTableTth.getFrontTableList());
                 tth.setEndTableList(dayWaterSituationStatisticsTableTth.getEndTableList());
                 dayWaterSituationStatisticsTableTthList.add(tth);

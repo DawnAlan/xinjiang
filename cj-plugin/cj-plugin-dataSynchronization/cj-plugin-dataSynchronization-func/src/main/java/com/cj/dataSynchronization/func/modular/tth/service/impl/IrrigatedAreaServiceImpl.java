@@ -250,6 +250,10 @@ public class IrrigatedAreaServiceImpl implements IrrigatedAreaService {
                         redisUtil.set("irrigatedPlatform:today:"+overallSituationUnitMgrDto.getId(),info.getAvgFlow());
                         redisUtil.set("irrigatedPlatform:sq:date:id:"+info.getMonitorTime()+":"+overallSituationUnitMgrDto.getId(),info.getSqMonitorFlow());
                     }
+                    if(info.getMonitorName().equals("头屯河水库水位")){
+                        redisUtil.set("irrigatedPlatform:sq:tth:waterLevel",info.getSqWaterLevel());
+                        redisUtil.set("irrigatedPlatform:sq:tth:capacity",info.getSqCapacity());
+                    }
                 }
             }
             boolean b = irrigatedPlatformDataInfoService.saveOrUpdateBatch(result);

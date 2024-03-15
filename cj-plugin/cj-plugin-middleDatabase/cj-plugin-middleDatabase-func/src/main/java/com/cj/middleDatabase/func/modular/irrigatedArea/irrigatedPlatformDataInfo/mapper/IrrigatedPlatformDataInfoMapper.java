@@ -35,6 +35,9 @@ public interface IrrigatedPlatformDataInfoMapper extends BaseMapper<IrrigatedPla
     @Select("SELECT * FROM IRRIGATED_PLATFORM_DATA_INFO WHERE MONITOR_NAME = #{name} AND TO_CHAR(MONITOR_TIME,'YYYY-MM-DD hh24:MI') = #{time} order by MONITOR_TIME DESC limit 1")
     IrrigatedPlatformDataInfo selectOneByCondition1(@Param("name") String name, @Param("time")String time);
 
+    @Select("SELECT * FROM IRRIGATED_PLATFORM_DATA_INFO TO_CHAR(MONITOR_TIME,'YYYY-MM-DD hh24:MI') = #{time} order by MONITOR_TIME DESC limit 1")
+    List<IrrigatedPlatformDataInfo> selectOneByConditionNotName( @Param("time")String time);
+
     @Select("SELECT * FROM IRRIGATED_PLATFORM_DATA_INFO WHERE MONITOR_NAME = #{name} AND TO_CHAR(MONITOR_TIME,'YYYY-MM-DD') = #{time} order by MONITOR_TIME DESC")
     List<IrrigatedPlatformDataInfo> selectOneByCondition2(@Param("name") String name, @Param("time")String time);
 
