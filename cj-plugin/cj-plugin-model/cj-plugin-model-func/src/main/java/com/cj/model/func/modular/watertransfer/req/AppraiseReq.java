@@ -1,5 +1,6 @@
 package com.cj.model.func.modular.watertransfer.req;
 
+import com.cj.model.func.modular.watertransfer.entity.Excel1;
 import com.cj.model.func.modular.watertransfer.entity.Excel2;
 import lombok.Data;
 
@@ -17,6 +18,16 @@ public class AppraiseReq {
     private Date startTime;
     //结束时间
     private Date endTime;
+    //楼庄子开始水位
+    private double levelBeginLzz;
+    //楼庄子结束水位
+    private double levelEndLzz;
+    //头屯河开始水位
+    private double levelBeginTth;
+    //头屯河结束水位
+    private double levelEndTth;
+    //表1数据
+    private List<Excel1> excel1Data;
     //表2数据
     private List<Excel2> excel2Data;
 }

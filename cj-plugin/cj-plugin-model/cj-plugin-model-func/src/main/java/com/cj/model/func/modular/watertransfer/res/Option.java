@@ -59,4 +59,6 @@ public class Option {
     private double ecologyFlow;
 //    生态水量
     private double ecologyWater;
+//    弃水量
+    private double wasteWater;
 }
