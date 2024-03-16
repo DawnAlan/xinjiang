@@ -25,6 +25,7 @@ import com.cj.model.func.core.util.MultipartFileUtil;
 import com.cj.model.func.modular.curve.service.CurveService;
 import com.cj.model.func.modular.entity.Flood;
 import com.cj.model.func.modular.watertransfer.entity.DataInflowPrevent;
+import com.cj.model.func.modular.watertransfer.entity.Excel1;
 import com.cj.model.func.modular.watertransfer.entity.Excel2;
 import com.cj.model.func.modular.watertransfer.entity.Waterdemand;
 import com.cj.model.func.modular.watertransfer.function.OutResult;
@@ -204,7 +205,8 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
         WaterResourceAllocation waterResourceAllocationB = baseMapper.selectById(idB);
         AppraiseReq appraiseReqA = getCompareAppraise(waterResourceAllocationA);
         AppraiseReq appraiseReqB = getCompareAppraise(waterResourceAllocationB);
-        waterAllocationComparisonSelectionRes.setAppraise(new WaterResourceAssessment().WaterResourceAssessment(appraiseReqA, appraiseReqB));
+        Map<String, Object> appraiseMap = new WaterResourceAssessment().WaterResourceAssessment(Arrays.asList(appraiseReqA, appraiseReqB), curveService.selectList());
+        waterAllocationComparisonSelectionRes.setAppraise(appraiseMap.getOrDefault("方案评价", "") + "" + appraiseMap.getOrDefault("方案推荐", ""));
         waterAllocationComparisonSelectionRes.setWaterRatio(getWaterRatio(appraiseReqA.getExcel2Data(), appraiseReqB.getExcel2Data()));
         waterAllocationComparisonSelectionRes.setWaterStatistics(getWaterStatistics(waterResourceAllocationA, waterResourceAllocationB));
         return RestResponse.ok(waterAllocationComparisonSelectionRes);
@@ -618,7 +620,10 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
         List<DataInflowPrevent> lzzEntryStation = dataInflowPrevents.stream().filter(t -> t.getLocation().equals("楼庄子")).collect(Collectors.toList());
         List<DataInflowPrevent> interval = dataInflowPrevents.stream().filter(t -> t.getLocation().equals("楼头区间")).collect(Collectors.toList());
         if (CollectionUtil.isEmpty(lzzEntryStation) || CollectionUtil.isEmpty(interval)) {
-            throw new CommonException(String.format("%s~%s来水预报数据异常",
+//            throw new CommonException(String.format("%s~%s来水预报数据异常",
+//                    DateUtil.format(allocation.getWaterDistributionStartTime(), DATE_FORMAT),
+//                    DateUtil.format(allocation.getWaterDistributionEndTime(), DATE_FORMAT)));
+            log.error(String.format("%s~%s来水预报数据异常",
                     DateUtil.format(allocation.getWaterDistributionStartTime(), DATE_FORMAT),
                     DateUtil.format(allocation.getWaterDistributionEndTime(), DATE_FORMAT)));
         }
@@ -722,11 +727,24 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
 
     private AppraiseReq getCompareAppraise(WaterResourceAllocation waterResourceAllocation) {
         AppraiseReq appraiseReq = new AppraiseReq();
+        List<AllocationDisplayData> displayDataList = getListFromMinio(waterResourceAllocation.getAllocationDataDisplayAddress(), AllocationDisplayData.class);
+        List<Excel1> excel1s = displayDataList.stream().map(data -> {
+            Excel1 excel1 = new Excel1();
+            excel1.setTime(data.getTime());
+            excel1.setLevelBegin(data.getLevelBegin());
+            excel1.setLevelEnd(data.getLevelEnd());
+            excel1.setStationName(data.getStationName());
+            excel1.setWaterDemand(data.getWaterDemand());
+            excel1.setInflowWater(data.getInflowWater());
+            excel1.setWasteWater(data.getWasteWater());
+            return excel1;
+        }).collect(Collectors.toList());
         appraiseReq.setName(waterResourceAllocation.getSchemeName());
         appraiseReq.setPeriod(waterResourceAllocation.getBucketType().toString());
         appraiseReq.setId(waterResourceAllocation.getWaterDistributionType());
         appraiseReq.setStartTime(waterResourceAllocation.getWaterDistributionStartTime());
         appraiseReq.setEndTime(waterResourceAllocation.getWaterDistributionEndTime());
+        appraiseReq.setExcel1Data(excel1s);
         appraiseReq.setExcel2Data(getListFromMinio(waterResourceAllocation.getAllocationDataCustomAddress(), Excel2.class));
         return appraiseReq;
     }
@@ -810,7 +828,8 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
         for (int i = 0; i < maps.size(); i++) {
             Map<String, Object> tenDays = maps.get(i);
             if (tenDays == null || tenDays.get("DEMAND") == null) {
-                throw new CommonException(tenDays.get("USE_WATER_USER") + "旬需水计划数据异常");
+                //throw new CommonException(tenDays.get("USE_WATER_USER") + "旬需水计划数据异常");
+                log.error(tenDays.get("USE_WATER_USER") + "旬需水计划数据异常");
             }
             Waterdemand waterdemand = new Waterdemand();
             waterdemand.setUseWaterPlan("tenDays");

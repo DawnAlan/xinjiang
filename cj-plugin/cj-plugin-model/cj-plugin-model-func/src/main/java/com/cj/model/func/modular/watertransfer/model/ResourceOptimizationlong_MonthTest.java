@@ -1,4 +1,5 @@
 package com.cj.model.func.modular.watertransfer.model;
+import com.cj.common.exception.CommonException;
 import com.cj.model.func.modular.FloodPrevent.entity.CurveParam;
 import com.cj.model.func.modular.watertransfer.entity.DataInflowPrevent;
 import com.cj.model.func.modular.watertransfer.method.FindValue;
@@ -36,6 +37,9 @@ public class ResourceOptimizationlong_MonthTest {
         //配置水库
 
         setReservoir(req.getCurve(), reservoirs);
+        reservoirs[0].setLevelFloodLimiting(req.getFloodWaterLevelLzz());
+        reservoirs[1].setLevelFloodLimiting(req.getFloodWaterLevelTth());
+
         int RNum = 2;
         period = 12;
         if (req.getName() == 1) {
@@ -63,7 +67,7 @@ public class ResourceOptimizationlong_MonthTest {
 
         num = DateStart[1];
         if (TimeEnd.compareTo(TimeStart) <= 0) {
-            System.out.println("时间设置不正确");
+            throw new CommonException("请检查时间设置是否合理");
         }
         if (DateEnd[0] >= DateStart[0]) {
             if (DateEnd[0] > DateStart[0]) {
@@ -114,7 +118,9 @@ public class ResourceOptimizationlong_MonthTest {
 
         inflow[0] = (double[]) data1.get("楼庄子流量");
         inflow[1] = (double[]) data1.get("头屯河流量");
-
+        if (isAllElementsNonNegative(inflow)==false){
+            throw new CommonException("请检查预报流量是否合理，存在小于0的流量");
+        }
 
         Map<String, Object> dataDemand = new HashMap<>();
         dataDemand=InputWay.setwaterdemand(req,num-1);
@@ -153,7 +159,7 @@ public class ResourceOptimizationlong_MonthTest {
                waterDemandIndustry1[x]=(double[]) dataDemand.get(nameIndustryQushou[x-1]);
            }
         }
-
+        checkWaterDemand(waterDemandIndustry1);
 //      楼庄子水厂
         waterDemand1[0]=(double[]) dataDemand.get("楼庄子水厂");
 //      红岩取水
@@ -236,6 +242,13 @@ public class ResourceOptimizationlong_MonthTest {
                 waterDemand1[4][t]+=waterdemand41[x][t];
             }
         }
+        checkWaterDemand(waterDemand1);
+        checkWaterDemand(waterdemand31);
+        checkWaterDemand(waterdemand41);
+        checkWaterDemand(waterDemandIndustry1);
+        checkWaterDemand(waterDemandGreenWest1);
+        checkWaterDemand(waterDemandGreenEast1);
+        checkWaterDemand(waterDemandGreenQushou1);
 
         double [][]waterDemand=new double[5][period];
         for (int x= DateStart[1]-1;x<DateEnd[1];x++){
@@ -290,6 +303,10 @@ public class ResourceOptimizationlong_MonthTest {
                 waterDemandGreenQushou[x1][x - xnum] = waterDemandGreenQushou1[x1][x];
             }
         }
+
+        if (inflow[0].length!=waterDemand[0].length){
+            throw new CommonException("请检查来水预报时段与需水计划是否对应，两者时段不相符");
+        }
         int id = req.getId();
         int demandNum = waterDemand.length;
 
@@ -301,6 +318,24 @@ public class ResourceOptimizationlong_MonthTest {
 //        double[][] fitness_term = new double[2][6];
         double[] levelBegin = {req.getLevelBeginLzz(), req.getLevelBeginTth()};
         double[] levelEnd = {req.getLevelEndLzz(), req.getLevelEndTth()};
+        double[] levelLimit = {req.getFloodWaterLevelLzz(), req.getFloodWaterLevelTth()};
+
+        String []reservoirsName=new String[]{"楼庄子水库","头屯河水库"};
+        for (int t=0;t<reservoirs.length;t++){
+           if (levelBegin[t]<reservoirs[t].levelDead){
+               throw new CommonException("请检查"+reservoirsName[t]+"调度开始初水位设置是否合理，小于"+reservoirsName[t]+"调度最小水位：死水位");
+           }
+           if (levelBegin[t]>levelLimit[t]){
+               throw new CommonException("请检查"+reservoirsName[t]+"调度开始初水位设置是否合理，大于"+reservoirsName[t]+"调度最大水位：动态汛限水位");
+           }
+           if (levelEnd[t]<reservoirs[t].levelDead){
+               throw new CommonException("请检查"+reservoirsName[t]+"调度结束末水位设置是否合理，小于"+reservoirsName[t]+"调度最小水位：死水位");
+           }
+            if (levelEnd[t]>levelLimit[t]){
+                throw new CommonException("请检查"+reservoirsName[t]+"调度结束末水位设置是否合理，大于"+reservoirsName[t]+"调度最大水位：动态汛限水位");
+            }
+
+        }
         for (int r = 0; r < RNum; r++) {
             wl_term[r][0] = levelBegin[r];
             for (int t = 1; t <= period; t++) {
@@ -350,7 +385,7 @@ public class ResourceOptimizationlong_MonthTest {
 
                     for (int tt = 1; tt < period; tt++) {
                         //初始  和  最终水位  不参与调整
-                        double maxLevel = reservoirs[n].levelFloodDesign;
+                        double maxLevel = reservoirs[n].levelFloodLimiting;
 //                double maxLevel = reservoir.levelFloodCheck;
                         double minLevel = reservoirs[n].levelDead;
                         int wlNum = (int) ((maxLevel - minLevel) / discreteAccuracy + 1);//变量离散过程
@@ -395,7 +430,7 @@ public class ResourceOptimizationlong_MonthTest {
 
                     for (int tt = 1; tt < period; tt++) {
                         //初始  和  最终水位  不参与调整
-                        double maxLevel = reservoirs[n].levelFloodDesign;
+                        double maxLevel = reservoirs[n].levelFloodLimiting;
 //                double maxLevel = reservoir.levelFloodCheck;
                         double minLevel = reservoirs[n].levelDead;
                         int wlNum = (int) ((maxLevel - minLevel) / discreteAccuracy + 1);//变量离散过程
@@ -481,7 +516,9 @@ public class ResourceOptimizationlong_MonthTest {
         waterSupply[4] = calFit(id, reservoirs, period, wl_term, inflow, waterDemand)[10];
         watersupply_lzz = calFit(id, reservoirs, period, wl_term, inflow, waterDemand)[11];
         DecimalFormat da = new DecimalFormat("#.00");
-
+        if (fitness_term[0]>0){
+            throw new CommonException("请检查水位设置是否合理，下泄流量较小");
+        }
         for (int n1 = 0; n1 < period; n1++) {
 
             supply_water_two[0][n1] = Double.parseDouble(da.format(watersupply_lzz[n1]));
@@ -771,7 +808,7 @@ public class ResourceOptimizationlong_MonthTest {
         waterTransfer.setAllWater(allwater);
         waterTransfer.setEcologyFlow(minoutflow);
         waterTransfer.setEcologyWater(ecologyWater);
-
+        waterTransfer.setFitness(fitness_term);
         result.add(waterTransfer);
         return result;
     }
@@ -878,11 +915,23 @@ public class ResourceOptimizationlong_MonthTest {
                 maxOutflow[m] = FindValue.FindV2ByV1(reservoir[m].wlob_wl, reservoir[m].wlob_ob, wl_term[m][t]);
 //                minOutflow[m] = reservoir[m].outflowMin;
 
-                if (outflow_term[m][t] > maxOutflow[m])//下泄流量约束处理,约束处理在罚函数里边体现
+                if (m==0)
                 {
-                    constraintViolation += Math.pow((outflow_term[m][t] - maxOutflow[m]), 2);
-                } else if (outflow_term[m][t] < minoutflow[t]) {
-                    constraintViolation += Math.pow((outflow_term[m][t] - minoutflow[t]), 2);
+                    if (outflow_term[m][t] > maxOutflow[m])//下泄流量约束处理,约束处理在罚函数里边体现
+                    {
+                        constraintViolation += Math.pow((outflow_term[m][t] - maxOutflow[m]), 2);
+                    } else if (outflow_term[m][t] < minoutflow[t]+waterdemandQ[0][t]) {
+                        constraintViolation += Math.pow((outflow_term[m][t] - minoutflow[t]-waterdemandQ[0][t]), 2);
+                    }
+                }
+                if (m==1)
+                {
+                    if (outflow_term[m][t] > maxOutflow[m])//下泄流量约束处理,约束处理在罚函数里边体现
+                    {
+                        constraintViolation += Math.pow((outflow_term[m][t] - maxOutflow[m]), 2);
+                    } else if (outflow_term[m][t] < minoutflow[t]+waterdemandQ[1][t]+waterdemandQ[2][t]) {
+                        constraintViolation += Math.pow((outflow_term[m][t] - minoutflow[t]-waterdemandQ[1][t]-waterdemandQ[2][t]), 2);
+                    }
                 }
 
                 //供水缺额计算  首先兼顾生态流量、城市用水、工业用水
@@ -988,8 +1037,15 @@ public class ResourceOptimizationlong_MonthTest {
                 if (water_Supply_tth[t] >= waterDemand[1][t] + waterDemand[2][t] && water_Supply_tth[t] < waterDemand[1][t] + waterDemand[2][t] + waterDemand[3][t] + waterDemand[4][t]) {
                     waterSupply[1][t] = waterDemand[1][t];
                     waterSupply[2][t] = waterDemand[2][t];
+                    if (waterDemand[3][t] + waterDemand[4][t]==0){
+                        waterSupply[3][t] = 0;
+                        waterSupply[4][t] = 0;
+                    }
+                     else if (waterDemand[3][t] + waterDemand[4][t]!=0)
+                    {
                     waterSupply[3][t] = waterDemand[3][t]  * (water_Supply_tth[t] - (waterDemand[1][t] + waterDemand[2][t]))/(waterDemand[3][t] + waterDemand[4][t]);
                     waterSupply[4][t] = waterDemand[4][t] * (water_Supply_tth[t] - (waterDemand[1][t] + waterDemand[2][t]))/(waterDemand[3][t] + waterDemand[4][t]);
+                    }
                     if (waterSupply[3][t] <= 0) {
                         waterSupply[3][t] = 0;
                     }
@@ -997,83 +1053,22 @@ public class ResourceOptimizationlong_MonthTest {
                         waterSupply[4][t] = 0;
                     }
                 }
-                if (water_Supply_tth[t] >= waterDemand[1][t] && water_Supply_tth[t] < waterDemand[1][t] + waterDemand[2][t]) {
-                    waterSupply[1][t] = waterDemand[1][t];
-                    waterSupply[2][t] = water_Supply_tth[t] - waterDemand[1][t];
+                if (water_Supply_tth[t] >= waterDemand[2][t] && water_Supply_tth[t] < waterDemand[1][t] + waterDemand[2][t]) {
+                    waterSupply[1][t] = water_Supply_tth[t] - waterDemand[2][t];
+                    waterSupply[2][t] = waterDemand[2][t];
                     waterSupply[3][t] = 0;
                     waterSupply[4][t] = 0;
                 }
-                if (water_Supply_tth[t] >= 0 && water_Supply_tth[t] < waterDemand[1][t]) {
-                    waterSupply[1][t] = water_Supply_tth[t];
-                    waterSupply[2][t] = 0;
+                if (water_Supply_tth[t] >= 0 && water_Supply_tth[t] < waterDemand[2][t]) {
+                    waterSupply[1][t] = 0;
+                    waterSupply[2][t] = water_Supply_tth[t];
                     waterSupply[3][t] = 0;
                     waterSupply[4][t] = 0;
                 }
 //
             }
 //        }
-//        if (id == 2) {
-//            for (int t = 0; t < period; t++) {
-//                if (water_Supply_tth[t] >= waterDemand[1][t] + waterDemand[2][t] + waterDemand[3][t] + waterDemand[4][t]) {
-//                    waterSupply[1][t] = waterDemand[1][t];
-//                    waterSupply[2][t] = waterDemand[2][t];
-//                    waterSupply[3][t] = waterDemand[3][t];
-//                    waterSupply[4][t] = waterDemand[4][t];
-//                }
-//                if (water_Supply_tth[t] >= 0.8 * (waterDemand[1][t] + waterDemand[2][t] + waterDemand[3][t] + waterDemand[4][t])
-//                        && water_Supply_tth[t] < waterDemand[1][t] + waterDemand[2][t] + waterDemand[3][t] + waterDemand[4][t]) {
-//                    waterSupply[1][t] = 0.9 * waterDemand[1][t];
-//                    waterSupply[2][t] = 0.9 * waterDemand[2][t];
-//                    waterSupply[3][t] = 0.5 * (water_Supply_tth[t] - (waterSupply[1][t] + waterSupply[2][t]));
-//                    waterSupply[4][t] = 0.5 * (water_Supply_tth[t] - (waterSupply[1][t] + waterSupply[2][t]));
-//                    if (waterSupply[3][t] <= 0) {
-//                        waterSupply[3][t] = 0;
-//                    }
-//                    if (waterSupply[4][t] <= 0) {
-//                        waterSupply[4][t] = 0;
-//                    }
-//                }
-//                if (water_Supply_tth[t] >= 0.5 * (waterDemand[1][t] + waterDemand[2][t] + waterDemand[3][t] + waterDemand[4][t])
-//                        && water_Supply_tth[t] < 0.8 * (waterDemand[1][t] + waterDemand[2][t] + waterDemand[3][t] + waterDemand[4][t])) {
-//                    waterSupply[1][t] = 0.7 * waterDemand[1][t];
-//                    waterSupply[2][t] = 0.7 * waterDemand[2][t];
-//                    waterSupply[3][t] = 0.5 * (water_Supply_tth[t] - (waterSupply[1][t] + waterSupply[2][t]));
-//                    waterSupply[4][t] = 0.5 * (water_Supply_tth[t] - (waterSupply[1][t] + waterSupply[2][t]));
-//                    if (waterSupply[3][t] <= 0) {
-//                        waterSupply[3][t] = 0;
-//                    }
-//                    if (waterSupply[4][t] <= 0) {
-//                        waterSupply[4][t] = 0;
-//                    }
-//                }
-//                if (water_Supply_tth[t] >= 0.2 * (waterDemand[1][t] + waterDemand[2][t] + waterDemand[3][t] + waterDemand[4][t])
-//                        && water_Supply_tth[t] < 0.5 * (waterDemand[1][t] + waterDemand[2][t] + waterDemand[3][t] + waterDemand[4][t])) {
-//                    waterSupply[1][t] = 0.4 * waterDemand[1][t];
-//                    waterSupply[2][t] = 0.4 * waterDemand[2][t];
-//                    waterSupply[3][t] = 0.5 * (water_Supply_tth[t] - (waterSupply[1][t] + waterSupply[2][t]));
-//                    waterSupply[4][t] = 0.5 * (water_Supply_tth[t] - (waterSupply[1][t] + waterSupply[2][t]));
-//                    if (waterSupply[3][t] <= 0) {
-//                        waterSupply[3][t] = 0;
-//                    }
-//                    if (waterSupply[4][t] <= 0) {
-//                        waterSupply[4][t] = 0;
-//                    }
-//                }
-//                if (water_Supply_tth[t] < 0.2 * (waterDemand[1][t] + waterDemand[2][t] + waterDemand[3][t] + waterDemand[4][t])) {
-//                    waterSupply[1][t] = 0.1 * waterDemand[1][t];
-//                    waterSupply[2][t] = 0.1 * waterDemand[2][t];
-//                    waterSupply[3][t] = 0.5 * (water_Supply_tth[t] - (waterSupply[1][t] + waterSupply[2][t]));
-//                    waterSupply[4][t] = 0.5 * (water_Supply_tth[t] - (waterSupply[1][t] + waterSupply[2][t]));
-//                    if (waterSupply[3][t] <= 0) {
-//                        waterSupply[3][t] = 0;
-//                    }
-//                    if (waterSupply[4][t] <= 0) {
-//                        waterSupply[4][t] = 0;
-//                    }
-//                }
-////
-//            }
-//        }
+//
         if (id == 2) {
             for (int m = 0; m < waterDemand.length; m++) {
                 for (int n = 0; n < period; n++) {
@@ -1102,7 +1097,48 @@ public class ResourceOptimizationlong_MonthTest {
         return result;
     }
 
+    /**
+     * 检查需水数据是否都大于等于0；
+     * @param array
+     */
+    public static void checkWaterDemand(double[][] array){
+        if (isAllElementsNonNegative(array)==false){
+            throw new CommonException("请检查需水数据是否合理，存在小于0的需水数据");
+        }
+    }
+    public static void checkWaterDemand(double[] array){
+        if (isAllElementsNonNegative(array)==false){
+            throw new CommonException("请检查需水数据是否合理，存在小于0的需水数据");
+        }
+    }
+    /**
+     * 判断数据是否都大于等于0，若是为true，否者为false
+     * @param array
+     * @return
+     */
+    public static boolean isAllElementsNonNegative(double[] array) {
+        for (double element : array) {
+            if (element < 0) {
+                return false;
+            }
+        }
+        return true;
+    }
 
+    /**
+     * Checks if all elements in the given two-dimensional array are greater than or equal to 0.
+     *
+     * @param array the two-dimensional array to check
+     * @return true if all elements are greater than or equal to 0, false otherwise
+     */
+    public static boolean isAllElementsNonNegative(double[][] array) {
+        for (double[] row : array) {
+            if (!isAllElementsNonNegative(row)) {
+                return false;
+            }
+        }
+        return true;
+    }
     public  static  int compareAB(double[] fitnessA, double[] fitnessB)
     {
         // //约束违反程度、供水缺额、下泄惩罚后供水缺额适应度
@@ -1227,7 +1263,7 @@ public class ResourceOptimizationlong_MonthTest {
         this.reservoirs[0].name = "楼庄子";
         this.reservoirs[0].levelFloodControl = 1394.5;
         this.reservoirs[0].levelNormal = 1394.5;
-        this.reservoirs[0].levelFloodLimiting = 105;
+        this.reservoirs[0].levelFloodLimiting = 1397.41;
         this.reservoirs[0].levelDead = 1353.3;
         this.reservoirs[0].outflowMin = 1.48;
         this.reservoirs[0].levelFloodDesign = 1397.41;
@@ -1236,7 +1272,7 @@ public class ResourceOptimizationlong_MonthTest {
         this.reservoirs[1].name = "头屯河";
         this.reservoirs[1].levelFloodControl = 987;
         this.reservoirs[1].levelNormal = 989.6;
-        this.reservoirs[1].levelFloodLimiting = 105;
+        this.reservoirs[1].levelFloodLimiting = 991.2;
         this.reservoirs[1].levelDead = 975;
         this.reservoirs[1].outflowMin = 1.48;
         this.reservoirs[1].levelFloodDesign = 991.2;

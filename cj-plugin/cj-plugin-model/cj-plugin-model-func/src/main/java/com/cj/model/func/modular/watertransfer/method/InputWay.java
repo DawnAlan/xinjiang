@@ -138,13 +138,13 @@ public class InputWay {
 
     /**
      * @param req      入参
-     * @param xnum     本月第几旬
-     * @param monthNum 本月第几月
+     * @param xnum     本月第几旬-1
+     * @param monthNum 本月第几月-1
      * @return
      */
-    public static Map<String, Object> setwaterdemandTendays(WaterTransferReq req, int xnum, int monthNum) {
+    public static Map<String, Object> setwaterdemandTendays(WaterTransferReq req, int xnum,Map<String, Object> dataYear ,int monthNum) {
 
-        double[] monthday = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+
 
         List<Waterdemand> waterDemandData = req.getWaterDemandData();
 
@@ -168,6 +168,16 @@ public class InputWay {
         double[][] demandAgricultureEast = new double[nameAgricultureEast.length][3];
         for (int x = 0; x < nameAgricultureEast.length; x++) {
             demandAgricultureEast[x] = setDataMonth(waterDemandData, nameAgricultureEast[x], "河东农业");
+            if (isAllZeros(demandAgricultureEast[x])==true){
+                double[]datayear= (double[])dataYear.get(nameAgricultureEast[x]);
+                for (int i=0;i<demandAgricultureEast[x].length;i++){
+                    if (dataYear.get(nameAgricultureEast[x])==null){
+                       break;
+                    }
+                    demandAgricultureEast[x][i]= datayear[monthNum]/3;
+                }
+            }
+
             double n = getDataRealTime(waterDemandData, nameAgricultureEast[x], "河东管理站");
             if (n != -100) {
                 demandAgricultureEast[x][xnum] = n;
@@ -178,6 +188,16 @@ public class InputWay {
         double[][] demandAgricultureWest = new double[nameAgricultureWest.length][3];
         for (int x = 0; x < nameAgricultureWest.length; x++) {
             demandAgricultureWest[x] = setDataMonth(waterDemandData, nameAgricultureWest[x], "河西农业");
+
+            if (isAllZeros(demandAgricultureWest[x])==true){
+                double[]datayear= (double[])dataYear.get(nameAgricultureWest[x]);
+                for (int i=0;i<demandAgricultureWest[x].length;i++){
+                    if (dataYear.get(nameAgricultureWest[x])==null){
+                        break;
+                    }
+                    demandAgricultureWest[x][i]= datayear[monthNum]/3;
+                }
+            }
             double n = getDataRealTime(waterDemandData, nameAgricultureWest[x], "河西管理站");
             if (n != -100) {
                 demandAgricultureWest[x][xnum] = n;
@@ -188,6 +208,15 @@ public class InputWay {
         double[][] demandAgricultureQushou = new double[nameAgricultureQushou.length][3];
         for (int x = 0; x < nameAgricultureQushou.length; x++) {
             demandAgricultureQushou[x] = setDataMonth(waterDemandData, nameAgricultureQushou[x], "渠首农业");
+            if (isAllZeros(demandAgricultureQushou[x])==true){
+                double[]datayear= (double[])dataYear.get(nameAgricultureQushou[x]);
+                for (int i=0;i<demandAgricultureQushou[x].length;i++){
+                    if (dataYear.get(nameAgricultureQushou[x])==null){
+                        break;
+                    }
+                    demandAgricultureQushou[x][i]= datayear[monthNum]/3;
+                }
+            }
             double n = getDataRealTime(waterDemandData, nameAgricultureQushou[x], "渠首管理站");
             if (n != -100) {
                 demandAgricultureQushou[x][xnum] = n;
@@ -198,24 +227,60 @@ public class InputWay {
         double[][] demandGreenEast = new double[nameGreenEast.length][3];
         for (int x = 0; x < nameGreenEast.length; x++) {
             demandGreenEast[x] = setDataMonth(waterDemandData, nameGreenEast[x], "河东绿化");
+            if (isAllZeros(demandGreenEast[x])==true){
+                double[]datayear= (double[])dataYear.get(nameGreenEast[x]);
+                for (int i=0;i<demandGreenEast[x].length;i++){
+                    if (dataYear.get(nameGreenEast[x])==null){
+                        break;
+                    }
+                    demandGreenEast[x][i]= datayear[monthNum]/3;
+                }
+            }
             data1.put(nameGreenEast[x], demandGreenEast[x]);
         }
         //河西绿化
         double[][] demandGreenWest = new double[nameGreenWest.length][3];
         for (int x = 0; x < nameGreenWest.length; x++) {
             demandGreenWest[x] = setDataMonth(waterDemandData, nameGreenWest[x], "河西绿化");
+            if (isAllZeros(demandGreenWest[x])==true){
+                double[]datayear= (double[])dataYear.get(nameGreenWest[x]);
+                for (int i=0;i<demandGreenWest[x].length;i++){
+                    if (dataYear.get(nameGreenWest[x])==null){
+                        break;
+                    }
+                    demandGreenWest[x][i]= datayear[monthNum]/3;
+                }
+            }
             data1.put(nameGreenWest[x], demandGreenWest[x]);
         }
         //渠首绿化
         double[][] demandGreenQushou = new double[nameGreenQushou.length][3];
         for (int x = 0; x < nameGreenQushou.length; x++) {
             demandGreenQushou[x] = setDataMonth(waterDemandData, nameGreenQushou[x], "渠首绿化");
+            if (isAllZeros(demandGreenQushou[x])==true){
+                double[]datayear= (double[])dataYear.get(nameGreenQushou[x]);
+                for (int i=0;i<demandGreenQushou[x].length;i++){
+                    if (dataYear.get(nameGreenQushou[x])==null){
+                        break;
+                    }
+                    demandGreenQushou[x][i]= datayear[monthNum]/3;
+                }
+            }
             data1.put(nameGreenQushou[x], demandGreenQushou[x]);
         }
         //渠首工业
         double[][] demandIndustryQushou = new double[nameIndustryQushou.length][3];
         for (int x = 0; x < nameIndustryQushou.length; x++) {
             demandIndustryQushou[x] = setDataMonth(waterDemandData, nameIndustryQushou[x], "渠首工业");
+            if (isAllZeros(demandIndustryQushou[x])==true){
+                double[]datayear= (double[])dataYear.get(nameIndustryQushou[x]);
+                for (int i=0;i<demandIndustryQushou[x].length;i++){
+                    if (dataYear.get(nameIndustryQushou[x])==null){
+                        break;
+                    }
+                    demandIndustryQushou[x][i]= datayear[monthNum]/3;
+                }
+            }
             data1.put(nameIndustryQushou[x], demandIndustryQushou[x]);
         }
 
@@ -251,16 +316,26 @@ public class InputWay {
         return data1;
 
     }
-//    public static Map<String, Object> setwaterdemandDays(WaterTransferReq req,int xnum,int monthNum)
-//    {
-//
-//    }
+
+    /**
+     * 判断是否都为0
+     * @param array
+     * @return
+     */
+    public static boolean isAllZeros(double[] array) {
+        for (int i = 0; i < array.length; i++) {
+            if (array[i] != 0) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     /**
      * @param dataMonth 月逐旬需水数据
-     * @param dayNum    本旬第几天
+     * @param dayNum    本旬第几天-1
      * @param step      本旬总天数
-     * @param id        本月第几旬
+     * @param id        本月第几旬-1
      * @return
      */
     public static Map<String, Object> setWaterdemandDay(WaterTransferReq req, Map<String, Object> dataMonth, int dayNum, int step, int id) {
@@ -528,7 +603,7 @@ public class InputWay {
                 }
             }
         }
-        double[] demanddata = new double[3];
+        double[] demanddata = new double[]{0,0,0};
         if (demand.size() > 0) {
             for (int i = 0; i < demanddata.length; i++) {
                 demanddata[i] = demand.get(i);
@@ -589,7 +664,7 @@ public class InputWay {
             }
         }
         double[] demanddata = new double[12];
-        if (demand.size()==0)
+        if (demand.size()!=10)
         {
             for (int i = 0; i < demanddata.length; i++)
             {
@@ -656,7 +731,7 @@ public class InputWay {
             }
         }
         double[] demanddata = new double[12];
-        if (demand.size()==0)
+        if (demand.size()!=12)
         {
             for (int i = 0; i < demanddata.length; i++) {
                 demanddata[i] =0;
@@ -714,7 +789,7 @@ public class InputWay {
             }
         }
         double[] demanddata = new double[12];
-        if (demand.size()==0)
+        if (demand.size()!=8)
         {
             for (int i = 0; i < demanddata.length; i++) {
                 demanddata[i] =0;
