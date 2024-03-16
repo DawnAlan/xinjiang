@@ -155,7 +155,14 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
                 waterResourceAllocation.setState(0);
             } catch (Exception e) {
                 waterResourceAllocation.setState(2);
-                waterResourceAllocation.setExceptionCause(e.getMessage());
+                StackTraceElement[] stackTrace = e.getCause().getStackTrace();
+                StringBuilder sb = new StringBuilder();
+                sb.append(e.getMessage()+ "\n");
+                for (StackTraceElement stack: stackTrace) {
+                    sb.append(stack.toString());
+                    sb.append("\n");
+                }
+                waterResourceAllocation.setExceptionCause(sb.toString());
             }
             this.updateById(waterResourceAllocation);
         }).start();
@@ -647,7 +654,7 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
         try {
             calculator = OutResult.calculator(waterTransferReq);
         } catch (Exception e) {
-            throw new CommonException(e.getMessage());
+            throw new RuntimeException(e);
         }
         String displayDataPath = calculator.stream().filter(n -> n.getName().equals("表1")).findFirst().get().getPath();
         String displayDataPathMinio = DateUtil.format(dateTime, "yyyyMMdd/HH/mm/ss/") + displayDataPath.substring(displayDataPath.lastIndexOf(File.separator) + 1);
