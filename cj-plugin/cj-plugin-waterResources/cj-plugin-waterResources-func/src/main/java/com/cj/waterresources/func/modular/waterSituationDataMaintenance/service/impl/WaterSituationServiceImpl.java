@@ -192,10 +192,6 @@ public class WaterSituationServiceImpl implements WaterSituationService {
         if(restResponse1.getCode()==200){
             return restResponse1;
         }
-        /*RestResponse listRestResponse = industrialWaterFeeService.selectInfoList(req);
-        if(listRestResponse.getCode()==200){
-            return listRestResponse;
-        }*/
         RestResponse restResponse = allService.selectInfoList(req);
         if(restResponse.getCode()==200){
             return restResponse;
