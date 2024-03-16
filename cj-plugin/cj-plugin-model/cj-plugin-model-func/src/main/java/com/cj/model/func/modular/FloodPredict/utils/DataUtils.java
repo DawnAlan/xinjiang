@@ -4,6 +4,7 @@ import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInf
 import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.entity.LzzGaugingStation;
 import com.cj.middleDatabase.func.modular.lzz.lzzRainfallStation.entity.LzzRainfallStation;
 import com.cj.model.func.modular.FloodPredict.entity.*;
+import lombok.SneakyThrows;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 
 import java.io.File;
@@ -27,6 +28,8 @@ import static com.cj.model.func.modular.FloodPredict.utils.TimeUtils.getMonthDat
  *
  */
 public class DataUtils {
+
+	private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 	public static String array2String(int[] array) {
 		String str = "";
@@ -663,8 +666,9 @@ public class DataUtils {
 			}
 		}else //预报时间在数据库中没有，也就是需要读取预报雨量
 		{
-			int start_inputEnd = duration(dateStart,input.get(input.size()-1).getDates(),"小时");
-			int length = param.getRainFallDtos().size();
+//			int start_inputEnd = duration(dateStart,input.get(input.size()-1).getDates(),"小时");
+			int start_inputEnd = duration(dateStart,param.getPredictionTime(),"小时");
+			int length = param.getRainFallDtos().size()-1;
 			List<RainFallDto> rainPre =param.getRainFallDtos();
 			//后续更改预报时间的类型
 			String station = input.get(0).getRainStation();
@@ -680,7 +684,7 @@ public class DataUtils {
 							{
 								data = new PredictInputData();
 								data.setDates(dateStart);
-								data.setTemperature(12.0);
+								data.setTemperature(rainPre.get(j).getRainFall());
 								data.setRainStation(input.get(0).getRainStation());
 								data.setRainfall(rainPre.get(j).getRainFall());
 								break;
@@ -729,7 +733,8 @@ public class DataUtils {
 					result.add(data);
 				}
 				//此时的dataStart==数据库末尾的时间
-				int inputEnd_dateEnd = duration(input.get(input.size()-1).getDates(),dataEnd,"小时");
+//				int inputEnd_dateEnd = duration(input.get(input.size()-1).getDates(),dataEnd,"小时");
+				int inputEnd_dateEnd = duration(param.getPredictionTime(),dataEnd,"小时");
 				for (int i = 0; i < inputEnd_dateEnd; i++) {
 					if (length>0)
 					{
@@ -2178,17 +2183,9 @@ public class DataUtils {
 	 * @param input
 	 * @return
 	 */
+	@SneakyThrows
 	public static Date stringToDate (String input){
-		Date result =new Date();
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss zzz yyyy", Locale.US);
-		try {
-			LocalDateTime dateTime = LocalDateTime.parse(input, formatter);
-			ZonedDateTime zonedDateTime = dateTime.atZone(ZoneId.of("Asia/Shanghai"));
-			result = Date.from(zonedDateTime.toInstant());
-		}catch (DateTimeParseException e) {
-			e.printStackTrace();
-		}
-		return result;
+		return sdf.parse(input);
 	}
 }
 

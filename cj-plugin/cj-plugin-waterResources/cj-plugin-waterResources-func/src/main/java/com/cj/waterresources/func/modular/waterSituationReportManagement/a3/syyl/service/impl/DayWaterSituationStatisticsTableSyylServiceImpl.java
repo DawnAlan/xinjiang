@@ -58,7 +58,7 @@ public class DayWaterSituationStatisticsTableSyylServiceImpl extends ServiceImpl
         calendar.add(calendar.DATE, -1);
         String yesterday= sdf.format(calendar.getTime());
         List<LzzRainfallStation> lzzRainfallStations = lzzRainfallStationService.selectYesterday(yesterday);
-        List<IrrigatedPlatformDataInfo> irrigatedPlatformDataInfo = irrigatedPlatformDataInfoService.selectOneByCondition2(yesterday);
+        List<IrrigatedPlatformDataInfo> irrigatedPlatformDataInfo = irrigatedPlatformDataInfoService.selectOneByConditionByTime(yesterday);
         for(DayWaterSituationStatisticsTableSyyl t:dayWaterSituationStatisticsTableSyylList){
             t.setId(UUIDUtils.getUUID());
             String paramName = trendsTableParamService.getById(t.getTableHeadId()).getParamName();

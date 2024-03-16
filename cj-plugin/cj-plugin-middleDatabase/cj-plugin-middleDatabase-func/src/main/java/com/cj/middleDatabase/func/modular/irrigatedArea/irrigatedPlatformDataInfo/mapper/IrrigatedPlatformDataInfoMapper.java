@@ -42,10 +42,10 @@ public interface IrrigatedPlatformDataInfoMapper extends BaseMapper<IrrigatedPla
     List<IrrigatedPlatformDataInfo> selectOneByCondition2(@Param("name") String name, @Param("time")String time);
 
     @Select("SELECT * FROM IRRIGATED_PLATFORM_DATA_INFO WHERE TO_CHAR(MONITOR_TIME,'YYYY-MM-DD') = #{time} order by MONITOR_TIME DESC")
-    List<IrrigatedPlatformDataInfo> selectOneByCondition2( @Param("time")String time);
+    List<IrrigatedPlatformDataInfo> selectOneByConditionByTime( @Param("time")String time);
 
-    @Select("SELECT MONITOR_NAME as stationName,ROUND(AVG(YQ_RAIN_FALL_ONE),2) as RAINFALL FROM IRRIGATED_PLATFORM_DATA_INFO WHERE MONITOR_NAME like CONCAT('%','雨量站') and (TO_CHAR(MONITOR_TIME,'YYYY-MM-DD hh24') BETWEEN #{startTime} AND #{endTime} ) GROUP BY MONITOR_NAME")
-    List<RealTimeRainfallRes> getRealTimeRainfall(@Param("startTime")String startTime, @Param("endTime")String endTime);
+    @Select("SELECT MONITOR_NAME,YQ_RAIN_FALL_ONE,YQ_RAIN_FALL_THREE,YQ_RAIN_FALL_SIX,YQ_RAIN_FALL_TWELVE,YQ_RAIN_FALL_TWENTY_FOUR FROM tth.IRRIGATED_PLATFORM_DATA_INFO WHERE MONITOR_NAME like CONCAT('%','雨量站') and TO_CHAR(MONITOR_TIME,'YYYY-MM-DD hh24')= #{time} order by MONITOR_TIME desc limit 3")
+    List<IrrigatedPlatformDataInfo> getRealTimeRainfall(@Param("time")String time);
 
     @Select("SELECT * FROM IRRIGATED_PLATFORM_DATA_INFO WHERE MONITOR_NAME = #{name} AND TO_CHAR(MONITOR_TIME,'YYYY-MM-DD hh24') = #{time} ORDER BY MONITOR_TIME DESC")
     List<IrrigatedPlatformDataInfo> selectInfoByTime(@Param("time")String time,@Param("name") String name);

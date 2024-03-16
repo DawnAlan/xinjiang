@@ -301,7 +301,7 @@ public class TouTunHe {
      */
     public static List<Date> judgeDate (Date predictTime) throws IOException {
         List<Date> result = new ArrayList<>();
-        Object[][] historyInput = ExcelTool.readExcel("D:\\头屯河历史数据1.xlsx", "3号桥日");
+        Object[][] historyInput = ExcelTool.readExcel("D:\\头屯河历史数据1.xlsx", "楼庄子日");
         Date historyTime = (Date) historyInput[historyInput.length-1][0];
         int number = duration(predictTime,historyTime,"日");
         if (number > 20){
@@ -312,6 +312,10 @@ public class TouTunHe {
             calendar.add(Calendar.DAY_OF_MONTH, -20);
             Date startTime = calendar.getTime();
             result.add(startTime);
+        }
+        Date endtime = new Date();
+        if (predictTime.before(endtime)){
+            predictTime = endtime;
         }
         result.add(predictTime);
         return result;

@@ -111,8 +111,8 @@ public class WaterSituationStatisticsTableTodayServiceImpl extends ServiceImpl<W
             waterSituationStatisticsTableToday.setLzzRkll(data_8.stream().filter(t->t.getTableHeadId().equals(rkll.getId())).map(DayWaterSituationStatisticsTableLzz::getV).collect(Collectors.toList()).get(0));
             waterSituationStatisticsTableToday.setLzzCkllHd(data_8.stream().filter(t->t.getTableHeadId().equals(hd.getId())).map(DayWaterSituationStatisticsTableLzz::getV).collect(Collectors.toList()).get(0));
             waterSituationStatisticsTableToday.setLzzCkllLzzsc(
-                    data_8.stream().filter(t->t.getTableHeadId().equals(lzzscgd1.getId())).map(DayWaterSituationStatisticsTableLzz::getV).collect(Collectors.toList()).get(0)+
-                    data_8.stream().filter(t->t.getTableHeadId().equals(lzzscgd2.getId())).map(DayWaterSituationStatisticsTableLzz::getV).collect(Collectors.toList()).get(0)
+                    data_8.stream().filter(t->t.getTableHeadId().equals(lzzscgd1.getId()) && t.getV()!=null).map(DayWaterSituationStatisticsTableLzz::getV).reduce(Double::sum).orElse(0.00)+
+                    data_8.stream().filter(t->t.getTableHeadId().equals(lzzscgd2.getId()) && t.getV()!=null).map(DayWaterSituationStatisticsTableLzz::getV).reduce(Double::sum).orElse(0.00)
             );
             waterSituationStatisticsTableToday.setLzzCkllHj(data_8.stream().filter(t->t.getTableHeadId().equals(hj.getId())).map(DayWaterSituationStatisticsTableLzz::getV).collect(Collectors.toList()).get(0));
         }
@@ -150,9 +150,9 @@ public class WaterSituationStatisticsTableTodayServiceImpl extends ServiceImpl<W
                     (waterSituationStatisticsTableToday.getTthCkBg()==null?0.00:waterSituationStatisticsTableToday.getTthCkBg())+
                     (waterSituationStatisticsTableToday.getTthCkHysk()==null?0.00:waterSituationStatisticsTableToday.getTthCkHysk())
             );
-            waterSituationStatisticsTableToday.setTthZdRk(data_8.stream().filter(t->t.getTableHeadId().equals(jkzd.getId())).map(DayWaterSituationStatisticsTableTth::getV).collect(Collectors.toList()).get(0));
-            waterSituationStatisticsTableToday.setTthZdAq(data_8.stream().filter(t->t.getTableHeadId().equals(aqzd.getId())).map(DayWaterSituationStatisticsTableTth::getV).collect(Collectors.toList()).get(0));
-            waterSituationStatisticsTableToday.setTthZdCk(data_8.stream().filter(t->t.getTableHeadId().equals(ckzd.getId())).map(DayWaterSituationStatisticsTableTth::getV).collect(Collectors.toList()).get(0));
+            waterSituationStatisticsTableToday.setTthZdRk(data_8.stream().filter(t->t.getTableHeadId().equals(jkzd.getId()) && t.getV()!=null).map(DayWaterSituationStatisticsTableTth::getV).reduce(Double::sum).orElse(0.00));
+            waterSituationStatisticsTableToday.setTthZdAq(data_8.stream().filter(t->t.getTableHeadId().equals(aqzd.getId()) && t.getV()!=null).map(DayWaterSituationStatisticsTableTth::getV).reduce(Double::sum).orElse(0.00));
+            waterSituationStatisticsTableToday.setTthZdCk(data_8.stream().filter(t->t.getTableHeadId().equals(ckzd.getId()) && t.getV()!=null).map(DayWaterSituationStatisticsTableTth::getV).reduce(Double::sum).orElse(0.00));
         }
         List<DayWaterSituationStatisticsTableQs> dayWaterSituationStatisticsTableQsList = dayWaterSituationStatisticsTableQsMapper.selectList(today);
         if(null != dayWaterSituationStatisticsTableQsList && dayWaterSituationStatisticsTableQsList.size()>0){
@@ -182,20 +182,20 @@ public class WaterSituationStatisticsTableTodayServiceImpl extends ServiceImpl<W
                     (waterSituationStatisticsTableToday.getQsZgqLd()==null?0.00:waterSituationStatisticsTableToday.getQsZgqLd())
             );
             waterSituationStatisticsTableToday.setQsDlqNy(
-                    data_8.stream().filter(t->t.getTableHeadId().equals(byNy.getId())).map(DayWaterSituationStatisticsTableQs::getV).collect(Collectors.toList()).get(0)+
-                    data_8.stream().filter(t->t.getTableHeadId().equals(lxNy.getId())).map(DayWaterSituationStatisticsTableQs::getV).collect(Collectors.toList()).get(0)
+                    data_8.stream().filter(t->t.getTableHeadId().equals(byNy.getId()) && t.getV()!=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00)+
+                    data_8.stream().filter(t->t.getTableHeadId().equals(lxNy.getId()) && t.getV()!=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00)
             );
             waterSituationStatisticsTableToday.setQsDlqLh(
-                    data_8.stream().filter(t->t.getTableHeadId().equals(lhgcb.getId())).map(DayWaterSituationStatisticsTableQs::getV).collect(Collectors.toList()).get(0)+
-                    data_8.stream().filter(t->t.getTableHeadId().equals(lhfwb.getId())).map(DayWaterSituationStatisticsTableQs::getV).collect(Collectors.toList()).get(0)+
-                    data_8.stream().filter(t->t.getTableHeadId().equals(ylLh.getId())).map(DayWaterSituationStatisticsTableQs::getV).collect(Collectors.toList()).get(0)
+                    data_8.stream().filter(t->t.getTableHeadId().equals(lhgcb.getId()) && t.getV()!=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00)+
+                    data_8.stream().filter(t->t.getTableHeadId().equals(lhfwb.getId()) && t.getV()!=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00)+
+                    data_8.stream().filter(t->t.getTableHeadId().equals(ylLh.getId()) && t.getV()!=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00)
             );
             waterSituationStatisticsTableToday.setQsDlqHj(
                     (waterSituationStatisticsTableToday.getQsDlqNy()==null?0.00:waterSituationStatisticsTableToday.getQsDlqNy())+
                     (waterSituationStatisticsTableToday.getQsDlqLh()==null?0.00:waterSituationStatisticsTableToday.getQsDlqLh())
             );
-            waterSituationStatisticsTableToday.setQsXh(data_8.stream().filter(t->t.getTableHeadId().equals(st.getId())).map(DayWaterSituationStatisticsTableQs::getV).collect(Collectors.toList()).get(0));
-            waterSituationStatisticsTableToday.setQsQh(data_8.stream().filter(t->t.getTableHeadId().equals(qh.getId())).map(DayWaterSituationStatisticsTableQs::getV).collect(Collectors.toList()).get(0));
+            waterSituationStatisticsTableToday.setQsXh(data_8.stream().filter(t->t.getTableHeadId().equals(st.getId()) && t.getV()!=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00));
+            waterSituationStatisticsTableToday.setQsQh(data_8.stream().filter(t->t.getTableHeadId().equals(qh.getId()) && t.getV()!=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00));
         }
         List<DayWaterSituationStatisticsTableDkl> dayWaterSituationStatisticsTableDklList = dayWaterSituationStatisticsTableDklMapper.selectList(today);
         if(null != dayWaterSituationStatisticsTableDklList && dayWaterSituationStatisticsTableDklList.size()>0){
@@ -240,12 +240,12 @@ public class WaterSituationStatisticsTableTodayServiceImpl extends ServiceImpl<W
             TrendsTableParam lhHj = hdTableParam.stream().filter(t -> t.getPId().equals(lh.getId()) && t.getParamName().equals("合计")).collect(Collectors.toList()).get(0);
             TrendsTableParam dgHj = hdTableParam.stream().filter(t -> t.getPId().equals("0") && t.getParamName().equals("合计")).collect(Collectors.toList()).get(0);
             waterSituationStatisticsTableToday.setHdTthnkXyz(
-                    data_8.stream().filter(t->t.getTableHeadId().equals(tthncXyz3D.getId())).map(DayWaterSituationStatisticsTableHd::getV).collect(Collectors.toList()).get(0)+
-                    data_8.stream().filter(t->t.getTableHeadId().equals(tthncXyz2D.getId())).map(DayWaterSituationStatisticsTableHd::getV).collect(Collectors.toList()).get(0)
+                    data_8.stream().filter(t->t.getTableHeadId().equals(tthncXyz3D.getId()) && t.getV()!=null).map(DayWaterSituationStatisticsTableHd::getV).reduce(Double::sum).orElse(0.00)+
+                    data_8.stream().filter(t->t.getTableHeadId().equals(tthncXyz2D.getId()) && t.getV()!=null).map(DayWaterSituationStatisticsTableHd::getV).reduce(Double::sum).orElse(0.00)
             );
             waterSituationStatisticsTableToday.setHdTthncXez(
-                    data_8.stream().filter(t->t.getTableHeadId().equals(tthncXrz4D.getId())).map(DayWaterSituationStatisticsTableHd::getV).collect(Collectors.toList()).get(0)+
-                    data_8.stream().filter(t->t.getTableHeadId().equals(tthncXrz5D.getId())).map(DayWaterSituationStatisticsTableHd::getV).collect(Collectors.toList()).get(0)
+                    data_8.stream().filter(t->t.getTableHeadId().equals(tthncXrz4D.getId()) && t.getV()!=null).map(DayWaterSituationStatisticsTableHd::getV).reduce(Double::sum).orElse(0.00)+
+                    data_8.stream().filter(t->t.getTableHeadId().equals(tthncXrz5D.getId()) && t.getV()!=null).map(DayWaterSituationStatisticsTableHd::getV).reduce(Double::sum).orElse(0.00)
             );
             waterSituationStatisticsTableToday.setHdTthncYld(data_8.stream().filter(t->t.getTableHeadId().equals(tthncYld.getId())).map(DayWaterSituationStatisticsTableHd::getV).collect(Collectors.toList()).get(0));
             waterSituationStatisticsTableToday.setHdTthncHj(data_8.stream().filter(t->t.getTableHeadId().equals(tthncHj.getId())).map(DayWaterSituationStatisticsTableHd::getV).collect(Collectors.toList()).get(0));

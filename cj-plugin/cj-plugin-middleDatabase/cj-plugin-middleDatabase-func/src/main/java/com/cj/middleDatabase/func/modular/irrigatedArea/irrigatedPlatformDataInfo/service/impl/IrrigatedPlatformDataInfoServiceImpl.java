@@ -9,10 +9,12 @@ import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInf
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformTree.entity.IrrigatedPlatformTree;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformTree.service.IrrigatedPlatformTreeService;
 import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.entity.LzzGaugingStation;
+import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -29,6 +31,8 @@ public class IrrigatedPlatformDataInfoServiceImpl extends ServiceImpl<IrrigatedP
 
     @Autowired
     private IrrigatedPlatformTreeService irrigatedPlatformTreeService;
+
+    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH");
 
     @Override
     public List<SelectInfoByIrrigationNameListRes> selectInfoByIrrigationNameList(String[] name) {
@@ -88,13 +92,45 @@ public class IrrigatedPlatformDataInfoServiceImpl extends ServiceImpl<IrrigatedP
     }
 
     @Override
-    public List<IrrigatedPlatformDataInfo> selectOneByCondition2(String time) {
-        return this.baseMapper.selectOneByCondition2(time);
+    public List<IrrigatedPlatformDataInfo> selectOneByConditionByTime(String time) {
+        return this.baseMapper.selectOneByConditionByTime(time);
     }
 
+    @SneakyThrows
     @Override
     public List<RealTimeRainfallRes> getRealTimeRainfall(String startTime, String endTime) {
-        return this.baseMapper.getRealTimeRainfall(startTime,endTime);
+        List<RealTimeRainfallRes> resList = new ArrayList<>();
+        Date start = sdf.parse(startTime);
+        Date end = sdf.parse(endTime);
+        Long mills = end.getTime()-start.getTime();
+        int hour = (int)(mills/1000/3600) ;
+        List<IrrigatedPlatformDataInfo> realTimeRainfall = this.baseMapper.getRealTimeRainfall(endTime);
+        for(IrrigatedPlatformDataInfo info:realTimeRainfall){
+            RealTimeRainfallRes res = new RealTimeRainfallRes();
+            switch (hour){
+                case 1:
+                    res.setRainfall(new BigDecimal(info.getYqRainFallOne()));
+                    break;
+                case 3:
+                    res.setRainfall(new BigDecimal(info.getYqRainFallThree()));
+                    break;
+                case 6:
+                    res.setRainfall(new BigDecimal(info.getYqRainFallSix()));
+                    break;
+                case 12:
+                    res.setRainfall(new BigDecimal(info.getYqRainFallTwelve()));
+                    break;
+                case 24:
+                    res.setRainfall(new BigDecimal(info.getYqRainFallTwentyFour()));
+                    break;
+                default:
+                    res.setRainfall(null);
+                    break;
+            }
+            res.setStationName(info.getMonitorName());
+            resList.add(res);
+        }
+        return resList ;
     }
 
     @Override

@@ -71,23 +71,23 @@ public class DayWaterSituationStatisticsTableTthServiceImpl extends ServiceImpl<
             t.setId(UUIDUtils.getUUID());
             String paramName = (String)redisUtil.get("trendsTableParam:name:"+t.getTableHeadId());
             if(paramName.equals("库水位")){
-                Double waterLevel = (Double) redisUtil.get("irrigatedPlatform:sq:tth:waterLevel"+sdf.format(t.getRecordTime())+" "+t.getTime());
+                Double waterLevel = (Double) redisUtil.get("irrigatedPlatform:sq:tth:waterLevel:"+sdf.format(t.getRecordTime())+" "+t.getTime());
                 t.setV(waterLevel==null?null:waterLevel);
             }
             if(paramName.equals("水库库容")){
-                Double capacity = (Double)redisUtil.get("irrigatedPlatform:sq:tth:capacity"+sdf.format(t.getRecordTime())+" "+t.getTime());
+                Double capacity = (Double)redisUtil.get("irrigatedPlatform:sq:tth:capacity:"+sdf.format(t.getRecordTime())+" "+t.getTime());
                 t.setV(capacity==null?null:capacity);
             }
             if(paramName.equals("进库流量")){
-                Double capacity = (Double)redisUtil.get("irrigatedPlatform:sq:tth:input"+sdf.format(t.getRecordTime())+" "+t.getTime());
+                Double capacity = (Double)redisUtil.get("irrigatedPlatform:sq:tth:input:"+sdf.format(t.getRecordTime())+" "+t.getTime());
                 t.setV(capacity==null?null:capacity);
             }
             if(paramName.equals("河道流量")){
-                Double capacity = (Double)redisUtil.get("irrigatedPlatform:sq:tth:out"+sdf.format(t.getRecordTime())+" "+t.getTime());
+                Double capacity = (Double)redisUtil.get("irrigatedPlatform:sq:tth:out:"+sdf.format(t.getRecordTime())+" "+t.getTime());
                 t.setV(capacity==null?null:capacity);
             }
             if(paramName.equals("暗渠流量")){
-                Double capacity = (Double)redisUtil.get("irrigatedPlatform:sq:tth:aq"+sdf.format(t.getRecordTime())+" "+t.getTime());
+                Double capacity = (Double)redisUtil.get("irrigatedPlatform:sq:tth:aq:"+sdf.format(t.getRecordTime())+" "+t.getTime());
                 t.setV(capacity==null?null:capacity);
             }
         }

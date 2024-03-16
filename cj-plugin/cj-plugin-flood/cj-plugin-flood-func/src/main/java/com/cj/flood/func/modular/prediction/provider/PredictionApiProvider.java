@@ -2,6 +2,7 @@ package com.cj.flood.func.modular.prediction.provider;
 
 import com.alibaba.fastjson.JSONObject;
 import com.cj.common.model.RestResponse;
+import com.cj.common.util.RedisUtil;
 import com.cj.flood.api.PredictionApi;
 import com.cj.flood.func.modular.dispatch.entity.FloodControlOperation;
 import com.cj.flood.func.modular.dispatch.service.FloodControlOperationService;
@@ -17,6 +18,7 @@ import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.entity.LzzGaugin
 import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.service.LzzGaugingStationService;
 import com.cj.middleDatabase.func.modular.lzz.lzzRainfallStation.entity.LzzRainfallStation;
 import com.cj.middleDatabase.func.modular.lzz.lzzRainfallStation.service.LzzRainfallStationService;
+import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -40,7 +42,11 @@ public class PredictionApiProvider implements PredictionApi {
     @Resource
     private FloodControlOperationService floodControlOperationService;
 
+    @Resource
+    private RedisUtil redisUtil;
+
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 
     @Resource
     private IrrigatedPlatformDataInfoService irrigatedPlatformDataInfoService;
@@ -84,6 +90,7 @@ public class PredictionApiProvider implements PredictionApi {
         return null;
     }
 
+    @SneakyThrows
     @Override
     public String getRealTimeWaterLevelData(String date) {
         List<RealTimeEngineeringSituationDataRes> result = new ArrayList<>();
@@ -92,13 +99,41 @@ public class PredictionApiProvider implements PredictionApi {
         if(null!=lzzGaugingStation){
             lzzData.setReservoirName(lzzGaugingStation.getStationName());
             lzzData.setFloodControlLevel(1394.50);
-            lzzData.setRealTimeWaterLevel(lzzGaugingStation.getRelativeWaterLevel());
+            if(lzzGaugingStation.getRelativeWaterLevel()<0){
+                Set<String> allKeys = redisUtil.getAllKeys("lzz:time:waterLevel:true");
+                List<Date> dateList = new ArrayList<>();
+                for(String s:allKeys){
+                    String[] split1 = s.split(" ");
+                    String[] split2 = split1[0].split(":");
+                    String dateTemp =split2[split2.length-1]+" "+split1[split1.length-1];
+                    Date parse = sdf1.parse(dateTemp);
+                    dateList.add(parse);
+                }
+                List<Date> collect = dateList.stream().sorted(Comparator.comparing(Date::getDate, Comparator.reverseOrder())).collect(Collectors.toList());
+                Double v = (Double) redisUtil.get("lzz:time:waterLevel:true:"+sdf1.format(collect.get(0)));
+                lzzData.setRealTimeWaterLevel(v);
+            }else {
+                lzzData.setRealTimeWaterLevel(lzzGaugingStation.getRelativeWaterLevel());
+            }
+
+
             lzzData.setUsedStorageCapacity(lzzGaugingStation.getStorageCapacity());
             lzzData.setRemainingStorageCapacity(7374.0 - lzzData.getUsedStorageCapacity());
         }else {
+            Set<String> allKeys = redisUtil.getAllKeys("lzz:time:waterLevel:true");
+            List<Date> dateList = new ArrayList<>();
+            for(String s:allKeys){
+                String[] split1 = s.split(" ");
+                String[] split2 = split1[0].split(":");
+                String dateTemp =split2[split2.length-1]+" "+split1[split1.length-1];
+                Date parse = sdf1.parse(dateTemp);
+                dateList.add(parse);
+            }
+            List<Date> collect = dateList.stream().sorted(Comparator.comparing(Date::getDate, Comparator.reverseOrder())).collect(Collectors.toList());
+            Double v = (Double) redisUtil.get("lzz:time:waterLevel:true:"+sdf1.format(collect.get(0)));
+            lzzData.setRealTimeWaterLevel(v);
             lzzData.setReservoirName("楼庄子库水位站");
             lzzData.setFloodControlLevel(1394.50);
-            lzzData.setRealTimeWaterLevel(null);
             lzzData.setUsedStorageCapacity(null);
             lzzData.setRemainingStorageCapacity(null);
         }

@@ -382,7 +382,7 @@ public class SysUserController {
      */
     @ApiOperationSupport(order = 24)
     @ApiOperation("上传电子签")
-    @GetMapping("/sys/user/uploadDigitalSignature")
+    @PostMapping("/sys/user/uploadDigitalSignature")
     public RestResponse uploadDigitalSignature(@RequestParam("file")MultipartFile file,@RequestParam("id") String id) {
         return sysUserService.uploadDigitalSignature(file,id);
     }

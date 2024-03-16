@@ -450,7 +450,7 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                     eq(req.getPeriodTimeType() != null, IncomingWaterForecast::getPeriodTimeType, req.getPeriodTimeType()).
                     eq(StringUtils.isNotEmpty(req.getCreateBy()),IncomingWaterForecast::getCreateBy,req.getCreateBy()).
                     eq(req.getModelType() != null, IncomingWaterForecast::getModelType,req.getModelType()).
-                    eq(req.getPredictionTime() != null, IncomingWaterForecast::getPredictionTime, req.getPredictionTime()).orderByDesc(IncomingWaterForecast::getCreateTime).
+                    like(req.getPredictionTime() != null, IncomingWaterForecast::getPredictionTime, req.getPredictionTime()==null?null:sdf1.format(req.getPredictionTime())).orderByDesc(IncomingWaterForecast::getCreateTime).
                     page(incomingWaterForecastPage);
             if(page.getSize()>0){
                 return RestResponse.ok(page);

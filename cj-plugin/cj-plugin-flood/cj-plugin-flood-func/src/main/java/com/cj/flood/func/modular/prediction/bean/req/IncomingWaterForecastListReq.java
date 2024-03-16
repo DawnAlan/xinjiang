@@ -18,8 +18,8 @@ public class IncomingWaterForecastListReq extends PageTool implements Serializab
     @ApiModelProperty(value = "时段类型(1-月 2-旬 3-日 4-小时)")
     private Integer periodTimeType;
 
-    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
-    @DateTimeFormat("yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @DateTimeFormat("yyyy-MM-dd")
     @ApiModelProperty(value = "预报时间")
     private Date predictionTime;
 

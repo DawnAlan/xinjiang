@@ -85,6 +85,14 @@ public class DayWaterSituationStatisticsTableLzzServiceImpl extends ServiceImpl<
                 Double v = (Double)redisUtil.get("lzz:waterworks:2:"+sdf.format(t.getRecordTime())+" "+t.getTime());
                 t.setV(v==null?null:v);
             }
+            if(paramName.equals("进库流量")){
+                Double v = (Double)redisUtil.get("lzz:input:"+sdf.format(t.getRecordTime())+" "+t.getTime());
+                t.setV(v==null?null:v);
+            }
+            if(paramName.equals("河道")){
+                Double v = (Double)redisUtil.get("lzz:out:"+sdf.format(t.getRecordTime())+" "+t.getTime());
+                t.setV(v==null?null:v);
+            }
         }
         List<DayWaterSituationStatisticsTableLzz> result = new ArrayList<>();
         List<DayWaterSituationStatisticsTableLzz> list = this.baseMapper.selectList(sdf.format(dayWaterSituationStatisticsTableLzzList.get(0).getRecordTime()));
@@ -193,6 +201,12 @@ public class DayWaterSituationStatisticsTableLzzServiceImpl extends ServiceImpl<
 
     @Override
     public RestResponse update(List<DayWaterSituationStatisticsTableLzz> dayWaterSituationStatisticsTableLzzList) {
+        dayWaterSituationStatisticsTableLzzList.forEach(t->{
+            String paramName = trendsTableParamService.getById(t.getTableHeadId()).getParamName();
+            if(paramName.equals("库水位")){
+                redisUtil.set("lzz:time:waterLevel:true:"+sdf.format(t.getRecordTime())+" "+t.getTime(),t.getV(),24*3600);
+            }
+        });
         List<TotalIdToStation> totalIdToStationList = totalIdToStationService.lambdaQuery().eq(TotalIdToStation::getUseType, 1).eq(TotalIdToStation::getStation, "楼庄子水库").list();
         String mk = (String) redisUtil.get("trendsTableParam:list");
         if(StringUtils.isEmpty(mk)){
