@@ -1,11 +1,13 @@
 package com.cj.flood.func.modular.prediction.provider;
 
+import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.RedisUtil;
 import com.cj.flood.api.PredictionApi;
 import com.cj.flood.func.modular.dispatch.entity.FloodControlOperation;
 import com.cj.flood.func.modular.dispatch.service.FloodControlOperationService;
+import com.cj.flood.func.modular.homePage.service.FloodHomePageService;
 import com.cj.flood.func.modular.prediction.bean.dto.PredictionFrontViewDto;
 import com.cj.flood.func.modular.prediction.bean.dto.PredictionProcessDto;
 import com.cj.flood.func.modular.prediction.bean.res.*;
@@ -41,6 +43,9 @@ public class PredictionApiProvider implements PredictionApi {
 
     @Resource
     private FloodControlOperationService floodControlOperationService;
+
+    @Resource
+    private FloodHomePageService floodHomePageService;
 
     @Resource
     private RedisUtil redisUtil;
@@ -555,5 +560,10 @@ public class PredictionApiProvider implements PredictionApi {
             return JSONObject.toJSONString(predictionListByName);
         }
         return null;
+    }
+
+    @Override
+    public String getWaterStorageOverview(String dateTime) {
+        return JSONObject.toJSONString(floodHomePageService.waterStorageOverview(DateUtil.parse(dateTime)));
     }
 }
