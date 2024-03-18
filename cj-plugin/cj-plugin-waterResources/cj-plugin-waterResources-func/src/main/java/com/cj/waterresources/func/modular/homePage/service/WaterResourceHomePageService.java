@@ -2,11 +2,15 @@ package com.cj.waterresources.func.modular.homePage.service;
 
 import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSON;
+import com.cj.auth.core.pojo.SaBaseLoginUser;
+import com.cj.auth.core.util.StpLoginUserUtil;
 import com.cj.common.model.RestResponse;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.entity.IrrigatedPlatformDataInfo;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.service.IrrigatedPlatformDataInfoService;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformTree.entity.IrrigatedPlatformTree;
+import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformTree.entity.IrrigatedSysOrgMapping;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformTree.service.IrrigatedPlatformTreeService;
+import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformTree.service.IrrigatedSysOrgMappingService;
 import com.cj.waterresources.func.modular.homePage.bean.res.OverviewRes;
 import com.cj.waterresources.func.modular.homePage.bean.res.WaterSituationRes;
 import com.cj.waterresources.func.modular.homePage.bean.res.WaterSituationStationsRes;
@@ -27,6 +31,7 @@ public class WaterResourceHomePageService {
     private final IrrigatedPlatformDataInfoService irrigatedPlatformDataInfoService;
     private final IrrigatedPlatformTreeService irrigatedPlatformTreeService;
     private final WaterFeeStatisticsTotalService waterFeeStatisticsTotalService;
+    private final IrrigatedSysOrgMappingService irrigatedSysOrgMappingService;
     private final PredictionApi predictionApi;
 
     private static final String PATTERN_MINUTE_OF_DAY = "yyyy-MM-dd HH:mm";
@@ -42,11 +47,42 @@ public class WaterResourceHomePageService {
         return RestResponse.ok(new OverviewRes(null, null, unpaidCount.intValue(), null, null, null));
     }
 
-    public RestResponse<List<WaterSituationRes>> waterSituation(Date dateTime, String unitId) {
+    public RestResponse<List<WaterSituationRes>> waterSituation(Date dateTime) {
+        List<IrrigatedPlatformTree> irrigatedPlatformTreeList = irrigatedPlatformTreeService.list();
+
+        SaBaseLoginUser saBaseLoginUser = StpLoginUserUtil.getLoginUser();
+        IrrigatedSysOrgMapping one = irrigatedSysOrgMappingService.lambdaQuery().eq(IrrigatedSysOrgMapping::getSysId, saBaseLoginUser.getOrgId()).one();
+        if (one == null) {
+            return RestResponse.no("组织id未对应");
+        }
+        String irrigatedId = one.getIrrigatedId();
+//        String sysId = "123";
+//        String irrigatedId = irrigatedSysOrgMappingService.lambdaQuery().eq(IrrigatedSysOrgMapping::getSysId, sysId).one().getIrrigatedId();
+
+        List<String> superiorUnit = new ArrayList<>();
+        List<String> unitId = new ArrayList<>();
+
+        if (!irrigatedPlatformTreeList.stream().anyMatch(n -> n.getId().equals(irrigatedId))) {
+            return RestResponse.no("组织对应平台id有误");
+        }
+
+        if (getChildStation(irrigatedPlatformTreeList, getChildStation(irrigatedPlatformTreeList, getRootStation(irrigatedPlatformTreeList))).stream().anyMatch(n -> n.getId().equals(irrigatedId))) {
+            superiorUnit.add(irrigatedId);
+        } else if (irrigatedPlatformTreeList.stream().filter(n -> n.getId().equals(irrigatedId)).anyMatch(n -> n.getName().contains("供水科"))){
+            superiorUnit.addAll(getChildStation(irrigatedPlatformTreeList,
+                    irrigatedPlatformTreeList.stream().filter(n -> n.getId().equals(irrigatedId)).collect(Collectors.toList()))
+                    .stream().filter(n -> n.getName().contains("河东") || n.getName().contains("河西") || n.getName().contains("渠首")).map(IrrigatedPlatformTree::getId).collect(Collectors.toList()));
+        } else {
+            return RestResponse.no("组织对应平台id无权限");
+        }
+        for (String unit : superiorUnit) {
+            unitId.addAll(getLeafStation(irrigatedPlatformTreeList, unit).stream().map(IrrigatedPlatformTree::getId).collect(Collectors.toList()));
+        }
+
         List<WaterSituationRes> waterSituationResList = new ArrayList<>();
         List<IrrigatedPlatformDataInfo> list = irrigatedPlatformDataInfoService.lambdaQuery()
                 .between(IrrigatedPlatformDataInfo::getMonitorTime, DateUtil.beginOfDay(dateTime), dateTime)
-                .in(IrrigatedPlatformDataInfo::getMonitorId, getLeafStation(unitId).stream().map(IrrigatedPlatformTree::getId).collect(Collectors.toList()))
+                .in(IrrigatedPlatformDataInfo::getMonitorId, unitId)
                 .list();
         list.stream()
                 .collect(Collectors.groupingBy(IrrigatedPlatformDataInfo::getMonitorName,
@@ -76,24 +112,24 @@ public class WaterResourceHomePageService {
         add("井房伸缩水尺水位");
     }};
 
-    private List<IrrigatedPlatformTree> getLeafStation(String unitId) {
-        List<IrrigatedPlatformTree> stations = getChildStation(getChildStation(getChildStation(getRootStation())).stream().filter(station -> station.getId().equals(unitId)).collect(Collectors.toList()));
+    private List<IrrigatedPlatformTree> getLeafStation(List<IrrigatedPlatformTree> irrigatedPlatformTreeList, String unitId) {
+        List<IrrigatedPlatformTree> stations = getChildStation(irrigatedPlatformTreeList,
+                getChildStation(irrigatedPlatformTreeList,
+                        getChildStation(irrigatedPlatformTreeList,
+                                getRootStation(irrigatedPlatformTreeList)))
+                        .stream().filter(station -> station.getId().equals(unitId)).collect(Collectors.toList()));
         if (stations.stream().anyMatch(station -> storageWaterStationList.contains(station.getName()))) {
             stations = stations.stream().filter(station -> storageWaterStationList.contains(station.getName())).collect(Collectors.toList());
         }
         return stations;
     }
 
-    private List<IrrigatedPlatformTree> getRootStation() {
-        return irrigatedPlatformTreeService.lambdaQuery()
-                .eq(IrrigatedPlatformTree::getParentId, "0").list();
+    private List<IrrigatedPlatformTree> getRootStation(List<IrrigatedPlatformTree> irrigatedPlatformTreeList) {
+        return irrigatedPlatformTreeList.stream().filter(n -> n.getParentId().equals("0")).collect(Collectors.toList());
     }
 
-    private List<IrrigatedPlatformTree> getChildStation(List<IrrigatedPlatformTree> stations) {
-        return irrigatedPlatformTreeService.lambdaQuery()
-                .in(IrrigatedPlatformTree::getParentId,
-                        stations.stream().map(IrrigatedPlatformTree::getId).collect(Collectors.toList()))
-                .list();
+    private List<IrrigatedPlatformTree> getChildStation(List<IrrigatedPlatformTree> allStations, List<IrrigatedPlatformTree> parentStations) {
+        return allStations.stream().filter(n -> parentStations.stream().anyMatch(p -> p.getId().equals(n.getParentId()))).collect(Collectors.toList());
     }
 
     private String getTenDays(Date date) {
@@ -108,8 +144,12 @@ public class WaterResourceHomePageService {
     }
 
     public RestResponse<List<WaterSituationStationsRes>> getWaterSituationStations() {
+        List<IrrigatedPlatformTree> irrigatedPlatformTreeList = irrigatedPlatformTreeService.list();
         List<WaterSituationStationsRes> result = new ArrayList<>();
-        getChildStation(getChildStation(getRootStation())).forEach(unit -> result.add(new WaterSituationStationsRes(unit.getId(), unit.getName())));
+        getChildStation(irrigatedPlatformTreeList,
+                getChildStation(irrigatedPlatformTreeList,
+                        getRootStation(irrigatedPlatformTreeList)))
+                .forEach(unit -> result.add(new WaterSituationStationsRes(unit.getId(), unit.getName())));
         return RestResponse.ok(result);
     }
 }
