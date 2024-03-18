@@ -42,6 +42,7 @@
         <module>cj-plugin-inspection</module>
         <module>cj-plugin-approval</module>
         <module>cj-plugin-fourPredictions</module>
+        <module>cj-plugin-business-log</module>
     </modules>
 
 </project>

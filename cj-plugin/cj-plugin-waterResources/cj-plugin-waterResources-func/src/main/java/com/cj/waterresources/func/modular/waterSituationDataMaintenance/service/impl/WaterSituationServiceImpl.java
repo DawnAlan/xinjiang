@@ -1,6 +1,8 @@
 package com.cj.waterresources.func.modular.waterSituationDataMaintenance.service.impl;
 
+import com.alibaba.fastjson.JSONObject;
 import com.cj.common.model.RestResponse;
+import com.cj.common.util.RedisUtil;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.entity.IrrigatedPlatformDataInfo;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.service.IrrigatedPlatformDataInfoService;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformTree.entity.IrrigatedPlatformTree;
@@ -11,9 +13,14 @@ import com.cj.middleDatabase.func.modular.lzz.lzzPlatformTree.entity.LzzPlatform
 import com.cj.middleDatabase.func.modular.lzz.lzzPlatformTree.service.LzzPlatformTreeService;
 import com.cj.middleDatabase.func.modular.lzz.lzzRainfallStation.entity.LzzRainfallStation;
 import com.cj.middleDatabase.func.modular.lzz.lzzRainfallStation.service.LzzRainfallStationService;
+import com.cj.waterresources.func.modular.overallSituationUnitMgr.entity.OverallSituationUnitMgr;
+import com.cj.waterresources.func.modular.overallSituationUnitMgr.service.OverallSituationUnitMgrService;
+import com.cj.waterresources.func.modular.trendsTable.entity.TrendsTableParam;
+import com.cj.waterresources.func.modular.trendsTable.service.TrendsTableParamService;
 import com.cj.waterresources.func.modular.waterPrice.industrialWaterFee.service.IndustrialWaterFeeService;
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.bean.res.UseWaterTypeStatisticsRes;
 import com.cj.waterresources.func.modular.waterPrice.waterPriceManagement.bean.res.WaterPriceSelectListRes;
+import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.req.SelectInfoListNewReq;
 import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.req.SelectInfoListReq;
 import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.req.UpdateInfoReq;
 import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.res.HydrographRes;
@@ -21,6 +28,7 @@ import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.res
 import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.res.LzzPlatformTreeRes;
 import com.cj.waterresources.func.modular.waterSituationDataMaintenance.service.WaterSituationService;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.service.AllService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -52,6 +60,15 @@ public class WaterSituationServiceImpl implements WaterSituationService {
 
     @Autowired
     private AllService allService;
+
+    @Autowired
+    private OverallSituationUnitMgrService overallSituationUnitMgrService;
+
+    @Autowired
+    private RedisUtil redisUtil;
+
+    @Autowired
+    private TrendsTableParamService trendsTableParamService;
 
 
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -199,6 +216,58 @@ public class WaterSituationServiceImpl implements WaterSituationService {
         return RestResponse.no("查无数据");
     }
 
+    @Override
+    public RestResponse selectInfoListAllNew(SelectInfoListNewReq req) {
+        List<HydrographRes> resList = new ArrayList<>();
+        OverallSituationUnitMgr byId = overallSituationUnitMgrService.getById(req.getId());
+        if(null == byId){
+            return RestResponse.no("所选站点不存在");
+        }
+        if(StringUtils.isNotEmpty(byId.getMonitorId())){
+            List<IrrigatedPlatformDataInfo> listTth = irrigatedPlatformDataInfoService.selectInfoByCondition(byId.getMonitorId(),null,req.getStartTime(),req.getEndTime());
+            if(null != listTth && listTth.size()>0) {
+                listTth.forEach(t->{
+                    HydrographRes res = new HydrographRes();
+                    res.setName(t.getMonitorName());
+                    res.setTime(t.getMonitorTime());
+                    res.setFlow(t.getSqMonitorFlow());
+                    res.setWaterLevel(t.getSqWaterLevel());
+                    resList.add(res);
+                });
+            }
+            List<LzzRainfallStation> listLzzRain = lzzRainfallStationService.selectInfoByCondition(byId.getMonitorId(),null,req.getStartTime(),req.getEndTime());
+            if(null != listLzzRain && listLzzRain.size()>0){
+                listLzzRain.forEach(t->{
+                    HydrographRes res = new HydrographRes();
+                    res.setName(t.getStationName());
+                    res.setTime(sdf.format(t.getTime()));
+                    res.setRainfall(t.getRainfall());
+                    res.setTemperature(t.getTemperature());
+                    resList.add(res);
+                });
+            }
+            List<LzzGaugingStation> listLzzGaugingStation = lzzGaugingStationService.selectInfoByCondition(byId.getMonitorId(),null,req.getStartTime(),req.getEndTime());
+            if(null != listLzzGaugingStation && listLzzGaugingStation.size()>0){
+                listLzzGaugingStation.forEach(t->{
+                    HydrographRes res = new HydrographRes();
+                    res.setName(t.getStationName());
+                    res.setTime(sdf.format(t.getGatherTime()));
+                    res.setFlow(t.getFlow());
+                    res.setWaterLevel(t.getRelativeWaterLevel());
+                    resList.add(res);
+                });
+            }
+        }else {
+            List<HydrographRes> hydrographResList = allService.selectInfoListAllNew(req);
+            resList.addAll(hydrographResList);
+        }
+        if(resList.isEmpty()){
+            return RestResponse.no("暂无数据");
+        }else {
+            return RestResponse.ok(resList);
+        }
+    }
+
     public void getIrrigatedTree(List<IrrigatedPlatformTreeRes> resultList, List<IrrigatedPlatformTreeRes> list){
         if(resultList.size()>0){
             for(IrrigatedPlatformTreeRes res : resultList){
@@ -232,6 +301,14 @@ public class WaterSituationServiceImpl implements WaterSituationService {
                     getLzzTree(tempList,list);
                 }
             }
+        }
+    }
+    public void updateCache(){
+        List<TrendsTableParam> listed = trendsTableParamService.list();
+        redisUtil.set("trendsTableParam:list", JSONObject.toJSONString(listed));
+        for (TrendsTableParam param:listed){
+            redisUtil.set("trendsTableParam:name:"+param.getId(), param.getParamName());
+            redisUtil.set("trendsTableParam:object:"+param.getId(), JSONObject.toJSONString(param));
         }
     }
 }

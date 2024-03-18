@@ -1,6 +1,7 @@
 package com.cj.waterresources.func.modular.trendsTable.controller;
 
 
+import com.cj.common.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.cj.waterresources.func.modular.trendsTable.bean.req.QueryTrendsTableParamReq;
 import com.cj.waterresources.func.modular.trendsTable.bean.req.TrendsTableParamAddReq;
@@ -38,7 +39,8 @@ public class TrendsTableParamController {
 
 
     @ApiOperationSupport(order = 1)
-    @ApiOperation("新增")
+    @ApiOperation("动态表头模块新增")
+    @CommonLog(value = "动态表头模块新增")
     @PostMapping("/add")
     public RestResponse add(@RequestBody TrendsTableParamAddReq req) {
         return trendsTableParamService.add(req);

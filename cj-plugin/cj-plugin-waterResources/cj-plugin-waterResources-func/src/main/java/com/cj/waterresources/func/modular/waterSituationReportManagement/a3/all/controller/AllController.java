@@ -1,5 +1,6 @@
 package com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.controller;
 
+import com.cj.common.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req.A3StatisticsReq;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req.SelectListForIndustrialWaterFeeReq;
@@ -27,6 +28,7 @@ public class AllController {
 
     @ApiOperationSupport(order = 2)
     @ApiOperation("删除")
+    @CommonLog("A3表删除")
     @GetMapping("/delete")
     public RestResponse delete(@RequestParam(value = "date")String date) {
         return allService.deleteAll(date);

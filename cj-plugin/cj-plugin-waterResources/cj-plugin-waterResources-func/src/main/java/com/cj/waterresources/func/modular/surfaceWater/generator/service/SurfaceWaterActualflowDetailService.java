@@ -7,6 +7,7 @@ import com.cj.waterresources.func.modular.surfaceWater.generator.domain.SurfaceW
 import com.cj.waterresources.func.modular.surfaceWater.generator.mapper.SurfaceWaterActualflowDetailMapper;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
@@ -62,13 +63,13 @@ public class SurfaceWaterActualflowDetailService extends ServiceImpl<SurfaceWate
                             .type(currentRow.getCell(3).getStringCellValue())
                             .testingMethod(currentRow.getCell(4).getStringCellValue())
                             .waterGauge(currentRow.getCell(5).getStringCellValue())
-                            .flow(new BigDecimal(currentRow.getCell(6).getStringCellValue().trim()))
-                            .sectionalArea(new BigDecimal(currentRow.getCell(7).getStringCellValue().trim()))
-                            .meanVelocity(new BigDecimal(currentRow.getCell(8).getStringCellValue().trim()))
-                            .maxVelocity(new BigDecimal(currentRow.getCell(9).getStringCellValue().trim()))
-                            .tpwd(new BigDecimal(currentRow.getCell(10).getStringCellValue().trim()))
-                            .meanDepth(new BigDecimal(currentRow.getCell(11).getStringCellValue().trim()))
-                            .maxDepth(new BigDecimal(currentRow.getCell(12).getStringCellValue().trim()))
+                            .flow(StringUtils.isEmpty(currentRow.getCell(6).getStringCellValue().trim())?null:new BigDecimal(currentRow.getCell(6).getStringCellValue().trim()))
+                            .sectionalArea(StringUtils.isEmpty(currentRow.getCell(7).getStringCellValue().trim())?null:new BigDecimal(currentRow.getCell(7).getStringCellValue().trim()))
+                            .meanVelocity(StringUtils.isEmpty(currentRow.getCell(8).getStringCellValue().trim())?null:new BigDecimal(currentRow.getCell(8).getStringCellValue().trim()))
+                            .maxVelocity(StringUtils.isEmpty(currentRow.getCell(9).getStringCellValue().trim())?null:new BigDecimal(currentRow.getCell(9).getStringCellValue().trim()))
+                            .tpwd(StringUtils.isEmpty(currentRow.getCell(10).getStringCellValue().trim())?null:new BigDecimal(currentRow.getCell(10).getStringCellValue().trim()))
+                            .meanDepth(StringUtils.isEmpty(currentRow.getCell(11).getStringCellValue().trim())?null:new BigDecimal(currentRow.getCell(11).getStringCellValue().trim()))
+                            .maxDepth(StringUtils.isEmpty(currentRow.getCell(12).getStringCellValue().trim())?null:new BigDecimal(currentRow.getCell(12).getStringCellValue().trim()))
                             .siteCode(siteCode)
                             .siteName(siteName)
                             .parentId(parentId)

@@ -2,6 +2,7 @@ package com.cj.waterresources.func.modular.surfaceWater.generator.service;
 
 import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cj.waterresources.func.modular.surfaceWater.generator.domain.SurfaceWaterFlowDetail;
@@ -69,7 +70,7 @@ public class SurfaceWaterFlowDetailService extends ServiceImpl<SurfaceWaterFlowD
                                     .year(year)
                                     .month(i)
                                     .day(row)
-                                    .flow(new BigDecimal(currentRow.getCell(i).getStringCellValue()))
+                                    .flow(StringUtils.isEmpty(currentRow.getCell(i).getStringCellValue()) ?null:new BigDecimal(currentRow.getCell(i).getStringCellValue()))
                                     .siteCode(siteCode)
                                     .siteName(siteName)
                                     .parentId(parentId)
@@ -204,172 +205,173 @@ public class SurfaceWaterFlowDetailService extends ServiceImpl<SurfaceWaterFlowD
                     .map(group -> group.stream().map(date -> date).collect(Collectors.toList())) // 将每个分组转换为一个列表
                     .collect(Collectors.toList()); // 收集所有的列表到一个列表中
             if (i == 1) {
-                sum1.setJan(BigDecimal.valueOf(deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
-                avg1.setJan(BigDecimal.valueOf(deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
-                sum2.setJan(BigDecimal.valueOf(deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
-                avg2.setJan(BigDecimal.valueOf(deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
-                sum3.setJan(BigDecimal.valueOf(deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
-                avg3.setJan(BigDecimal.valueOf(deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
-                sum4.setJan(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
-                avg4.setJan(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
-                max.setJan(dayList.stream().max(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getFlow());
-                maxday.setJan(BigDecimal.valueOf(dayList.stream().max(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getDay()));
-                min.setJan(dayList.stream().min(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getFlow());
-                minday.setJan(BigDecimal.valueOf(dayList.stream().min(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getDay()));
+
+                sum1.setJan(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<1?0:deciles.get(0).isEmpty()?0: deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                avg1.setJan(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<1?0:deciles.get(0).isEmpty()?0: deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
+                sum2.setJan(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<2?0:deciles.get(1).isEmpty()?0: deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                avg2.setJan(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<2?0:deciles.get(1).isEmpty()?0: deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
+                sum3.setJan(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<3?0:deciles.get(2).isEmpty()?0: deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                avg3.setJan(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<3?0:deciles.get(2).isEmpty()?0: deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
+                sum4.setJan(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
+                avg4.setJan(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
+                max.setJan(dayList.stream().max(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getFlow().setScale(3, RoundingMode.DOWN));
+                maxday.setJan(BigDecimal.valueOf(dayList.stream().max(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getDay()).setScale(3, RoundingMode.DOWN));
+                min.setJan(dayList.stream().min(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getFlow().setScale(3, RoundingMode.DOWN));
+                minday.setJan(BigDecimal.valueOf(dayList.stream().min(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getDay()).setScale(3, RoundingMode.DOWN));
             }
             if (i == 2) {
-                sum1.setFeb(BigDecimal.valueOf(deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
-                avg1.setFeb(BigDecimal.valueOf(deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
-                sum2.setFeb(BigDecimal.valueOf(deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
-                avg2.setFeb(BigDecimal.valueOf(deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
-                sum3.setFeb(BigDecimal.valueOf(deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
-                avg3.setFeb(BigDecimal.valueOf(deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
-                sum4.setFeb(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
-                avg4.setFeb(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
-                max.setFeb(dayList.stream().max(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getFlow());
-                maxday.setFeb(BigDecimal.valueOf(dayList.stream().max(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getDay()));
-                min.setFeb(dayList.stream().min(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getFlow());
-                minday.setFeb(BigDecimal.valueOf(dayList.stream().min(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getDay()));
+                sum1.setFeb(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<1?0:deciles.get(0).isEmpty()?0: deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                avg1.setFeb(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<1?0:deciles.get(0).isEmpty()?0: deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
+                sum2.setFeb(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<2?0:deciles.get(1).isEmpty()?0: deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                avg2.setFeb(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<2?0:deciles.get(1).isEmpty()?0: deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
+                sum3.setFeb(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<3?0:deciles.get(2).isEmpty()?0: deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                avg3.setFeb(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<3?0:deciles.get(2).isEmpty()?0: deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
+                sum4.setFeb(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
+                avg4.setFeb(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
+                max.setFeb(dayList.stream().max(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getFlow().setScale(3, RoundingMode.DOWN));
+                maxday.setFeb(BigDecimal.valueOf(dayList.stream().max(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getDay()).setScale(3, RoundingMode.DOWN));
+                min.setFeb(dayList.stream().min(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getFlow().setScale(3, RoundingMode.DOWN));
+                minday.setFeb(BigDecimal.valueOf(dayList.stream().min(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getDay()).setScale(3, RoundingMode.DOWN));
             }
             if (i == 3) {
-                sum1.setMar(BigDecimal.valueOf(deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
-                avg1.setMar(BigDecimal.valueOf(deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
-                sum2.setMar(BigDecimal.valueOf(deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
-                avg2.setMar(BigDecimal.valueOf(deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
-                sum3.setMar(BigDecimal.valueOf(deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
-                avg3.setMar(BigDecimal.valueOf(deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
-                sum4.setMar(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
-                avg4.setMar(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
-                max.setMar(dayList.stream().max(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getFlow());
-                maxday.setMar(BigDecimal.valueOf(dayList.stream().max(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getDay()));
-                min.setMar(dayList.stream().min(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getFlow());
-                minday.setMar(BigDecimal.valueOf(dayList.stream().min(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getDay()));
+                sum1.setMar(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<1?0:deciles.get(0).isEmpty()?0: deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                avg1.setMar(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<1?0:deciles.get(0).isEmpty()?0: deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
+                sum2.setMar(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<2?0:deciles.get(1).isEmpty()?0: deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                avg2.setMar(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<2?0:deciles.get(1).isEmpty()?0: deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
+                sum3.setMar(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<3?0:deciles.get(2).isEmpty()?0: deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                avg3.setMar(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<3?0:deciles.get(2).isEmpty()?0: deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
+                sum4.setMar(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
+                avg4.setMar(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
+                max.setMar(dayList.stream().max(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getFlow().setScale(3, RoundingMode.DOWN));
+                maxday.setMar(BigDecimal.valueOf(dayList.stream().max(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getDay()).setScale(3, RoundingMode.DOWN));
+                min.setMar(dayList.stream().min(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getFlow().setScale(3, RoundingMode.DOWN));
+                minday.setMar(BigDecimal.valueOf(dayList.stream().min(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getDay()).setScale(3, RoundingMode.DOWN));
             }
             if (i == 4) {
-                sum1.setAri(BigDecimal.valueOf(deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
-                avg1.setAri(BigDecimal.valueOf(deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
-                sum2.setAri(BigDecimal.valueOf(deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
-                avg2.setAri(BigDecimal.valueOf(deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
-                sum3.setAri(BigDecimal.valueOf(deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
-                avg3.setAri(BigDecimal.valueOf(deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
-                sum4.setAri(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
-                avg4.setAri(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
-                max.setAri(dayList.stream().max(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getFlow());
-                maxday.setAri(BigDecimal.valueOf(dayList.stream().max(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getDay()));
-                min.setAri(dayList.stream().min(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getFlow());
-                minday.setAri(BigDecimal.valueOf(dayList.stream().min(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getDay()));
+                sum1.setAri(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<1?0:deciles.get(0).isEmpty()?0: deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                avg1.setAri(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<1?0:deciles.get(0).isEmpty()?0: deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
+                sum2.setAri(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<2?0:deciles.get(1).isEmpty()?0: deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                avg2.setAri(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<2?0:deciles.get(1).isEmpty()?0: deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
+                sum3.setAri(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<3?0:deciles.get(2).isEmpty()?0: deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                avg3.setAri(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<3?0:deciles.get(2).isEmpty()?0: deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
+                sum4.setAri(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
+                avg4.setAri(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
+                max.setAri(dayList.stream().max(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getFlow().setScale(3, RoundingMode.DOWN));
+                maxday.setAri(BigDecimal.valueOf(dayList.stream().max(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getDay()).setScale(3, RoundingMode.DOWN));
+                min.setAri(dayList.stream().min(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getFlow().setScale(3, RoundingMode.DOWN));
+                minday.setAri(BigDecimal.valueOf(dayList.stream().min(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getDay()).setScale(3, RoundingMode.DOWN));
             }
             if (i == 5) {
-                sum1.setMay(BigDecimal.valueOf(deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
-                avg1.setMay(BigDecimal.valueOf(deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
-                sum2.setMay(BigDecimal.valueOf(deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
-                avg2.setMay(BigDecimal.valueOf(deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
-                sum3.setMay(BigDecimal.valueOf(deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
-                avg3.setMay(BigDecimal.valueOf(deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
-                sum4.setMay(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
-                avg4.setMay(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
-                max.setMay(dayList.stream().max(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getFlow());
-                maxday.setMay(BigDecimal.valueOf(dayList.stream().max(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getDay()));
-                min.setMay(dayList.stream().min(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getFlow());
-                minday.setMay(BigDecimal.valueOf(dayList.stream().min(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getDay()));
+                sum1.setMay(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<1?0:deciles.get(0).isEmpty()?0: deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                avg1.setMay(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<1?0:deciles.get(0).isEmpty()?0: deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
+                sum2.setMay(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<2?0:deciles.get(1).isEmpty()?0: deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                avg2.setMay(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<2?0:deciles.get(1).isEmpty()?0: deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
+                sum3.setMay(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<3?0:deciles.get(2).isEmpty()?0: deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                avg3.setMay(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<3?0:deciles.get(2).isEmpty()?0: deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
+                sum4.setMay(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
+                avg4.setMay(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
+                max.setMay(dayList.stream().max(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getFlow().setScale(3, RoundingMode.DOWN));
+                maxday.setMay(BigDecimal.valueOf(dayList.stream().max(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getDay()).setScale(3, RoundingMode.DOWN));
+                min.setMay(dayList.stream().min(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getFlow().setScale(3, RoundingMode.DOWN));
+                minday.setMay(BigDecimal.valueOf(dayList.stream().min(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getDay()).setScale(3, RoundingMode.DOWN));
             }
             if (i == 6) {
-                sum1.setJun(BigDecimal.valueOf(deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
-                avg1.setJun(BigDecimal.valueOf(deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
-                sum2.setJun(BigDecimal.valueOf(deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
-                avg2.setJun(BigDecimal.valueOf(deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
-                sum3.setJun(BigDecimal.valueOf(deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
-                avg3.setJun(BigDecimal.valueOf(deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
-                sum4.setJun(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                sum1.setJun(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<1?0:deciles.get(0).isEmpty()?0: deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                avg1.setJun(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<1?0:deciles.get(0).isEmpty()?0: deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
+                sum2.setJun(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<2?0:deciles.get(1).isEmpty()?0: deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                avg2.setJun(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<2?0:deciles.get(1).isEmpty()?0: deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
+                sum3.setJun(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<3?0:deciles.get(2).isEmpty()?0: deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                avg3.setJun(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<3?0:deciles.get(2).isEmpty()?0: deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
+                sum4.setJun(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
                 avg4.setJun(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
-                max.setJun(dayList.stream().max(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getFlow());
-                maxday.setJun(BigDecimal.valueOf(dayList.stream().max(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getDay()));
-                min.setJun(dayList.stream().min(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getFlow());
-                minday.setJun(BigDecimal.valueOf(dayList.stream().min(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getDay()));
+                max.setJun(dayList.stream().max(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getFlow().setScale(3, RoundingMode.DOWN));
+                maxday.setJun(BigDecimal.valueOf(dayList.stream().max(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getDay()).setScale(3, RoundingMode.DOWN));
+                min.setJun(dayList.stream().min(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getFlow().setScale(3, RoundingMode.DOWN));
+                minday.setJun(BigDecimal.valueOf(dayList.stream().min(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getDay()).setScale(3, RoundingMode.DOWN));
             }
             if (i == 7) {
-                sum1.setJul(BigDecimal.valueOf(deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
-                avg1.setJul(BigDecimal.valueOf(deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
-                sum2.setJul(BigDecimal.valueOf(deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
-                avg2.setJul(BigDecimal.valueOf(deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
-                sum3.setJul(BigDecimal.valueOf(deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
-                avg3.setJul(BigDecimal.valueOf(deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
-                sum4.setJul(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
-                avg4.setJul(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
-                max.setJul(dayList.stream().max(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getFlow());
-                maxday.setJul(BigDecimal.valueOf(dayList.stream().max(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getDay()));
-                min.setJul(dayList.stream().min(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getFlow());
-                minday.setJul(BigDecimal.valueOf(dayList.stream().min(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getDay()));
+                sum1.setJul(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<1?0:deciles.get(0).isEmpty()?0: deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                avg1.setJul(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<1?0:deciles.get(0).isEmpty()?0: deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
+                sum2.setJul(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<2?0:deciles.get(1).isEmpty()?0: deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                avg2.setJul(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<2?0:deciles.get(1).isEmpty()?0: deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
+                sum3.setJul(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<3?0:deciles.get(2).isEmpty()?0: deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                avg3.setJul(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<3?0:deciles.get(2).isEmpty()?0: deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
+                sum4.setJul(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
+                avg4.setJul(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
+                max.setJul(dayList.stream().max(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getFlow().setScale(3, RoundingMode.DOWN));
+                maxday.setJul(BigDecimal.valueOf(dayList.stream().max(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getDay()).setScale(3, RoundingMode.DOWN));
+                min.setJul(dayList.stream().min(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getFlow().setScale(3, RoundingMode.DOWN));
+                minday.setJul(BigDecimal.valueOf(dayList.stream().min(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getDay()).setScale(3, RoundingMode.DOWN));
             }
             if (i == 8) {
-                sum1.setAut(BigDecimal.valueOf(deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
-                avg1.setAut(BigDecimal.valueOf(deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
-                sum2.setAut(BigDecimal.valueOf(deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
-                avg2.setAut(BigDecimal.valueOf(deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
-                sum3.setAut(BigDecimal.valueOf(deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
-                avg3.setAut(BigDecimal.valueOf(deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
-                sum4.setAut(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
-                avg4.setAut(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
-                max.setAut(dayList.stream().max(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getFlow());
-                maxday.setAut(BigDecimal.valueOf(dayList.stream().max(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getDay()));
-                min.setAut(dayList.stream().min(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getFlow());
-                minday.setAut(BigDecimal.valueOf(dayList.stream().min(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getDay()));
+                sum1.setAut(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<1?0:deciles.get(0).isEmpty()?0: deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                avg1.setAut(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<1?0:deciles.get(0).isEmpty()?0: deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
+                sum2.setAut(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<2?0:deciles.get(1).isEmpty()?0: deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                avg2.setAut(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<2?0:deciles.get(1).isEmpty()?0: deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
+                sum3.setAut(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<3?0:deciles.get(2).isEmpty()?0: deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                avg3.setAut(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<3?0:deciles.get(2).isEmpty()?0: deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
+                sum4.setAut(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
+                avg4.setAut(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
+                max.setAut(dayList.stream().max(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getFlow().setScale(3, RoundingMode.DOWN));
+                maxday.setAut(BigDecimal.valueOf(dayList.stream().max(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getDay()).setScale(3, RoundingMode.DOWN));
+                min.setAut(dayList.stream().min(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getFlow().setScale(3, RoundingMode.DOWN));
+                minday.setAut(BigDecimal.valueOf(dayList.stream().min(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getDay()).setScale(3, RoundingMode.DOWN));
             }
             if (i == 9) {
-                sum1.setSep(BigDecimal.valueOf(deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
-                avg1.setSep(BigDecimal.valueOf(deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
-                sum2.setSep(BigDecimal.valueOf(deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
-                avg2.setSep(BigDecimal.valueOf(deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
-                sum3.setSep(BigDecimal.valueOf(deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
-                avg3.setSep(BigDecimal.valueOf(deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
-                sum4.setSep(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
-                avg4.setSep(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
-                max.setSep(dayList.stream().max(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getFlow());
-                maxday.setSep(BigDecimal.valueOf(dayList.stream().max(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getDay()));
-                min.setSep(dayList.stream().min(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getFlow());
-                minday.setSep(BigDecimal.valueOf(dayList.stream().min(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getDay()));
+                sum1.setSep(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<1?0:deciles.get(0).isEmpty()?0: deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                avg1.setSep(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<1?0:deciles.get(0).isEmpty()?0: deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
+                sum2.setSep(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<2?0:deciles.get(1).isEmpty()?0: deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                avg2.setSep(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<2?0:deciles.get(1).isEmpty()?0: deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
+                sum3.setSep(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<3?0:deciles.get(2).isEmpty()?0: deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                avg3.setSep(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<3?0:deciles.get(2).isEmpty()?0: deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
+                sum4.setSep(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
+                avg4.setSep(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
+                max.setSep(dayList.stream().max(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getFlow().setScale(3, RoundingMode.DOWN));
+                maxday.setSep(BigDecimal.valueOf(dayList.stream().max(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getDay()).setScale(3, RoundingMode.DOWN));
+                min.setSep(dayList.stream().min(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getFlow().setScale(3, RoundingMode.DOWN));
+                minday.setSep(BigDecimal.valueOf(dayList.stream().min(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getDay()).setScale(3, RoundingMode.DOWN));
             }
             if (i == 10) {
-                sum1.setOct(BigDecimal.valueOf(deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
-                avg1.setOct(BigDecimal.valueOf(deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
-                sum2.setOct(BigDecimal.valueOf(deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
-                avg2.setOct(BigDecimal.valueOf(deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
-                sum3.setOct(BigDecimal.valueOf(deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
-                avg3.setOct(BigDecimal.valueOf(deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
-                sum4.setOct(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
-                avg4.setOct(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
-                max.setOct(dayList.stream().max(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getFlow());
-                maxday.setOct(BigDecimal.valueOf(dayList.stream().max(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getDay()));
-                min.setOct(dayList.stream().min(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getFlow());
-                minday.setOct(BigDecimal.valueOf(dayList.stream().min(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getDay()));
+                sum1.setOct(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<1?0:deciles.get(0).isEmpty()?0: deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                avg1.setOct(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<1?0:deciles.get(0).isEmpty()?0: deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
+                sum2.setOct(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<2?0:deciles.get(1).isEmpty()?0: deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                avg2.setOct(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<2?0:deciles.get(1).isEmpty()?0: deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
+                sum3.setOct(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<3?0:deciles.get(2).isEmpty()?0: deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                avg3.setOct(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<3?0:deciles.get(2).isEmpty()?0: deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
+                sum4.setOct(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
+                avg4.setOct(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
+                max.setOct(dayList.stream().max(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getFlow().setScale(3, RoundingMode.DOWN));
+                maxday.setOct(BigDecimal.valueOf(dayList.stream().max(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getDay()).setScale(3, RoundingMode.DOWN));
+                min.setOct(dayList.stream().min(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getFlow().setScale(3, RoundingMode.DOWN));
+                minday.setOct(BigDecimal.valueOf(dayList.stream().min(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getDay()).setScale(3, RoundingMode.DOWN));
             }
             if (i == 11) {
-                sum1.setNov(BigDecimal.valueOf(deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
-                avg1.setNov(BigDecimal.valueOf(deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
-                sum2.setNov(BigDecimal.valueOf(deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
-                avg2.setNov(BigDecimal.valueOf(deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
-                sum3.setNov(BigDecimal.valueOf(deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
-                avg3.setNov(BigDecimal.valueOf(deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
-                sum4.setNov(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
-                avg4.setNov(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
-                max.setNov(dayList.stream().max(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getFlow());
-                maxday.setNov(BigDecimal.valueOf(dayList.stream().max(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getDay()));
-                min.setNov(dayList.stream().min(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getFlow());
-                minday.setNov(BigDecimal.valueOf(dayList.stream().min(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getDay()));
+                sum1.setNov(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<1?0:deciles.get(0).isEmpty()?0: deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                avg1.setNov(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<1?0:deciles.get(0).isEmpty()?0: deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
+                sum2.setNov(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<2?0:deciles.get(1).isEmpty()?0: deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                avg2.setNov(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<2?0:deciles.get(1).isEmpty()?0: deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
+                sum3.setNov(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<3?0:deciles.get(2).isEmpty()?0: deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                avg3.setNov(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<3?0:deciles.get(2).isEmpty()?0: deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
+                sum4.setNov(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
+                avg4.setNov(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
+                max.setNov(dayList.stream().max(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getFlow().setScale(3, RoundingMode.DOWN));
+                maxday.setNov(BigDecimal.valueOf(dayList.stream().max(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getDay()).setScale(3, RoundingMode.DOWN));
+                min.setNov(dayList.stream().min(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getFlow().setScale(3, RoundingMode.DOWN));
+                minday.setNov(BigDecimal.valueOf(dayList.stream().min(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getDay()).setScale(3, RoundingMode.DOWN));
             }
             if (i == 12) {
-                sum1.setDec(BigDecimal.valueOf(deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
-                avg1.setDec(BigDecimal.valueOf(deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
-                sum2.setDec(BigDecimal.valueOf(deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
-                avg2.setDec(BigDecimal.valueOf(deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
-                sum3.setDec(BigDecimal.valueOf(deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
-                avg3.setDec(BigDecimal.valueOf(deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
-                sum4.setDec(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
-                avg4.setDec(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
-                max.setDec(dayList.stream().max(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getFlow());
-                maxday.setDec(BigDecimal.valueOf(dayList.stream().max(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getDay()));
-                min.setDec(dayList.stream().min(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getFlow());
-                minday.setDec(BigDecimal.valueOf(dayList.stream().min(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getDay()));
+                sum1.setDec(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<1?0:deciles.get(0).isEmpty()?0: deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                avg1.setDec(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<1?0:deciles.get(0).isEmpty()?0: deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
+                sum2.setDec(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<2?0:deciles.get(1).isEmpty()?0: deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                avg2.setDec(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<2?0:deciles.get(1).isEmpty()?0: deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
+                sum3.setDec(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<3?0:deciles.get(2).isEmpty()?0: deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                avg3.setDec(BigDecimal.valueOf(deciles.isEmpty()?0:deciles.size()<3?0:deciles.get(2).isEmpty()?0: deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
+                sum4.setDec(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
+                avg4.setDec(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
+                max.setDec(dayList.stream().max(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getFlow().setScale(3, RoundingMode.DOWN));
+                maxday.setDec(BigDecimal.valueOf(dayList.stream().max(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getDay()).setScale(3, RoundingMode.DOWN));
+                min.setDec(dayList.stream().min(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getFlow().setScale(3, RoundingMode.DOWN));
+                minday.setDec(BigDecimal.valueOf(dayList.stream().min(Comparator.comparing(SurfaceWaterFlowDetail::getFlow)).get().getDay()).setScale(3, RoundingMode.DOWN));
             }
         }
         surfaceWaterFlowDetailVos.add(sum1);

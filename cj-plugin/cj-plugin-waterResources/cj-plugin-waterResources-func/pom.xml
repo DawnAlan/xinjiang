@@ -83,5 +83,10 @@
             <artifactId>spring-websocket</artifactId>
             <version>5.3.9</version>
         </dependency>
+        <dependency>
+            <groupId>com.cj</groupId>
+            <artifactId>cj-plugin-business-log</artifactId>
+            <version>2.0.0</version>
+        </dependency>
     </dependencies>
 </project>

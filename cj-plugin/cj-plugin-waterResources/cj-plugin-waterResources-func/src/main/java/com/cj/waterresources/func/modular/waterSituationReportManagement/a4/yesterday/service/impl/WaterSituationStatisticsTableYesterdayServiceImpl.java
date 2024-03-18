@@ -292,9 +292,9 @@ public class WaterSituationStatisticsTableYesterdayServiceImpl extends ServiceIm
             List<TrendsTableParam> dklList = trendsTableParamList.stream().filter(t->t.getUseType()==1).
                     filter(t -> t.getUseStation().equals("对口率")).collect(Collectors.toList());
             TrendsTableParam qsDkl = dklList.stream().filter(t -> t.getParamName().equals("头屯河-渠首")).collect(Collectors.toList()).get(0);
-            waterSituationStatisticsTableYesterday.setQsZgqDgq(yesterdayList.stream().filter(t->t.getTableHeadId().equals(dgq.getId())).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00));
-            waterSituationStatisticsTableYesterday.setQsZgqXgq(yesterdayList.stream().filter(t->t.getTableHeadId().equals(xgq.getId())).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00));
-            waterSituationStatisticsTableYesterday.setQsZgqLd(yesterdayList.stream().filter(t->t.getTableHeadId().equals(ld.getId())).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00));
+            waterSituationStatisticsTableYesterday.setQsZgqDgq(yesterdayList.stream().filter(t->t.getTableHeadId().equals(dgq.getId()) && t.getV() !=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00));
+            waterSituationStatisticsTableYesterday.setQsZgqXgq(yesterdayList.stream().filter(t->t.getTableHeadId().equals(xgq.getId()) && t.getV() !=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00));
+            waterSituationStatisticsTableYesterday.setQsZgqLd(yesterdayList.stream().filter(t->t.getTableHeadId().equals(ld.getId()) && t.getV() !=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00));
             waterSituationStatisticsTableYesterday.setQsZgqHj(
                     (waterSituationStatisticsTableYesterday.getQsZgqDgq()==null?0.0:waterSituationStatisticsTableYesterday.getQsZgqDgq())+
                     (waterSituationStatisticsTableYesterday.getQsZgqXgq()==null?0.0:waterSituationStatisticsTableYesterday.getQsZgqXgq())+

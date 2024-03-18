@@ -57,6 +57,10 @@ public class TrendsTableParamServiceImpl extends ServiceImpl<TrendsTableParamMap
     @Override
     @Transactional(rollbackFor=Exception.class)
     public RestResponse add(TrendsTableParamAddReq req) {
+        List<TrendsTableParam> listed = this.lambdaQuery().eq(TrendsTableParam::getUnitId, req.getUnitId()).list();
+        if(!listed.isEmpty()){
+            return RestResponse.no("请勿重复选择");
+        }
         TrendsTableParam one = this.lambdaQuery().eq(TrendsTableParam::getUseType, req.getUseType()).
                 eq(TrendsTableParam::getUseStation, req.getUseStation()).
                 eq(TrendsTableParam::getPId,req.getPId()).
@@ -192,10 +196,20 @@ public class TrendsTableParamServiceImpl extends ServiceImpl<TrendsTableParamMap
     @Transactional(rollbackFor=RuntimeException.class)
     public RestResponse update(TrendsTableParamUpdateReq req) {
         try {
+            TrendsTableParam tableParam = this.getById(req.getParam().getId());
+            if(StringUtils.isNotEmpty(tableParam.getUnitId())){
+                if(!tableParam.getUnitId().equals(req.getParam().getUnitId())){
+                    List<TrendsTableParam> listed = this.lambdaQuery().eq(TrendsTableParam::getUnitId, req.getParam().getUnitId()).list();
+                    if(!listed.isEmpty()){
+                        return RestResponse.no("请勿重复选择");
+                    }
+                }
+            }
             if(req.getParam().getOrderNum()==null){
                 return RestResponse.no("orderNum is blank");
             }
-            this.lambdaUpdate().set(TrendsTableParam::getOrderNum,req.getParam().getOrderNum()).eq(TrendsTableParam::getId,req.getParam().getId()).update();
+            this.lambdaUpdate().set(TrendsTableParam::getUnitId,req.getParam().getUnitId()).
+                    set(TrendsTableParam::getOrderNum,req.getParam().getOrderNum()).eq(TrendsTableParam::getId,req.getParam().getId()).update();
             TrendsTableParam byId = this.getById(req.getParam().getId());
             if(byId.getParamName().equals(req.getParam().getParamName())){
                 if(req.getParam().getUseType()==2){

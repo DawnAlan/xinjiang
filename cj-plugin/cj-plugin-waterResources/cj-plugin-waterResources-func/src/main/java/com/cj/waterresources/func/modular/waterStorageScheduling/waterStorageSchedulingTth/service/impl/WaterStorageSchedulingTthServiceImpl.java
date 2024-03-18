@@ -266,6 +266,9 @@ public class WaterStorageSchedulingTthServiceImpl extends ServiceImpl<WaterStora
     }
 
     private List<TenDayVo> getData4_11(SelectYearWaterUsePlanCropForSum gg){
+        if(null==gg){
+            return new ArrayList<TenDayVo>();
+        }
         List<TenDayVo> voList = new ArrayList<>();
         TenDayVo vo4_1 = new TenDayVo();
         vo4_1.setMonth(4);
@@ -398,8 +401,10 @@ public class WaterStorageSchedulingTthServiceImpl extends ServiceImpl<WaterStora
     }
 
     private List<TenDayVo> getData1_12(SelectYearWaterUsePlanTrunkCanalForSum sum){
+        if(null==sum){
+            return new ArrayList<>();
+        }
         List<TenDayVo> voList = new ArrayList<>();
-
         TenDayVo vo1_1 = new TenDayVo();
         vo1_1.setMonth(1);
         vo1_1.setName(1);

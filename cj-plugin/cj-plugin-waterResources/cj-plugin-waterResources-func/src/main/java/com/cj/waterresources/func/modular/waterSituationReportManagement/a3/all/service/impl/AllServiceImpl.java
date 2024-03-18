@@ -5,6 +5,7 @@ import com.cj.common.model.RestResponse;
 import com.cj.common.util.RedisUtil;
 import com.cj.waterresources.func.modular.trendsTable.entity.TrendsTableParam;
 import com.cj.waterresources.func.modular.trendsTable.service.TrendsTableParamService;
+import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.req.SelectInfoListNewReq;
 import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.req.SelectInfoListReq;
 import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.res.HydrographRes;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req.A3StatisticsReq;
@@ -264,6 +265,100 @@ public class AllServiceImpl implements AllService {
             return RestResponse.no("暂无数据");
         }
         return RestResponse.ok(hydrographResList);
+    }
+
+    @Override
+    public List<HydrographRes> selectInfoListAllNew(SelectInfoListNewReq req) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        List<HydrographRes> hydrographResList = new ArrayList<>();
+        if(StringUtils.isEmpty(req.getId())){
+            return null;
+        }
+        String mk = (String) redisUtil.get("trendsTableParam:list");
+        if(StringUtils.isEmpty(mk)){
+            trendsTableParamService.updateCache();
+            mk = (String) redisUtil.get("trendsTableParam:list");
+        }
+        List<TrendsTableParam> trendsTableParamList = JSONObject.parseArray(mk, TrendsTableParam.class);
+        List<TrendsTableParam> collect = trendsTableParamList.stream().filter(t -> t.getUnitId().equals(req.getId())).collect(Collectors.toList());
+        if(collect.isEmpty()){
+            return null;
+        }
+        TrendsTableParam trendsTableParam = collect.get(0);
+        if(trendsTableParam.getUseStation().equals("河东管理站")){
+            List<DayWaterSituationStatisticsTableHd> dayWaterSituationStatisticsTableHds = dayWaterSituationStatisticsTableHdMapper.selectList2(trendsTableParam.getId(), req.getStartTime(), req.getEndTime());
+            if(dayWaterSituationStatisticsTableHds.isEmpty()){
+                return null;
+            }else {
+                dayWaterSituationStatisticsTableHds.forEach(t->{
+                    HydrographRes res = new HydrographRes();
+                    res.setName((String)redisUtil.get("trendsTableParam:name:"+t.getTableHeadId()));
+                    res.setFlow(t.getV());
+                    res.setTime(sdf.format(t.getRecordTime()));
+                    hydrographResList.add(res);
+                });
+            }
+        }
+        if(trendsTableParam.getUseStation().equals("河西管理站")){
+            List<DayWaterSituationStatisticsTableHx> dayWaterSituationStatisticsTableHxes = dayWaterSituationStatisticsTableHxMapper.selectList2(trendsTableParam.getId(), req.getStartTime(), req.getEndTime());
+            if(dayWaterSituationStatisticsTableHxes.isEmpty()){
+                return null;
+            }else {
+                dayWaterSituationStatisticsTableHxes.forEach(t->{
+                    HydrographRes res = new HydrographRes();
+                    res.setName((String)redisUtil.get("trendsTableParam:name:"+t.getTableHeadId()));
+                    res.setFlow(t.getV());
+                    res.setTime(sdf.format(t.getRecordTime()));
+                    hydrographResList.add(res);
+                });
+            }
+        }
+        if(trendsTableParam.getUseStation().equals("渠首管理站")){
+            List<DayWaterSituationStatisticsTableQs> dayWaterSituationStatisticsTableQs = dayWaterSituationStatisticsTableQsMapper.selectList2(trendsTableParam.getId(), req.getStartTime(), req.getEndTime());
+            if(dayWaterSituationStatisticsTableQs.isEmpty()){
+                return null;
+            }else {
+                dayWaterSituationStatisticsTableQs.forEach(t->{
+                    HydrographRes res = new HydrographRes();
+                    res.setName((String)redisUtil.get("trendsTableParam:name:"+t.getTableHeadId()));
+                    res.setFlow(t.getV());
+                    res.setTime(sdf.format(t.getRecordTime()));
+                    hydrographResList.add(res);
+                });
+            }
+        }
+        if(trendsTableParam.getUseStation().equals("头屯河水库")){
+            List<DayWaterSituationStatisticsTableTth> dayWaterSituationStatisticsTableTths = dayWaterSituationStatisticsTableTthMapper.selectList2(trendsTableParam.getId(), req.getStartTime(), req.getEndTime());
+            if(dayWaterSituationStatisticsTableTths.isEmpty()){
+                return null;
+            }else {
+                dayWaterSituationStatisticsTableTths.forEach(t->{
+                    HydrographRes res = new HydrographRes();
+                    res.setName((String)redisUtil.get("trendsTableParam:name:"+t.getTableHeadId()));
+                    res.setFlow(t.getV());
+                    res.setTime(sdf.format(t.getRecordTime()));
+                    hydrographResList.add(res);
+                });
+            }
+        }
+        if(trendsTableParam.getUseStation().equals("楼庄子水库")){
+            List<DayWaterSituationStatisticsTableLzz> dayWaterSituationStatisticsTableLzzes = dayWaterSituationStatisticsTableLzzMapper.selectList2(trendsTableParam.getId(), req.getStartTime(), req.getEndTime());
+            if(dayWaterSituationStatisticsTableLzzes.isEmpty()){
+                return null;
+            }else {
+                dayWaterSituationStatisticsTableLzzes.forEach(t->{
+                    HydrographRes res = new HydrographRes();
+                    res.setName((String)redisUtil.get("trendsTableParam:name:"+t.getTableHeadId()));
+                    res.setFlow(t.getV());
+                    res.setTime(sdf.format(t.getRecordTime()));
+                    hydrographResList.add(res);
+                });
+            }
+        }
+        if(hydrographResList.isEmpty()){
+            return null;
+        }
+        return hydrographResList;
     }
 
     @Override

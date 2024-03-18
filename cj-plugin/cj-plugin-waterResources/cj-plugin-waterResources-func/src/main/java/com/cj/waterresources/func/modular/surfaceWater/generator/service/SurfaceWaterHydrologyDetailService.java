@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cj.waterresources.func.modular.surfaceWater.generator.domain.SurfaceWaterHydrologyDetail;
 import com.cj.waterresources.func.modular.surfaceWater.generator.mapper.SurfaceWaterHydrologyDetailMapper;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
@@ -62,8 +63,8 @@ public class SurfaceWaterHydrologyDetailService extends ServiceImpl<SurfaceWater
                                 mm,
                                 ss
                         );
-                        BigDecimal flow = new BigDecimal(currentRow.getCell(3).getStringCellValue().trim());
-                        BigDecimal level = new BigDecimal(currentRow.getCell(4).getStringCellValue().trim());
+                        BigDecimal flow = StringUtils.isEmpty(currentRow.getCell(3).getStringCellValue().trim())?null:new BigDecimal(currentRow.getCell(3).getStringCellValue().trim());
+                        BigDecimal level = StringUtils.isEmpty(currentRow.getCell(4).getStringCellValue().trim())?null:new BigDecimal(currentRow.getCell(4).getStringCellValue().trim());
                         // 将字符串转换为日期对象
                         Date date = formatter.parse(dateString);
                         SurfaceWaterHydrologyDetail surfaceWaterHydrologyDetail = SurfaceWaterHydrologyDetail.builder()
