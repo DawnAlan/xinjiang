@@ -44,9 +44,8 @@ public class WaterResourceHomePageController {
     @ApiOperationSupport(order = 3)
     @ApiOperation("今日水情")
     @PostMapping("/waterSituation")
-    public RestResponse<List<WaterSituationRes>> waterSituation(@RequestParam("dateTime") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date dateTime,
-                                                                @RequestParam("unitId") String unitId) {
-        return waterResourceHomePageService.waterSituation(dateTime, unitId);
+    public RestResponse<List<WaterSituationRes>> waterSituation(@RequestParam("dateTime") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date dateTime) {
+        return waterResourceHomePageService.waterSituation(dateTime);
     }
 
     @ApiOperationSupport(order = 4)

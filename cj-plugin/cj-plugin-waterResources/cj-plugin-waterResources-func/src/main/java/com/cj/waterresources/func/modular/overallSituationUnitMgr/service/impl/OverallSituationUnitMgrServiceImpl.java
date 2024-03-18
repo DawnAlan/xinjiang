@@ -74,9 +74,12 @@ public class OverallSituationUnitMgrServiceImpl extends ServiceImpl<OverallSitua
     @Override
     public RestResponse update(OverallSituationUnitMgr overallSituationUnitMgr) {
         if(StringUtils.isNotBlank(overallSituationUnitMgr.getMonitorId())){
-            List<OverallSituationUnitMgr> list1 = this.lambdaQuery().eq(OverallSituationUnitMgr::getMonitorId, overallSituationUnitMgr.getMonitorId()).list();
-            if(!list1.isEmpty()){
-                return RestResponse.no("请勿重复绑定监测点");
+            OverallSituationUnitMgr byId = this.getById(overallSituationUnitMgr.getId());
+            if(!byId.getMonitorId().equals(overallSituationUnitMgr.getMonitorId())){
+                List<OverallSituationUnitMgr> list1 = this.lambdaQuery().eq(OverallSituationUnitMgr::getMonitorId, overallSituationUnitMgr.getMonitorId()).list();
+                if(!list1.isEmpty()){
+                    return RestResponse.no("请勿重复绑定监测点");
+                }
             }
         }
         boolean b = this.updateById(overallSituationUnitMgr);

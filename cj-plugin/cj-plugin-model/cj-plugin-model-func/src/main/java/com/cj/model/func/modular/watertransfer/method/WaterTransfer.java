@@ -38,6 +38,17 @@ public class WaterTransfer {
     private double [][]waterSupply3;
     private double [][]waterSupply4;
 
+    public double[] getFitness() {
+        return fitness;
+    }
+
+    public void setFitness(double[] fitness) {
+        this.fitness = fitness;
+    }
+
+    //适应度计算
+    private double []fitness;
+
     public double[] getAllWater() {
         return allWater;
     }

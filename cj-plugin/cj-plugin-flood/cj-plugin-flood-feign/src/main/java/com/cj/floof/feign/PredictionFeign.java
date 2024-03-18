@@ -66,4 +66,7 @@ public interface PredictionFeign {
     @RequestMapping("/feign/provider/prediction/getPredictionListByName")
     String getPredictionListByName(@RequestParam(value = "id", required =true)String id,
                                    @RequestParam(value = "reservoir", required =true)String reservoir);
+
+    @RequestMapping("/feign/provider/flood/getWaterStorageOverview")
+    String getWaterStorageOverview(@RequestParam(value = "dateTime", required =true)String dateTime);
 }

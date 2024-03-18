@@ -38,6 +38,11 @@ public class SysOrgApiContextBean implements SysOrgApi {
     }
 
     @Override
+    public String getIdByName(String name) {
+        return sysOrgFeign.getIdByName(name);
+    }
+
+    @Override
     public String getSupervisorIdByOrgId(String orgId) {
         return sysOrgFeign.getSupervisorIdByOrgId(orgId);
     }

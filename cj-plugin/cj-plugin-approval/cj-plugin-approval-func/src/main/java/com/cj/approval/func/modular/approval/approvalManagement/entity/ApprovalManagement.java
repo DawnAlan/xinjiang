@@ -39,6 +39,26 @@ public class ApprovalManagement extends Model<ApprovalManagement> {
     @ApiModelProperty(value = "调度参数")
     private String dispatchingParams;
 
+    //楼庄子调度参数
+    @ApiModelProperty(value = "楼庄子调度参数")
+    private String dispatchingParamsLzz;
+
+    //头屯河调度参数
+    @ApiModelProperty(value = "头屯河调度参数")
+    private String dispatchingParamsTth;
+
+    //河东调度参数
+    @ApiModelProperty(value = "河东调度参数")
+    private String dispatchingParamsHd;
+
+    //河西调度参数
+    @ApiModelProperty(value = "河西调度参数")
+    private String dispatchingParamsHx;
+
+    //渠首调度参数
+    @ApiModelProperty(value = "渠首调度参数")
+    private String dispatchingParamsQs;
+
     //调度时间
     @ApiModelProperty(value = "调度时间")
     private Date dispatchingTime;

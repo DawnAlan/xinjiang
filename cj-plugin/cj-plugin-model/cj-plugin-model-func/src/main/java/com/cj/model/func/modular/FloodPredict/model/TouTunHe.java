@@ -9,7 +9,6 @@ import com.cj.middleDatabase.func.modular.lzz.lzzRainfallStation.entity.LzzRainf
 import com.cj.model.func.modular.FloodPredict.entity.*;
 import com.cj.model.func.modular.FloodPredict.utils.DataUtils;
 import com.cj.model.func.modular.FloodPredict.utils.ExcelTool;
-import com.cj.model.func.modular.FloodPrevent.model.ModelOfLZZ;
 import com.cj.model.func.modular.FloodPrevent.model.ModelOfTTH;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import java.io.IOException;
@@ -29,91 +28,21 @@ public class TouTunHe {
 
         //模型参数输入设置
         ForcastInputParamNew paramForcastInputParamNew = new ForcastInputParamNew();
-        paramForcastInputParamNew.setModelType(1);//3为场次
+        paramForcastInputParamNew.setModelType(3);//3为场次
         SimpleDateFormat sFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        paramForcastInputParamNew.setPredictionTime(sFormat.parse("2024-01-13 24:00:00"));
-        paramForcastInputParamNew.setPeriodTimeType(3);//1为月，2为旬，3为日，4为小时
+        paramForcastInputParamNew.setPredictionTime(sFormat.parse("2023-06-06 24:00:00"));
+        paramForcastInputParamNew.setPeriodTimeType(4);//1为月，2为旬，3为日，4为小时
         paramForcastInputParamNew.setPeriodTimeStep(1);//预报步长
         paramForcastInputParamNew.setPeriodTimeNum(12);//预报数量
         paramForcastInputParamNew=objectToList(paramForcastInputParamNew);//读取表格
+        List<RainFallDto> rainPre = rainPredict(paramForcastInputParamNew);
+        paramForcastInputParamNew.setRainFallDtos(rainPre);
+        paramForcastInputParamNew = emptyProcessing(paramForcastInputParamNew);//异常值处理
+        List<Date> a = judgeDate(paramForcastInputParamNew.getPredictionTime());
 
-        //模型输出
-        Map<Date,Map<String,Double>> predictRain = getPredictRain(paramForcastInputParamNew);//预报雨量
-//        JSONObject json = new JSONObject();
-//
-//        for (Date date : predictRain.keySet()) {
-//            Map<String, Double> innerMap = predictRain.get(date);
-//            JSONObject innerJson = new JSONObject(innerMap);
-//            json.put(date.toString(), innerJson);
-//        }
-//
-//        String fileName = "D:\\tth_system\\end\\file\\output.json";
-//        FileWriter fileWriter = new FileWriter(fileName);
-//        fileWriter.write(json.toString());
-//        fileWriter.flush();
-//        fileWriter.close();
         TemporaryXlsx result = new TemporaryXlsx();
         result= getFloodList(paramForcastInputParamNew);
 
-    }
-
-    /**
-     * 预报雨量，返回一个Map，以时间为key
-     * @param paramForcastInputParamNew
-     * @return
-     * @throws IOException
-     * @throws InvalidFormatException
-     */
-    public static Map<Date,Map<String,Double>> getPredictRain(ForcastInputParamNew paramForcastInputParamNew) throws IOException, InvalidFormatException {
-        List<RainFallDto> rainPre = rainPredict(paramForcastInputParamNew);
-        Map<Date, Map<String, Double>> outerMap = new HashMap<>();
-        Map<String, Double> innerMap = new HashMap<>();
-
-        String[] strings = new String[rainPre.size()];
-        for (int i = 0; i < rainPre.size(); i++) {
-            strings[i] = rainPre.get(i).getDate();
-        }
-        Set<String> uniqueStrings = new HashSet<>();
-        Collections.addAll(uniqueStrings, strings);
-        int count = uniqueStrings.size();//预报时段数
-        for (int i = 0; i < count; i++) {
-            for (int j = 0; j < rainPre.size(); j++) {
-                if (rainPre.get(j).getDate().equals(strings[i])){
-                    if (rainPre.get(j).getArea().equals("喀什沟自动雨量站")){
-                        innerMap.put("喀什沟自动雨量站",rainPre.get(j).getRainFall());
-                    }
-                    if (rainPre.get(j).getArea().equals("黑沟自动雨量站")){
-                        innerMap.put("黑沟自动雨量站",rainPre.get(j).getRainFall());
-                    }
-                    if (rainPre.get(j).getArea().equals("煤矿沟自动雨量站")){
-                        innerMap.put("煤矿沟自动雨量站",rainPre.get(j).getRainFall());
-                    }
-                    if (rainPre.get(j).getArea().equals("加普沙自动雨量站")){
-                        innerMap.put("加普沙自动雨量站",rainPre.get(j).getRainFall());
-                    }
-                    if (rainPre.get(j).getArea().equals("宰尔德自动雨量站")){
-                        innerMap.put("宰尔德自动雨量站",rainPre.get(j).getRainFall());
-                    }
-                    if (rainPre.get(j).getArea().equals("东南沟自动雨量站")){
-                        innerMap.put("东南沟自动雨量站",rainPre.get(j).getRainFall());
-                    }
-                    if (rainPre.get(j).getArea().equals("萨尔达万自动雨量站")){
-                        innerMap.put("萨尔达万自动雨量站",rainPre.get(j).getRainFall());
-                    }
-                    if (rainPre.get(j).getArea().equals("小渠子雨量站")){
-                        innerMap.put("小渠子雨量站",rainPre.get(j).getRainFall());
-                    }
-                    if (rainPre.get(j).getArea().equals("团结一队雨量站")){
-                        innerMap.put("团结一队雨量站",rainPre.get(j).getRainFall());
-                    }
-                    if (rainPre.get(j).getArea().equals("头屯河水库雨量站")){
-                        innerMap.put("头屯河水库雨量站",rainPre.get(j).getRainFall());
-                    }
-                }
-            }
-            outerMap.put(stringToDate(strings[i]),innerMap);
-        }
-        return outerMap;
     }
 
     /**
@@ -125,12 +54,12 @@ public class TouTunHe {
      * @throws InvalidFormatException
      */
     public static TemporaryXlsx getFloodList(ForcastInputParamNew paramForcastInputParamNew) throws IOException, ParseException, InvalidFormatException {
-//        List<RainFallDto> rainPre = rainPredict(paramForcastInputParamNew);
+        intervalData(paramForcastInputParamNew);//添加新数据
         paramForcastInputParamNew = emptyProcessing(paramForcastInputParamNew);//异常值处理
-//        paramForcastInputParamNew.setRainFallDtos(rainPre);
+
         ForcastInputParam param = new ForcastInputParam();
         TemporaryXlsx temporaryXlsx;
-       //模型类型
+        //模型类型
         param.setIsRealtime(true);
         param.setIsShortForecast(paramForcastInputParamNew.getModelType() == 3);
         //预报时间
@@ -152,13 +81,7 @@ public class TouTunHe {
         int n = paramForcastInputParamNew.getPeriodTimeNum();
         param.setPeriodStepNumber(n);
         //数据输入
-        Map<String,List<List<PredictInputData>>>stationsData = OneStationList(paramForcastInputParamNew);
-        //楼庄子
-        List<List<PredictInputData>> LZZDATA;
-        LZZDATA=stationsData.get("楼庄子");
-        Object[][] Flood_Lzz;
-        Flood_Lzz = getOneStationFlood(LZZDATA,param,"楼庄子");
-        String judgeYear = (String) Flood_Lzz[0][12];
+        Map<String,List<List<PredictInputData>>>stationsData = OneStationDataList(paramForcastInputParamNew);
         //三号桥
         param.setPreStartTime(date);
         param.setPeriodStepSize(l);
@@ -167,6 +90,13 @@ public class TouTunHe {
         SHQDATA=stationsData.get("3号桥");
         Object[][] Flood_Three;
         Flood_Three = getOneStationFlood(SHQDATA,param,"3号桥");
+        //楼庄子
+        List<List<PredictInputData>> LZZDATA;
+        LZZDATA=stationsData.get("楼庄子");
+        Object[][] Flood_Lzz;
+        Flood_Lzz = getOneStationFlood(LZZDATA,param,"楼庄子");
+        String judgeYear = (String) Flood_Lzz[0][12];
+
         //区间
         param.setPreStartTime(date);
         param.setPeriodStepSize(l);
@@ -193,6 +123,50 @@ public class TouTunHe {
         temporaryXlsx = ObjectToXlsx(Flood);
         return temporaryXlsx;
 
+    }
+
+    /**
+     * 场次洪水预报
+     * @param historyInput
+     * @param machineInputData
+     * @param Data
+     * @param param
+     * @return
+     * @throws IOException
+     * @throws InvalidFormatException
+     * @throws ParseException
+     */
+    public static List<Object[][]> shortTimeForcast(Object[][] historyInput,Object[][] machineInputData,List<List<PredictInputData>> Data, ForcastInputParam param) throws IOException, InvalidFormatException, ParseException {
+        List<TemporaryXlsx> result;
+        List<Object[][]> floodList = new ArrayList<>();
+        Date time = param.getPreStartTime();
+        int month = getSpecificDate(time).get("月");
+        //根据月份判断融雪洪水
+        if (month>=5 && month<=7){
+            param.setIsSnowMeltModel(true);
+            Object[][] Input=dataIntegration(historyInput,machineInputData,param);
+            //划分历年融雪数据
+            Object[][] snowMeltInput= DataUtils.snowMeltDate(Input);
+            //训练模型获得参数以及其储存路径
+            SnowMeltModel model = new SnowMeltModel();
+            result = model.SnowTrain(snowMeltInput, param);
+            param.setXlsx(result);
+            //中长期预报预报融雪效果
+            Object[][] snowFlood=model.Forcast(snowMeltInput, param);
+            //陕北模型预报
+            PhysicalForcast physicalForcast = new PhysicalForcast();
+            Object[][] peakFlood = physicalForcast.getphysicalresult(param, Data, snowFlood);
+            floodList.add(peakFlood);
+        }
+        //非融雪洪水
+        else {
+            param.setIsSnowMeltModel(false);
+            PhysicalForcast physicalForcast = new PhysicalForcast();
+            Object[][] snowFlood = new Object[0][];
+            Object[][] peakFlood = physicalForcast.getphysicalresult(param, Data, snowFlood);
+            floodList.add(peakFlood);
+        }
+        return floodList;
     }
 
     /**
@@ -287,12 +261,81 @@ public class TouTunHe {
         }
         return result;
     }
+
+    /**
+     * 判断来水年的类别，丰平枯是根据历史来水量作为评判标准的
+     * @param input
+     * @return
+     */
+    public static String judgingYear(Object[][] input,String period,String stationName){
+        String result = "";
+        double[] water = new double[input.length];
+        for (int i = 0; i < water.length; i++) {
+            water[i]= (double) input[i][9];
+        }
+        if (period.equals("月")){
+            double waterSum =0.0;
+            for (double v : water) {
+                waterSum += v;
+            }
+            waterSum = waterSum/10000;
+            if (stationName.equals("楼庄子")){
+                if (waterSum >=2.476){
+                    result = "丰水年";
+                }
+                if (waterSum<2.246&&waterSum>=1.998){
+                    result = "平水年";
+                }
+                if (waterSum<1.998){
+                    result = "枯水年";
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * 判断需要从数据库获取哪些数据
+     * @return
+     * @throws IOException
+     */
+    public static List<Date> judgeDate (Date predictTime) throws IOException {
+        List<Date> result = new ArrayList<>();
+        Object[][] historyInput = ExcelTool.readExcel("D:\\头屯河历史数据1.xlsx", "楼庄子日");
+        Date historyTime = (Date) historyInput[historyInput.length-1][0];
+        int number = duration(predictTime,historyTime,"日");
+        if (number > 20){
+            result.add(historyTime);
+        }else {
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(historyTime);
+            calendar.add(Calendar.DAY_OF_MONTH, -20);
+            Date startTime = calendar.getTime();
+            result.add(startTime);
+        }
+        Date endtime = new Date();
+        if (predictTime.before(endtime)){
+            predictTime = endtime;
+        }
+        result.add(predictTime);
+        return result;
+    }
+
+    /**
+     * 获取单个站点的洪水数据
+     * @param Data
+     * @param param
+     * @param stationName
+     * @return
+     * @throws IOException
+     * @throws InvalidFormatException
+     * @throws ParseException
+     */
     public static Object[][] getOneStationFlood(List<List<PredictInputData>> Data,ForcastInputParam param,String stationName)throws IOException, InvalidFormatException, ParseException {
         param.setModel("Elman神经网络");
         param.setLocation(stationName);
-        SimpleDateFormat sFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         String Option = stationName + param.getPeriod();
-        Object[][] historyInput = ExcelTool.readExcel("D:\\tth_system\\end\\file\\头屯河历史数据.xlsx", Option);
+        Object[][] historyInput = ExcelTool.readExcel("D:\\头屯河历史数据1.xlsx", Option);
         //数据驱动模型输入
         List<PredictInputData> machineData = Data.get(0);
         //数据驱动模型数据输入尺度转换
@@ -384,9 +427,9 @@ public class TouTunHe {
     /**
      * 根据站点名称获得相应的List<List<PredictInputData>> 数据
      * @param paramNew
-     * @return
+     * @return 三个站点的日尺度历史径流，小时尺度雨量和日尺度雨量
      */
-    public static  Map<String,List<List<PredictInputData>>> OneStationList(ForcastInputParamNew paramNew)
+    public static  Map<String,List<List<PredictInputData>>> OneStationDataList(ForcastInputParamNew paramNew)
             throws IOException, InvalidFormatException, ParseException {
         Map<String,List<List<PredictInputData>>> threeResults = new HashMap<>();
         List<List<PredictInputData>> threeDataConversions = new ArrayList<>();
@@ -448,48 +491,65 @@ public class TouTunHe {
 
         return threeResults;
     }
+
     /**
-     * 场次洪水预报
-     * @param historyInput
-     * @param machineInputData
-     * @param Data
-     * @param param
-     * @return
+     * 补充新数据的方法
+     * @param paramForcastInputParamNew
+     * @throws IOException
+     * @throws ParseException
+     * @throws InvalidFormatException
+     */
+    public static void intervalData(ForcastInputParamNew paramForcastInputParamNew) throws IOException, ParseException, InvalidFormatException {
+        //数据不足，补充新时段数据
+        Map<String,List<List<PredictInputData>>> stationsData = OneStationDataList(paramForcastInputParamNew);
+        List<List<PredictInputData>> Three = stationsData.get("3号桥");
+        List<List<PredictInputData>> Lou = stationsData.get("楼庄子");
+        List<List<PredictInputData>> Qu = stationsData.get("楼头区间");
+        dataObject (Three,"3号桥");
+        dataObject (Lou,"楼庄子");
+        dataObject (Qu,"楼头区间");
+    }
+
+    /**
+     * 分尺度进行处理
+     * @param input
+     * @param station
      * @throws IOException
      * @throws InvalidFormatException
-     * @throws ParseException
      */
-    public static List<Object[][]> shortTimeForcast(Object[][] historyInput,Object[][] machineInputData,List<List<PredictInputData>> Data, ForcastInputParam param) throws IOException, InvalidFormatException, ParseException {
-        List<TemporaryXlsx> result;
-        List<Object[][]> floodList = new ArrayList<>();
-        Date time = param.getPreStartTime();
-        int month = getSpecificDate(time).get("月");
-        //根据月份判断融雪洪水
-        if (month>=5 && month<=7){
-            param.setIsSnowMeltModel(true);
-            Object[][] Input=dataIntegration(historyInput,machineInputData,param);
-            //划分历年融雪数据
-            Object[][] snowMeltInput= DataUtils.snowMeltDate(Input);
-            //训练模型获得参数以及其储存路径
-            SnowMeltModel model = new SnowMeltModel();
-            result = model.SnowTrain(snowMeltInput, param);
-            param.setXlsx(result);
-            //中长期预报预报融雪效果
-            Object[][] snowFlood=model.Forcast(snowMeltInput, param);
-            //陕北模型预报
-            PhysicalForcast physicalForcast = new PhysicalForcast();
-            Object[][] peakFlood = physicalForcast.getphysicalresult(param, Data, snowFlood);
-            floodList.add(peakFlood);
+    public static void dataObject(List<List<PredictInputData>> input,String station) throws IOException, InvalidFormatException {
+        differentInput(input,station,"日");
+        differentInput(input,station,"旬");
+        differentInput(input,station,"月");
+    }
+
+    /**
+     * 对数据进行整合处理
+     * @param input
+     * @param station
+     * @param period
+     * @throws IOException
+     * @throws InvalidFormatException
+     */
+    public static void differentInput (List<List<PredictInputData>> input,String station,String period) throws IOException, InvalidFormatException {
+        String Option = station + period;
+        Object[][] historyInput = ExcelTool.readExcel("D:\\头屯河历史数据1.xlsx", Option);
+        //数据驱动模型输入
+        List<PredictInputData> machineData = input.get(0);
+        //数据驱动模型数据输入尺度转换
+        List<PredictInputData> re = DataUtils.ChangeDate(machineData, period);
+        Object[][] machineInputData = new Object[re.size()][4];
+        for (int i = 0; i < re.size(); i++) {
+            machineInputData[i][0] = re.get(i).getDates();
+            machineInputData[i][1] = re.get(i).getFlow();
+            machineInputData[i][2] = re.get(i).getTemperature();
+            machineInputData[i][3] = re.get(i).getRainfall();
         }
-        //非融雪洪水
-        else {
-            param.setIsSnowMeltModel(false);
-            PhysicalForcast physicalForcast = new PhysicalForcast();
-            Object[][] snowFlood = new Object[0][];
-            Object[][] peakFlood = physicalForcast.getphysicalresult(param, Data, snowFlood);
-            floodList.add(peakFlood);
-        }
-        return floodList;
+        ForcastInputParam param = new ForcastInputParam();
+        param.setPreStartTime(input.get(0).get(0).getDates());
+        param.setPeriod(period);
+        Object[][] result = dataIntegration(historyInput, machineInputData, param);
+        ExcelTool.writeObjectExcel("D:\\头屯河历史数据1.xlsx",station+period,result);
     }
 
     /**
@@ -498,70 +558,77 @@ public class TouTunHe {
      * @param preliminaryData
      * @return
      */
-    public static Object[][] dataIntegration(Object[][] historyInput ,Object[][] preliminaryData,ForcastInputParam param) throws IOException, InvalidFormatException {
-        int year = getSpecificDate(param.getPreStartTime()).get("年");
-        if (year >= 2023){
-            Object[][] Input=new Object[historyInput.length + preliminaryData.length][historyInput[0].length];
-            for (int i = 0; i < historyInput.length; i++) {
-                System.arraycopy(historyInput[i], 0, Input[i], 0, historyInput[0].length);
+    public static Object[][] dataIntegration(Object[][] historyInput ,Object[][] preliminaryData, ForcastInputParam param){
+        Object[][] result = new Object[0][];
+        Date dateEnd = (Date) historyInput[historyInput.length-1][0];
+        Date dateStart = (Date) preliminaryData[0][0];
+        if (param.getPeriod().equals("日")){
+            int dayDuration =duration(dateStart,dateEnd,"日");
+            if (dayDuration > 0){//输入数据在历史中有
+            }else {
+                dayDuration = 0;
             }
-            for (int i = historyInput.length; i < historyInput.length + preliminaryData.length; i++) {
-                for (int j = 0; j < historyInput[0].length; j++) {
-                    if(preliminaryData[i - historyInput.length][j] == null){
-                        if (i==historyInput.length){
-                            preliminaryData[i - historyInput.length][j]=historyInput[i-1][j];
-                        }else {
-                            preliminaryData[i - historyInput.length][j]=preliminaryData[i - historyInput.length-1][j];
-                        }
-                    }
-                    Input[i][j]=preliminaryData[i - historyInput.length][j];
-                }
+            result = intergration(historyInput,preliminaryData,dayDuration);
+        }
+        if (param.getPeriod().equals("旬")){
+            int xunDuration =duration(dateStart,dateEnd,"日")/10;
+            if (xunDuration > 0){//输入数据在历史中有
+            }else {
+                xunDuration = 0;
             }
-            int num = 1000;
-            Object[][] result = new Object[num][Input[0].length];
-            if (Input.length>num)
-            {
-                for (int i = 0; i < num ; i++) {
-                    System.arraycopy(Input[Input.length-num+i],0,result[i],0,Input[0].length);
-                }
-                return result;
-            }else
-            {
-                return Input;
+            result = intergration(historyInput,preliminaryData,xunDuration);
+        }
+        if (param.getPeriod().equals("月")){
+            int monthDuration =duration(dateStart,dateEnd,"月");
+            if (monthDuration > 0){//输入数据在历史中有
+            }else {
+                monthDuration = 0;
             }
+            result = intergration(historyInput,preliminaryData,monthDuration);
+        }
+        return result;
+    }
 
-        }else {
-            Date dateEnd = (Date) historyInput[historyInput.length-1][0];
-            int n =historyInput.length;
-            Object[][] Input;
-            if (param.getPeriod().equals("日")){
-                int duration =duration(param.getPreStartTime(),dateEnd,"日");
-                n=n-duration-1;
-                if (n>1000){
-                    n=1000;
-                }
-                Input = new Object[n][4];
-                for (int i = 0; i < n; i++) {
-                    System.arraycopy(historyInput[historyInput.length-n+i],0, Input[i], 0, 4);
+    /**
+     * 数据整合
+     * @param historyInput 历史数据
+     * @param preliminaryData 获取数据
+     * @param dayDuration 之间的差距
+     * @return
+     */
+    public static Object[][] intergration(Object[][] historyInput ,Object[][] preliminaryData,int dayDuration){
+        int hisLength = historyInput.length;
+        int preLength = preliminaryData.length;
+        int width = historyInput[0].length;
+        Object[][] input;
+        if (hisLength+preLength-dayDuration>1000){//如果历史加目前输入大于1000天
+            input = new Object[1000][width];
+            if (preLength>1000){
+                for (int i = 0; i <1000 ; i++) {
+                    System.arraycopy(preliminaryData[preliminaryData.length-1000+i],0, input[i], 0, width);
                 }
             }else {
-                if (param.getPeriod().equals("月")){
-                    int duration =duration(param.getPreStartTime(),dateEnd,"月");
-                    n=n-duration-1;
-                } else if (param.getPeriod().equals("旬")) {
-                    int duration =duration(param.getPreStartTime(),dateEnd,"月");
-                    n=n-duration*3-3;
+                for (int i = 0; i <1000-preLength ; i++) {
+                    System.arraycopy(historyInput[hisLength+preliminaryData.length-dayDuration-1000+i],0, input[i], 0, width);
                 }
-                Input = new Object[n][2];
-                for (int i = 0; i < n; i++) {
-                    System.arraycopy(historyInput[i], 0, Input[i], 0, 2);
+                for (int i = 1000-preLength; i < 1000; i++) {
+                    System.arraycopy(preliminaryData[i+preLength-1000],0, input[i], 0, width);
                 }
             }
-
-            return Input;
+        }else {//历史加目前小于1000天
+            input = new Object[hisLength+preLength-dayDuration][4];
+            for (int i = 0; i < hisLength-dayDuration; i++) {
+                System.arraycopy(historyInput[i],0, input[i], 0, width);
+            }
+            for (int i = hisLength-dayDuration; i < hisLength+preLength-dayDuration; i++) {
+                System.arraycopy(preliminaryData[i+dayDuration-hisLength],0, input[i], 0,width);
+            }
         }
-
+        return input;
     }
+
+
+
 
     /**
      * 读取表格赋予初始值
@@ -579,7 +646,7 @@ public class TouTunHe {
     LzzHydrologyParam lzzParam = new LzzHydrologyParam();
     IrrigatedHydrologyParam qjParam = new IrrigatedHydrologyParam();
     //楼庄子雨量站List
-    Object[][] lzzRainObject = ExcelTool.readExcel("D:\\204\\2.头屯河\\资料\\2.小时尺度数据\\雨量站.xlsx","LZZ_RAINFALL_STATION_2023121317");
+    Object[][] lzzRainObject = ExcelTool.readExcel("D:\\204\\2.头屯河\\资料\\2.小时尺度数据\\雨量站2.xlsx","LZZ_RAINFALL_STATION_2023121317");
     List<LzzRainfallStation> bylcList=new ArrayList<>();
     List<LzzRainfallStation> dngList=new ArrayList<>();
     List<LzzRainfallStation> hgList=new ArrayList<>();
@@ -786,7 +853,7 @@ public class TouTunHe {
     lzzParam.setZrdRainfallStation(zedList);
     lzzParam.setZccRainfallStation(zccList);
     //楼庄子水位站List
-    Object[][] lzzFlowObject = ExcelTool.readExcel("D:\\204\\2.头屯河\\资料\\2.小时尺度数据\\楼庄子库水位站.xlsx","LZZ_GAUGING_STATION_20231213173");
+    Object[][] lzzFlowObject = ExcelTool.readExcel("D:\\204\\2.头屯河\\资料\\2.小时尺度数据\\楼庄子库水位站2.xlsx","LZZ_GAUGING_STATION_20231213173");
     List<LzzGaugingStation> shqList=new ArrayList<>();
     List<LzzGaugingStation> lzzrList=new ArrayList<>();
     List<LzzGaugingStation> lzzwList=new ArrayList<>();
@@ -935,7 +1002,7 @@ public class TouTunHe {
     lzzParam.setLzzOutput(lzzoList);
     result.setLzzHydrologyParam(lzzParam);
 
-    Object[][] qjObject = ExcelTool.readExcel("D:\\204\\2.头屯河\\资料\\2.小时尺度数据\\区间.xlsx","区间");
+    Object[][] qjObject = ExcelTool.readExcel("D:\\204\\2.头屯河\\资料\\2.小时尺度数据\\区间2.xlsx","区间");
     List<IrrigatedPlatformDataInfo> xqzList=new ArrayList<>();
     List<IrrigatedPlatformDataInfo> tjydList=new ArrayList<>();
     List<IrrigatedPlatformDataInfo> tthRList=new ArrayList<>();
@@ -1124,36 +1191,6 @@ public class TouTunHe {
         }
         return resultSort;
     }
-    /**
-     * 判断来水年的类别，丰平枯是根据历史来水量作为评判标准的
-     * @param input
-     * @return
-     */
-    public static String judgingYear(Object[][] input,String period,String stationName){
-        String result = "";
-        double[] water = new double[input.length];
-        for (int i = 0; i < water.length; i++) {
-            water[i]= (double) input[i][9];
-        }
-        if (period.equals("月")){
-            double waterSum =0.0;
-            for (double v : water) {
-                waterSum += v;
-            }
-            waterSum = waterSum/10000;
-            if (stationName.equals("楼庄子")){
-                if (waterSum >=2.476){
-                    result = "丰水年";
-                }
-                if (waterSum<2.246&&waterSum>=1.998){
-                    result = "平水年";
-                }
-                if (waterSum<1.998){
-                    result = "枯水年";
-                }
-            }
-        }
-        return result;
-    }
+
 
 }

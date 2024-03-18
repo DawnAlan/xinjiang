@@ -250,6 +250,19 @@ public class IrrigatedAreaServiceImpl implements IrrigatedAreaService {
                         redisUtil.set("irrigatedPlatform:today:"+overallSituationUnitMgrDto.getId(),info.getAvgFlow());
                         redisUtil.set("irrigatedPlatform:sq:date:id:"+info.getMonitorTime()+":"+overallSituationUnitMgrDto.getId(),info.getSqMonitorFlow());
                     }
+                    if(info.getMonitorName().equals("头屯河水库水位")){
+                        redisUtil.set("irrigatedPlatform:sq:tth:waterLevel:"+sdf.format(sdf.parse(info.getMonitorTime())),info.getSqWaterLevel());
+                        redisUtil.set("irrigatedPlatform:sq:tth:capacity:"+sdf.format(sdf.parse(info.getMonitorTime())),info.getSqCapacity());
+                    }
+                    if(info.getMonitorName().equals("出库流量")){
+                        redisUtil.set("irrigatedPlatform:sq:tth:out:"+sdf.format(sdf.parse(info.getMonitorTime())),info.getSqMonitorFlow());
+                    }
+                    if(info.getMonitorName().equals("入库流量")){
+                        redisUtil.set("irrigatedPlatform:sq:tth:input:"+sdf.format(sdf.parse(info.getMonitorTime())),info.getSqMonitorFlow());
+                    }
+                    if(info.getMonitorName().equals("八钢工业取水口")){
+                        redisUtil.set("irrigatedPlatform:sq:tth:aq:"+sdf.format(sdf.parse(info.getMonitorTime())),info.getSqMonitorFlow());
+                    }
                 }
             }
             boolean b = irrigatedPlatformDataInfoService.saveOrUpdateBatch(result);
@@ -270,34 +283,34 @@ public class IrrigatedAreaServiceImpl implements IrrigatedAreaService {
         DecimalFormat df = new DecimalFormat("0.0");
         DecimalFormat df1 = new DecimalFormat("0.00");
         DecimalFormat df2 = new DecimalFormat("0.000");
-        String tempString = (String)redisUtil.get("irrigatedPlatformTree");
-        if(StringUtils.isEmpty(tempString)){
+        String tempString = (String) redisUtil.get("irrigatedPlatformTree");
+        if (StringUtils.isEmpty(tempString)) {
             List<IrrigatedPlatformTree> list = irrigatedPlatformTreeService.list();
             redisUtil.set("irrigatedPlatformTree", JSONObject.toJSONString(list));
         }
-        String treeString= (String)redisUtil.get("irrigatedPlatformTree");
+        String treeString = (String) redisUtil.get("irrigatedPlatformTree");
         List<IrrigatedPlatformTree> treeList = JSONObject.parseArray(treeString, IrrigatedPlatformTree.class);
         List<IrrigatedPlatformDataInfo> resultList = new ArrayList<>();
         List<ImportHistoryDataDto> importHistoryDataDtos = ExcelUtils.importExcel(file, ImportHistoryDataDto.class);
-        if(null != importHistoryDataDtos && importHistoryDataDtos.size()>0){
-            for(ImportHistoryDataDto dto:importHistoryDataDtos){
-                if(dto.getMonitorId()!=null){
+        if (null != importHistoryDataDtos && importHistoryDataDtos.size() > 0) {
+            for (ImportHistoryDataDto dto : importHistoryDataDtos) {
+                if (dto.getMonitorId() != null) {
                     IrrigatedPlatformDataInfo info = new IrrigatedPlatformDataInfo();
                     List<IrrigatedPlatformTree> irrigatedPlatformTrees = treeList.stream().filter(t -> t.getId().equals(dto.getMonitorId())).collect(Collectors.toList());
                     IrrigatedPlatformTree tree = irrigatedPlatformTrees.get(0);
                     info.setMonitorId(dto.getMonitorId());
                     info.setMonitorName(tree.getName());
                     info.setMonitorTime(dto.getMonitorTime());
-                    info.setId(info.getMonitorName()+"-"+sdf.parse(dto.getMonitorTime()).getTime());
-                    info.setSqMonitorFlowRate(dto.getSqMonitorFlowRate()==null?null:Double.valueOf(df2.format(dto.getSqMonitorFlowRate())));
+                    info.setId(info.getMonitorName() + "-" + sdf.parse(dto.getMonitorTime()).getTime());
+                    info.setSqMonitorFlowRate(dto.getSqMonitorFlowRate() == null ? null : Double.valueOf(df2.format(dto.getSqMonitorFlowRate())));
                     //info.setSqMonitorFlow(dto.getSqMonitorFlow()==null?dto.getSqMonitorFlow1()==null?null:Double.valueOf(df2.format(dto.getSqMonitorFlow1())):Double.valueOf(df2.format(dto.getSqMonitorFlow())));
-                    info.setSqTotalFlow(dto.getSqTotalFlow()==null?null:Double.valueOf(df2.format(dto.getSqTotalFlow())));
-                    info.setYqRainFallOne(dto.getYqRainFallOne()==null?null:Double.valueOf(df2.format(dto.getYqRainFallOne())));
-                    if(info.getMonitorName().equals("头屯河水库水位")){
-                        info.setSqWaterLevel(dto.getSqWaterLevel1()<100?949.14+dto.getSqWaterLevel1():dto.getSqWaterLevel1());
-                        if(dto.getSqCapacity()==null){
-                            String tthString = (String)redisUtil.get("storageCapacityCurveTth");
-                            if(StringUtils.isEmpty(tthString)){
+                    info.setSqTotalFlow(dto.getSqTotalFlow() == null ? null : Double.valueOf(df2.format(dto.getSqTotalFlow())));
+                    info.setYqRainFallOne(dto.getYqRainFallOne() == null ? null : Double.valueOf(df2.format(dto.getYqRainFallOne())));
+                    if (info.getMonitorName().equals("头屯河水库水位")) {
+                        info.setSqWaterLevel(dto.getSqWaterLevel1() < 100 ? 949.14 + dto.getSqWaterLevel1() : dto.getSqWaterLevel1());
+                        if (dto.getSqCapacity() == null) {
+                            String tthString = (String) redisUtil.get("storageCapacityCurveTth");
+                            if (StringUtils.isEmpty(tthString)) {
                                 List<StorageCapacityCurve> tth = storageCapacityCurveService.lambdaQuery().eq(StorageCapacityCurve::getReservoir, "tth").list();
                                 redisUtil.set("storageCapacityCurveTth", JSONObject.toJSONString(tth));
                                 tthString = JSONObject.toJSONString(tth);
@@ -306,10 +319,10 @@ public class IrrigatedAreaServiceImpl implements IrrigatedAreaService {
                             Double sqWaterLevel = info.getSqWaterLevel();
                             String[] split = df1.format(sqWaterLevel).split("\\.");
                             List<String> strings = NumberUtil.roundDecimal(split[0], split[1]);
-                            List<StorageCapacityCurve> collect = tthList.stream().filter(t -> t.getWaterLevel().compareTo(new BigDecimal(strings.get(0))) == 0 && df.format(t.getInterpolation()).equals(strings.get(1).length()<2?"0.0":strings.get(1).split("\\.")[0]+"."+strings.get(1).split("\\.")[1].substring(0,1))).collect(Collectors.toList());
-                            StorageCapacityCurve storageCapacityCurve = collect.size()==0?null:collect.get(0);
-                            info.setSqCapacity(storageCapacityCurve==null?null:storageCapacityCurve.getStorageCapacity().doubleValue());
-                        }else {
+                            List<StorageCapacityCurve> collect = tthList.stream().filter(t -> t.getWaterLevel().compareTo(new BigDecimal(strings.get(0))) == 0 && df.format(t.getInterpolation()).equals(strings.get(1).length() < 2 ? "0.0" : strings.get(1).split("\\.")[0] + "." + strings.get(1).split("\\.")[1].substring(0, 1))).collect(Collectors.toList());
+                            StorageCapacityCurve storageCapacityCurve = collect.size() == 0 ? null : collect.get(0);
+                            info.setSqCapacity(storageCapacityCurve == null ? null : storageCapacityCurve.getStorageCapacity().doubleValue());
+                        } else {
                             info.setSqCapacity(dto.getSqCapacity());
                         }
                     }
@@ -317,14 +330,14 @@ public class IrrigatedAreaServiceImpl implements IrrigatedAreaService {
                 }
             }
         }
-        if(null!= resultList && resultList.size()>0){
+        if (null != resultList && resultList.size() > 0) {
             boolean b = irrigatedPlatformDataInfoService.saveOrUpdateBatch(resultList);
-            if(b){
+            if (b) {
                 return RestResponse.ok();
-            }else {
+            } else {
                 return RestResponse.no("save error");
             }
-        }else {
+        } else {
             return RestResponse.no("import error");
         }
     }

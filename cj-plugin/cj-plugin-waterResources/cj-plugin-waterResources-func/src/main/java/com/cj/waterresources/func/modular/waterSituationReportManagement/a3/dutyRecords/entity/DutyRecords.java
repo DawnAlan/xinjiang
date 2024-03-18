@@ -50,5 +50,17 @@ public class DutyRecords extends Model<DutyRecords> {
     //逻辑删除(0-否 1-是)
     @ApiModelProperty(value = "逻辑删除(0-否 1-是)")
     private Integer del;
+
+    //值班人员
+    @ApiModelProperty(value = "值班人员")
+    private String dutyPerson;
+
+    //气温
+    @ApiModelProperty(value = "气温")
+    private String airTemperature;
+
+    //天气
+    @ApiModelProperty(value = "天气")
+    private String weather;
 }
 

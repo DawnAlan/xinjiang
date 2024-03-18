@@ -96,8 +96,8 @@ public class ShanBeiModel {
         B = param[7];  //B反映下渗能力在透水面积上的分布特性
         CS = param[8]; //CS 为地面径流消退系数
         L = (int)param[9]; //L为汇流滞时（时段数）
-        PreImpactdays = (int) param[10]; //计算初始土壤含水量时，用到的前期天数 >20d
-        PeriodLength = (int) param[11];//1h
+        PreImpactdays = 20; //计算初始土壤含水量时，用到的前期天数 >20d
+        PeriodLength = 1;//1h
 
         NumPeriod = input.length;
 

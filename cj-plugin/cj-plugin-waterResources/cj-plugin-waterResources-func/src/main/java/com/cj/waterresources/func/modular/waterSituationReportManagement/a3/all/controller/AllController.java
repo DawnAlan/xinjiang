@@ -2,6 +2,7 @@ package com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all
 
 import com.cj.common.model.RestResponse;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req.A3StatisticsReq;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req.SelectListForIndustrialWaterFeeReq;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.service.AllService;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hd.entity.DayWaterSituationStatisticsTableHd;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
@@ -36,5 +37,12 @@ public class AllController {
     @PostMapping("/statistics")
     public RestResponse statistics(@RequestBody A3StatisticsReq req) {
         return allService.statistics(req);
+    }
+
+    @ApiOperationSupport(order = 3)
+    @ApiOperation("工业水费根据站点查询时间区间流量")
+    @PostMapping("/selectListForIndustrialWaterFee")
+    public RestResponse selectListForIndustrialWaterFee(@RequestBody SelectListForIndustrialWaterFeeReq req) {
+        return allService.selectListForIndustrialWaterFee(req);
     }
 }

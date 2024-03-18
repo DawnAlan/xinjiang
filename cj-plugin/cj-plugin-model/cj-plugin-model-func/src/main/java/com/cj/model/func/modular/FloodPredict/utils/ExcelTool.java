@@ -2,6 +2,7 @@ package com.cj.model.func.modular.FloodPredict.utils;
 
 import com.cj.model.func.modular.FloodPredict.entity.PredictInputData;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.apache.poi.openxml4j.util.ZipSecureFile;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -296,6 +297,7 @@ public class ExcelTool {
 		}
 	}
 	public static Object[][] readExcel(String path, String sheetName) throws IOException{
+		ZipSecureFile.setMinInflateRatio(-1.0d);
 		InputStream fis = new FileInputStream(path);
 		Workbook wb = new XSSFWorkbook(fis);
 		Sheet sheet = wb.getSheet(sheetName);

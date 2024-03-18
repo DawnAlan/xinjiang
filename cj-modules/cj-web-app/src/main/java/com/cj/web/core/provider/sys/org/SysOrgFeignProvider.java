@@ -35,6 +35,12 @@ public class SysOrgFeignProvider implements SysOrgFeign {
         return sysOrgApiProvider.getNameById(orgId);
     }
 
+    @Override
+    @RequestMapping("/feign/sys/org/getIdByName")
+    public String getIdByName(@RequestParam(value = "name",required = false) String name) {
+        return  sysOrgApiProvider.getIdByName(name);
+    }
+
     /**
      * 根据组织id获取部门主管id
      *

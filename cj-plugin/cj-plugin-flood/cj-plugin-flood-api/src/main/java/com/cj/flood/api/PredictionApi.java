@@ -41,4 +41,8 @@ public interface PredictionApi {
     String getPredictionListByTimeType(Integer timeType);
     String getPredictionListByName(String id,String reservoir);
 
+    default String getWaterStorageOverview(String dateTime) {
+        return null;
+    }
+
 }

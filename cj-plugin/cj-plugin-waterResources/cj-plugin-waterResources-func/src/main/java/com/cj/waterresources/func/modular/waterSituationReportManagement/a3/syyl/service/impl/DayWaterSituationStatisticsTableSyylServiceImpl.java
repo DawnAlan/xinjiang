@@ -57,60 +57,38 @@ public class DayWaterSituationStatisticsTableSyylServiceImpl extends ServiceImpl
         calendar.setTime(new Date());
         calendar.add(calendar.DATE, -1);
         String yesterday= sdf.format(calendar.getTime());
+        List<LzzRainfallStation> lzzRainfallStations = lzzRainfallStationService.selectYesterday(yesterday);
+        List<IrrigatedPlatformDataInfo> irrigatedPlatformDataInfo = irrigatedPlatformDataInfoService.selectOneByConditionByTime(yesterday);
         for(DayWaterSituationStatisticsTableSyyl t:dayWaterSituationStatisticsTableSyylList){
             t.setId(UUIDUtils.getUUID());
             String paramName = trendsTableParamService.getById(t.getTableHeadId()).getParamName();
             if(paramName.equals("萨尔达万")){
-                List<LzzRainfallStation> lzzRainfallStations = lzzRainfallStationService.selectYesterday("萨尔达万自动雨量站", yesterday);
-                if(null!= lzzRainfallStations && lzzRainfallStations.size()>0){
+                List<LzzRainfallStation> rainfallStationList = lzzRainfallStations.stream().filter(s -> s.getStationName().equals("萨尔达万自动雨量站")).collect(Collectors.toList());
+                if(null!= rainfallStationList && rainfallStationList.size()>0){
                     Double tempValue = 0.0;
-                    List<BigDecimal> collect = lzzRainfallStations.stream().filter(l -> l.getRainfall() != null).map(LzzRainfallStation::getRainfall).collect(Collectors.toList());
+                    List<BigDecimal> collect = rainfallStationList.stream().filter(l -> l.getRainfall() != null).map(LzzRainfallStation::getRainfall).collect(Collectors.toList());
                     for(BigDecimal b:collect){
                         tempValue += b.doubleValue();
                     }
                     t.setV(tempValue);
-                }
-            }
-            if(paramName.equals("团结一队")){
-                List<IrrigatedPlatformDataInfo> irrigatedPlatformDataInfo = irrigatedPlatformDataInfoService.selectOneByCondition2("团结一队雨量站", yesterday);
-                if(null!= irrigatedPlatformDataInfo && irrigatedPlatformDataInfo.size()>0){
-                    List<Double> collect = irrigatedPlatformDataInfo.stream().filter(r -> r.getYqRainFallOne() != null).map(IrrigatedPlatformDataInfo::getYqRainFallOne).collect(Collectors.toList());
-                    Double aDouble = collect.stream().reduce(Double::sum).orElse(0.00);
-                    t.setV(aDouble==null?null:aDouble);
-                }
-            }
-            if(paramName.equals("头屯河进库")){
-                List<IrrigatedPlatformDataInfo> irrigatedPlatformDataInfo = irrigatedPlatformDataInfoService.selectOneByCondition2("头屯河水库雨量站", yesterday);
-                if(null!= irrigatedPlatformDataInfo && irrigatedPlatformDataInfo.size()>0){
-                    List<Double> collect = irrigatedPlatformDataInfo.stream().filter(r -> r.getYqRainFallOne() != null).map(IrrigatedPlatformDataInfo::getYqRainFallOne).collect(Collectors.toList());
-                    Double aDouble = collect.stream().reduce(Double::sum).orElse(0.00);
-                    t.setV(aDouble==null?null:aDouble);
                 }
             }
             if(paramName.equals("八一林场")){
-                List<LzzRainfallStation> lzzRainfallStations = lzzRainfallStationService.selectYesterday("八一林场自动雨量站", yesterday);
-                if(null!= lzzRainfallStations && lzzRainfallStations.size()>0){
+                List<LzzRainfallStation> rainfallStationList = lzzRainfallStations.stream().filter(s -> s.getStationName().equals("八一林场自动雨量站")).collect(Collectors.toList());
+                if(null!= rainfallStationList && rainfallStationList.size()>0){
                     Double tempValue = 0.0;
-                    List<BigDecimal> collect = lzzRainfallStations.stream().filter(l -> l.getRainfall() != null).map(LzzRainfallStation::getRainfall).collect(Collectors.toList());
+                    List<BigDecimal> collect = rainfallStationList.stream().filter(l -> l.getRainfall() != null).map(LzzRainfallStation::getRainfall).collect(Collectors.toList());
                     for(BigDecimal b:collect){
                         tempValue += b.doubleValue();
                     }
                     t.setV(tempValue);
                 }
             }
-            if(paramName.equals("小渠子")){
-                List<IrrigatedPlatformDataInfo> irrigatedPlatformDataInfo = irrigatedPlatformDataInfoService.selectOneByCondition2("小渠子雨量站", yesterday);
-                if(null!= irrigatedPlatformDataInfo && irrigatedPlatformDataInfo.size()>0){
-                    List<Double> collect = irrigatedPlatformDataInfo.stream().filter(r -> r.getYqRainFallOne() != null).map(IrrigatedPlatformDataInfo::getYqRainFallOne).collect(Collectors.toList());
-                    Double aDouble = collect.stream().reduce(Double::sum).orElse(0.00);
-                    t.setV(aDouble==null?null:aDouble);
-                }
-            }
             if(paramName.equals("黑沟")){
-                List<LzzRainfallStation> lzzRainfallStations = lzzRainfallStationService.selectYesterday("黑沟自动雨量站", yesterday);
-                if(null!= lzzRainfallStations && lzzRainfallStations.size()>0){
+                List<LzzRainfallStation> rainfallStationList = lzzRainfallStations.stream().filter(s -> s.getStationName().equals("黑沟自动雨量站")).collect(Collectors.toList());
+                if(null!= rainfallStationList && rainfallStationList.size()>0){
                     Double tempValue = 0.0;
-                    List<BigDecimal> collect = lzzRainfallStations.stream().filter(l -> l.getRainfall() != null).map(LzzRainfallStation::getRainfall).collect(Collectors.toList());
+                    List<BigDecimal> collect = rainfallStationList.stream().filter(l -> l.getRainfall() != null).map(LzzRainfallStation::getRainfall).collect(Collectors.toList());
                     for(BigDecimal b:collect){
                         tempValue += b.doubleValue();
                     }
@@ -118,16 +96,108 @@ public class DayWaterSituationStatisticsTableSyylServiceImpl extends ServiceImpl
                 }
             }
             if(paramName.equals("无名沟")){
-                List<LzzRainfallStation> lzzRainfallStations = lzzRainfallStationService.selectYesterday("无名沟自动雨量站", yesterday);
-                if(null!= lzzRainfallStations && lzzRainfallStations.size()>0){
+                List<LzzRainfallStation> rainfallStationList = lzzRainfallStations.stream().filter(s -> s.getStationName().equals("无名沟自动雨量站")).collect(Collectors.toList());
+                if(null!= rainfallStationList && rainfallStationList.size()>0){
                     Double tempValue = 0.0;
-                    List<BigDecimal> collect = lzzRainfallStations.stream().filter(l -> l.getRainfall() != null).map(LzzRainfallStation::getRainfall).collect(Collectors.toList());
+                    List<BigDecimal> collect = rainfallStationList.stream().filter(l -> l.getRainfall() != null).map(LzzRainfallStation::getRainfall).collect(Collectors.toList());
                     for(BigDecimal b:collect){
                         tempValue += b.doubleValue();
                     }
                     t.setV(tempValue);
                 }
             }
+            if(paramName.equals("团结一队")){
+                List<IrrigatedPlatformDataInfo> platformDataInfoList = irrigatedPlatformDataInfo.stream().filter(s -> s.getMonitorName().equals("团结一队雨量站")).collect(Collectors.toList());
+                if(null!= platformDataInfoList && platformDataInfoList.size()>0){
+                    List<Double> collect = platformDataInfoList.stream().filter(r -> r.getYqRainFallOne() != null).map(IrrigatedPlatformDataInfo::getYqRainFallOne).collect(Collectors.toList());
+                    Double aDouble = collect.stream().reduce(Double::sum).orElse(0.00);
+                    t.setV(aDouble==null?null:aDouble);
+                }
+            }
+            if(paramName.equals("头屯河进库")){
+                List<IrrigatedPlatformDataInfo> platformDataInfoList = irrigatedPlatformDataInfo.stream().filter(s -> s.getMonitorName().equals("头屯河水库雨量站")).collect(Collectors.toList());
+                if(null!= platformDataInfoList && platformDataInfoList.size()>0){
+                    List<Double> collect = platformDataInfoList.stream().filter(r -> r.getYqRainFallOne() != null).map(IrrigatedPlatformDataInfo::getYqRainFallOne).collect(Collectors.toList());
+                    Double aDouble = collect.stream().reduce(Double::sum).orElse(0.00);
+                    t.setV(aDouble==null?null:aDouble);
+                }
+            }
+
+            if(paramName.equals("小渠子")){
+                List<IrrigatedPlatformDataInfo> platformDataInfoList = irrigatedPlatformDataInfo.stream().filter(s -> s.getMonitorName().equals("小渠子雨量站")).collect(Collectors.toList());
+                if(null!= platformDataInfoList && platformDataInfoList.size()>0){
+                    List<Double> collect = platformDataInfoList.stream().filter(r -> r.getYqRainFallOne() != null).map(IrrigatedPlatformDataInfo::getYqRainFallOne).collect(Collectors.toList());
+                    Double aDouble = collect.stream().reduce(Double::sum).orElse(0.00);
+                    t.setV(aDouble==null?null:aDouble);
+                }
+            }
+            if(paramName.equals("喀什沟")){
+                List<LzzRainfallStation> rainfallStationList = lzzRainfallStations.stream().filter(s -> s.getStationName().equals("喀什沟自动雨量站")).collect(Collectors.toList());
+                if(null!= rainfallStationList && rainfallStationList.size()>0){
+                    Double tempValue = 0.0;
+                    List<BigDecimal> collect = rainfallStationList.stream().filter(l -> l.getRainfall() != null).map(LzzRainfallStation::getRainfall).collect(Collectors.toList());
+                    for(BigDecimal b:collect){
+                        tempValue += b.doubleValue();
+                    }
+                    t.setV(tempValue);
+                }
+            }
+            if(paramName.equals("制材厂")){
+                List<LzzRainfallStation> rainfallStationList = lzzRainfallStations.stream().filter(s -> s.getStationName().equals("制材厂自动雨量站")).collect(Collectors.toList());
+                if(null!= rainfallStationList && rainfallStationList.size()>0){
+                    Double tempValue = 0.0;
+                    List<BigDecimal> collect = rainfallStationList.stream().filter(l -> l.getRainfall() != null).map(LzzRainfallStation::getRainfall).collect(Collectors.toList());
+                    for(BigDecimal b:collect){
+                        tempValue += b.doubleValue();
+                    }
+                    t.setV(tempValue);
+                }
+            }
+            if(paramName.equals("煤矿沟")){
+                List<LzzRainfallStation> rainfallStationList = lzzRainfallStations.stream().filter(s -> s.getStationName().equals("煤矿沟自动雨量站")).collect(Collectors.toList());
+                if(null!= rainfallStationList && rainfallStationList.size()>0){
+                    Double tempValue = 0.0;
+                    List<BigDecimal> collect = rainfallStationList.stream().filter(l -> l.getRainfall() != null).map(LzzRainfallStation::getRainfall).collect(Collectors.toList());
+                    for(BigDecimal b:collect){
+                        tempValue += b.doubleValue();
+                    }
+                    t.setV(tempValue);
+                }
+            }
+            if(paramName.equals("宰尔德")){
+                List<LzzRainfallStation> rainfallStationList = lzzRainfallStations.stream().filter(s -> s.getStationName().equals("宰尔德自动雨量站")).collect(Collectors.toList());
+                if(null!= rainfallStationList && rainfallStationList.size()>0){
+                    Double tempValue = 0.0;
+                    List<BigDecimal> collect = rainfallStationList.stream().filter(l -> l.getRainfall() != null).map(LzzRainfallStation::getRainfall).collect(Collectors.toList());
+                    for(BigDecimal b:collect){
+                        tempValue += b.doubleValue();
+                    }
+                    t.setV(tempValue);
+                }
+            }
+            if(paramName.equals("东南沟")){
+                List<LzzRainfallStation> rainfallStationList = lzzRainfallStations.stream().filter(s -> s.getStationName().equals("东南沟自动雨量站")).collect(Collectors.toList());
+                if(null!= rainfallStationList && rainfallStationList.size()>0){
+                    Double tempValue = 0.0;
+                    List<BigDecimal> collect = rainfallStationList.stream().filter(l -> l.getRainfall() != null).map(LzzRainfallStation::getRainfall).collect(Collectors.toList());
+                    for(BigDecimal b:collect){
+                        tempValue += b.doubleValue();
+                    }
+                    t.setV(tempValue);
+                }
+            }
+            if(paramName.equals("加普沙")){
+                List<LzzRainfallStation> rainfallStationList = lzzRainfallStations.stream().filter(s -> s.getStationName().equals("加普沙自动雨量站")).collect(Collectors.toList());
+                if(null!= rainfallStationList && rainfallStationList.size()>0){
+                    Double tempValue = 0.0;
+                    List<BigDecimal> collect = rainfallStationList.stream().filter(l -> l.getRainfall() != null).map(LzzRainfallStation::getRainfall).collect(Collectors.toList());
+                    for(BigDecimal b:collect){
+                        tempValue += b.doubleValue();
+                    }
+                    t.setV(tempValue);
+                }
+            }
+
         }
         dayWaterSituationStatisticsTableSyylList.forEach(t->t.setId(UUIDUtils.getUUID()));
         boolean b = this.saveBatch(dayWaterSituationStatisticsTableSyylList);

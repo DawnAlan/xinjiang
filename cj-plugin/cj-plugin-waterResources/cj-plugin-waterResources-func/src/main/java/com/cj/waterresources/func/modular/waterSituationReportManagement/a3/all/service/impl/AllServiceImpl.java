@@ -8,7 +8,9 @@ import com.cj.waterresources.func.modular.trendsTable.service.TrendsTableParamSe
 import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.req.SelectInfoListReq;
 import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.res.HydrographRes;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req.A3StatisticsReq;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req.SelectListForIndustrialWaterFeeReq;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.res.A3StatisticsRes;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.res.SelectListForIndustrialWaterFeeRes;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.service.AllService;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.dkl.mapper.DayWaterSituationStatisticsTableDklMapper;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hd.entity.DayWaterSituationStatisticsTableHd;
@@ -262,6 +264,62 @@ public class AllServiceImpl implements AllService {
             return RestResponse.no("暂无数据");
         }
         return RestResponse.ok(hydrographResList);
+    }
+
+    @Override
+    public RestResponse selectListForIndustrialWaterFee(SelectListForIndustrialWaterFeeReq req) {
+        String mk = (String) redisUtil.get("trendsTableParam:list");
+        if(StringUtils.isEmpty(mk)){
+            trendsTableParamService.updateCache();
+            mk = (String) redisUtil.get("trendsTableParam:list");
+        }
+        List<SelectListForIndustrialWaterFeeRes> resList = new ArrayList<>();
+        List<TrendsTableParam> trendsTableParamList = JSONObject.parseArray(mk, TrendsTableParam.class);
+        if(req.getName().equals("楼庄子水厂")){
+            List<TrendsTableParam> collect = trendsTableParamList.stream().filter(t -> t.getUseStation().equals("楼庄子水库") && t.getUseType() == 1).collect(Collectors.toList());
+            TrendsTableParam dg1 = collect.stream().filter(t -> t.getParamName().equals("楼庄子水厂管道1")).collect(Collectors.toList()).get(0);
+            TrendsTableParam dg2 = collect.stream().filter(t -> t.getParamName().equals("楼庄子水厂管道2")).collect(Collectors.toList()).get(0);
+            req.setHeadIds(dg1.getId()+","+dg2.getId());
+            List<DayWaterSituationStatisticsTableLzz> dayWaterSituationStatisticsTableLzzes = dayWaterSituationStatisticsTableLzzMapper.selectListForIndustrialWaterFee(req);
+            Map<Date, List<DayWaterSituationStatisticsTableLzz>> collect1 = dayWaterSituationStatisticsTableLzzes.stream().collect(Collectors.groupingBy(DayWaterSituationStatisticsTableLzz::getRecordTime));
+            Set<Date> dates = collect1.keySet();
+            for(Date date:dates){
+                SelectListForIndustrialWaterFeeRes res = new SelectListForIndustrialWaterFeeRes();
+                res.setDate(date);
+                res.setV(collect1.get(date).stream().map(DayWaterSituationStatisticsTableLzz::getV).reduce(Double::sum).orElse(0.00));
+                resList.add(res);
+            }
+        }
+        if(req.getName().equals("八钢")){
+            List<TrendsTableParam> collect = trendsTableParamList.stream().filter(t -> t.getUseStation().equals("头屯河水库") && t.getUseType() == 1).collect(Collectors.toList());
+            TrendsTableParam bg = collect.stream().filter(t -> t.getParamName().equals("八钢流量")).collect(Collectors.toList()).get(0);
+            TrendsTableParam bgCount = collect.stream().filter(t -> t.getParamName().equals("合计") && t.getPId().equals(bg.getId())).collect(Collectors.toList()).get(0);
+            req.setHeadId(bgCount.getId());
+            List<DayWaterSituationStatisticsTableTth> dayWaterSituationStatisticsTableTths = dayWaterSituationStatisticsTableTthMapper.selectListForIndustrialWaterFee(req);
+            for(DayWaterSituationStatisticsTableTth tth:dayWaterSituationStatisticsTableTths){
+                SelectListForIndustrialWaterFeeRes res = new SelectListForIndustrialWaterFeeRes();
+                res.setDate(tth.getRecordTime());
+                res.setV(res.getV());
+                resList.add(res);
+            }
+        }
+        if(req.getName().equals("红岩水库")){
+            List<TrendsTableParam> collect = trendsTableParamList.stream().filter(t -> t.getUseStation().equals("头屯河水库") && t.getUseType() == 1).collect(Collectors.toList());
+            TrendsTableParam hy = collect.stream().filter(t -> t.getParamName().equals("红岩流量")).collect(Collectors.toList()).get(0);
+            req.setHeadId(hy.getId());
+            List<DayWaterSituationStatisticsTableTth> dayWaterSituationStatisticsTableTths = dayWaterSituationStatisticsTableTthMapper.selectListForIndustrialWaterFee(req);
+            for(DayWaterSituationStatisticsTableTth tth:dayWaterSituationStatisticsTableTths){
+                SelectListForIndustrialWaterFeeRes res = new SelectListForIndustrialWaterFeeRes();
+                res.setDate(tth.getRecordTime());
+                res.setV(res.getV());
+                resList.add(res);
+            }
+        }
+        if(resList.isEmpty()){
+            return RestResponse.no("暂无流量数据");
+        }else {
+            return RestResponse.ok(resList);
+        }
     }
 
     public Map<String, List<A3StatisticsRes>> change(Map<String, List<A3StatisticsRes>> collect){

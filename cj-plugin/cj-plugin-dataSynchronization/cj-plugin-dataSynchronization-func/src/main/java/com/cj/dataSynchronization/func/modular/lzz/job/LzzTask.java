@@ -28,7 +28,7 @@ public class LzzTask {
     @Autowired
     private RedisUtil redisUtil;
 
-    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH");
+    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 
 
     @Scheduled(cron="0 0 0/1 * * ?")//每小时执行一次，以空格分隔
@@ -44,28 +44,6 @@ public class LzzTask {
             lzzPlatformService.insertReservoirLevelBetweenTime(startTime,endTime);
             lzzPlatformService.insertGaugingStationBetweenTime(startTime,endTime);
             lzzPlatformService.insertLzzBetweenTime(startTime,endTime);
-        }catch (Exception e){
-            e.printStackTrace();
-            log.error(e.getLocalizedMessage());
-        }
-    }
-    @Scheduled(cron="0 0 0/1 * * ?")//每小时执行一次，以空格分隔
-    //@Scheduled(cron="0 */5 * * * ?")
-    public  void getReservoirLevelBetweenTime(){
-        try {
-            Date date = new Date();
-            RestResponse<LzzGaugingStation> reservoirLevelWaterLevelByTime = lzzPlatformService.getReservoirLevelWaterLevelByTime(date);
-            if(reservoirLevelWaterLevelByTime.getCode() ==200){
-                LzzGaugingStation data = reservoirLevelWaterLevelByTime.getData();
-                redisUtil.set("lzz:waterLevel:"+sdf.format(date),data.getRelativeWaterLevel());
-                redisUtil.set("lzz:capacity:"+sdf.format(date),data.getStorageCapacity());
-            }
-            RestResponse<Map<String, ParamDto>> lzzInfoByTime = lzzPlatformService.getLzzInfoByTime(date);
-            if(lzzInfoByTime.getCode() ==200){
-                Map<String, ParamDto> data = lzzInfoByTime.getData();
-                redisUtil.set("lzz:waterworks:1:"+sdf.format(date),data.get("one").getV());
-                redisUtil.set("lzz:waterworks:2:"+sdf.format(date),data.get("two").getV());
-            }
         }catch (Exception e){
             e.printStackTrace();
             log.error(e.getLocalizedMessage());

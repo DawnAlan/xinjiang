@@ -52,7 +52,7 @@ public class FloodHomePageController {
     @ApiOperation("水库概览")
     @GetMapping("/waterStorageOverview")
     public RestResponse<List<WaterStorageOverviewRes>> waterStorageOverview(@RequestParam("dateTime") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date dateTime) {
-        return floodHomePageService.waterStorageOverview(dateTime);
+        return RestResponse.ok(floodHomePageService.waterStorageOverview(dateTime));
     }
 
 }

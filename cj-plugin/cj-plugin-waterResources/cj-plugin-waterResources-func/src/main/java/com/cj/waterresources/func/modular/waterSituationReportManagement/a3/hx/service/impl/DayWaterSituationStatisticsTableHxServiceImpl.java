@@ -87,8 +87,9 @@ public class DayWaterSituationStatisticsTableHxServiceImpl extends ServiceImpl<D
                 result.add(yesterdayBean);
                 String tableParamString = (String)redisUtil.get("trendsTableParam:object:"+yesterdayBean.getTableHeadId());
                 TrendsTableParam tableParam = JSONObject.parseObject(tableParamString, TrendsTableParam.class);
-                if(StringUtils.isNotEmpty(tableParam.getUnitId())){
+                if(null != tableParam && !tableParam.getParamName().equals("合计")){
                     redisUtil.set("A3:data:hx:yesterday:"+getDate(hx.getRecordTime(),-1)+":"+tableParam.getUnitId(),yesterdayBean.getV());
+                    redisUtil.set("A3:data:hx:yesterday:forPlan:"+tableParam.getParamName(),yesterdayBean.getV());
                 }
             }
         }
@@ -249,21 +250,10 @@ public class DayWaterSituationStatisticsTableHxServiceImpl extends ServiceImpl<D
         }
         boolean b = this.updateBatchById(dayWaterSituationStatisticsTableHxList);
         if (b) {
-            DayWaterSituationStatisticsTableHx dayWaterSituationStatisticsTableHx = dayWaterSituationStatisticsTableHxList.get(0);
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTime(dayWaterSituationStatisticsTableHx.getRecordTime());
-            calendar.add(Calendar.DAY_OF_MONTH,-1);
-            Date time = calendar.getTime();
             if(dayWaterSituationStatisticsTableHxList.get(0).getTime().equals("昨日均")){
-                dayWaterSituationStatisticsTableHxList.forEach(t->{
-                    String tableParamString = (String)redisUtil.get("trendsTableParam:object:"+t.getTableHeadId());
-                    TrendsTableParam tableParam = JSONObject.parseObject(tableParamString, TrendsTableParam.class);
-                    if(StringUtils.isNotEmpty(tableParam.getUnitId())){
-                        redisUtil.set("A3:data:hx:yesterday:"+sdf.format(time)+":"+tableParam.getUnitId(),t.getV());
-                    }
-                });
+                updateYesterdayData(dayWaterSituationStatisticsTableHxList.get(0).getRecordTime(),dayWaterSituationStatisticsTableHxList);
             }
-            updateYesterdayData(dayWaterSituationStatisticsTableHxList.get(0).getRecordTime());
+
             return RestResponse.ok();
         }else {
             return RestResponse.no("error");
@@ -287,11 +277,14 @@ public class DayWaterSituationStatisticsTableHxServiceImpl extends ServiceImpl<D
                 hx.setV(flow==null?null:flow);
                 hx.setTime("今日均");
                 hx.setRecordTime(new Date());
-                hx.setTableHeadId(dayWaterSituationStatisticsTableHx.getTableHeadId());
+                hx.setTableHeadId(t);
                 hx.setFrontTableList(dayWaterSituationStatisticsTableHx.getFrontTableList());
                 hx.setEndTableList(dayWaterSituationStatisticsTableHx.getEndTableList());
                 dayWaterSituationStatisticsTableHxList.add(hx);
             }
+        }
+        if(dayWaterSituationStatisticsTableHxList.isEmpty()){
+            return RestResponse.no("今日无数据");
         }
         List<TotalIdToStation> totalIdToStationList = totalIdToStationService.lambdaQuery().eq(TotalIdToStation::getUseType, 1).eq(TotalIdToStation::getStation, "河西管理站").list();
         String mk = (String) redisUtil.get("trendsTableParam:list");
@@ -364,15 +357,13 @@ public class DayWaterSituationStatisticsTableHxServiceImpl extends ServiceImpl<D
         }
     }
 
-    private void updateYesterdayData(Date now){
-        List<DayWaterSituationStatisticsTableHx> dayWaterSituationStatisticsTableHxList = this.baseMapper.selectInfoList(sdf.format(now));
-        List<DayWaterSituationStatisticsTableHx> dayWaterSituationStatisticsTableHxs = this.baseMapper.selectList(getDate(now, 1));
-        if(!dayWaterSituationStatisticsTableHxs.isEmpty()){
-            List<DayWaterSituationStatisticsTableHx> hdList = dayWaterSituationStatisticsTableHxs.stream().filter(t -> t.getTime().equals("昨日均")).collect(Collectors.toList());
-            hdList.forEach(t->{
-                t.setV(dayWaterSituationStatisticsTableHxList.stream().filter(p->p.getTableHeadId().equals(t.getTableHeadId()) && p.getV() !=null).map(DayWaterSituationStatisticsTableHx::getV).reduce(Double::sum).orElse(0.00));
+    private void updateYesterdayData(Date now ,List<DayWaterSituationStatisticsTableHx> hxList){
+        List<DayWaterSituationStatisticsTableHx> dayWaterSituationStatisticsTableHxList = this.baseMapper.selectInfoAfterDayList(getDate(now,1));
+        if(!dayWaterSituationStatisticsTableHxList.isEmpty()){
+            dayWaterSituationStatisticsTableHxList.forEach(t->{
+                t.setV(hxList.stream().filter(p->p.getTableHeadId().equals(t.getTableHeadId()) && p.getV() !=null).map(DayWaterSituationStatisticsTableHx::getV).reduce(Double::sum).orElse(0.00));
             });
-            this.updateBatchById(hdList);
+            this.updateBatchById(dayWaterSituationStatisticsTableHxList);
         }
     }
 

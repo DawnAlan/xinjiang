@@ -240,6 +240,7 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
             station.setTreeId(dto.getSenid());
             station.setGatherTime(dto.getTime());
             lzzGaugingStationList.add(station);
+            redisUtil.set("lzz:waterworks:1:"+timeData.format(dto.getTime()),dto.getV().doubleValue());
         }
         for(ParamDto dto:two){
             LzzGaugingStation station = new LzzGaugingStation();
@@ -249,7 +250,10 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
             station.setTreeId(dto.getSenid());
             station.setGatherTime(dto.getTime());
             lzzGaugingStationList.add(station);
+            redisUtil.set("lzz:waterworks:2:"+timeData.format(dto.getTime()),dto.getV().doubleValue());
         }
+
+
         boolean b = lzzGaugingStationService.saveOrUpdateBatch(lzzGaugingStationList);
         if(b){
             return RestResponse.ok();
@@ -358,6 +362,8 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
                         lzz.setStorageCapacity(0.00);
                     }
                     reservoirLevelList.add(lzz);
+                    redisUtil.set("lzz:waterLevel:"+timeData.format(paramDto.getTime()),lzz.getRelativeWaterLevel());
+                    redisUtil.set("lzz:capacity:"+timeData.format(paramDto.getTime()),lzz.getStorageCapacity());
                 }
 
             }
@@ -465,6 +471,16 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
     }
 
     @Override
+    public RestResponse<List<LzzRainfallStation>> selectRainfallStationDataByTime(Date time) {
+        return null;
+    }
+
+    @Override
+    public RestResponse<LzzGaugingStation> getLevelWaterLevelByTime(Date time) {
+        return null;
+    }
+
+    @Override
     public RestResponse insertReservoirLevelTemperatureBetweenTime(Date startTime, Date endTime) {
         List<UserIdParam> rainfallStationPidList = pubUserService.selectPidList("水位站").stream().filter(t->t.getName().equals("库水位水位站")).collect(Collectors.toList());
         List<UserIdParam> userIdParams = pubUserService.selectReservoirLevelIdList(rainfallStationPidList.get(0).getId());
@@ -515,7 +531,7 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
                         if(userPidParam.getName().equals("出库自动水位站")){
                             gaugingStation.setStationName("楼庄子出库水位站");
                         }
-                        if(userPidParam.getName().equals("入库自动水位站")){
+                        if(userPidParam.getName().equals("天谷自动水位站")){
                             gaugingStation.setStationName("楼庄子入库水位站");
                         }
                         if(!userPidParam.getName().equals("出库自动水位站") && !userPidParam.getName().equals("入库自动水位站")){
@@ -552,9 +568,11 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
                         LzzGaugingStation gaugingStation = new LzzGaugingStation();
                         if(userPidParam.getName().equals("出库自动水位站")){
                             gaugingStation.setStationName("楼庄子出库水位站");
+                            redisUtil.set("lzz:out:"+timeData.format(paramDto.getTime()),paramDto.getV().doubleValue());
                         }
-                        if(userPidParam.getName().equals("入库自动水位站")){
+                        if(userPidParam.getName().equals("天谷自动水位站")){
                             gaugingStation.setStationName("楼庄子入库水位站");
+                            redisUtil.set("lzz:input:"+timeData.format(paramDto.getTime()),paramDto.getV().doubleValue());
                         }
                         if(!userPidParam.getName().equals("出库自动水位站") && !userPidParam.getName().equals("入库自动水位站")){
                             gaugingStation.setStationName(userPidParam.getName());
@@ -650,7 +668,7 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
         userIdParams.forEach(t->{
             if(StringUtils.isNotEmpty(t.getName())) {
                 LzzPlatformTree tree = new LzzPlatformTree();
-                BeanUtils.copyProperties(tree, t);
+                BeanUtils.copyProperties(t,tree);
                 lzzPlatformTrees.add(tree);
             }
         });

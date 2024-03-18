@@ -42,19 +42,19 @@ public class ModelParamCalibration {
 //        ExcelTool.writeObjectExcel("D:\\204\\2.头屯河\\径流预报数据文件\\率定结果.xlsx","三号桥", Flood);
         double[] shanbeiParams=new double[12];
         shanbeiParams[0]=690;//Area
-        shanbeiParams[1]=0.9;//FB
+        shanbeiParams[1]=0.001;//FB
         shanbeiParams[2]=80;//WM张力水蓄水容量，或最大蓄水量 60-80mm(对洪水过程并无太大影响)
-        shanbeiParams[3]=10;//蒸散发折减系数 KC(无影响）
+        shanbeiParams[3]=1;//蒸散发折减系数 KC(无影响）
         shanbeiParams[4]=0.3;//fc流域土壤稳定下渗率 0.3-0.5 mm/min(无影响)
-        shanbeiParams[5]=1;//fm流域土壤最大下渗率 1-2 mm/min(无影响）
-        shanbeiParams[6]=1;//K霍尔顿下渗曲线方程(无影响）
+        shanbeiParams[5]=2;//fm流域土壤最大下渗率 1-2 mm/min(无影响）
+        shanbeiParams[6]=2;//K霍尔顿下渗曲线方程(无影响）
         shanbeiParams[7]=1;//B反映下渗能力在透水面积上的分布特性(无影响）
-        shanbeiParams[8]=0.6;//CS 为地面径流消退系数
+        shanbeiParams[8]=0.8;//CS 为地面径流消退系数
         shanbeiParams[9]=1;//L汇流滞时（时段数）
         shanbeiParams[10]=20;//计算初始土壤含水量时，用到的前期天数
         shanbeiParams[11]=1;
         int L = (int) shanbeiParams[9];
-        String sheetName = "8.6-8.9";
+        String sheetName = "7.30~7.31";
         preREData = ExcelTool.readExcel("D:\\204\\2.头屯河\\径流预报数据文件\\陕北-DATA.xlsx","楼庄子蒸发降雨1");
         historyRData = ExcelTool.readExcel("D:\\204\\2.头屯河\\径流预报数据文件\\陕北-DATA.xlsx","楼庄子前期雨量1");
         historyFData = ExcelTool.readExcel("D:\\204\\2.头屯河\\径流预报数据文件\\陕北-DATA.xlsx","前期径流1");
@@ -68,7 +68,7 @@ public class ModelParamCalibration {
         preData=new double[preREData.length-L];
         hisData=new double[preREData.length-L];
         for (int i = 0; i < preData.length; i++) {
-            preData[i]=shanbeiModel.Q[i+L]+10;
+            preData[i]=shanbeiModel.Q[i+L]+6;
         }
         for (int i = 0; i < preData.length; i++) {
             hisData[i]=(double) historyFData[i+L][1];

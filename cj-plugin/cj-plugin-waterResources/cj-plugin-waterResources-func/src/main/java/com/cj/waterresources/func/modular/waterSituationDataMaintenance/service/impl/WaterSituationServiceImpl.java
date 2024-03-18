@@ -53,8 +53,6 @@ public class WaterSituationServiceImpl implements WaterSituationService {
     @Autowired
     private AllService allService;
 
-    @Autowired
-    private IndustrialWaterFeeService industrialWaterFeeService;
 
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -194,10 +192,10 @@ public class WaterSituationServiceImpl implements WaterSituationService {
         if(restResponse1.getCode()==200){
             return restResponse1;
         }
-        RestResponse listRestResponse = industrialWaterFeeService.selectInfoList(req);
+        /*RestResponse listRestResponse = industrialWaterFeeService.selectInfoList(req);
         if(listRestResponse.getCode()==200){
             return listRestResponse;
-        }
+        }*/
         RestResponse restResponse = allService.selectInfoList(req);
         if(restResponse.getCode()==200){
             return restResponse;

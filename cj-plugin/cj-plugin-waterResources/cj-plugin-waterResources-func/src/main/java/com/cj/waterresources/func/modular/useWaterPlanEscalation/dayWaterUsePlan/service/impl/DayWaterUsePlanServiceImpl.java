@@ -1,23 +1,26 @@
 package com.cj.waterresources.func.modular.useWaterPlanEscalation.dayWaterUsePlan.service.impl;
 
+import cn.hutool.core.lang.tree.Tree;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cj.common.model.RestResponse;
+import com.cj.common.util.RedisUtil;
 import com.cj.common.util.UUIDUtils;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.bean.res.SelectInfoByIrrigationNameListRes;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.service.IrrigatedPlatformDataInfoService;
 import com.cj.model.func.modular.watertransfer.entity.Waterdemand;
+import com.cj.sys.api.SysOrgApi;
+import com.cj.sys.api.SysUserApi;
+import com.cj.waterresources.func.core.utils.WebSocketServer;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.dayWaterUsePlan.bean.req.DayWaterUsePlanSelectReq;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.dayWaterUsePlan.mapper.DayWaterUsePlanMapper;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.dayWaterUsePlan.entity.DayWaterUsePlan;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.dayWaterUsePlan.service.DayWaterUsePlanService;
+import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -30,8 +33,15 @@ import java.util.stream.Collectors;
 public class DayWaterUsePlanServiceImpl extends ServiceImpl<DayWaterUsePlanMapper, DayWaterUsePlan> implements DayWaterUsePlanService {
 
     @Autowired
-    private IrrigatedPlatformDataInfoService irrigatedPlatformDataInfoService;
+    private RedisUtil redisUtil;
 
+    @Autowired
+    private SysOrgApi sysOrgApi;
+
+    @Autowired
+    private SysUserApi sysUserApi;
+
+    @SneakyThrows
     @Override
     public RestResponse add(DayWaterUsePlan dayWaterUsePlan) {
         dayWaterUsePlan.setId(UUIDUtils.getUUID());
@@ -39,17 +49,28 @@ public class DayWaterUsePlanServiceImpl extends ServiceImpl<DayWaterUsePlanMappe
         dayWaterUsePlan.setDel(0);
         boolean save = this.save(dayWaterUsePlan);
         if(save){
+            String gskOrg = sysOrgApi.getIdByName("供水科");
+            List<String> userIdListByOrgIdList = sysUserApi.getUserIdListByOrgIdList(Arrays.asList(gskOrg));
+            for(String s :userIdListByOrgIdList){
+                WebSocketServer.sendInfo(dayWaterUsePlan.getArea()+"以填报日用水计划，请查收",s);
+            }
             return RestResponse.ok("上报成功");
         }else {
             return RestResponse.no("上报失败");
         }
     }
 
+    @SneakyThrows
     @Override
     public RestResponse update(DayWaterUsePlan dayWaterUsePlan) {
         dayWaterUsePlan.setUpdateTime(new Date());
         boolean b = this.updateById(dayWaterUsePlan);
         if(b){
+            String gskOrg = sysOrgApi.getIdByName("供水科");
+            List<String> userIdListByOrgIdList = sysUserApi.getUserIdListByOrgIdList(Arrays.asList(gskOrg));
+            for(String s :userIdListByOrgIdList){
+                WebSocketServer.sendInfo(dayWaterUsePlan.getArea()+"已填报日用水计划，请查收",s);
+            }
             return RestResponse.ok("更新成功");
         }else {
             return RestResponse.no("更新失败");
@@ -67,8 +88,16 @@ public class DayWaterUsePlanServiceImpl extends ServiceImpl<DayWaterUsePlanMappe
     }
 
     @Override
-    public RestResponse<List<SelectInfoByIrrigationNameListRes>> selectValue(String names) {
-        List<SelectInfoByIrrigationNameListRes> resList = irrigatedPlatformDataInfoService.selectInfoByIrrigationNameList(names.split(","));
+    public RestResponse<List<SelectInfoByIrrigationNameListRes>> selectValue(String names,String station) {
+        List<SelectInfoByIrrigationNameListRes> resList = new ArrayList<>();
+        String[] split = names.split(",");
+        for(String s:split){
+            SelectInfoByIrrigationNameListRes res = new SelectInfoByIrrigationNameListRes();
+            Double v = (Double) redisUtil.get("A3:data:"+station+":yesterday:forPlan:"+s);
+            res.setMonitorName(s);
+            res.setYesterdayAvgFlow(v);
+            resList.add(res);
+        }
         if(null != resList && resList.size()>0){
             return RestResponse.ok(resList);
         }else {

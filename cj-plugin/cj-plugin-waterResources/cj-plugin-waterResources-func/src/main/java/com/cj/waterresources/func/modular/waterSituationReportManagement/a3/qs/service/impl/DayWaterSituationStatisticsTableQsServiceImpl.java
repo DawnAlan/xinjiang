@@ -85,8 +85,9 @@ public class DayWaterSituationStatisticsTableQsServiceImpl extends ServiceImpl<D
                 result.add(yesterdayBean);
                 String tableParamString = (String)redisUtil.get("trendsTableParam:object:"+yesterdayBean.getTableHeadId());
                 TrendsTableParam tableParam = JSONObject.parseObject(tableParamString, TrendsTableParam.class);
-                if(StringUtils.isNotEmpty(tableParam.getUnitId())){
+                if(null != tableParam && !tableParam.getParamName().equals("合计")){
                     redisUtil.set("A3:data:qs:yesterday:"+getDate(qs.getRecordTime(),-1)+":"+tableParam.getUnitId(),yesterdayBean.getV());
+                    redisUtil.set("A3:data:qs:yesterday:forPlan:"+tableParam.getParamName(),yesterdayBean.getV());
                 }
             }
         }
@@ -347,11 +348,14 @@ public class DayWaterSituationStatisticsTableQsServiceImpl extends ServiceImpl<D
                 qs.setV(flow==null?null:flow);
                 qs.setTime("今日均");
                 qs.setRecordTime(new Date());
-                qs.setTableHeadId(dayWaterSituationStatisticsTableQs.getTableHeadId());
+                qs.setTableHeadId(t);
                 qs.setFrontTableList(dayWaterSituationStatisticsTableQs.getFrontTableList());
                 qs.setEndTableList(dayWaterSituationStatisticsTableQs.getEndTableList());
                 dayWaterSituationStatisticsTableQsList.add(qs);
             }
+        }
+        if(dayWaterSituationStatisticsTableQsList.isEmpty()){
+            return RestResponse.no("今日无数据");
         }
         List<TotalIdToStation> totalIdToStationList = totalIdToStationService.lambdaQuery().eq(TotalIdToStation::getUseType, 1).eq(TotalIdToStation::getStation, "渠首管理站").list();
         String mk = (String) redisUtil.get("trendsTableParam:list");

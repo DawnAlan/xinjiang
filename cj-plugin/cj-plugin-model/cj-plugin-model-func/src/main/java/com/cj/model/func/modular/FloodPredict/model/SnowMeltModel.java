@@ -30,7 +30,7 @@ public class SnowMeltModel {
         int influence_factor= pvo.getInfluence_factor();//影响因子个数
         int outputNumber = snowInput.length - influence_factor * 2 ;
 
-        Object[][] inputTemp = snowInput;//输入数据
+//        Object[][] inputTemp = snowInput;//输入数据
         Object[][] modelparaTemp = new Object[10][10];//初始化模型参数
 
 
@@ -40,15 +40,15 @@ public class SnowMeltModel {
         double[][] reaResult = new double[outputNumber][1];//真实值
 
         for (int i = 0; i < trainLength-influence_factor; i++) {
-            reaResult[i][0]=Double.parseDouble(inputTemp[i + influence_factor][1].toString());
+            reaResult[i][0]=Double.parseDouble(snowInput[i + influence_factor][1].toString());
         }
         for (int i = trainLength-influence_factor; i < outputNumber; i++) {
-            reaResult[i][0]=Double.parseDouble(inputTemp[i + influence_factor * 2 ][1].toString());
+            reaResult[i][0]=Double.parseDouble(snowInput[i + influence_factor * 2 ][1].toString());
         }
 
         List<List<Double>> paramResult=new ArrayList<>();
         double[][] maxmin = new double[pvo.getInfluence_factor() * 3 + 1 ][2];
-        Object[][] input = new Object[inputTemp.length][4];//多少列可以根据输入来改变
+//        Object[][] input = new Object[snowInput.length][4];//多少列可以根据输入来改变
         Object[][] para = new Object[modelparaTemp.length][modelparaTemp[0].length];
         double[][] maxminOld = null;
         List<Double> paramdim1=new ArrayList<>();
@@ -56,12 +56,12 @@ public class SnowMeltModel {
         List<Double> paramdim3=new ArrayList<>();
         List<Double> paramvalue=new ArrayList<>();
 
-        for (int i = 0; i < inputTemp.length; i++) {
-            input[i][0] = inputTemp[i][0];//时间
-            input[i][1] = inputTemp[i][1];//径流
-            input[i][2] = inputTemp[i][2];//温度
-            input[i][3] = inputTemp[i][3];//降水
-            }
+//        for (int i = 0; i < inputTemp.length; i++) {
+//            input[i][0] = inputTemp[i][0];//时间
+//            input[i][1] = inputTemp[i][1];//径流
+//            input[i][2] = inputTemp[i][2];//温度
+//            input[i][3] = inputTemp[i][3];//降水
+//            }
         for (int i = 0; i < modelparaTemp.length; i++) {
                 for (int j = 0; j < modelparaTemp[0].length; j++) {
                     para[i][j] = modelparaTemp[i][j];
@@ -72,7 +72,7 @@ public class SnowMeltModel {
              *  模型训练
              */
             LongForecast longForecast = new LongForecast();
-            ModelSaveEntity results = longForecast.LongTermForecast(pvo, false, true, input, maxminOld, para);
+            ModelSaveEntity results = longForecast.LongTermForecast(pvo, false, true, snowInput, maxminOld, para);
 
             for (int i = 0; i < results.getParams().size(); i++) {
                 paramdim1.add(Double.parseDouble(results.getParams().get(i).getParamDim1())) ;

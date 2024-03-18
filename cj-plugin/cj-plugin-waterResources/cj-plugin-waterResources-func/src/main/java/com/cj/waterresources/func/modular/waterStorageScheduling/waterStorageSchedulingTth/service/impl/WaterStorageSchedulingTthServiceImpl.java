@@ -136,7 +136,8 @@ public class WaterStorageSchedulingTthServiceImpl extends ServiceImpl<WaterStora
                             (tth.getIrrigationWaterDemand()==null?0.0:tth.getIrrigationWaterDemand())+
                             (tth.getGreenWaterDemand()==null?0.0:tth.getGreenWaterDemand())+
                             (tth.getIndustryWaterDemand()==null?0.0:tth.getIndustryWaterDemand())+
-                            (tth.getHongyanWaterDemand()==null?0.0:tth.getHongyanWaterDemand())
+                            (tth.getHongyanWaterDemand()==null?0.0:tth.getHongyanWaterDemand())+
+                            (tth.getWaterLoss()==null?0.0:tth.getWaterLoss())
                         )
                 );
                 tth.setRegulatingWaterStorageCapacity(changeNum(
@@ -200,7 +201,8 @@ public class WaterStorageSchedulingTthServiceImpl extends ServiceImpl<WaterStora
                     (tth.getGreenWaterDemand()==null?0.0:tth.getGreenWaterDemand())+
                     (tth.getIndustryWaterDemand()==null?0.0:tth.getIndustryWaterDemand())+
                     (tth.getHongyanWaterDemand()==null?0.0:tth.getHongyanWaterDemand())+
-                    (tth.getEcologicalBaseFlow()==null?0.0:tth.getEcologicalBaseFlow())
+                    (tth.getEcologicalBaseFlow()==null?0.0:tth.getEcologicalBaseFlow())+
+                    (tth.getWaterLoss()==null?0.0:tth.getWaterLoss())
                 )
         );
         tth.setRegulatingWaterStorageCapacity(changeNum(

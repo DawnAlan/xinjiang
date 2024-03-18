@@ -50,11 +50,12 @@ public class ModelOfLZZ {
 
     int choice;
     int coefficient =10000 ;
-
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     public ModelOfLZZ(Object[][] pre,int delta) {
         for (int i = 0; i < pre.length; i++) {
-            Date t = stringToDate(pre[i][1].toString());
+//            Date t = stringToDate(pre[i][1].toString());
+            Date t = (Date) pre[i][1];
             Time.add(t);
             Q_Input.add((double)pre[i][2]);
             MaxQ.add(180.0);

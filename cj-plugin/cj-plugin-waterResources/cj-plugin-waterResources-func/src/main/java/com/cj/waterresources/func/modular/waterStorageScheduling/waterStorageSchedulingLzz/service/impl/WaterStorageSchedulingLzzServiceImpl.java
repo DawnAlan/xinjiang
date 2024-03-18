@@ -120,7 +120,8 @@ public class WaterStorageSchedulingLzzServiceImpl extends ServiceImpl<WaterStora
                 }
                 lzz.setWaterSupplyVolumeTotal(changeNum(
                             (lzz.getWaterPlantDemand()==null?0.0:lzz.getWaterPlantDemand())+
-                            (lzz.getReservoirWaterDemand()==null?0.0:lzz.getReservoirWaterDemand())
+                            (lzz.getReservoirWaterDemand()==null?0.0:lzz.getReservoirWaterDemand())+
+                             (lzz.getWaterLoss()==null?0.0:lzz.getWaterLoss())
                         )
                 );
                 lzz.setRegulatingWaterStorageCapacity(changeNum(
@@ -160,7 +161,8 @@ public class WaterStorageSchedulingLzzServiceImpl extends ServiceImpl<WaterStora
             lzz.setWaterSupplyVolumeTotal(
                     changeNum(
                             (lzz.getWaterPlantDemand()==null?0.0:lzz.getWaterPlantDemand())+
-                                    (lzz.getReservoirWaterDemand()==null?0.0:lzz.getReservoirWaterDemand())
+                                    (lzz.getReservoirWaterDemand()==null?0.0:lzz.getReservoirWaterDemand())+
+                                    (lzz.getWaterLoss()==null?0.0:lzz.getWaterLoss())
                     )
             );
             lzz.setRegulatingWaterStorageCapacity(changeNum
