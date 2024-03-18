@@ -111,4 +111,10 @@ public class PredictionFeignProvider implements PredictionFeign {
     public String getPredictionListByName(String id, String reservoir) {
         return predictionApiProvider.getPredictionListByName(id, reservoir);
     }
+
+    @RequestMapping("/feign/provider/flood/getWaterStorageOverview")
+    @Override
+    public String getWaterStorageOverview(String dateTime) {
+        return predictionApiProvider.getWaterStorageOverview(dateTime);
+    }
 }

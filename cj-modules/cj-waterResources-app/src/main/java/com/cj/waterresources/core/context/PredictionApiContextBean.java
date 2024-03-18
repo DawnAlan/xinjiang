@@ -109,4 +109,9 @@ public class PredictionApiContextBean implements PredictionApi {
         String data = predictionFeign.getPredictionListByName(id,reservoir);
         return data;
     }
+
+    @Override
+    public String getWaterStorageOverview(String dateTime) {
+         return predictionFeign.getWaterStorageOverview(dateTime);
+    }
 }
