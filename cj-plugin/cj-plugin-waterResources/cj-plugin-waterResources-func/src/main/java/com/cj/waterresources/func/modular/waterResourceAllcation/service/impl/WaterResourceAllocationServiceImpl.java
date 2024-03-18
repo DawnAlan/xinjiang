@@ -53,6 +53,7 @@ import com.cj.waterresources.func.modular.waterResourceAllcation.entity.WaterRes
 import com.cj.waterresources.func.modular.waterResourceAllcation.service.WaterResourceAllocationService;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -155,19 +156,28 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
                 waterResourceAllocation.setState(0);
             } catch (Exception e) {
                 waterResourceAllocation.setState(2);
-                StackTraceElement[] stackTrace = e.getCause().getStackTrace();
-                StringBuilder sb = new StringBuilder();
-                sb.append(e.getMessage()+ "\n");
-                for (StackTraceElement stack: stackTrace) {
-                    sb.append(stack.toString());
-                    sb.append("\n");
-                }
-                waterResourceAllocation.setExceptionCause(sb.toString());
+                waterResourceAllocation.setExceptionCause(getStringBuilder(e).toString());
             }
             this.updateById(waterResourceAllocation);
         }).start();
 
         return RestResponse.ok();
+    }
+
+    @NotNull
+    private static StringBuilder getStringBuilder(Exception e) {
+        StringBuilder sb = new StringBuilder();
+        Throwable cause = e;
+        while (cause != null) {
+            sb.append(e.getMessage()+ "\n");
+            StackTraceElement[] stackTrace = cause.getStackTrace();
+            for (StackTraceElement stack: stackTrace) {
+                sb.append(stack.toString());
+                sb.append("\n");
+            }
+            cause = e.getCause();
+        }
+        return sb;
     }
 
     @Override
@@ -833,14 +843,16 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
         lqw.groupBy("IRRIGATED_AREA, USE_WATER_USER, YEAR, MONTH, TEN_DAYS");
         List<Map<String, Object>> maps = tenDayWaterUsePlanService.getBaseMapper().selectMaps(lqw);
         for (int i = 0; i < maps.size(); i++) {
+            boolean isNull = false;
             Map<String, Object> tenDays = maps.get(i);
             if (tenDays == null || tenDays.get("DEMAND") == null) {
+                isNull = true;
                 //throw new CommonException(tenDays.get("USE_WATER_USER") + "旬需水计划数据异常");
                 log.error(tenDays.get("USE_WATER_USER") + "旬需水计划数据异常");
             }
             Waterdemand waterdemand = new Waterdemand();
             waterdemand.setUseWaterPlan("tenDays");
-            waterdemand.setWaterDemendData(((BigDecimal) tenDays.get("DEMAND")).doubleValue());
+            waterdemand.setWaterDemendData(isNull ? 0 : ((BigDecimal) tenDays.get("DEMAND")).doubleValue());
             waterdemand.setArea(tenDays.get("IRRIGATED_AREA").toString());
             waterdemand.setUnit(tenDays.get("USE_WATER_USER").toString());
             waterdemand.setColName(tenDays.get("TEN_DAYS").toString());
