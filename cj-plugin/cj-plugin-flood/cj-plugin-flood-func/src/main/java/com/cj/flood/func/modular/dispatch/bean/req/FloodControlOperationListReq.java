@@ -27,4 +27,7 @@ public class FloodControlOperationListReq extends PageTool implements Serializab
     @DateTimeFormat("yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "结束时间")
     private Date endTime;
+
+    @ApiModelProperty(value = "状态")
+    private Integer status = null;
 }
