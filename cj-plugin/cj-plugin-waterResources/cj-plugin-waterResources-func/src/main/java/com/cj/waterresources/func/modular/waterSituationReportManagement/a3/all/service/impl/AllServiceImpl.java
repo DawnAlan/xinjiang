@@ -371,11 +371,16 @@ public class AllServiceImpl implements AllService {
         List<SelectListForIndustrialWaterFeeRes> resList = new ArrayList<>();
         List<TrendsTableParam> trendsTableParamList = JSONObject.parseArray(mk, TrendsTableParam.class);
         if(req.getName().equals("楼庄子水厂")){
+            List<DayWaterSituationStatisticsTableLzz> dayWaterSituationStatisticsTableLzzes = new ArrayList<>();
             List<TrendsTableParam> collect = trendsTableParamList.stream().filter(t -> t.getUseStation().equals("楼庄子水库") && t.getUseType() == 1).collect(Collectors.toList());
             TrendsTableParam dg1 = collect.stream().filter(t -> t.getParamName().equals("楼庄子水厂管道1")).collect(Collectors.toList()).get(0);
             TrendsTableParam dg2 = collect.stream().filter(t -> t.getParamName().equals("楼庄子水厂管道2")).collect(Collectors.toList()).get(0);
-            req.setHeadIds(dg1.getId()+","+dg2.getId());
-            List<DayWaterSituationStatisticsTableLzz> dayWaterSituationStatisticsTableLzzes = dayWaterSituationStatisticsTableLzzMapper.selectListForIndustrialWaterFee(req);
+            req.setHeadIds(dg1.getId());
+            List<DayWaterSituationStatisticsTableLzz> dayWaterSituationStatisticsTableLzzes1 = dayWaterSituationStatisticsTableLzzMapper.selectListForIndustrialWaterFee(req);
+            req.setHeadIds(dg2.getId());
+            List<DayWaterSituationStatisticsTableLzz> dayWaterSituationStatisticsTableLzzes2 = dayWaterSituationStatisticsTableLzzMapper.selectListForIndustrialWaterFee(req);
+            dayWaterSituationStatisticsTableLzzes.addAll(dayWaterSituationStatisticsTableLzzes1);
+            dayWaterSituationStatisticsTableLzzes.addAll(dayWaterSituationStatisticsTableLzzes2);
             Map<Date, List<DayWaterSituationStatisticsTableLzz>> collect1 = dayWaterSituationStatisticsTableLzzes.stream().collect(Collectors.groupingBy(DayWaterSituationStatisticsTableLzz::getRecordTime));
             Set<Date> dates = collect1.keySet();
             for(Date date:dates){

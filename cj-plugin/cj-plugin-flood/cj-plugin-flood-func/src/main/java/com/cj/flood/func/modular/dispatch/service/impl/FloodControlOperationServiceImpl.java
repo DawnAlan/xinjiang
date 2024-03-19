@@ -355,7 +355,8 @@ public class FloodControlOperationServiceImpl extends ServiceImpl<FloodControlOp
             result.put("过程详情",stringMapMap3);
             Map<String, Map<String, Map<String, String>>> stringMapMap4 = OverTimes.OverTimesCalculator(options);
             result.put("测站总览累计",stringMapMap4);
-
+            Map<String, Map<String, Map<String, List<Object>>>> stringMapMap5 = GateDetail.GateDetailCalculator(options);
+            result.put("闸门策略",stringMapMap5);
             return RestResponse.ok(result);
         }catch (Exception e){
             e.printStackTrace();

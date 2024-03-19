@@ -1,6 +1,5 @@
 package com.cj.model.func.modular.FloodPrevent.function;
 
-import com.cj.common.util.UUIDUtils;
 import com.cj.model.func.modular.FloodPrevent.bean.req.ReqFloodPrevent;
 import com.cj.model.func.modular.FloodPrevent.bean.res.ResOption;
 import com.cj.model.func.modular.FloodPrevent.entity.Option;
@@ -26,26 +25,12 @@ public class Cascade {
         ModelOfLZZ modelOfLZZ = new ModelOfLZZ(reqFloodPrevent);
         ModelOfTTH modelOfTTH = new ModelOfTTH(reqFloodPrevent);
 
+        //楼庄子常规调度
         List<List<Double>> LZZ_op1=modelOfLZZ.Calculate_S1();
-
-        double endH_lzz = LZZ_op1.get(2).get(LZZ_op1.get(2).size()-1);
-        modelOfLZZ.SetEndH(endH_lzz);
-
-
-        List<List<Double>> LZZ_op2=modelOfLZZ.MinLevel();
-        List<List<Double>> LZZ_op3=modelOfLZZ.MinDischarge();
-
+        //头屯河常规调度
         modelOfTTH.setQ_Input(LZZ_op1.get(3));
         List<List<Double>> TTH_op1=modelOfTTH.Calculate_S2();
-        double endH_tth = TTH_op1.get(2).get(TTH_op1.get(2).size()-1);
-        modelOfTTH.SetEndH(endH_tth);
-
-        modelOfTTH.setQ_Input(LZZ_op2.get(3));
-        List<List<Double>> TTH_op2=modelOfTTH.MinLevel();
-
-        modelOfTTH.setQ_Input(LZZ_op3.get(3));
-        List<List<Double>> TTH_op3=modelOfTTH.MinDischarge();
-
+        //两库常规调度结果保存
         File tempFile1 = File.createTempFile("option1",".xlsx");
         String path1= tempFile1.getAbsolutePath();
         List<Option> option1 = new ArrayList<>();
@@ -93,121 +78,61 @@ public class Cascade {
 
             option1.add(option);
         }
+        Write(path1,option1);
 
+
+        //两库常规调度时段末水位
+        double endH_lzz = LZZ_op1.get(2).get(LZZ_op1.get(2).size()-1);
+        modelOfLZZ.SetEndH(endH_lzz);
+        double endH_tth = TTH_op1.get(2).get(TTH_op1.get(2).size()-1);
+        modelOfTTH.SetEndH(endH_tth);
+
+
+
+        //楼庄子最小拦蓄调度
+        List<Option> LZZ_op2=modelOfLZZ.MinLevel(option1,"楼庄子");
+        //头屯河最小拦蓄调度
+        modelOfTTH.setQ_Input2(LZZ_op2);
+        List<Option> TTH_op2=modelOfTTH.MinLevel(option1,"头屯河");
+        //两库最小拦蓄调度结果保存
         File tempFile2 = File.createTempFile("option2",".xlsx");
         String path2= tempFile2.getAbsolutePath();
         List<Option> option2 = new ArrayList<>();
-        for (int i = 0; i < LZZ_op2.get(0).size(); i++) {
-            Option option = new Option();
-            option.setName("楼庄子");
-            option.setType("最小拦蓄");
-            option.setTime(modelOfLZZ.getTime().get(i));
-            option.setQIn(LZZ_op2.get(0).get(i));
-            option.setH1(LZZ_op2.get(1).get(i));
-            option.setH2(LZZ_op2.get(2).get(i));
-            option.setQOut(LZZ_op2.get(3).get(i));
-            option.setQ1(LZZ_op2.get(4).get(i));
-            option.setQ2(LZZ_op2.get(5).get(i));
-            option.setQ3(LZZ_op2.get(6).get(i));
-            option.setV(LZZ_op2.get(7).get(i));
-            option.setRetain(LZZ_op2.get(10).get(i));
+        option2.addAll(LZZ_op2);
+        option2.addAll(TTH_op2);
+        Write(path2,option2);
 
-            double V=modelOfLZZ.GetV(LZZ_op1.get(2).get(i));
-            double[] percentage=getPercentage_lzz(V);
-            option.setPercentage1(percentage[0]);
-            option.setPercentage2(percentage[1]);
 
-            option2.add(option);
-        }
-        for (int i = 0; i < TTH_op2.get(0).size(); i++) {
-            Option option = new Option();
-            option.setName("头屯河");
-            option.setType("最小拦蓄");
-            option.setTime(modelOfLZZ.getTime().get(i));
-            option.setQIn(TTH_op2.get(0).get(i));
-            option.setH1(TTH_op2.get(1).get(i));
-            option.setH2(TTH_op2.get(2).get(i));
-            option.setQOut(TTH_op2.get(3).get(i));
-            option.setQ1(TTH_op2.get(4).get(i));
-            option.setQ2(TTH_op2.get(5).get(i));
-            option.setQ3(TTH_op2.get(6).get(i));
-            option.setV(TTH_op2.get(7).get(i));
-            option.setRetain(TTH_op2.get(10).get(i));
-
-            double V=modelOfTTH.GetV(TTH_op1.get(2).get(i));
-            double[] percentage=getPercentage_tth(V);
-            option.setPercentage1(percentage[0]);
-            option.setPercentage2(percentage[1]);
-
-            option2.add(option);
-        }
-
+        //楼庄子最大削峰调度
+        List<Option> LZZ_op3=modelOfLZZ.MinDischarge(option1,"楼庄子");
+        //头屯河最大削峰调度
+        modelOfTTH.setQ_Input2(LZZ_op3);
+        List<Option> TTH_op3=modelOfTTH.MinDischarge(option1,"头屯河");
+        //两库最大削峰调度结果保存
         File tempFile3 = File.createTempFile("option3",".xlsx");
         String path3= tempFile3.getAbsolutePath();
         List<Option> option3 = new ArrayList<>();
-        for (int i = 0; i < LZZ_op3.get(0).size(); i++) {
-            Option option = new Option();
-            option.setName("楼庄子");
-            option.setType("最大削峰");
-            option.setTime(modelOfLZZ.getTime().get(i));
-            option.setQIn(LZZ_op3.get(0).get(i));
-            option.setH1(LZZ_op3.get(1).get(i));
-            option.setH2(LZZ_op3.get(2).get(i));
-            option.setQOut(LZZ_op3.get(3).get(i));
-            option.setQ1(LZZ_op3.get(4).get(i));
-            option.setQ2(LZZ_op3.get(5).get(i));
-            option.setQ3(LZZ_op3.get(6).get(i));
-            option.setV(LZZ_op3.get(7).get(i));
-            option.setRetain(LZZ_op2.get(10).get(i));
-
-            double V=modelOfLZZ.GetV(LZZ_op1.get(2).get(i));
-            double[] percentage=getPercentage_lzz(V);
-            option.setPercentage1(percentage[0]);
-            option.setPercentage2(percentage[1]);
-
-            option3.add(option);
-        }
-        for (int i = 0; i < TTH_op3.get(0).size(); i++) {
-            Option option = new Option();
-            option.setName("头屯河");
-            option.setType("最大削峰");
-            option.setTime(modelOfLZZ.getTime().get(i));
-            option.setQIn(TTH_op3.get(0).get(i));
-            option.setH1(TTH_op3.get(1).get(i));
-            option.setH2(TTH_op3.get(2).get(i));
-            option.setQOut(TTH_op3.get(3).get(i));
-            option.setQ1(TTH_op3.get(4).get(i));
-            option.setQ2(TTH_op3.get(5).get(i));
-            option.setQ3(TTH_op3.get(6).get(i));
-            option.setV(TTH_op3.get(7).get(i));
-            option.setRetain(TTH_op3.get(10).get(i));
-
-            double V=modelOfTTH.GetV(TTH_op1.get(2).get(i));
-            double[] percentage=getPercentage_tth(V);
-            option.setPercentage1(percentage[0]);
-            option.setPercentage2(percentage[1]);
-
-            option3.add(option);
-        }
-
-        Write(path1,option1);
-        Write(path2,option2);
+        option3.addAll(LZZ_op3);
+        option3.addAll(TTH_op3);
         Write(path3,option3);
 
 
+
+        //返回结果路径及文件名称
         List<ResOption> result = new ArrayList<>();
         ResOption resOption1 = new ResOption();
         resOption1.setPath(path1);
         resOption1.setName(reqFloodPrevent.getProgrammeName()+"-常规调度");
+        result.add(resOption1);
+
         ResOption resOption2 = new ResOption();
         resOption2.setPath(path2);
         resOption2.setName(reqFloodPrevent.getProgrammeName()+"-最小拦蓄");
+        result.add(resOption2);
+
         ResOption resOption3 = new ResOption();
         resOption3.setPath(path3);
         resOption3.setName(reqFloodPrevent.getProgrammeName()+"-最大削峰");
-
-        result.add(resOption1);
-        result.add(resOption2);
         result.add(resOption3);
 
         return result;
@@ -249,6 +174,7 @@ public class Cascade {
             workbook.write(fop);
             fop.flush();
             fop.close();
+            workbook.close();
         }catch (IOException e) {
             e.printStackTrace();
         }

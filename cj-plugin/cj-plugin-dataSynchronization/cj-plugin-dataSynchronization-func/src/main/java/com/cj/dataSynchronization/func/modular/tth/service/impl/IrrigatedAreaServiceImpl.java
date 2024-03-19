@@ -210,6 +210,9 @@ public class IrrigatedAreaServiceImpl implements IrrigatedAreaService {
                     continue;
                 }
                 List<QueryRealTimeDataDto> queryRealTimeData = IrrigatedAreaInvoke.getQueryRealTimeData(node.getId());
+                if(node.getName().equals("昌吉市鸿远博兴建材有限责任公司")){
+                    log.error("queryRealTimeData---------------------------------------------------------------------------"+queryRealTimeData.toString());
+                }
                 if(null != queryRealTimeData && queryRealTimeData.size()>0){
                     IrrigatedPlatformDataInfo info = new IrrigatedPlatformDataInfo();
                     QueryRealTimeDataDto dto = queryRealTimeData.get(0);

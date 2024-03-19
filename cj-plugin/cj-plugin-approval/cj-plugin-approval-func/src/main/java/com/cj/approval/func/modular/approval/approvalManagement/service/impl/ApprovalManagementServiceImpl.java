@@ -83,6 +83,9 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
     @Value("${minio.bucket}")
     private String defaultBucket;
 
+    @Value("${minio.url}")
+    private String url;
+
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
     private SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -355,7 +358,7 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
                             for(int a=0;a<split.length;a++) {
                                 JSONObject userByIdWithoutException = sysUserApi.getUserByIdWithoutException(split[a]);
                                 String digitalSignature = (String) userByIdWithoutException.get("digitalSignature");
-                                String filePath = "http://192.168.31.154:9000/tth/"+digitalSignature;
+                                String filePath = url+"/tth/"+digitalSignature;
                                 String fileResultPath = System.getProperty("java.io.tmpdir")+"/"+UUIDUtils.getUUID()+".png";
                                 downloadAndSaveFile(filePath,fileResultPath);
                                 put("pic"+(a+1), Pictures.ofStream(new FileInputStream(fileResultPath), PictureType.PNG)

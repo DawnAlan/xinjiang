@@ -75,5 +75,17 @@ public class OverallSituationUnitMgr extends Model<OverallSituationUnitMgr> {
     @ApiModelProperty(value = "排序字段")
     private Integer sortNum;
 
+    //排序字段
+    @ApiModelProperty(value = "是否三维地图")
+    private Integer haveMap;
+
+    //排序字段
+    @ApiModelProperty(value = "经度")
+    private Double lon;
+
+    //排序字段
+    @ApiModelProperty(value = "纬度")
+    private Double lat;
+
 }
 

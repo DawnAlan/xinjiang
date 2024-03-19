@@ -64,3 +64,5 @@ public class DutyRecords extends Model<DutyRecords> {
     private String weather;
 }
 
+
+

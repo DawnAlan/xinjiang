@@ -4,15 +4,18 @@ package com.cj.model.func.modular.FloodPrevent.model;
 import com.cj.model.func.modular.FloodPrevent.entity.DataFloodPrevent;
 import com.cj.model.func.modular.FloodPrevent.bean.req.ReqFloodPrevent;
 import com.cj.model.func.modular.FloodPrevent.entity.CurveParam;
+import com.cj.model.func.modular.FloodPrevent.entity.Option;
 import lombok.Getter;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-import static com.cj.model.func.modular.FloodPredict.utils.DataUtils.stringToDate;
+
 
 public class ModelOfLZZ {
 
@@ -50,11 +53,10 @@ public class ModelOfLZZ {
 
     int choice;
     int coefficient =10000 ;
-    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
+    public ModelOfLZZ(){};
     public ModelOfLZZ(Object[][] pre,int delta) {
         for (int i = 0; i < pre.length; i++) {
-//            Date t = stringToDate(pre[i][1].toString());
             Date t = (Date) pre[i][1];
             Time.add(t);
             Q_Input.add((double)pre[i][2]);
@@ -222,14 +224,10 @@ public class ModelOfLZZ {
             double Q_out;
             double Q_1;
             double Q_2;
-            double Q_3=0;
+            double Q_3;
             double V;
             double endH;
-            double Q_max;
             double retain;
-            double[] H_Limit=new double[2];
-            double[] H_Limit1;
-            double[] H_Limit2;
 
             //设定时段初水位
             if(i==0){
@@ -238,126 +236,33 @@ public class ModelOfLZZ {
             else{
                 beginH=H_e.get(i-1);
             }
-
-            if(Q_in<=750){
-                if(beginH>=1397.41){
-                    Q_max = GetQ1(beginH)+GetQ2(beginH);
-                    endH =OnceBalance1(beginH,Q_in,Q_max);
-                    H_Limit1= H_Limit_Delta(H_e);
-                    H_Limit2= H_Limit_S1(beginH,Q_in,minQ);
-                    H_Limit[0]=Math.max(H_Limit1[0],H_Limit2[0]);
-                    H_Limit[1]=Math.min(H_Limit1[1],H_Limit2[1]);
-                    //判断水位是否能回到汛限水位，确定时段末水位
-                    if(LimitLevel>=H_Limit[0]&&LimitLevel<=H_Limit[1]){
-                        endH=LimitLevel;
-                        Q_out=OnceBalance2(beginH,Q_in,endH);
-                        Q_1 = Math.min(Q_out,GetQ1((beginH+endH)/2));
-                        Q_2 = Q_out-Q_1;
-                    }
-                    else{
-                        if(LimitLevel<H_Limit[0]) endH=H_Limit[0];
-                        if(LimitLevel>H_Limit[1]) endH=H_Limit[1];
-                        Q_out=OnceBalance2(beginH,Q_in,endH);
-                        Q_1 = Math.min(Q_out,GetQ1((beginH+endH)/2));
-                        Q_2 = Q_out-Q_1;
-                    }
-                }
-                else if(beginH>=1397.21){
-                    Q_max = GetQ1(beginH)+GetQ2(beginH);
-                    endH =OnceBalance1(beginH,Q_in,Q_max);
-                    H_Limit1= H_Limit_Delta(H_e);
-                    H_Limit2= H_Limit_S1(beginH,Q_in,minQ);
-                    H_Limit[0]=Math.max(H_Limit1[0],H_Limit2[0]);
-                    H_Limit[1]=Math.min(H_Limit1[1],H_Limit2[1]);
-                    if(LimitLevel>=H_Limit[0]&&LimitLevel<=H_Limit[1]){
-                        endH=LimitLevel;
-                        Q_out=OnceBalance2(beginH,Q_in,endH);
-                        Q_1=Math.min(Q_out,GetQ1((beginH+endH)/2));
-                        Q_2=Q_out-Q_1;
-                    }
-                    else{
-                        if(LimitLevel<H_Limit[0]) endH=H_Limit[0];
-                        if(LimitLevel>H_Limit[1]) endH=H_Limit[1];
-                        Q_1 = GetQ1((beginH+endH)/2);
-                        Q_2 = GetQ2((beginH+endH)/2);
-                        Q_out = Q_1+Q_2;
-                    }
-
-                }
-                else if (beginH>=1394.5) {
-                    Q_max = Math.min(GetQ1(beginH),125);
-                    endH =OnceBalance1(beginH,Q_in,Q_max);
-                    H_Limit1= H_Limit_Delta(H_e);
-                    H_Limit2= H_Limit_S1(beginH,Q_in,minQ);
-                    H_Limit[0]=Math.max(H_Limit1[0],H_Limit2[0]);
-                    H_Limit[1]=Math.min(H_Limit1[1],H_Limit2[1]);
-                    if(LimitLevel>=H_Limit[0]&&LimitLevel<=H_Limit[1]){
-                        endH=LimitLevel;
-                        Q_out=OnceBalance2(beginH,Q_in,endH);
-                        Q_1=Math.min(Q_out,GetQ1((beginH+endH)/2));
-                    }
-                    else{
-                        if(LimitLevel<H_Limit[0]) endH=H_Limit[0];
-                        if(LimitLevel>H_Limit[1]) endH=H_Limit[1];
-                        Q_out=OnceBalance2(beginH,Q_in,endH);
-                        Q_1 = Math.min(GetQ1((beginH+endH)/2),Math.min(Q_out,125));
-                    }
-                    Q_2=0;
-                }
-                else{
-                    Q_max = Math.min(GetQ1(beginH),125);
-                    endH =OnceBalance1(beginH,Q_in,Q_max);
-                    H_Limit1= H_Limit_Delta(H_e);
-                    H_Limit2= H_Limit_S1(beginH,Q_in,minQ);
-                    H_Limit[0]=Math.max(H_Limit1[0],H_Limit2[0]);
-                    H_Limit[1]=Math.min(H_Limit1[1],H_Limit2[1]);
-                    if(LimitLevel<H_Limit[0]) endH=H_Limit[0];
-                    if(LimitLevel>H_Limit[1]) endH=H_Limit[1];
-                    if(Q_in<=Math.min(GetQ1((beginH+endH)/2),125)){
-                        Q_1=Q_in;
-                        Q_2=0;
-                    }
-                    else{
-                        Q_1=Math.min(GetQ1((beginH+endH)/2),125);
-                        Q_2=0;
-                    }
-                    Q_out = Q_1+Q_2;
-                    endH = OnceBalance1(beginH,Q_in,Q_out);
-                }
-            }
-            else{
-                Q_max = GetQ1(beginH)+GetQ2(beginH);
-                endH =OnceBalance1(beginH,Q_in,Q_max);
-                H_Limit1= H_Limit_Delta(H_e);
-                H_Limit2= H_Limit_S1(beginH,Q_in,minQ);
-                H_Limit[0]=Math.max(H_Limit1[0],H_Limit2[0]);
-                H_Limit[1]=Math.min(H_Limit1[1],H_Limit2[1]);
-                if(LimitLevel>=H_Limit[0]&&LimitLevel<=H_Limit[1]){
-                    endH=LimitLevel;
-                    Q_out=OnceBalance2(beginH,Q_in,endH);
-                    Q_1 = Math.min(Q_out,GetQ1((beginH+endH)/2));
-                    Q_2 = Q_out-Q_1;
-                }
-                else{
-                    if(LimitLevel<H_Limit[0]) endH=H_Limit[0];
-                    if(LimitLevel>H_Limit[1]) endH=H_Limit[1];
-                    Q_out=OnceBalance2(beginH,Q_in,endH);
-                    Q_1 = Math.min(Q_out,GetQ1((beginH+endH)/2));
-                    Q_2 = Q_out-Q_1;
-                }
-            }
-
-            V=BigDecimal.valueOf(GetV(endH)).setScale(2, RoundingMode.HALF_UP).doubleValue();
+            double[] Q =ConventionalCalculate(beginH,Q_in,minQ);
+            Q_out=Q[0];
+            Q_1=Q[1];
+            Q_2=Q[2];
+            Q_3=0;
+            endH=OnceBalance1(beginH,Q_in,Q_out);
+            V=GetV(endH);
             retain=Math.max(0,V-GetV(H_begin));
 
-            H_b.add(BigDecimal.valueOf(beginH).setScale(2, RoundingMode.HALF_UP).doubleValue());
-            H_e.add(BigDecimal.valueOf(endH).setScale(2, RoundingMode.HALF_UP).doubleValue());
-            Q_Release.add(BigDecimal.valueOf(Q_out).setScale(2, RoundingMode.HALF_UP).doubleValue());
-            Q_Release1.add(BigDecimal.valueOf(Q_1).setScale(2, RoundingMode.HALF_UP).doubleValue());
-            Q_Release2.add(BigDecimal.valueOf(Q_2).setScale(2, RoundingMode.HALF_UP).doubleValue());
-            Q_Release3.add(BigDecimal.valueOf(Q_3).setScale(2, RoundingMode.HALF_UP).doubleValue());
-            V_list.add(BigDecimal.valueOf(V).setScale(2, RoundingMode.HALF_UP).doubleValue());
-            Retain_list.add(BigDecimal.valueOf(retain).setScale(2, RoundingMode.HALF_UP).doubleValue());
+            H_b.add(beginH);
+            H_e.add(endH);
+            Q_Release.add(Q_out);
+            Q_Release1.add(Q_1);
+            Q_Release2.add(Q_2);
+            Q_Release3.add(Q_3);
+            V_list.add(V);
+            Retain_list.add(retain);
+
+
+//            H_b.add(BigDecimal.valueOf(beginH).setScale(2, RoundingMode.HALF_UP).doubleValue());
+//            H_e.add(BigDecimal.valueOf(endH).setScale(2, RoundingMode.HALF_UP).doubleValue());
+//            Q_Release.add(BigDecimal.valueOf(Q_out).setScale(2, RoundingMode.HALF_UP).doubleValue());
+//            Q_Release1.add(BigDecimal.valueOf(Q_1).setScale(2, RoundingMode.HALF_UP).doubleValue());
+//            Q_Release2.add(BigDecimal.valueOf(Q_2).setScale(2, RoundingMode.HALF_UP).doubleValue());
+//            Q_Release3.add(BigDecimal.valueOf(Q_3).setScale(2, RoundingMode.HALF_UP).doubleValue());
+//            V_list.add(BigDecimal.valueOf(V).setScale(2, RoundingMode.HALF_UP).doubleValue());
+//            Retain_list.add(BigDecimal.valueOf(retain).setScale(2, RoundingMode.HALF_UP).doubleValue());
 
         }
         Result.add(Q_Input);
@@ -743,114 +648,55 @@ public class ModelOfLZZ {
         return option_final;
     }
 
-    //水库水位变化限制(常规调度与优化调度均须遵循)
-    public double[] H_Limit_Delta(List<Double> H){
-        double[] Delta_H=new double[2];
-        int n = 24*3600/T_Delta;
-        double max;
-        double min;
-        if(H.isEmpty()){
-            max=min=H_begin;
-        }
-        else{
-            max=min=H.get(H.size()-1);
-        }
+    /**
+     * 常规调度计算流量
+     */
+    public double[] ConventionalCalculate(double level, double Q_Input, double MinQ){
+        double[] Q = new double[4];
 
-        if(H.size()<=n) {
-            for (int i = 0; i < H.size(); i++) {
-                if(H.get(i)>max) max=H.get(i);
-                if(H.get(i)<min) min=H.get(i);
-            }
-        }
-        else{
-            for (int i = 0; i < n; i++) {
-                int num = H.size()-1-n;
-                if(H.get(num)>max) max=H.get(num);
-                if(H.get(num)<min) min=H.get(num);
-            }
-        }
-        Delta_H[0]=max-1.5;
-        Delta_H[1]=min+2;
-        return Delta_H;
-    }
-    //楼庄子水库泄流能力限制造成的水位限制（常规调度）
-    public double[] H_Limit_S1(double level, double Q_Input, double MinQ){
-        double MaxQ1=0;
-        double MinQ2=0;
         //最大下泄能力
-        double QQ0;
-        //按最大下泄计算时段最低末水位
+        double MaxQ;
         if(Q_Input<=750){
             if(level>=1397.41){
-                QQ0=GetQ1(level)+GetQ2(level);
+                MaxQ=GetQ1(level)+GetQ2(level);
             }
             else if (level>=1397.21) {
-                QQ0=GetQ1(level)+GetQ2(level);
+                MaxQ=Math.min(GetQ1(level)+GetQ2(level),125);
             }
             else if (level>=1394.5) {
-                QQ0=Math.min(GetQ1(level),125);
+                MaxQ=Math.min(GetQ1(level),125);
             }
             else{
-                QQ0=Math.min(GetQ1(level)+GetQ2(level),125);
+                MaxQ=Math.min(GetQ1(level),125);
             }
         }
         else{
-            QQ0=GetQ1(level)+GetQ2(level);
+            MaxQ=GetQ1(level)+GetQ2(level);
         }
-        double Hend=OnceBalance1(level,Q_Input,QQ0);
-        //按最低末水位求时段平均水位，再按平均水位计算最大下泄能力
-        if(Q_Input<=750){
-            if(level>=1397.41){
-                QQ0=GetQ1((level+Hend)/2)+GetQ2((level+Hend)/2);
-            }
-            else if (level>=1397.21) {
-                QQ0=GetQ1((level+Hend)/2)+GetQ2((level+Hend)/2);
-            }
-            else if (level>=1394.5) {
-                QQ0=Math.min(GetQ1((level+Hend)/2),125);
-            }
-            else{
-                QQ0=Math.min(GetQ1((level+Hend)/2)+GetQ2((level+Hend)/2),125);
-            }
+        //恢复至汛限水位所需下泄流量
+        double Q_limit=(GetV(level)-LimitVolume)*coefficient/T_Delta+Q_Input;
+
+        if(MinQ<=Q_limit&&Q_limit<=MaxQ){
+            Q[0]=Q_limit;
+            Q[1]=Math.min(Q[0],GetQ1(level));
         }
-        else{
-            QQ0=GetQ1((level+Hend)/2)+GetQ2((level+Hend)/2);
-        }
-
-
-        double QQ1=(GetV(level)-DeadVolume)*coefficient/T_Delta+Q_Input;
-        double QQ2=(GetV(level)-LimitVolume)*coefficient/T_Delta+Q_Input;
-        double QQ3=(GetV(level)-DesignVolume)*coefficient/T_Delta+Q_Input;
-        double QQ4=(GetV(level)-ProofVolume)*coefficient/T_Delta+Q_Input;
-
-        if(QQ0<=QQ4){
-            //将超过校核水位
-            MaxQ1=MinQ2=QQ0;
-        }else if(QQ0<=QQ3){
-            //将超过正常蓄水位
-            MaxQ1=MinQ2=QQ0;
-        }else if(QQ0<=QQ2){
-            //将超过汛限水位
-            MaxQ1=MinQ2=QQ0;
+        else if(Q_limit<=MinQ){
+            Q[0]=MinQ;
+            Q[1]=MinQ;
         }else{
-            MaxQ1 = Math.min(QQ0,QQ1);
-            MinQ2 = Math.max(MinQ,QQ2);
+            Q[0]=MaxQ;
+            Q[1]=GetQ1(level);
         }
-
-
-        double[] Q_Limit= new double[2];
-        Q_Limit[0]= MinQ2;
-        Q_Limit[1]=MaxQ1;
-
-        double[] H_Limit= new double[2];
-        H_Limit[0] = OnceBalance1(level,Q_Input,Q_Limit[1]);
-        H_Limit[1] = OnceBalance1(level,Q_Input,Q_Limit[0]);
-
-        return H_Limit;
+        Q[2]=Q[0]-Q[1];
+        Q[3]=0;
+        return Q;
     }
-    //水库泄流能力限制造成的水位限制(优化调度)
+
+    /**
+     * 水库泄流能力限制造成的水位限制(优化调度)
+     */
     public double[] H_Limit(double level,double Q_Input,double MinQ){
-        double d = 0.1;
+        double d = 0;
         //闸门最大下泄能力
         double QQ0;
         if(Q_Input<=750){
@@ -865,19 +711,18 @@ public class ModelOfLZZ {
                 QQ0=GetQ1(level)+GetQ2(level);
         }
 
-        double Hend=OnceBalance1(level,Q_Input,QQ0);
-
-        if(Q_Input<=750){
-            if ((level+Hend)/2>=1397.21) {
-                QQ0=GetQ1((level+Hend)/2)+GetQ2((level+Hend)/2);
-            }
-            else{
-                QQ0=Math.min(GetQ1((level+Hend)/2)+d*GetQ2((level+Hend)/2),125);
-            }
-        }
-        else{
-            QQ0=GetQ1((level+Hend)/2)+GetQ2((level+Hend)/2);
-        }
+//        double Hend=OnceBalance1(level,Q_Input,QQ0);
+//        if(Q_Input<=750){
+//            if ((level+Hend)/2>=1397.21) {
+//                QQ0=GetQ1((level+Hend)/2)+GetQ2((level+Hend)/2);
+//            }
+//            else{
+//                QQ0=Math.min(GetQ1((level+Hend)/2)+d*GetQ2((level+Hend)/2),125);
+//            }
+//        }
+//        else{
+//            QQ0=GetQ1((level+Hend)/2)+GetQ2((level+Hend)/2);
+//        }
 
         double H_eco = OnceBalance1(level,Q_Input,MinQ);
         double H_min =OnceBalance1(level,Q_Input,QQ0);
@@ -957,7 +802,9 @@ public class ModelOfLZZ {
         return GetH(V_end/coefficient);
     }
     public double OnceBalance2(double H_begin, double Q_in, double H_end){
-        return Q_in-(GetV(H_end)-GetV(H_begin))*coefficient/T_Delta;
+        double Q_out = Q_in-(GetV(H_end)-GetV(H_begin))*coefficient/T_Delta;
+        return Q_out;
+//        return BigDecimal.valueOf(Q_out).setScale(2,RoundingMode.HALF_UP).doubleValue();
     }
 
     public double GetV(double level){
@@ -982,6 +829,7 @@ public class ModelOfLZZ {
         }else{
             Volume=LV_Curve[1][n-1]+(level-LV_Curve[0][n-1])*(LV_Curve[1][n]-LV_Curve[1][n-1])/(LV_Curve[0][n]-LV_Curve[0][n-1]);
         }
+//        return BigDecimal.valueOf(Volume).setScale(2,RoundingMode.HALF_UP).doubleValue();
         return Volume;
     }
     public double GetH(double Volume){
@@ -1006,7 +854,8 @@ public class ModelOfLZZ {
         }else{
             level=LV_Curve[0][n-1]+(Volume-LV_Curve[1][n-1])*(LV_Curve[0][n]-LV_Curve[0][n-1])/(LV_Curve[1][n]-LV_Curve[1][n-1]);
         }
-        return level;
+//        return BigDecimal.valueOf(level).setScale(2,RoundingMode.HALF_UP).doubleValue();
+        return  level;
     }
     public double GetQ1(double level){
         double MaxQ1;
@@ -1057,6 +906,16 @@ public class ModelOfLZZ {
             MaxQ1=LQ_Curve2[1][n-1]+(level-LQ_Curve2[0][n-1])*(LQ_Curve2[1][n]-LQ_Curve2[1][n-1])/(LQ_Curve2[0][n]-LQ_Curve2[0][n-1]);
         }
         return MaxQ1;
+    }
+
+    public static double[] getPercentage_lzz(double V){
+
+        double[] result = new double[2];
+        result[0]=100*Math.max(0,(V-6534.4))/724.93;
+        result[1]=100*Math.max(0,(V-6534.4))/839.59;
+        result[0]=BigDecimal.valueOf(result[0]).setScale(2, RoundingMode.HALF_UP).doubleValue();
+        result[1]=BigDecimal.valueOf(result[1]).setScale(2, RoundingMode.HALF_UP).doubleValue();
+        return result;
     }
 
     public void UpdateLimitLevel(Date time){
@@ -1118,5 +977,479 @@ public class ModelOfLZZ {
     public void SetEndH(double H){
         H_end=H;
     }
+
+    /**
+     * String转Date
+     * @param input
+     * @return
+     */
+    public static Date stringToDate (String input){
+        Date result =new Date();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss zzz yyyy", Locale.US);
+        LocalDateTime dateTime = LocalDateTime.parse(input, formatter);
+        ZonedDateTime zonedDateTime = dateTime.atZone(ZoneId.of("Asia/Shanghai"));
+        result = Date.from(zonedDateTime.toInstant());
+        return result;
+    }
+
+
+    /**
+     * 粒子数
+     */
+    int n=100;
+    /**
+     * 粒子维度（时段数）
+     */
+    int D;
+    /**
+     * 迭代次数
+     */
+    int K=100;
+    /**
+     * 惯性权重
+     */
+    double w;
+    double wMax=1;
+    double wMin=0.1;
+    /**
+     * 个体学习因子
+     */
+    double c1=1;
+    /**
+     * 群体学习因子
+     */
+    double c2=1;
+    /**
+     * 个体随机因子
+     */
+    double r1;
+    /**
+     * 群体随机因子
+     */
+    double r2;
+    /**
+     * 粒子群
+     */
+    Option[][] birds;
+    /**
+     * 粒子速度
+     */
+    double[][] V;
+    /**
+     * 个体最优
+     */
+    Option[][] IndividualBest;
+    /**
+     * 群体最优
+     */
+    Option[] GroupBest;
+
+    public List<Option> MinLevel(List<Option> Initial, String name){
+        initialize(Initial,name);
+        for (int i = 0; i < K; i++) {
+            Iterate_MinLevel();
+        }
+
+        List<Option> result = new ArrayList<>();
+        result.addAll(Arrays.asList(GroupBest));
+
+        //补全最优结果的其他项
+        double H_b;
+        double H_e;
+        double Q_out;
+        double Q1;
+        double Q2;
+        double Q3;
+        double V;
+        double retain;
+        double percent1;
+        double percent2;
+
+        for (int i = 0; i < result.size(); i++) {
+            H_b=result.get(i).getH1();
+            H_e=result.get(i).getH2();
+            Q_out=result.get(i).getQOut();
+            Q1 = Math.min(GetQ1((H_b+H_e)/2),Q_out);
+            Q2 = Math.min(Q_out-Q1,GetQ2((H_b+H_e)/2));
+            Q3 = 0;
+            V = GetV(H_e);
+            retain=Math.max(0,V-GetV(H_begin));
+            double[] aa=getPercentage_lzz(V);
+            percent1=aa[0];
+            percent2=aa[1];
+
+            //保留两位小数
+            Q1=BigDecimal.valueOf(Q1).setScale(2,RoundingMode.HALF_UP).doubleValue();
+            Q2=BigDecimal.valueOf(Q2).setScale(2,RoundingMode.HALF_UP).doubleValue();
+            Q3=BigDecimal.valueOf(Q3).setScale(2,RoundingMode.HALF_UP).doubleValue();
+            V=BigDecimal.valueOf(V).setScale(2,RoundingMode.HALF_UP).doubleValue();
+            retain=BigDecimal.valueOf(retain).setScale(2,RoundingMode.HALF_UP).doubleValue();
+
+            result.get(i).setType("最小拦蓄");
+            result.get(i).setQ1(Q1);
+            result.get(i).setQ2(Q2);
+            result.get(i).setQ3(Q3);
+            result.get(i).setV(V);
+            result.get(i).setRetain(retain);
+            result.get(i).setPercentage1(percent1);
+            result.get(i).setPercentage2(percent2);
+        }
+        return result;
+    }
+    public List<Option> MinDischarge(List<Option> Initial, String name){
+        initialize(Initial,name);
+        for (int i = 0; i < K; i++) {
+            Iterate_MinDischarge();
+        }
+
+        List<Option> result = new ArrayList<>();
+        result.addAll(Arrays.asList(GroupBest));
+
+        //补全最优结果的其他项
+        double H_b;
+        double H_e;
+        double Q_out;
+        double Q1;
+        double Q2;
+        double Q3;
+        double V;
+        double retain;
+        double percent1;
+        double percent2;
+
+        for (int i = 0; i < result.size(); i++) {
+            H_b=result.get(i).getH1();
+            H_e=result.get(i).getH2();
+            Q_out=result.get(i).getQOut();
+            Q1 = Math.min(GetQ1((H_b+H_e)/2),Q_out);
+            Q2 = Math.min(Q_out-Q1,GetQ2((H_b+H_e)/2));
+            Q3 = 0;
+            V = GetV(H_e);
+            retain=Math.max(0,V-GetV(H_begin));
+            double[] aa=getPercentage_lzz(V);
+            percent1=aa[0];
+            percent2=aa[1];
+
+            //保留两位小数
+            Q1=BigDecimal.valueOf(Q1).setScale(2,RoundingMode.HALF_UP).doubleValue();
+            Q2=BigDecimal.valueOf(Q2).setScale(2,RoundingMode.HALF_UP).doubleValue();
+            Q3=BigDecimal.valueOf(Q3).setScale(2,RoundingMode.HALF_UP).doubleValue();
+            V=BigDecimal.valueOf(V).setScale(2,RoundingMode.HALF_UP).doubleValue();
+            retain=BigDecimal.valueOf(retain).setScale(2,RoundingMode.HALF_UP).doubleValue();
+
+            result.get(i).setType("最大削峰");
+            result.get(i).setQ1(Q1);
+            result.get(i).setQ2(Q2);
+            result.get(i).setQ3(Q3);
+            result.get(i).setV(V);
+            result.get(i).setRetain(retain);
+            result.get(i).setPercentage1(percent1);
+            result.get(i).setPercentage2(percent2);
+        }
+        return result;
+    }
+
+    /**
+     * 初始化
+     */
+    public void initialize(List<Option> Initial,String name){
+        //先从常规调度的结果中获得初始解
+        List<Option> Initial_op = new ArrayList<>();
+        for (int i = 0; i < Initial.size(); i++) {
+            if(Initial.get(i).getName().equals(name)) Initial_op.add(Initial.get(i));
+        }
+        D=Initial.size()/2;
+
+        //初始化鸟群
+        birds = new Option[n][D];
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < D; j++) {
+                birds[i][j]=new Option();
+                birds[i][j].setName(Initial_op.get(j).getName());
+                birds[i][j].setTime(Initial_op.get(j).getTime());
+                birds[i][j].setQIn(Initial_op.get(j).getQIn());
+                birds[i][j].setH1(Initial_op.get(j).getH1());
+                birds[i][j].setH2(Initial_op.get(j).getH2());
+                birds[i][j].setQOut(Initial_op.get(j).getQOut());
+//                birds[i][j].setQ1(Initial_op.get(j).getQ1());
+//                birds[i][j].setQ2(Initial_op.get(j).getQ2());
+//                birds[i][j].setQ3(Initial_op.get(j).getQ3());
+//                birds[i][j].setV(Initial_op.get(j).getV());
+//                birds[i][j].setRetain(Initial_op.get(j).getRetain());
+//                birds[i][j].setPercentage1(Initial_op.get(j).getPercentage1());
+//                birds[i][j].setPercentage2(Initial_op.get(j).getPercentage2());
+            }
+        }
+        //初始化个体最优
+        IndividualBest = new Option[n][D];
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < D; j++) {
+                IndividualBest[i][j]=new Option();
+                IndividualBest[i][j].setName(Initial_op.get(j).getName());
+                IndividualBest[i][j].setTime(Initial_op.get(j).getTime());
+                IndividualBest[i][j].setQIn(Initial_op.get(j).getQIn());
+                IndividualBest[i][j].setH1(Initial_op.get(j).getH1());
+                IndividualBest[i][j].setH2(Initial_op.get(j).getH2());
+                IndividualBest[i][j].setQOut(Initial_op.get(j).getQOut());
+            }
+        }
+        //初始化群体最优
+        GroupBest = new Option[D];
+        for (int j = 0; j < D; j++) {
+            GroupBest[j]=new Option();
+            GroupBest[j].setName(Initial_op.get(j).getName());
+            GroupBest[j].setTime(Initial_op.get(j).getTime());
+            GroupBest[j].setQIn(Initial_op.get(j).getQIn());
+            GroupBest[j].setH1(Initial_op.get(j).getH1());
+            GroupBest[j].setH2(Initial_op.get(j).getH2());
+            GroupBest[j].setQOut(Initial_op.get(j).getQOut());
+        }
+        //初始化速度
+        Random random = new Random();
+        V=new double[n][D];
+        for (int i = 0; i < n; i++) {
+            double v_temp = 0.01*(random.nextInt(10)-5);
+            for (int j = 0; j < D; j++) {
+                V[i][j] = v_temp;
+            }
+        }
+        //初始化随机因子
+        r1=random.nextDouble();
+        r2=random.nextDouble();
+        //初始化惯性权重
+        w=wMax;
+    }
+
+    /**
+     * 一次迭代
+     */
+    public void Iterate_MinLevel(){
+        UpdateLocation();
+        UpdateIndividualBest_MinLevel();
+        UpdateGroupBest_MinLevel();
+        UpdateV();
+        UpdateW();
+    }
+    /**
+     * 一次迭代
+     */
+    public void Iterate_MinDischarge(){
+        UpdateLocation();
+        UpdateIndividualBest_MinDischarge();
+        UpdateGroupBest_MinDischarge();
+        UpdateV();
+        UpdateW();
+    }
+
+    /**
+     * 更新位置
+     */
+    public void UpdateLocation(){
+        for (int i = 0; i < n; i++) {
+            int mark=0;
+            double[] H1 = new double[D];
+            double[] H2 = new double[D];
+            double[] Q_in = new double[D];
+            double[] minQ=new double[D];
+            double[] Q_out= new double[D];
+            for (int j = 0; j < D; j++) {
+                H1[j]=birds[i][j].getH1();
+                H2[j]=birds[i][j].getH2();
+                Q_in[j]=birds[i][j].getQIn();
+                minQ[j]=MinQ.get(j);
+            }
+
+            for (int j = 0; j < D; j++) {
+                //更新时段初水位
+                if(j!=0){
+                    H1[j]=H2[j-1];
+                }
+                //计算末水位可行范围
+                double level = H1[j];
+                double q1=Q_in[j];
+                double q2=minQ[j];
+
+                double[] limit=H_Limit(H1[j],Q_in[j],minQ[j]);
+                //计算末水位
+                double H2_after = H2[j]+V[i][j];
+
+                //判断是否可行
+                if(j==D-1){
+                    //可以达成末水位
+                    if(H_end>=limit[0]&&H_end<=limit[1]){
+                        H2[j]=H_end;
+                        mark=1;
+                    }
+                }
+                else{
+                    if(H2_after>limit[1]){
+                        H2_after=limit[1];
+                    }else if (H2_after<limit[0]){
+                        H2_after=limit[0];
+                    }
+                    H2[j]=H2_after;
+                }
+            }
+
+
+            //将可行解写入option列表
+            if(mark==1){
+                for (int j = 0; j < D; j++) {
+                    birds[i][j].setH1(H1[j]);
+                    birds[i][j].setH2(H2[j]);
+                    Q_out[j]=OnceBalance2(H1[j],Q_in[j],H2[j]);
+                    birds[i][j].setQOut(Q_out[j]);
+                }
+            }
+        }
+    }
+    /**
+     * 更新速度
+     */
+    public void UpdateV(){
+        Random random = new Random();
+        r1=random.nextDouble();
+        r2=random.nextDouble();
+        for (int i = 0; i < n; i++) {
+
+            for (int j = 0; j < D; j++) {
+
+
+                V[i][j]=w*V[i][j]+c1*r1*(IndividualBest[i][j].getH2()-birds[i][j].getH2())+c2*r2*(GroupBest[j].getH2()-birds[i][j].getH2());
+            }
+        }
+    }
+    /**
+     * 更新惯性权重
+     */
+    public void UpdateW(){
+        w=wMax-(wMax-wMin)/K;
+    }
+    /**
+     * 更新个体最优水位
+     */
+    public void UpdateIndividualBest_MinLevel(){
+        for (int i = 0; i < n; i++) {
+            double best=MaxLevel(IndividualBest[i]);
+            double value=MaxLevel(birds[i]);
+            if(value<best){
+                for (int j = 0; j < D; j++) {
+                    IndividualBest[i][j].setName(birds[i][j].getName());
+                    IndividualBest[i][j].setTime(birds[i][j].getTime());
+                    IndividualBest[i][j].setQIn(birds[i][j].getQIn());
+                    IndividualBest[i][j].setH1(birds[i][j].getH1());
+                    IndividualBest[i][j].setH2(birds[i][j].getH2());
+                    IndividualBest[i][j].setQOut(birds[i][j].getQOut());
+                }
+            }
+        }
+    }
+    /**
+     * 更新群体最优水位
+     */
+    public void UpdateGroupBest_MinLevel(){
+        int num=-1;
+        double best=MaxLevel(GroupBest);
+        for (int i = 0; i < n; i++) {
+            double value=MaxLevel(IndividualBest[i]);
+            if(value<best){
+                best=value;
+                num=i;
+            }
+        }
+        if (num!=-1){
+            for (int i = 0; i < D; i++) {
+                GroupBest[i].setName(IndividualBest[num][i].getName());
+                GroupBest[i].setTime(IndividualBest[num][i].getTime());
+                GroupBest[i].setQIn(IndividualBest[num][i].getQIn());
+                GroupBest[i].setH1(IndividualBest[num][i].getH1());
+                GroupBest[i].setH2(IndividualBest[num][i].getH2());
+                GroupBest[i].setQOut(IndividualBest[num][i].getQOut());
+            }
+        }
+    }
+    /**
+     * 更新个体最优流量
+     */
+    public void UpdateIndividualBest_MinDischarge(){
+        for (int i = 0; i < n; i++) {
+            double best=MaxDischarge(IndividualBest[i]);
+            double value=MaxDischarge(birds[i]);
+            if(value<best){
+                for (int j = 0; j < D; j++) {
+                    IndividualBest[i][j].setName(birds[i][j].getName());
+                    IndividualBest[i][j].setTime(birds[i][j].getTime());
+                    IndividualBest[i][j].setQIn(birds[i][j].getQIn());
+                    IndividualBest[i][j].setH1(birds[i][j].getH1());
+                    IndividualBest[i][j].setH2(birds[i][j].getH2());
+                    IndividualBest[i][j].setQOut(birds[i][j].getQOut());
+                }
+            }
+        }
+    }
+    /**
+     * 更新群体最优流量
+     */
+    public void UpdateGroupBest_MinDischarge(){
+        int num=-1;
+        double best=MaxDischarge(GroupBest);
+        for (int i = 0; i < n; i++) {
+            double value=MaxDischarge(IndividualBest[i]);
+            if(value<best){
+                best=value;
+                num=i;
+            }
+        }
+        if (num!=-1){
+            for (int i = 0; i < D; i++) {
+                GroupBest[i].setName(IndividualBest[num][i].getName());
+                GroupBest[i].setTime(IndividualBest[num][i].getTime());
+                GroupBest[i].setQIn(IndividualBest[num][i].getQIn());
+                GroupBest[i].setH1(IndividualBest[num][i].getH1());
+                GroupBest[i].setH2(IndividualBest[num][i].getH2());
+                GroupBest[i].setQOut(IndividualBest[num][i].getQOut());
+            }
+        }
+    }
+    /**
+     * 最高水位
+     */
+    public double MaxLevel(Option[] options){
+        double max=options[0].getH2();
+        for (int i = 0; i < options.length; i++) {
+            double level = options[i].getH2();
+            if(level>=max){
+                max=level;
+            }
+        }
+        return max;
+    }
+    /**
+     * 最大流量
+     */
+    public double MaxDischarge(Option[] options){
+        double max=options[0].getQOut();
+        for (int i = 0; i < options.length; i++) {
+            double level = options[i].getQOut();
+            if(level>=max){
+                max=level;
+            }
+        }
+        return max;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 }

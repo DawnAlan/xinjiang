@@ -23,7 +23,7 @@ public interface DayWaterSituationStatisticsTableLzzMapper extends BaseMapper<Da
     @Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_LZZ WHERE TO_CHAR(RECORD_TIME,'YYYY-MM-DD') = #{date}")
     List<DayWaterSituationStatisticsTableLzz> selectList(@Param("date")String date);
 
-    @Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_LZZ WHERE TABLE_HEAD_ID in(#{req.headIds})  and  (TO_CHAR(RECORD_TIME,'YYYY-MM-DD') between  #{req.startTime} and #{req.endTime}) and  TIME = '今日均'")
+    @Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_LZZ WHERE TABLE_HEAD_ID = #{req.headIds} and  (TO_CHAR(RECORD_TIME,'YYYY-MM-DD') between  #{req.startTime} and #{req.endTime}) and  TIME = '今日均'")
     List<DayWaterSituationStatisticsTableLzz> selectListForIndustrialWaterFee(@Param("req") SelectListForIndustrialWaterFeeReq req);
 
     @Delete("DELETE FROM DAY_WATER_SITUATION_STATISTICS_TABLE_LZZ WHERE TO_CHAR(RECORD_TIME,'YYYY-MM-DD') = #{date}")

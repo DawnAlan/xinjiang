@@ -321,6 +321,29 @@ public class WaterSituationStatisticsTableTodayServiceImpl extends ServiceImpl<W
 
     @Override
     public RestResponse update(WaterSituationStatisticsTableToday waterSituationStatisticsTableToday) {
+/*        waterSituationStatisticsTableToday.setLzzCkllHj(
+                (waterSituationStatisticsTableToday.getLzzCkllLzzsc()==null?0.0:waterSituationStatisticsTableToday.getLzzCkllLzzsc())
+                +(waterSituationStatisticsTableToday.getLzzCkllHd()==null?0.0:waterSituationStatisticsTableToday.getLzzCkllHd())
+        );
+        waterSituationStatisticsTableToday.setTthJkHj(
+                (waterSituationStatisticsTableToday.getTthJkRk()==null?0.0:waterSituationStatisticsTableToday.getTthJkRk())
+                +(waterSituationStatisticsTableToday.getTthJkGyy()==null?0.0:waterSituationStatisticsTableToday.getTthJkGyy())
+        );
+        waterSituationStatisticsTableToday.setTthCkHj(
+                (waterSituationStatisticsTableToday.getTthCkHd()==null?0.00:waterSituationStatisticsTableToday.getTthCkHd())+
+                (waterSituationStatisticsTableToday.getTthCkBg()==null?0.00:waterSituationStatisticsTableToday.getTthCkBg())+
+                (waterSituationStatisticsTableToday.getTthCkHysk()==null?0.00:waterSituationStatisticsTableToday.getTthCkHysk())
+        );
+        waterSituationStatisticsTableToday.setQsZgqHj(
+                (waterSituationStatisticsTableToday.getQsZgqDgq()==null?0.00:waterSituationStatisticsTableToday.getQsZgqDgq())+
+                (waterSituationStatisticsTableToday.getQsZgqXgq()==null?0.00:waterSituationStatisticsTableToday.getQsZgqXgq())+
+                (waterSituationStatisticsTableToday.getQsZgqLd()==null?0.00:waterSituationStatisticsTableToday.getQsZgqLd())
+        );
+        waterSituationStatisticsTableToday.setQsDlqHj(
+                (waterSituationStatisticsTableToday.getQsDlqNy()==null?0.00:waterSituationStatisticsTableToday.getQsDlqNy())+
+                (waterSituationStatisticsTableToday.getQsDlqLh()==null?0.00:waterSituationStatisticsTableToday.getQsDlqLh())
+        );
+        //waterSituationStatisticsTableToday.setQsQh();*/
         boolean b = this.updateById(waterSituationStatisticsTableToday);
         if(b){
             return RestResponse.ok();
