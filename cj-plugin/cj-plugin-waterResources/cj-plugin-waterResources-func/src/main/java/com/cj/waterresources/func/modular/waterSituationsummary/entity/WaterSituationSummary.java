@@ -15,7 +15,7 @@ import java.io.Serializable;
 @Data
 public class WaterSituationSummary extends Model<WaterSituationSummary> {
     //主键id
-    private Integer id;
+    private String id;
     //水库名称
     private String reservoirName;
     //站点名称
