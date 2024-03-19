@@ -87,5 +87,6 @@ public class OverallSituationUnitMgr extends Model<OverallSituationUnitMgr> {
     @ApiModelProperty(value = "纬度")
     private Double lat;
 
+
 }
 
