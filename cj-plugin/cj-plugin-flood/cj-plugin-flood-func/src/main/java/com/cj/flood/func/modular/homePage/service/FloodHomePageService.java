@@ -2,6 +2,7 @@ package com.cj.flood.func.modular.homePage.service;
 
 import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.RedisUtil;
 import com.cj.flood.func.modular.homePage.bean.res.OverviewRes;
@@ -29,7 +30,6 @@ import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -71,25 +71,17 @@ public class FloodHomePageService {
 
     private List<WaterRainRes> lzzRainfall(Date dateTime) {
         List<LzzPlatformTree> lzzPlatformTrees = lzzPlatformTreeService.lambdaQuery().like(LzzPlatformTree::getName, "雨量").list();
-        List<LzzRainfallStation> rainfalls = lzzRainfallStationService.lambdaQuery()
-                .in(LzzRainfallStation::getTreeId, lzzPlatformTrees.stream().map(LzzPlatformTree::getId).collect(Collectors.toList()))
-                .between(LzzRainfallStation::getTime, DateUtil.beginOfDay(dateTime), dateTime)
-                .list();
+        List<LzzRainfallStation> rainfalls = lzzRainfallStationService.getBaseMapper().selectList(
+                new QueryWrapper<LzzRainfallStation>().select("station_name, sum(rainfall) rainfall").lambda()
+                        .in(LzzRainfallStation::getTreeId, lzzPlatformTrees.stream().map(LzzPlatformTree::getId).collect(Collectors.toList()))
+                        .between(LzzRainfallStation::getTime, DateUtil.beginOfDay(dateTime), dateTime)
+                        .groupBy(LzzRainfallStation::getStationName));
         List<WaterRainRes> waterRainResList = new ArrayList<>();
-        Map<String, Double> collect = rainfalls.stream()
-                .collect(Collectors.groupingBy(LzzRainfallStation::getStationName,
-                        Collectors.summingDouble(n -> {
-                            if (n.getRainfall() == null) {
-                                return 0.000;
-                            } else {
-                                return n.getRainfall().setScale(3, RoundingMode.HALF_UP).doubleValue();
-                            }
-                        })));
         lzzPlatformTrees.forEach(tree -> {
             WaterRainRes waterRainRes = new WaterRainRes();
             waterRainRes.setStation(tree.getName());
-            Double rainfall = collect.getOrDefault(tree.getName(), -1.0);
-            waterRainRes.setValue(rainfall == -1.0 ? "无数据" : rainfall.toString());
+            Double rainfall = rainfalls.stream().filter(n -> n.getStationName().equals(tree.getName())).findAny().orElse(new LzzRainfallStation(){{setRainfall(new BigDecimal(-1));}}).getRainfall().doubleValue();
+            waterRainRes.setValue(rainfall == -1 ? "无数据" : rainfall.toString());
             waterRainResList.add(waterRainRes);
         });
         return waterRainResList;
@@ -97,30 +89,20 @@ public class FloodHomePageService {
 
     private List<WaterRainRes> tthRainfall(Date dateTime) {
         List<IrrigatedPlatformTree> irrigatedPlatformTrees = irrigatedPlatformTreeService.lambdaQuery().like(IrrigatedPlatformTree::getName, "雨量").list();
-        List<IrrigatedPlatformDataInfo> rainfalls = irrigatedPlatformDataInfoService.lambdaQuery()
-                .in(IrrigatedPlatformDataInfo::getMonitorId, irrigatedPlatformTrees.stream().map(IrrigatedPlatformTree::getId).collect(Collectors.toList()))
-//                .apply("to_date(MONITOR_TIME,'yyyy-mm-dd hh24:mi') >= to_date('{0}','yyyy-mm-dd hh24:mi:ss') and to_date(MONITOR_TIME,'yyyy-mm-dd hh24:mi') <= to_date('{1}','yyyy-mm-dd hh24:mi:ss')",
-//                        DateUtil.format(DateUtil.beginOfDay(dateTime), PATTERN_SECOND_OF_DAY),
-//                        DateUtil.format(dateTime, PATTERN_SECOND_OF_DAY))
-                .list()
-                .stream().filter(n -> DateUtil.parse(n.getMonitorTime(), PATTERN_MINUTE_OF_DAY).before(dateTime) &&
-                        DateUtil.parse(n.getMonitorTime(), PATTERN_MINUTE_OF_DAY).after(DateUtil.beginOfDay(dateTime)))
-                .collect(Collectors.toList());
+        List<IrrigatedPlatformDataInfo> rainfalls = irrigatedPlatformDataInfoService.getBaseMapper().selectList(
+                new QueryWrapper<IrrigatedPlatformDataInfo>().select("monitor_name, sum(yq_rain_fall_one) yq_rain_fall_one").lambda()
+                        .in(IrrigatedPlatformDataInfo::getMonitorId, irrigatedPlatformTrees.stream().map(IrrigatedPlatformTree::getId).collect(Collectors.toList()))
+                        .apply("to_date(MONITOR_TIME,{2}) >= to_date({0},{2}) and to_date(MONITOR_TIME,{2}) <= to_date({1},{2})",
+                                DateUtil.format(DateUtil.beginOfDay(dateTime), PATTERN_SECOND_OF_DAY),
+                                DateUtil.format(dateTime, PATTERN_SECOND_OF_DAY),
+                                "yyyy-mm-dd hh24:mi:ss")
+                        .groupBy(IrrigatedPlatformDataInfo::getMonitorName));
         List<WaterRainRes> waterRainResList = new ArrayList<>();
-        Map<String, Double> collect = rainfalls.stream()
-                .collect(Collectors.groupingBy(IrrigatedPlatformDataInfo::getMonitorName,
-                        Collectors.summingDouble(n -> {
-                            if (n.getYqRainFallOne() == null) {
-                                return 0.000;
-                            } else {
-                                return n.getYqRainFallOne();
-                            }
-                        })));
         irrigatedPlatformTrees.forEach(tree -> {
             WaterRainRes waterRainRes = new WaterRainRes();
             waterRainRes.setStation(tree.getName());
-            Double rainfall = collect.getOrDefault(tree.getName(), -1.0);
-            waterRainRes.setValue(rainfall == -1.0 ? "无数据" : rainfall.toString());
+            Double rainfall = rainfalls.stream().filter(n -> n.getMonitorName().equals(tree.getName())).findAny().orElse(new IrrigatedPlatformDataInfo() {{setYqRainFallOne(-1d);}}).getYqRainFallOne();
+            waterRainRes.setValue(rainfall == -1 ? "无数据" : rainfall.toString());
             waterRainResList.add(waterRainRes);
         });
         return waterRainResList;
@@ -261,7 +243,7 @@ public class FloodHomePageService {
                 .le(DayWaterSituationStatisticsTableLzz::getRecordTime, dateTime)
                 .eq(DayWaterSituationStatisticsTableLzz::getTime, "08:00")
                 .list();
-        DayWaterSituationStatisticsTable any = dayWaterSituationStatisticsTableLzzService.lambdaQuery().last("limit 1").one();
+        DayWaterSituationStatisticsTable any = lzzYear.get(0);
         List<AThreeHeader> aThreeHeaders = JSON.parseArray(any.getFrontTableList(), AThreeHeader.class);
         String inFlowHead = findIdLoop(aThreeHeaders, Arrays.asList("进库", "进库流量"));
         String outFlowHead = findIdLoop(aThreeHeaders, Arrays.asList("出库", "流量", "河道"));
@@ -277,7 +259,8 @@ public class FloodHomePageService {
                         Collectors.averagingDouble(n -> n.getV() == null ? 0.00 : n.getV().doubleValue())));
         List<Double> floodRetentionCapacityList = getFloodRetentionCapacityList(storageWaterLevelDaily);
 
-        waterStorageOverviewResLzz.setWaterLevel(getV(lzzToday, wlHead) + "");
+        Double wl = getV(lzzToday, wlHead);
+        waterStorageOverviewResLzz.setWaterLevel(wl == null ? null : wl.toString());
         waterStorageOverviewResLzz.setInFlow(getV(lzzToday, inFlowHead));
         waterStorageOverviewResLzz.setOutFlow(getV(lzzToday, outFlowHead));
         waterStorageOverviewResLzz.setStorageCapacity(getV(lzzToday, capacityHead));
