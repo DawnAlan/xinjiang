@@ -2,7 +2,9 @@ package com.cj.flood.func.modular.homePage.service;
 
 import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.cj.common.model.RestResponse;
+import com.cj.common.util.RedisUtil;
 import com.cj.flood.func.modular.homePage.bean.res.OverviewRes;
 import com.cj.flood.func.modular.homePage.bean.res.WaterRainRes;
 import com.cj.flood.func.modular.homePage.bean.res.WaterStorageOverviewRes;
@@ -28,7 +30,6 @@ import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -42,6 +43,7 @@ public class FloodHomePageService {
     private final IrrigatedPlatformDataInfoService irrigatedPlatformDataInfoService;
     private final IrrigatedPlatformTreeService irrigatedPlatformTreeService;
     private final LzzGaugingStationService lzzGaugingStationService;
+    private final RedisUtil redisUtil;
     @Resource(name = "DayWaterSituationStatisticsTableLzzServiceHomePage")
     private DayWaterSituationStatisticsTableLzzService dayWaterSituationStatisticsTableLzzService;
     @Resource(name = "DayWaterSituationStatisticsTableTthServiceHomePage")
@@ -53,6 +55,7 @@ public class FloodHomePageService {
     private static final String PATTERN_HOUR = "HH";
     private static final String FLOOD_RETENTION_HOUR = "08";
     private static final String FLOOD_RETENTION_HOUR_A3 = "08:00";
+    private static final String FLOOD_HOME_PAGE_STORAGE_OVERVIEW_REDIS_KEY = "FLOOD_HOME_PAGE_STORAGE_OVERVIEW_REDIS_KEY";
 
     public RestResponse<OverviewRes> overview(Date dateTime) {
         return RestResponse.ok(new OverviewRes(null, null, null));
@@ -68,25 +71,17 @@ public class FloodHomePageService {
 
     private List<WaterRainRes> lzzRainfall(Date dateTime) {
         List<LzzPlatformTree> lzzPlatformTrees = lzzPlatformTreeService.lambdaQuery().like(LzzPlatformTree::getName, "雨量").list();
-        List<LzzRainfallStation> rainfalls = lzzRainfallStationService.lambdaQuery()
-                .in(LzzRainfallStation::getTreeId, lzzPlatformTrees.stream().map(LzzPlatformTree::getId).collect(Collectors.toList()))
-                .between(LzzRainfallStation::getTime, DateUtil.beginOfDay(dateTime), dateTime)
-                .list();
+        List<LzzRainfallStation> rainfalls = lzzRainfallStationService.getBaseMapper().selectList(
+                new QueryWrapper<LzzRainfallStation>().select("station_name, sum(rainfall) rainfall").lambda()
+                        .in(LzzRainfallStation::getTreeId, lzzPlatformTrees.stream().map(LzzPlatformTree::getId).collect(Collectors.toList()))
+                        .between(LzzRainfallStation::getTime, DateUtil.beginOfDay(dateTime), dateTime)
+                        .groupBy(LzzRainfallStation::getStationName));
         List<WaterRainRes> waterRainResList = new ArrayList<>();
-        Map<String, Double> collect = rainfalls.stream()
-                .collect(Collectors.groupingBy(LzzRainfallStation::getStationName,
-                        Collectors.summingDouble(n -> {
-                            if (n.getRainfall() == null) {
-                                return 0.000;
-                            } else {
-                                return n.getRainfall().setScale(3, RoundingMode.HALF_UP).doubleValue();
-                            }
-                        })));
         lzzPlatformTrees.forEach(tree -> {
             WaterRainRes waterRainRes = new WaterRainRes();
             waterRainRes.setStation(tree.getName());
-            Double rainfall = collect.getOrDefault(tree.getName(), -1.0);
-            waterRainRes.setValue(rainfall == -1.0 ? "无数据" : rainfall.toString());
+            Double rainfall = rainfalls.stream().filter(n -> n.getStationName().equals(tree.getName())).findAny().orElse(new LzzRainfallStation(){{setRainfall(new BigDecimal(-1));}}).getRainfall().doubleValue();
+            waterRainRes.setValue(rainfall == -1 ? "无数据" : rainfall.toString());
             waterRainResList.add(waterRainRes);
         });
         return waterRainResList;
@@ -94,30 +89,20 @@ public class FloodHomePageService {
 
     private List<WaterRainRes> tthRainfall(Date dateTime) {
         List<IrrigatedPlatformTree> irrigatedPlatformTrees = irrigatedPlatformTreeService.lambdaQuery().like(IrrigatedPlatformTree::getName, "雨量").list();
-        List<IrrigatedPlatformDataInfo> rainfalls = irrigatedPlatformDataInfoService.lambdaQuery()
-                .in(IrrigatedPlatformDataInfo::getMonitorId, irrigatedPlatformTrees.stream().map(IrrigatedPlatformTree::getId).collect(Collectors.toList()))
-//                .apply("to_date(MONITOR_TIME,'yyyy-mm-dd hh24:mi') >= to_date('{0}','yyyy-mm-dd hh24:mi:ss') and to_date(MONITOR_TIME,'yyyy-mm-dd hh24:mi') <= to_date('{1}','yyyy-mm-dd hh24:mi:ss')",
-//                        DateUtil.format(DateUtil.beginOfDay(dateTime), PATTERN_SECOND_OF_DAY),
-//                        DateUtil.format(dateTime, PATTERN_SECOND_OF_DAY))
-                .list()
-                .stream().filter(n -> DateUtil.parse(n.getMonitorTime(), PATTERN_MINUTE_OF_DAY).before(dateTime) &&
-                        DateUtil.parse(n.getMonitorTime(), PATTERN_MINUTE_OF_DAY).after(DateUtil.beginOfDay(dateTime)))
-                .collect(Collectors.toList());
+        List<IrrigatedPlatformDataInfo> rainfalls = irrigatedPlatformDataInfoService.getBaseMapper().selectList(
+                new QueryWrapper<IrrigatedPlatformDataInfo>().select("monitor_name, sum(yq_rain_fall_one) yq_rain_fall_one").lambda()
+                        .in(IrrigatedPlatformDataInfo::getMonitorId, irrigatedPlatformTrees.stream().map(IrrigatedPlatformTree::getId).collect(Collectors.toList()))
+                        .apply("to_date(MONITOR_TIME,{2}) >= to_date({0},{2}) and to_date(MONITOR_TIME,{2}) <= to_date({1},{2})",
+                                DateUtil.format(DateUtil.beginOfDay(dateTime), PATTERN_SECOND_OF_DAY),
+                                DateUtil.format(dateTime, PATTERN_SECOND_OF_DAY),
+                                "yyyy-mm-dd hh24:mi:ss")
+                        .groupBy(IrrigatedPlatformDataInfo::getMonitorName));
         List<WaterRainRes> waterRainResList = new ArrayList<>();
-        Map<String, Double> collect = rainfalls.stream()
-                .collect(Collectors.groupingBy(IrrigatedPlatformDataInfo::getMonitorName,
-                        Collectors.summingDouble(n -> {
-                            if (n.getYqRainFallOne() == null) {
-                                return 0.000;
-                            } else {
-                                return n.getYqRainFallOne();
-                            }
-                        })));
         irrigatedPlatformTrees.forEach(tree -> {
             WaterRainRes waterRainRes = new WaterRainRes();
             waterRainRes.setStation(tree.getName());
-            Double rainfall = collect.getOrDefault(tree.getName(), -1.0);
-            waterRainRes.setValue(rainfall == -1.0 ? "无数据" : rainfall.toString());
+            Double rainfall = rainfalls.stream().filter(n -> n.getMonitorName().equals(tree.getName())).findAny().orElse(new IrrigatedPlatformDataInfo() {{setYqRainFallOne(-1d);}}).getYqRainFallOne();
+            waterRainRes.setValue(rainfall == -1 ? "无数据" : rainfall.toString());
             waterRainResList.add(waterRainRes);
         });
         return waterRainResList;
@@ -174,18 +159,42 @@ public class FloodHomePageService {
                 .list();
     }
 
-    public List<WaterStorageOverviewRes> waterStorageOverview(Date dateTime) {
+    public void waterStorageOverviewSchedule(Date dateTime) {
         List<WaterStorageOverviewRes> waterStorageOverviewResList = new ArrayList<>();
-        waterStorageOverviewResList.add(getLzzA3(dateTime));
+        WaterStorageOverviewRes lzz = getLzz(dateTime);
+        if (lzz.getWaterLevel() == null || lzz.getWaterLevel().equals("数据异常")) {
+            lzz = getLzzA3(dateTime);
+        }
+        waterStorageOverviewResList.add(lzz);
         waterStorageOverviewResList.add(getTth(dateTime));
-        return waterStorageOverviewResList;
+        redisUtil.set(FLOOD_HOME_PAGE_STORAGE_OVERVIEW_REDIS_KEY, waterStorageOverviewResList, 1000 * 60 * 60 * 2);
+    }
+
+    public List<WaterStorageOverviewRes> waterStorageOverview(Date dateTime) {
+        if (!redisUtil.hasKey(FLOOD_HOME_PAGE_STORAGE_OVERVIEW_REDIS_KEY)) {
+            waterStorageOverviewSchedule(new Date());
+        }
+        return (List<WaterStorageOverviewRes>) redisUtil.get(FLOOD_HOME_PAGE_STORAGE_OVERVIEW_REDIS_KEY);
     }
 
     private WaterStorageOverviewRes getLzz(Date dateTime) {
         List<LzzGaugingStation> lzzYear = lzzGaugingStationService.lambdaQuery()
-                .between(LzzGaugingStation::getGatherTime, DateUtil.offsetDay(DateUtil.beginOfYear(dateTime), -1), dateTime)
+                .between(LzzGaugingStation::getGatherTime, DateUtil.beginOfYear(dateTime), dateTime)
                 .eq(LzzGaugingStation::getStationName, "楼庄子库水位站")
                 .list();
+        LzzGaugingStation in = lzzGaugingStationService.lambdaQuery()
+                .eq(LzzGaugingStation::getStationName, "楼庄子出库水位站")
+                .apply("to_char(gather_time, {0}) = {1}", PATTERN_DAY, DateUtil.format(dateTime, PATTERN_DAY))
+                .orderByDesc(LzzGaugingStation::getGatherTime)
+                .last("limit 1")
+                .one();
+        LzzGaugingStation out = lzzGaugingStationService.lambdaQuery()
+                .eq(LzzGaugingStation::getStationName, "楼庄子入库水位站")
+                .apply("to_char(gather_time, {0}) = {1}", PATTERN_DAY, DateUtil.format(dateTime, PATTERN_DAY))
+                .orderByDesc(LzzGaugingStation::getGatherTime)
+                .last("limit 1")
+                .one();
+
         LzzGaugingStation lzzCurrent;
         if (lzzYear.size() == 0) {
             lzzCurrent = null;
@@ -204,8 +213,8 @@ public class FloodHomePageService {
         WaterStorageOverviewRes waterStorageOverviewResLzz = new WaterStorageOverviewRes();
         waterStorageOverviewResLzz.setWaterStorageName("楼庄子水库");
         waterStorageOverviewResLzz.setWaterLevel(lzzCurrent == null ? null : lzzCurrent.getRelativeWaterLevel() < 0 ? "数据异常" : lzzCurrent.getRelativeWaterLevel().toString());
-        waterStorageOverviewResLzz.setInFlow(null);//
-        waterStorageOverviewResLzz.setOutFlow(null);//
+        waterStorageOverviewResLzz.setInFlow(in == null ? null : in.getFlow());
+        waterStorageOverviewResLzz.setOutFlow(out == null ? null : out.getFlow());
         waterStorageOverviewResLzz.setStorageCapacity(lzzCurrent == null ? null : lzzCurrent.getStorageCapacity());
         waterStorageOverviewResLzz.setYesterdayFloodRetentionCapacity(getLastFloodRetention(dateTime, storageWaterLevelDaily, floodRetentionCapacityList));
         waterStorageOverviewResLzz.setYearFloodRetentionCapacity(floodRetentionCapacityList.stream().mapToDouble(n -> n == null ? 0 : n).sum());
@@ -213,37 +222,48 @@ public class FloodHomePageService {
     }
 
     private WaterStorageOverviewRes getLzzA3(Date dateTime) {
-        List<DayWaterSituationStatisticsTableLzz> lzzToday = dayWaterSituationStatisticsTableLzzService.lambdaQuery()
-                .eq(DayWaterSituationStatisticsTableLzz::getRecordTime, DateUtil.beginOfDay(dateTime))
-                .notLike(DayWaterSituationStatisticsTableLzz::getTime, "日均")
-                .list();
-        List<DayWaterSituationStatisticsTableLzz> lzzYear = dayWaterSituationStatisticsTableLzzService.lambdaQuery().ge(DayWaterSituationStatisticsTableLzz::getRecordTime, DateUtil.beginOfYear(dateTime))
+        WaterStorageOverviewRes waterStorageOverviewResLzz = new WaterStorageOverviewRes();
+        waterStorageOverviewResLzz.setWaterStorageName("楼庄子水库");
+        String sql = "to_char(record_time, '" + PATTERN_DAY + "') = '" + DateUtil.format(dateTime, PATTERN_DAY) + "'";
+        List<DayWaterSituationStatisticsTable> lzzToday = dayWaterSituationStatisticsTableLzzService.lambdaQuery()
+                .ne(DayWaterSituationStatisticsTableLzz::getTime, "昨日均")
+                .ne(DayWaterSituationStatisticsTableLzz::getTime, "今日均")
+                .apply(sql)
+                .orderByDesc(DayWaterSituationStatisticsTableLzz::getRecordTime, DayWaterSituationStatisticsTableLzz::getTime)
+                .last("limit 9")
+                .list().stream().collect(Collectors.toList());
+        if (lzzToday.size() == 0) {
+            lzzToday = dayWaterSituationStatisticsTableLzzService.lambdaQuery()
+                    .eq(DayWaterSituationStatisticsTableLzz::getTime, "昨日均")
+                    .apply(sql)
+                    .list().stream().collect(Collectors.toList());
+        }
+        List<DayWaterSituationStatisticsTableLzz> lzzYear = dayWaterSituationStatisticsTableLzzService.lambdaQuery()
+                .ge(DayWaterSituationStatisticsTableLzz::getRecordTime, DateUtil.beginOfYear(dateTime))
                 .le(DayWaterSituationStatisticsTableLzz::getRecordTime, dateTime)
                 .eq(DayWaterSituationStatisticsTableLzz::getTime, "08:00")
                 .list();
-
-        DayWaterSituationStatisticsTableLzz any = lzzToday.stream().findAny().get();
+        DayWaterSituationStatisticsTable any = lzzYear.get(0);
         List<AThreeHeader> aThreeHeaders = JSON.parseArray(any.getFrontTableList(), AThreeHeader.class);
         String inFlowHead = findIdLoop(aThreeHeaders, Arrays.asList("进库", "进库流量"));
         String outFlowHead = findIdLoop(aThreeHeaders, Arrays.asList("出库", "流量", "河道"));
         String wlHead = findIdLoop(aThreeHeaders, Arrays.asList("库水位"), Arrays.asList("水位"));
         String capacityHead = findIdLoop(aThreeHeaders, Arrays.asList("库容"));
 
-        String todayMaxTm = lzzToday.stream().max(Comparator.comparingInt(t -> Integer.parseInt(t.getTime().substring(0, 2)))).get().getTime();
-        List<DayWaterSituationStatisticsTable> collect = lzzToday.stream().filter(n -> n.getTime().equals(todayMaxTm)).collect(Collectors.toList());
+//        String todayMaxTm = lzzToday.stream().max(Comparator.comparingInt(t -> Integer.parseInt(t.getTime().substring(0, 2)))).get().getTime();
+//        List<DayWaterSituationStatisticsTable> collect = lzzToday.stream().filter(n -> n.getTime().equals(todayMaxTm)).collect(Collectors.toList());
 
         Map<String, Double> storageWaterLevelDaily = lzzYear.stream()
-                .filter(n -> n.getTime().equals(FLOOD_RETENTION_HOUR_A3) && n.getTableHeadId().equals(capacityHead))
+                .filter(n -> n.getTableHeadId().equals(capacityHead))
                 .collect(Collectors.groupingBy(n -> DateUtil.format(n.getRecordTime(), PATTERN_DAY),
                         Collectors.averagingDouble(n -> n.getV() == null ? 0.00 : n.getV().doubleValue())));
         List<Double> floodRetentionCapacityList = getFloodRetentionCapacityList(storageWaterLevelDaily);
 
-        WaterStorageOverviewRes waterStorageOverviewResLzz = new WaterStorageOverviewRes();
-        waterStorageOverviewResLzz.setWaterStorageName("楼庄子水库");
-        waterStorageOverviewResLzz.setWaterLevel(getV(collect, wlHead) + "");
-        waterStorageOverviewResLzz.setInFlow(getV(collect, inFlowHead));
-        waterStorageOverviewResLzz.setOutFlow(getV(collect, outFlowHead));
-        waterStorageOverviewResLzz.setStorageCapacity(getV(collect, capacityHead));
+        Double wl = getV(lzzToday, wlHead);
+        waterStorageOverviewResLzz.setWaterLevel(wl == null ? null : wl.toString());
+        waterStorageOverviewResLzz.setInFlow(getV(lzzToday, inFlowHead));
+        waterStorageOverviewResLzz.setOutFlow(getV(lzzToday, outFlowHead));
+        waterStorageOverviewResLzz.setStorageCapacity(getV(lzzToday, capacityHead));
         waterStorageOverviewResLzz.setYesterdayFloodRetentionCapacity(getLastFloodRetention(dateTime, storageWaterLevelDaily, floodRetentionCapacityList));
         waterStorageOverviewResLzz.setYearFloodRetentionCapacity(floodRetentionCapacityList.stream().mapToDouble(n -> n == null ? 0 : n).sum());
         return waterStorageOverviewResLzz;
@@ -314,10 +334,10 @@ public class FloodHomePageService {
                 .eq(DayWaterSituationStatisticsTableTth::getRecordTime, DateUtil.beginOfDay(dateTime))
                 .notLike(DayWaterSituationStatisticsTableTth::getTime, "日均")
                 .list();
-        DayWaterSituationStatisticsTable any = tthToday.stream().findAny().get();
+        DayWaterSituationStatisticsTable any = dayWaterSituationStatisticsTableTthService.lambdaQuery().last("limit 1").one();
         List<AThreeHeader> aThreeHeaders = JSON.parseArray(any.getFrontTableList(), AThreeHeader.class);
 
-        String todayMaxTm = tthToday.stream().max(Comparator.comparingInt(t -> Integer.parseInt(t.getTime().substring(0, 2)))).get().getTime();
+        String todayMaxTm = tthToday.stream().max(Comparator.comparingInt(t -> Integer.parseInt(t.getTime().substring(0, 2)))).orElse(new DayWaterSituationStatisticsTableTth()).getTime();
         List<DayWaterSituationStatisticsTable> collect = tthToday.stream().filter(n -> n.getTime().equals(todayMaxTm)).collect(Collectors.toList());
         String outFlow = findIdLoop(aThreeHeaders, Arrays.asList("出库流量", "河道流量"), Arrays.asList("出库", "流量", "河道流量"));
         return getV(collect, outFlow);
