@@ -73,6 +73,12 @@ public class SurfaceWaterWaterregimenDetail implements Serializable {
     private Integer month;
     @ApiModelProperty(value = "日")
     private Integer day;
+    @ApiModelProperty(value = "楼庄子水厂管道1早8")
+    private BigDecimal lzzSc1Am;
+    @ApiModelProperty(value = "楼庄子水厂管道2早8")
+    private BigDecimal lzzSc2Am;
+    @ApiModelProperty(value = "楼庄子水厂日均")
+    private BigDecimal lzzScMean;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;

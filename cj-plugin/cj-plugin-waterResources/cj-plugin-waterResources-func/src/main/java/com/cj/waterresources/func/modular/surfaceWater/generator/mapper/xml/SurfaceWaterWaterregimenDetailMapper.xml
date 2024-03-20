@@ -26,6 +26,9 @@
             <result property="outTurbidityPm" column="out_turbidity_pm" jdbcType="INTEGER"/>
             <result property="longkouTurbidityAm" column="longkou_turbidity_am" jdbcType="INTEGER"/>
             <result property="longkouTurbidityPm" column="longkou_turbidity_pm" jdbcType="INTEGER"/>
+            <result property="lzzSc1Am" column="lzz_sc1_am" jdbcType="DECIMAL"/>
+            <result property="lzzSc2Am" column="lzz_sc2_am" jdbcType="DECIMAL"/>
+            <result property="lzzScMean" column="lzz_sc_mean" jdbcType="DECIMAL"/>
             <result property="year" column="year" jdbcType="INTEGER"/>
             <result property="month" column="month" jdbcType="INTEGER"/>
             <result property="day" column="day" jdbcType="INTEGER"/>
@@ -39,6 +42,6 @@
         water_level_pm,capacity_am,capacity_pm,
         bagang_turbidity,out_turbidity_am,out_turbidity_pm,
         seepage_flow,longkou_turbidity_am,longkou_turbidity_pm,
-        year,month,day
+        year,month,day,lzz_sc1_am,lzz_sc2_am,lzz_sc_mean
     </sql>
 </mapper>
