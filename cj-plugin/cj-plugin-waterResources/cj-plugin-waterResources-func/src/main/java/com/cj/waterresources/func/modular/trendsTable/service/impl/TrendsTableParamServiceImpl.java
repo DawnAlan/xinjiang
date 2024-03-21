@@ -57,7 +57,7 @@ public class TrendsTableParamServiceImpl extends ServiceImpl<TrendsTableParamMap
     @Override
     @Transactional(rollbackFor=Exception.class)
     public RestResponse add(TrendsTableParamAddReq req) {
-        List<TrendsTableParam> listed = this.lambdaQuery().eq(TrendsTableParam::getUnitId, req.getUnitId()).list();
+        List<TrendsTableParam> listed = this.lambdaQuery().eq(TrendsTableParam::getUnitId, req.getUnitId()).eq(TrendsTableParam::getUseType, req.getUseType()).list();
         if(!listed.isEmpty()){
             return RestResponse.no("请勿重复选择");
         }

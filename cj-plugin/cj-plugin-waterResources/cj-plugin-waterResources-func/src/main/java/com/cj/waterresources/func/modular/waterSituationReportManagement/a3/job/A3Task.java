@@ -4,6 +4,7 @@ import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.dkl.
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hd.service.DayWaterSituationStatisticsTableHdService;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hx.service.DayWaterSituationStatisticsTableHxService;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.service.DayWaterSituationStatisticsTableLzzService;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.service.DayWaterSituationStatisticsTableQsLhService;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.service.DayWaterSituationStatisticsTableQsService;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tth.service.DayWaterSituationStatisticsTableTthService;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +35,9 @@ public class A3Task {
     @Autowired
     private DayWaterSituationStatisticsTableDklService dklService;
 
+    @Autowired
+    private DayWaterSituationStatisticsTableQsLhService qsLhService;
+
 
 
     @Scheduled(cron="0 30 20 * * ?")//每天20:30
@@ -44,6 +48,12 @@ public class A3Task {
         qsService.insertTodayMeanValue();
         hdService.insertTodayMeanValue();
         hxService.insertTodayMeanValue();
+    }
+
+    @Scheduled(cron="0 35 20 * * ?")//每天20:30
+    public void createA3QsLh(){
+        log.info("--------------------------------执行定时插入A3（灯笼渠绿化） 完8点后生成今日均数据----------------------------");
+        qsLhService.insertTodayMeanValue();
     }
 
     @Scheduled(cron="0 00 23 * * ?")//每天23:00

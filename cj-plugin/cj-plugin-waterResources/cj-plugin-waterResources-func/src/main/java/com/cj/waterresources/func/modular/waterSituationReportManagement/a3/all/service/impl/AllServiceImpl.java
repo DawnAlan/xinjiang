@@ -21,7 +21,10 @@ import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hx.m
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.entity.DayWaterSituationStatisticsTableLzz;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.mapper.DayWaterSituationStatisticsTableLzzMapper;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.entity.DayWaterSituationStatisticsTableQs;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.entity.DayWaterSituationStatisticsTableQsLh;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.mapper.DayWaterSituationStatisticsTableQsLhMapper;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.mapper.DayWaterSituationStatisticsTableQsMapper;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.service.DayWaterSituationStatisticsTableQsLhService;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.syyl.mapper.DayWaterSituationStatisticsTableSyylMapper;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tjc.mapper.DayWaterSituationStatisticsTableTjcMapper;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tth.entity.DayWaterSituationStatisticsTableTth;
@@ -51,6 +54,7 @@ public class AllServiceImpl implements AllService {
     private final DayWaterSituationStatisticsTableTjcMapper dayWaterSituationStatisticsTableTjcMapper;
     private final DayWaterSituationStatisticsTableTthMapper dayWaterSituationStatisticsTableTthMapper;
     private final DayWaterSituationStatisticsTableZccMapper dayWaterSituationStatisticsTableZccMapper;
+    private final DayWaterSituationStatisticsTableQsLhMapper dayWaterSituationStatisticsTableQsLhMapper;
     private final RedisUtil redisUtil;
     private final TrendsTableParamService trendsTableParamService;
 
@@ -67,6 +71,7 @@ public class AllServiceImpl implements AllService {
             dayWaterSituationStatisticsTableTjcMapper.deleteByTime(date);
             dayWaterSituationStatisticsTableTthMapper.deleteByTime(date);
             dayWaterSituationStatisticsTableZccMapper.deleteByTime(date);
+            dayWaterSituationStatisticsTableQsLhMapper.deleteByTime(date);
             return RestResponse.ok();
         } catch (Exception e){
             return RestResponse.no("error");
@@ -233,6 +238,20 @@ public class AllServiceImpl implements AllService {
                 });
             }
         }
+        if(trendsTableParam.getUseStation().equals("灯笼渠绿化")){
+            List<DayWaterSituationStatisticsTableQsLh> dayWaterSituationStatisticsTableQsLhs = dayWaterSituationStatisticsTableQsLhMapper.selectList2(trendsTableParam.getId(), req.getStartTime(), req.getEndTime());
+            if(dayWaterSituationStatisticsTableQsLhs.isEmpty()){
+                return RestResponse.no("暂无数据");
+            }else {
+                dayWaterSituationStatisticsTableQsLhs.forEach(t->{
+                    HydrographRes res = new HydrographRes();
+                    res.setName((String)redisUtil.get("trendsTableParam:name:"+t.getTableHeadId()));
+                    res.setFlow(t.getV());
+                    res.setTime(sdf.format(t.getRecordTime()));
+                    hydrographResList.add(res);
+                });
+            }
+        }
         if(trendsTableParam.getUseStation().equals("头屯河水库")){
             List<DayWaterSituationStatisticsTableTth> dayWaterSituationStatisticsTableTths = dayWaterSituationStatisticsTableTthMapper.selectList2(trendsTableParam.getId(), req.getStartTime(), req.getEndTime());
             if(dayWaterSituationStatisticsTableTths.isEmpty()){
@@ -319,6 +338,20 @@ public class AllServiceImpl implements AllService {
                 return null;
             }else {
                 dayWaterSituationStatisticsTableQs.forEach(t->{
+                    HydrographRes res = new HydrographRes();
+                    res.setName((String)redisUtil.get("trendsTableParam:name:"+t.getTableHeadId()));
+                    res.setFlow(t.getV());
+                    res.setTime(sdf.format(t.getRecordTime()));
+                    hydrographResList.add(res);
+                });
+            }
+        }
+        if(trendsTableParam.getUseStation().equals("灯笼渠绿化")){
+            List<DayWaterSituationStatisticsTableQsLh> dayWaterSituationStatisticsTableQsLhs = dayWaterSituationStatisticsTableQsLhMapper.selectList2(trendsTableParam.getId(), req.getStartTime(), req.getEndTime());
+            if(dayWaterSituationStatisticsTableQsLhs.isEmpty()){
+                return null;
+            }else {
+                dayWaterSituationStatisticsTableQsLhs.forEach(t->{
                     HydrographRes res = new HydrographRes();
                     res.setName((String)redisUtil.get("trendsTableParam:name:"+t.getTableHeadId()));
                     res.setFlow(t.getV());
