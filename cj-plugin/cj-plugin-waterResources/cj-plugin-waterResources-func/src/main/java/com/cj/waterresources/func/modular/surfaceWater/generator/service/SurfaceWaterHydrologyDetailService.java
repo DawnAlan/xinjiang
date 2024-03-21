@@ -43,10 +43,11 @@ public class SurfaceWaterHydrologyDetailService extends ServiceImpl<SurfaceWater
                 Iterator<Cell> cellIterator = currentRow.iterator();
                 while (cellIterator.hasNext()) {
                     Cell currentCell = cellIterator.next();
+//                    currentCell.getCellTypeEnum()
                     currentCell.setCellType(CellType.STRING);
                 }
                 try {
-                    if (Integer.parseInt(currentRow.getCell(0).getStringCellValue()) > 1) {
+                    if (Integer.parseInt(currentRow.getCell(0).getStringCellValue()) >= 1) {
                         // 定义日期格式化模式
                         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                         String[] hm = currentRow.getCell(2).getStringCellValue().split(":");
