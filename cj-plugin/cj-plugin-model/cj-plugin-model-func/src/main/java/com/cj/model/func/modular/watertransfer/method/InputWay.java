@@ -39,7 +39,7 @@ public class InputWay {
         for (int x = 0; x < nameIndustryQushou.length; x++) {
             demandIndustryQushou[x] = setDataYearCity(waterDemandData, nameIndustryQushou[x], "渠首工业");
             double n = getDataMonthPlan(waterDemandData, nameIndustryQushou[x], "渠首工业");
-            if (n != -100) {
+            if (n != -100&&n!=0) {
                 demandIndustryQushou[x][monthNum] = n;
             }
             data1.put(nameIndustryQushou[x], demandIndustryQushou[x]);
@@ -49,7 +49,7 @@ public class InputWay {
         for (int x = 0; x < nameAgricultureEast.length; x++) {
             demandAgricultureEast[x] = setDataYearIrrigate(waterDemandData, nameAgricultureEast[x], "河东农业");
             double n = getDataMonthPlan(waterDemandData, nameAgricultureEast[x], "河东农业");
-            if (n != -100) {
+            if (n != -100&&n!=0) {
                 demandAgricultureEast[x][monthNum] = n;
             }
             data1.put(nameAgricultureEast[x], demandAgricultureEast[x]);
@@ -59,7 +59,7 @@ public class InputWay {
         for (int x = 0; x < nameAgricultureWest.length; x++) {
             demandAgricultureWest[x] = setDataYearIrrigate(waterDemandData, nameAgricultureWest[x], "河西农业");
             double n = getDataMonthPlan(waterDemandData, nameAgricultureWest[x], "河西农业");
-            if (n != -100) {
+            if (n != -100&&n!=0) {
                 demandAgricultureWest[x][monthNum] = n;
             }
             data1.put(nameAgricultureWest[x], demandAgricultureWest[x]);
@@ -69,7 +69,7 @@ public class InputWay {
         for (int x = 0; x < nameGreenEast.length; x++) {
             demandGreenEast[x] = setDataYearGreen(waterDemandData, nameGreenEast[x], "河东绿化");
             double n = getDataMonthPlan(waterDemandData, nameGreenEast[x], "河东绿化");
-            if (n != -100) {
+            if (n != -100&&n!=0) {
                 demandGreenEast[x][monthNum] = n;
             }
             data1.put(nameGreenEast[x], demandGreenEast[x]);
@@ -79,7 +79,7 @@ public class InputWay {
         for (int x = 0; x < nameGreenWest.length; x++) {
             demandGreenWest[x] = setDataYearGreen(waterDemandData, nameGreenWest[x], "河西绿化");
             double n = getDataMonthPlan(waterDemandData, nameGreenWest[x], "河西绿化");
-            if (n != -100) {
+            if (n != -100&&n!=0) {
                 demandGreenWest[x][monthNum] = n;
             }
             data1.put(nameGreenWest[x], demandGreenWest[x]);
@@ -89,7 +89,7 @@ public class InputWay {
         for (int x = 0; x < nameAgricultureQushou.length; x++) {
             demandAgricultureQushou[x] = setDataYearIrrigate(waterDemandData, nameAgricultureQushou[x], "渠首农业");
             double n = getDataMonthPlan(waterDemandData, nameAgricultureQushou[x], "渠首农业");
-            if (n != -100) {
+            if (n != -100&&n!=0) {
                 demandAgricultureQushou[x][monthNum] = n;
             }
             data1.put(nameAgricultureQushou[x], demandAgricultureQushou[x]);
@@ -99,26 +99,26 @@ public class InputWay {
         for (int x = 0; x < nameGreenQushou.length; x++) {
             demandGreenQushou[x] = setDataYearGreen(waterDemandData, nameGreenQushou[x], "渠首绿化");
             double n = getDataMonthPlan(waterDemandData, nameGreenQushou[x], "渠首绿化");
-            if (n != -100) {
+            if (n != -100&&n!=0) {
                 demandGreenQushou[x][monthNum] = n;
             }
             data1.put(nameGreenQushou[x], demandGreenQushou[x]);
         }
-        double[] demand_bagang = setDataYearCity(waterDemandData, "八钢", "八钢工业");
+        double[] demand_bagang = setDataYearCity(waterDemandData, "月水量(万m³)", "八钢工业");
         double n1 = getDataMonthPlan(waterDemandData, "水量", "八钢工业");
-        if (n1 != -100) {
+        if (n1 != -100&&n1!=0) {
             demand_bagang[monthNum] = n1;
         }
 
-        double[] demand_hongyan = setDataYearCity(waterDemandData, "用水量", "红岩");
-        double n2 = getDataMonthPlan(waterDemandData, "水量", "红岩城市");
-        if (n2 != -100) {
+        double[] demand_hongyan = setDataYearCity(waterDemandData, "月水量", "红岩");
+        double n2 = getDataMonthPlan(waterDemandData, "水量", "红岩");
+        if (n2 != -100&&n2!=0) {
             demand_hongyan[monthNum] = n2;
         }
 
-        double[] demand_lzz = setDataYearCity(waterDemandData, "用水量", "楼庄子水厂");
+        double[] demand_lzz = setDataYearCity(waterDemandData, "月水量", "楼庄子水厂");
         double n3 = getDataMonthPlan(waterDemandData, "水量", "楼庄子水厂");
-        if (n3 != -100) {
+        if (n3 != -100&&n3!=0) {
             demand_lzz[monthNum] = n3;
         }
         data1.put("八钢", demand_bagang);
@@ -179,7 +179,7 @@ public class InputWay {
             }
 
             double n = getDataRealTime(waterDemandData, nameAgricultureEast[x], "河东管理站");
-            if (n != -100) {
+            if (n != -100&&n!=0) {
                 demandAgricultureEast[x][xnum] = n;
             }
             data1.put(nameAgricultureEast[x], demandAgricultureEast[x]);
@@ -199,7 +199,7 @@ public class InputWay {
                 }
             }
             double n = getDataRealTime(waterDemandData, nameAgricultureWest[x], "河西管理站");
-            if (n != -100) {
+            if (n != -100&&n!=0) {
                 demandAgricultureWest[x][xnum] = n;
             }
             data1.put(nameAgricultureWest[x], demandAgricultureWest[x]);
@@ -218,7 +218,7 @@ public class InputWay {
                 }
             }
             double n = getDataRealTime(waterDemandData, nameAgricultureQushou[x], "渠首管理站");
-            if (n != -100) {
+            if (n != -100&&n!=0) {
                 demandAgricultureQushou[x][xnum] = n;
             }
             data1.put(nameAgricultureQushou[x], demandAgricultureQushou[x]);
@@ -301,7 +301,34 @@ public class InputWay {
                 demand_lzz[i]=0;
             }
         }
+        if (isAllZeros(demand_bagang)==true){
+            double[]datayear= (double[])dataYear.get("八钢");
+            for (int i=0;i<demand_bagang.length;i++){
+                if (dataYear.get("八钢")==null){
+                    break;
+                }
+                demand_bagang[i]= datayear[monthNum]/3;
+            }
+        }
 
+        if (isAllZeros(demand_hongyan)==true){
+            double[]datayear= (double[])dataYear.get("红岩");
+            for (int i=0;i<demand_hongyan.length;i++){
+                if (dataYear.get("红岩")==null){
+                    break;
+                }
+                demand_hongyan[i]= datayear[monthNum]/3;
+            }
+        }
+        if (isAllZeros(demand_lzz)==true){
+            double[]datayear= (double[])dataYear.get("楼庄子水厂");
+            for (int i=0;i<demand_lzz.length;i++){
+                if (dataYear.get("楼庄子水厂")==null){
+                    break;
+                }
+                demand_lzz[i]= datayear[monthNum]/3;
+            }
+        }
         data1.put("八钢", demand_bagang);
         data1.put("红岩", demand_hongyan);
         data1.put("楼庄子水厂", demand_lzz);
@@ -503,6 +530,186 @@ public class InputWay {
     }
 
     /**
+     * 日前模型数据
+     * @param req
+     * @param dataMonth
+     * @param dayNum
+     * @param step
+     * @param id
+     * @return
+     */
+    public static Map<String, Object> setDay(WaterTransferReq req, Map<String, Object> dataMonth, int dayNum, int step, int id) {
+        double[] monthday = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+        double num = 10;
+        num = step;
+        List<Waterdemand> waterDemandData = req.getWaterDemandData();
+
+        String[] nameIndustryQushou = (String[]) dataMonth.get("渠首工业站点名");
+        String[] nameAgricultureEast = (String[]) dataMonth.get("河东灌溉站点名");
+        String[] nameAgricultureWest = (String[]) dataMonth.get("河西灌溉站点名");
+        String[] nameGreenEast = (String[]) dataMonth.get("河东绿化站点名");
+        String[] nameGreenWest = (String[]) dataMonth.get("河西绿化站点名");
+        String[] nameAgricultureQushou = (String[]) dataMonth.get("渠首农业站点名");
+        String[] nameGreenQushou = (String[]) dataMonth.get("渠首绿化站点名");
+        Map<String, Object> data = new HashMap<>();
+
+        String[][] nameAgricultureEastDay = new String[nameAgricultureEast.length][1];
+        String[][] nameAgricultureWestDay = new String[nameAgricultureWest.length][1] ;
+        String[][] nameGreenEastDay = new String[nameGreenEast.length][1];
+        String[][]nameGreenWestDay = new String[nameGreenWest.length][1] ;
+        String[][] nameAgricultureQushouDay = new String[nameAgricultureQushou.length][1];
+        String[][] nameGreenQushouDay = new String[nameGreenQushou.length][1];
+        
+
+        double[] demand = (double[]) dataMonth.get("楼庄子水厂");
+        double[] demand1 = (double[]) dataMonth.get("红岩");
+        double[] demand2 = (double[]) dataMonth.get("八钢");
+
+
+        double[] demand_lzz = new double[step];
+        double[] demand_bagang = new double[step];
+        double[] demand_hongyan = new double[step];
+        for (int x = 0; x < demand_lzz.length; x++) {
+            demand_lzz[x] = demand[id] / num;
+            demand_bagang[x] = demand2[id] / num;
+            demand_hongyan[x] = demand1[id] / num;
+        }
+        data.put("楼庄子水厂", demand_lzz);
+        data.put("八钢", demand_bagang);
+        data.put("红岩", demand_hongyan);
+
+        //渠首工业
+        double[][] demandIndustryQushou = new double[nameIndustryQushou.length][step];
+        for (int x = 0; x < nameIndustryQushou.length; x++) {
+            demand = (double[]) dataMonth.get(nameIndustryQushou[x]);
+            for (int x1 = 0; x1 < demand_lzz.length; x1++) {
+                demandIndustryQushou[x][x1] = demand[id] / num;
+            }
+            data.put(nameIndustryQushou[x], demandIndustryQushou[x]);
+        }
+
+        //渠首农业
+        double[][] demendAgricultureQushou = new double[nameAgricultureQushou.length][step];
+        for (int x = 0; x < nameAgricultureQushou.length; x++) {
+
+            demand = (double[]) dataMonth.get(nameAgricultureQushou[x]);
+            double tenDay=getDataRealTime(waterDemandData,nameAgricultureQushou[x],"渠首管理站");
+            if (tenDay!=-100)
+            {
+                for (int x1 = 0; x1 < step; x1++) {
+                    demendAgricultureQushou[x][x1] = tenDay / num;
+                }
+            }
+            else
+            {
+                for (int x1 = 0; x1 < step; x1++) {
+                    demendAgricultureQushou[x][x1] = demand[id] / num;
+                }
+            }
+            double n = getDataRealDay(waterDemandData, nameAgricultureQushou[x], "渠首管理站");
+            if (n != -100) {
+                demendAgricultureQushou[x][dayNum] = n;
+            }
+            data.put(nameAgricultureQushou[x], demendAgricultureQushou[x]);
+        }
+        // 渠首绿化
+        double[][] demendGreenQushou = new double[nameGreenQushou.length][step];
+        for (int x = 0; x < nameGreenQushou.length; x++) {
+            demand = (double[]) dataMonth.get(nameGreenQushou[x]);
+            for (int x1 = 0; x1 < step; x1++) {
+                demendGreenQushou[x][x1] = demand[id] / num;
+            }
+            double n = getDataRealDay(waterDemandData, nameGreenQushou[x], "渠首管理站");
+            if (n != -100) {
+                demendGreenQushou[x][dayNum] = n;
+            }
+            data.put(nameGreenQushou[x], demendGreenQushou[x]);
+        }
+        //河东绿化
+        double[][] demendGreenEast = new double[nameGreenEast.length][step];
+        for (int x = 0; x < nameGreenEast.length; x++) {
+            demand = (double[]) dataMonth.get(nameGreenEast[x]);
+            for (int x1 = 0; x1 < step; x1++) {
+                demendGreenEast[x][x1] = demand[id] / num;
+            }
+            double n = getDataRealDay(waterDemandData, nameGreenEast[x], "河东管理站");
+            if (n != -100) {
+                demendGreenEast[x][dayNum] = n;
+            }
+            data.put(nameGreenEast[x], demendGreenEast[x]);
+        }
+        //河西绿化
+        double[][] demendGreenWest = new double[nameGreenWest.length][step];
+        for (int x = 0; x < nameGreenWest.length; x++) {
+            demand = (double[]) dataMonth.get(nameGreenWest[x]);
+            for (int x1 = 0; x1 < step; x1++) {
+                demendGreenWest[x][x1] = demand[id] / num;
+            }
+            double n = getDataRealDay(waterDemandData, nameGreenWest[x], "河西管理站");
+            if (n != -100) {
+                demendGreenWest[x][dayNum] = n;
+            }
+            data.put(nameGreenWest[x], demendGreenWest[x]);
+        }
+
+        //河东农业
+        double[][] demendAgricultureEast = new double[nameAgricultureEast.length][step];
+        for (int x = 0; x < nameAgricultureEast.length; x++) {
+            demand = (double[]) dataMonth.get(nameAgricultureEast[x]);
+            double tenDay=getDataRealTime(waterDemandData,nameAgricultureEast[x],"河东管理站");
+            if (tenDay!=-100)
+            {
+                for (int x1 = 0; x1 < step; x1++) {
+                    demendAgricultureEast[x][x1] = tenDay / num;
+                }
+            }
+            else
+            {
+                for (int x1 = 0; x1 < step; x1++) {
+                    demendAgricultureEast[x][x1] = demand[id] / num;
+                }
+            }
+            double n = getDataRealDay(waterDemandData, nameAgricultureEast[x], "河东管理站");
+            if (n != -100) {
+                demendAgricultureEast[x][dayNum] = n;
+            }
+            data.put(nameAgricultureEast[x], demendAgricultureEast[x]);
+        }
+
+        //河西农业
+        double[][] demendAgricultureWest = new double[nameAgricultureWest.length][step];
+        for (int x = 0; x < nameAgricultureWest.length; x++) {
+            demand = (double[]) dataMonth.get(nameAgricultureWest[x]);
+            double tenDay=getDataRealTime(waterDemandData,nameAgricultureWest[x],"河西管理站");
+            if (tenDay!=-100)
+            {
+                for (int x1 = 0; x1 < step; x1++) {
+                    demendAgricultureWest[x][x1] = tenDay / num;
+                }
+            }
+            else
+            {
+                for (int x1 = 0; x1 < step; x1++) {
+                    demendAgricultureWest[x][x1] = demand[id] / num;
+                }
+            }
+            double n = getDataRealDay(waterDemandData, nameAgricultureWest[x], "河西管理站");
+            if (n != -100) {
+                demendAgricultureWest[x][dayNum] = n;
+            }
+            data.put(nameAgricultureWest[x], demendAgricultureWest[x]);
+        }
+
+        data.put("河东灌溉站点名", nameAgricultureEast);
+        data.put("河西灌溉站点名", nameAgricultureWest);
+        data.put("河东绿化站点名", nameGreenEast);
+        data.put("河西绿化站点名", nameGreenWest);
+        data.put("渠首绿化站点名", nameGreenQushou);
+        data.put("渠首工业站点名", nameIndustryQushou);
+        data.put("渠首农业站点名", nameAgricultureQushou);
+        return data;
+    }
+    /**
      * 获得当月用水计划
      * @param data
      * @param name
@@ -512,17 +719,22 @@ public class InputWay {
     public static double getDataMonthPlan(List<Waterdemand> data, String name, String tableName) {
         double n = -100;
         for (int i = 0; i < data.size(); i++) {
-            if (data.get(i).getUseWaterPlan().equals("month")) {
-                if (data.get(i).getArea().equals(tableName)) {
-                    if (data.get(i).getUnit().equals(name)) {
-                        if (data.get(i).getColName().equals("合计")) {
-                            n = data.get(i).getWaterDemendData();
+            String UseWaterPlan = data.get(i).getUseWaterPlan();
+            String Area = data.get(i).getArea();
+            String Unit = data.get(i).getUnit();
+            String ColName = data.get(i).getColName();
+            if (UseWaterPlan != null && Area != null && Unit != null && ColName != null) {
+                if (data.get(i).getUseWaterPlan().equals("month")) {
+                    if (data.get(i).getArea().equals(tableName)) {
+                        if (data.get(i).getUnit().equals(name)) {
+                            if (data.get(i).getColName().equals("合计")) {
+                                n = data.get(i).getWaterDemendData();
+                            }
                         }
                     }
                 }
             }
         }
-
         return n;
     }
 
@@ -535,17 +747,28 @@ public class InputWay {
      */
     public static double getDataRealTime(List<Waterdemand> data, String name, String tableName) {
         double n = -100;
+        if (data==null){
+            return n;
+        }
+        else{
+
         for (int i = 0; i < data.size(); i++) {
+            String UseWaterPlan=data.get(i).getUseWaterPlan();
+            String Area=data.get(i).getArea();
+            String Unit=data.get(i).getUnit();
+            if (UseWaterPlan!=null&&Area!=null&&Unit!=null){
             if (data.get(i).getUseWaterPlan().equals("tenDays")) {
                 if (data.get(i).getArea().equals(tableName)) {
                     if (data.get(i).getUnit().equals(name)) {
                         n = data.get(i).getWaterDemendData();
+
                     }
                 }
             }
         }
-
+        }
         return n;
+        }
     }
 
     /**
@@ -559,22 +782,32 @@ public class InputWay {
     public static double getDataRealDay(List<Waterdemand> data, String name, String tableName) {
         double n = -100;
         double x = 0;
-        for (int i = 0; i < data.size(); i++) {
-            if (data.get(i).getUseWaterPlan().equals("day")) {
-                if (data.get(i).getArea().equals(tableName)) {
-                    if (data.get(i).getUnit().equals(name)) {
-                        if (data.get(i).getColName().equals("flow"))
-                        {
-                            x += data.get(i).getWaterDemendData();
+        if (data==null){
+            return n;
+        }
+        else{
+            for (int i = 0; i < data.size(); i++) {
+                String UseWaterPlan=data.get(i).getUseWaterPlan();
+                String Area=data.get(i).getArea();
+                String Unit=data.get(i).getUnit();
+                String ColName=data.get(i).getColName();
+                if (UseWaterPlan!=null&&Area!=null&&Unit!=null&&ColName!=null){
+                    if (data.get(i).getUseWaterPlan().equals("day")) {
+                        if (data.get(i).getArea().equals(tableName)) {
+                            if (data.get(i).getUnit().equals(name)) {
+                                if (data.get(i).getColName().equals("flow")) {
+                                    x += data.get(i).getWaterDemendData();
+                                }
+                            }
                         }
                     }
                 }
             }
+            if (x != 0) {
+                n = x;
+            }
+            return n;
         }
-        if (x != 0) {
-            n = x;
-        }
-        return n;
     }
 
     /**
@@ -586,6 +819,11 @@ public class InputWay {
     public static double[] setDataMonth(List<Waterdemand> data, String name, String tableName) {
         List<Double> demand = new ArrayList<>();
         for (int i = 0; i < data.size(); i++) {
+            String UseWaterPlan=data.get(i).getUseWaterPlan();
+            String Area=data.get(i).getArea();
+            String Unit=data.get(i).getUnit();
+            String ColName=data.get(i).getColName();
+            if (UseWaterPlan!=null&&Area!=null&&Unit!=null&&ColName!=null){
             if (data.get(i).getUseWaterPlan().equals("month")) {
                 if (data.get(i).getArea().equals(tableName)) {
                     if (data.get(i).getUnit().equals(name)) {
@@ -601,6 +839,7 @@ public class InputWay {
                         }
                     }
                 }
+            }
             }
         }
         double[] demanddata = new double[]{0,0,0};
@@ -623,42 +862,48 @@ public class InputWay {
     public static double[] setDataYearGreen(List<Waterdemand> data, String name, String tableName) {
         List<Double> demand = new ArrayList<>();
         for (int i = 0; i < data.size(); i++) {
-            if (data.get(i).getUseWaterPlan().equals("year")) {
-                if (data.get(i).getArea().equals(tableName)) {
-                    if (data.get(i).getUnit().equals(name)) {
-                        // 一月用水
+            String UseWaterPlan = data.get(i).getUseWaterPlan();
+            String Area = data.get(i).getArea();
+            String Unit = data.get(i).getUnit();
+            String ColName = data.get(i).getColName();
+            if (UseWaterPlan != null && Area != null && Unit != null && ColName != null) {
+                if (data.get(i).getUseWaterPlan().equals("year")) {
+                    if (data.get(i).getArea().equals(tableName)) {
+                        if (data.get(i).getUnit().equals(name)) {
+                            // 一月用水
 
-                        if (data.get(i).getColName().equals("二月")) {
-                            demand.add(data.get(i).getWaterDemendData());
-                        }
-                        if (data.get(i).getColName().equals("三月")) {
-                            demand.add(data.get(i).getWaterDemendData());
-                        }
-                        if (data.get(i).getColName().equals("四月")) {
-                            demand.add(data.get(i).getWaterDemendData());
-                        }
-                        if (data.get(i).getColName().equals("五月")) {
-                            demand.add(data.get(i).getWaterDemendData());
-                        }
-                        if (data.get(i).getColName().equals("六月")) {
-                            demand.add(data.get(i).getWaterDemendData());
-                        }
-                        if (data.get(i).getColName().equals("七月")) {
-                            demand.add(data.get(i).getWaterDemendData());
-                        }
-                        if (data.get(i).getColName().equals("八月")) {
-                            demand.add(data.get(i).getWaterDemendData());
-                        }
-                        if (data.get(i).getColName().equals("九月")) {
-                            demand.add(data.get(i).getWaterDemendData());
-                        }
-                        if (data.get(i).getColName().equals("十月")) {
-                            demand.add(data.get(i).getWaterDemendData());
-                        }
-                        if (data.get(i).getColName().equals("十一月")) {
-                            demand.add(data.get(i).getWaterDemendData());
-                        }
+                            if (data.get(i).getColName().equals("二月")) {
+                                demand.add(data.get(i).getWaterDemendData());
+                            }
+                            if (data.get(i).getColName().equals("三月")) {
+                                demand.add(data.get(i).getWaterDemendData());
+                            }
+                            if (data.get(i).getColName().equals("四月")) {
+                                demand.add(data.get(i).getWaterDemendData());
+                            }
+                            if (data.get(i).getColName().equals("五月")) {
+                                demand.add(data.get(i).getWaterDemendData());
+                            }
+                            if (data.get(i).getColName().equals("六月")) {
+                                demand.add(data.get(i).getWaterDemendData());
+                            }
+                            if (data.get(i).getColName().equals("七月")) {
+                                demand.add(data.get(i).getWaterDemendData());
+                            }
+                            if (data.get(i).getColName().equals("八月")) {
+                                demand.add(data.get(i).getWaterDemendData());
+                            }
+                            if (data.get(i).getColName().equals("九月")) {
+                                demand.add(data.get(i).getWaterDemendData());
+                            }
+                            if (data.get(i).getColName().equals("十月")) {
+                                demand.add(data.get(i).getWaterDemendData());
+                            }
+                            if (data.get(i).getColName().equals("十一月")) {
+                                demand.add(data.get(i).getWaterDemendData());
+                            }
 
+                        }
                     }
                 }
             }
@@ -691,20 +936,25 @@ public class InputWay {
      */
     public static String[] getName(List<Waterdemand> data, String tableName) {
         List<String> demand = new ArrayList<>();
-//        String name=data.get(0).getUnit();
-//        demand.add(name);
-//        for (int i = 0; i < data.size(); i++) {
-//            if (data.get(i).getUseWaterPlan().equals("year"))
-//            {
-//                if (data.get(i).getArea().equals(tableName))
-//                {
-//                    if (!data.get(i).getUnit().equals(name)) {
-//                        demand.add(data.get(i).getUnit());
-//                    }
-//                }
-//            }
-//        }
+
         demand = data.stream().filter(n -> n.getArea().equals(tableName)).map(Waterdemand::getUnit).distinct().collect(Collectors.toList());
+        String[] demanddata = new String[demand.size()];
+        for (int i = 0; i < demand.size(); i++) {
+            demanddata[i] = demand.get(i);
+        }
+        return demanddata;
+    }
+
+    /**
+     * 获得每天上报计划的名字
+     * @param data
+     * @param tableName
+     * @return
+     */
+    public static String[] getNameDay(List<Waterdemand> data, String tableName,String unit) {
+        List<String> demand = new ArrayList<>();
+
+        demand = data.stream().filter(n -> n.getArea().equals(tableName)&&n.getUseWaterPlan().equals("day")&&n.getUnit().equals(unit)).map(Waterdemand::getSubArea).distinct().collect(Collectors.toList());
         String[] demanddata = new String[demand.size()];
         for (int i = 0; i < demand.size(); i++) {
             demanddata[i] = demand.get(i);
@@ -724,9 +974,15 @@ public class InputWay {
         List<String> month = Arrays.asList("一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月");
         List<Double> demand = new ArrayList<>();
         for (int i = 0; i < data.size(); i++) {
-            if (data.get(i).getUseWaterPlan().equals("year") && data.get(i).getArea().equals(tableName) && data.get(i).getUnit().equals(name)) {
-                if (month.contains(data.get(i).getColName())) {
-                    demand.add(data.get(i).getWaterDemendData());
+            String UseWaterPlan = data.get(i).getUseWaterPlan();
+            String Area = data.get(i).getArea();
+            String Unit = data.get(i).getUnit();
+            String ColName = data.get(i).getColName();
+            if (UseWaterPlan != null && Area != null && Unit != null && ColName != null) {
+                if (data.get(i).getUseWaterPlan().equals("year") && data.get(i).getArea().equals(tableName) && data.get(i).getUnit().equals(name)) {
+                    if (month.contains(data.get(i).getColName())) {
+                        demand.add(data.get(i).getWaterDemendData());
+                    }
                 }
             }
         }
@@ -757,32 +1013,38 @@ public class InputWay {
     public static double[] setDataYearIrrigate(List<Waterdemand> data, String name, String tableName) {
         List<Double> demand = new ArrayList<>();
         for (int i = 0; i < data.size(); i++) {
-            if (data.get(i).getUseWaterPlan().equals("year")) {
-                if (data.get(i).getArea().equals(tableName)) {
-                    if (data.get(i).getUnit().equals(name)) {
-                        if (data.get(i).getColName().equals("四月")) {
-                            demand.add(data.get(i).getWaterDemendData());
-                        }
-                        if (data.get(i).getColName().equals("五月")) {
-                            demand.add(data.get(i).getWaterDemendData());
-                        }
-                        if (data.get(i).getColName().equals("六月")) {
-                            demand.add(data.get(i).getWaterDemendData());
-                        }
-                        if (data.get(i).getColName().equals("七月")) {
-                            demand.add(data.get(i).getWaterDemendData());
-                        }
-                        if (data.get(i).getColName().equals("八月")) {
-                            demand.add(data.get(i).getWaterDemendData());
-                        }
-                        if (data.get(i).getColName().equals("九月")) {
-                            demand.add(data.get(i).getWaterDemendData());
-                        }
-                        if (data.get(i).getColName().equals("十月")) {
-                            demand.add(data.get(i).getWaterDemendData());
-                        }
-                        if (data.get(i).getColName().equals("十一月")) {
-                            demand.add(data.get(i).getWaterDemendData());
+            String UseWaterPlan = data.get(i).getUseWaterPlan();
+            String Area = data.get(i).getArea();
+            String Unit = data.get(i).getUnit();
+            String ColName = data.get(i).getColName();
+            if (UseWaterPlan != null && Area != null && Unit != null && ColName != null) {
+                if (data.get(i).getUseWaterPlan().equals("year")) {
+                    if (data.get(i).getArea().equals(tableName)) {
+                        if (data.get(i).getUnit().equals(name)) {
+                            if (data.get(i).getColName().equals("四月")) {
+                                demand.add(data.get(i).getWaterDemendData());
+                            }
+                            if (data.get(i).getColName().equals("五月")) {
+                                demand.add(data.get(i).getWaterDemendData());
+                            }
+                            if (data.get(i).getColName().equals("六月")) {
+                                demand.add(data.get(i).getWaterDemendData());
+                            }
+                            if (data.get(i).getColName().equals("七月")) {
+                                demand.add(data.get(i).getWaterDemendData());
+                            }
+                            if (data.get(i).getColName().equals("八月")) {
+                                demand.add(data.get(i).getWaterDemendData());
+                            }
+                            if (data.get(i).getColName().equals("九月")) {
+                                demand.add(data.get(i).getWaterDemendData());
+                            }
+                            if (data.get(i).getColName().equals("十月")) {
+                                demand.add(data.get(i).getWaterDemendData());
+                            }
+                            if (data.get(i).getColName().equals("十一月")) {
+                                demand.add(data.get(i).getWaterDemendData());
+                            }
                         }
                     }
                 }
