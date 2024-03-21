@@ -9,14 +9,14 @@ import com.cj.waterresources.func.modular.trendsTable.entity.TrendsTableParam;
 import com.cj.waterresources.func.modular.trendsTable.service.TrendsTableParamService;
 import com.cj.waterresources.func.modular.waterPrice.totalIdToStation.entity.TotalIdToStation;
 import com.cj.waterresources.func.modular.waterPrice.totalIdToStation.service.TotalIdToStationService;
-import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hd.entity.DayWaterSituationStatisticsTableHd;
-import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.entity.DayWaterSituationStatisticsTableLzz;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.mapper.DayWaterSituationStatisticsTableQsMapper;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.entity.DayWaterSituationStatisticsTableQs;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.service.DayWaterSituationStatisticsTableQsLhService;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.service.DayWaterSituationStatisticsTableQsService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -36,6 +36,9 @@ public class DayWaterSituationStatisticsTableQsServiceImpl extends ServiceImpl<D
 
     @Autowired
     private TrendsTableParamService trendsTableParamService;
+
+    @Autowired
+    private DayWaterSituationStatisticsTableQsLhService dayWaterSituationStatisticsTableQsLhService;
 
     @Autowired
     private RedisUtil redisUtil;
@@ -58,6 +61,7 @@ public class DayWaterSituationStatisticsTableQsServiceImpl extends ServiceImpl<D
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public RestResponse add(List<DayWaterSituationStatisticsTableQs> dayWaterSituationStatisticsTableQsList) {
         dayWaterSituationStatisticsTableQsList.forEach(t->{
             t.setId(UUIDUtils.getUUID());
@@ -205,6 +209,7 @@ public class DayWaterSituationStatisticsTableQsServiceImpl extends ServiceImpl<D
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public RestResponse delete(String ids) {
         List<String> collect = Arrays.stream(ids.split(",")).collect(Collectors.toList());
         boolean remove = this.lambdaUpdate().in(DayWaterSituationStatisticsTableQs::getId, collect).remove();
@@ -216,6 +221,7 @@ public class DayWaterSituationStatisticsTableQsServiceImpl extends ServiceImpl<D
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public RestResponse update(List<DayWaterSituationStatisticsTableQs> dayWaterSituationStatisticsTableQsList) {
         List<TotalIdToStation> totalIdToStationList = totalIdToStationService.lambdaQuery().eq(TotalIdToStation::getUseType, 1).eq(TotalIdToStation::getStation, "渠首管理站").list();
         String mk = (String) redisUtil.get("trendsTableParam:list");
@@ -469,7 +475,6 @@ public class DayWaterSituationStatisticsTableQsServiceImpl extends ServiceImpl<D
             return RestResponse.no("error");
         }
     }
-
     private void updateYesterdayData(Date now,List<DayWaterSituationStatisticsTableQs> qsList){
         List<DayWaterSituationStatisticsTableQs> dayWaterSituationStatisticsTableQsList = this.baseMapper.selectInfoAfterDayList(getDate(now,1));
         if(!dayWaterSituationStatisticsTableQsList.isEmpty()){

@@ -325,7 +325,7 @@ public class DayWaterSituationStatisticsTableDklServiceImpl extends ServiceImpl<
         }
         boolean b = this.updateBatchById(dayWaterSituationStatisticsTableDklList);
         if (b) {
-            updateYesterdayData(dayWaterSituationStatisticsTableDklList.get(0).getRecordTime());
+            updateYesterdayData(dayWaterSituationStatisticsTableDklList.get(0).getRecordTime(),dayWaterSituationStatisticsTableDklList);
             return RestResponse.ok();
         }else {
             return RestResponse.no("error");
@@ -445,15 +445,13 @@ public class DayWaterSituationStatisticsTableDklServiceImpl extends ServiceImpl<
         }
     }
 
-    private void updateYesterdayData(Date now){
-        List<DayWaterSituationStatisticsTableDkl> dayWaterSituationStatisticsTableDklList = this.baseMapper.selectList1(sdf.format(now));
-        List<DayWaterSituationStatisticsTableDkl> dayWaterSituationStatisticsTableDkls = this.baseMapper.selectList(getDate(now, 1));
-        if(!dayWaterSituationStatisticsTableDkls.isEmpty()){
-            List<DayWaterSituationStatisticsTableDkl> hdList = dayWaterSituationStatisticsTableDkls.stream().filter(t -> t.getTime().equals("昨日均")).collect(Collectors.toList());
-            hdList.forEach(t->{
-                t.setV(dayWaterSituationStatisticsTableDklList.stream().filter(p->p.getTableHeadId().equals(t.getTableHeadId()) && p.getV() !=null).map(DayWaterSituationStatisticsTableDkl::getV).reduce(Double::sum).orElse(0.00));
+    private void updateYesterdayData(Date now,List<DayWaterSituationStatisticsTableDkl> dklList){
+        List<DayWaterSituationStatisticsTableDkl> dayWaterSituationStatisticsTableDklList = this.baseMapper.selectInfoAfterDayList(getDate(now,1));
+        if(!dayWaterSituationStatisticsTableDklList.isEmpty()){
+            dayWaterSituationStatisticsTableDklList.forEach(t->{
+                t.setV(dklList.stream().filter(p->p.getTableHeadId().equals(t.getTableHeadId()) && p.getV() !=null).map(DayWaterSituationStatisticsTableDkl::getV).reduce(Double::sum).orElse(0.00));
             });
-            this.updateBatchById(hdList);
+            this.updateBatchById(dayWaterSituationStatisticsTableDklList);
         }
     }
 

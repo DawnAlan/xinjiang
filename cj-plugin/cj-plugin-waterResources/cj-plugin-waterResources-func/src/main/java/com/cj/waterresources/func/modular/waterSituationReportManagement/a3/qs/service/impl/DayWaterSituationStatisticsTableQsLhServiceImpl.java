@@ -12,11 +12,13 @@ import com.cj.waterresources.func.modular.waterPrice.totalIdToStation.service.To
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.entity.DayWaterSituationStatisticsTableQs;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.mapper.DayWaterSituationStatisticsTableQsLhMapper;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.entity.DayWaterSituationStatisticsTableQsLh;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.mapper.DayWaterSituationStatisticsTableQsMapper;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.service.DayWaterSituationStatisticsTableQsLhService;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.service.DayWaterSituationStatisticsTableQsService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -36,6 +38,9 @@ public class DayWaterSituationStatisticsTableQsLhServiceImpl extends ServiceImpl
 
     @Autowired
     private TrendsTableParamService trendsTableParamService;
+
+    @Autowired
+    private DayWaterSituationStatisticsTableQsMapper dayWaterSituationStatisticsTableQsMapper;
 
     @Autowired
     private DayWaterSituationStatisticsTableQsService dayWaterSituationStatisticsTableQsService;
@@ -61,6 +66,7 @@ public class DayWaterSituationStatisticsTableQsLhServiceImpl extends ServiceImpl
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public RestResponse add(List<DayWaterSituationStatisticsTableQsLh> dayWaterSituationStatisticsTableQsLhList) {
         dayWaterSituationStatisticsTableQsLhList.forEach(t->{
             t.setId(UUIDUtils.getUUID());
@@ -162,8 +168,7 @@ public class DayWaterSituationStatisticsTableQsLhServiceImpl extends ServiceImpl
         result.addAll(dayWaterSituationStatisticsTableQsLhList);
         boolean b = this.saveBatch(result);
         if (b) {
-            List<DayWaterSituationStatisticsTableQs> qdList = dayWaterSituationStatisticsTableQsService.lambdaQuery().eq(DayWaterSituationStatisticsTableQs::getRecordTime, qsLh.getRecordTime()).
-                    eq(DayWaterSituationStatisticsTableQs::getTime, qsLh.getTime()).list();
+            List<DayWaterSituationStatisticsTableQs> qdList = dayWaterSituationStatisticsTableQsMapper.selectListForLh(qsLh.getTime(),sdf.format(qsLh.getRecordTime()));
             if(qdList.isEmpty()){
                 return RestResponse.no("请先创建对应的渠首管理站记录！");
             }
@@ -188,6 +193,7 @@ public class DayWaterSituationStatisticsTableQsLhServiceImpl extends ServiceImpl
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public RestResponse delete(String ids) {
         List<String> collect = Arrays.stream(ids.split(",")).collect(Collectors.toList());
         boolean remove = this.lambdaUpdate().in(DayWaterSituationStatisticsTableQsLh::getId, collect).remove();
@@ -199,6 +205,7 @@ public class DayWaterSituationStatisticsTableQsLhServiceImpl extends ServiceImpl
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public RestResponse update(List<DayWaterSituationStatisticsTableQsLh> dayWaterSituationStatisticsTableQsLhList) {
         List<TotalIdToStation> totalIdToStationList = totalIdToStationService.lambdaQuery().eq(TotalIdToStation::getUseType, 1).eq(TotalIdToStation::getStation, "灯笼渠绿化").list();
         String mk = (String) redisUtil.get("trendsTableParam:list");
@@ -274,14 +281,13 @@ public class DayWaterSituationStatisticsTableQsLhServiceImpl extends ServiceImpl
             if(dayWaterSituationStatisticsTableQsLhList.get(0).getTime().equals("今日均")){
                 updateYesterdayData(dayWaterSituationStatisticsTableQsLhList.get(0).getRecordTime(),dayWaterSituationStatisticsTableQsLhList);
             }
-            List<DayWaterSituationStatisticsTableQs> qdList = dayWaterSituationStatisticsTableQsService.lambdaQuery().eq(DayWaterSituationStatisticsTableQs::getRecordTime, qsLh.getRecordTime()).
-                    eq(DayWaterSituationStatisticsTableQs::getTime, qsLh.getTime()).list();
+            List<DayWaterSituationStatisticsTableQs> qdList = dayWaterSituationStatisticsTableQsMapper.selectListForLh(qsLh.getTime(),sdf.format(qsLh.getRecordTime()));
             if(qdList.isEmpty()){
                 return RestResponse.no("请先创建对应的渠首管理站记录！");
             }
             List<TrendsTableParam> trendsTableParamQsList = trendsTableParamListTemp.stream().filter(t -> t.getUseType() == 1 && t.getUseStation().equals("渠首管理站")).collect(Collectors.toList());
             TrendsTableParam dlqlhTableParam = trendsTableParamQsList.stream().filter(t -> t.getParamName().equals("灯笼渠绿化")).collect(Collectors.toList()).get(0);
-            TrendsTableParam hjTableParam = trendsTableParamList.stream().filter(t -> t.getParamName().equals("合计") && t.getPId().equals("0")).collect(Collectors.toList()).get(0);
+            TrendsTableParam hjTableParam = trendsTableParamList.stream().filter(t -> t.getParamName().equals("合计") && t.getPId().equals("0") && t.getUseStation().equals("灯笼渠绿化")).collect(Collectors.toList()).get(0);
             DayWaterSituationStatisticsTableQsLh qsLhObj = dayWaterSituationStatisticsTableQsLhList.stream().filter(t -> t.getTableHeadId().equals(hjTableParam.getId())).collect(Collectors.toList()).get(0);
             qdList.forEach(t->{
                 if(t.getTableHeadId().equals(dlqlhTableParam.getId())){
@@ -391,8 +397,7 @@ public class DayWaterSituationStatisticsTableQsLhServiceImpl extends ServiceImpl
         boolean b = this.saveBatch(dayWaterSituationStatisticsTableQsLhList);
         if (b) {
             DayWaterSituationStatisticsTableQsLh qsLh = dayWaterSituationStatisticsTableQsLhList.get(0);
-            List<DayWaterSituationStatisticsTableQs> qdList = dayWaterSituationStatisticsTableQsService.lambdaQuery().eq(DayWaterSituationStatisticsTableQs::getRecordTime, qsLh.getRecordTime()).
-                    eq(DayWaterSituationStatisticsTableQs::getTime, qsLh.getTime()).list();
+            List<DayWaterSituationStatisticsTableQs> qdList = dayWaterSituationStatisticsTableQsMapper.selectListForLh(qsLh.getTime(),sdf.format(qsLh.getRecordTime()));
             if(qdList.isEmpty()){
                 return RestResponse.no("请先创建对应的渠首管理站记录！");
             }
@@ -433,8 +438,7 @@ public class DayWaterSituationStatisticsTableQsLhServiceImpl extends ServiceImpl
 
             //修改渠首管理站--灯笼渠绿化对应的值
             DayWaterSituationStatisticsTableQsLh qsLh = dayWaterSituationStatisticsTableQsLhList.get(0);
-            List<DayWaterSituationStatisticsTableQs> qdList = dayWaterSituationStatisticsTableQsService.lambdaQuery().eq(DayWaterSituationStatisticsTableQs::getRecordTime, qsLh.getRecordTime()).
-                    eq(DayWaterSituationStatisticsTableQs::getTime, qsLh.getTime()).list();
+            List<DayWaterSituationStatisticsTableQs> qdList = dayWaterSituationStatisticsTableQsMapper.selectListForLh(qsLh.getTime(),sdf.format(qsLh.getRecordTime()));
             if(!qdList.isEmpty()){
                 List<TrendsTableParam> trendsTableParamQsList = trendsTableParamListTemp.stream().filter(t -> t.getUseType() == 1 && t.getUseStation().equals("渠首管理站")).collect(Collectors.toList());
                 TrendsTableParam dlqlhTableParam = trendsTableParamQsList.stream().filter(t -> t.getParamName().equals("灯笼渠绿化")).collect(Collectors.toList()).get(0);

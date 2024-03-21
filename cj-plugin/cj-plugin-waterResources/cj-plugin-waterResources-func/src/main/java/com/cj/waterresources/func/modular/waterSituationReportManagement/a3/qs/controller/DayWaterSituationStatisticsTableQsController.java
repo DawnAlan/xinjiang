@@ -1,7 +1,6 @@
 package com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.controller;
 
 import com.cj.common.model.RestResponse;
-import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.entity.DayWaterSituationStatisticsTableLzz;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.entity.DayWaterSituationStatisticsTableQs;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.service.DayWaterSituationStatisticsTableQsService;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
@@ -30,11 +29,13 @@ public class DayWaterSituationStatisticsTableQsController {
     @Autowired
     private DayWaterSituationStatisticsTableQsService dayWaterSituationStatisticsTableQsService;
 
+
+
     @ApiOperationSupport(order = 1)
     @ApiOperation("新增")
     @PostMapping("/add")
-    public RestResponse add(@RequestBody List<DayWaterSituationStatisticsTableQs> list) {
-        return dayWaterSituationStatisticsTableQsService.add(list);
+    public RestResponse add(@RequestBody List<DayWaterSituationStatisticsTableQs> dayWaterSituationStatisticsTableQsList) {
+        return dayWaterSituationStatisticsTableQsService.add(dayWaterSituationStatisticsTableQsList);
     }
 
     @ApiOperationSupport(order = 2)

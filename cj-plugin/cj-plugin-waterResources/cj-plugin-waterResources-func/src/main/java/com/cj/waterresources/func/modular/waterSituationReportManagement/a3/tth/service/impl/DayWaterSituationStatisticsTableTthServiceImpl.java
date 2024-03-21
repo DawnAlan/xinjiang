@@ -265,7 +265,9 @@ public class DayWaterSituationStatisticsTableTthServiceImpl extends ServiceImpl<
         }
         boolean b = this.updateBatchById(dayWaterSituationStatisticsTableTthList);
         if (b) {
-            updateYesterdayData(dayWaterSituationStatisticsTableTthList.get(0).getRecordTime());
+            if(dayWaterSituationStatisticsTableTthList.get(0).getTime().equals("今日均")){
+                updateYesterdayData(dayWaterSituationStatisticsTableTthList.get(0).getRecordTime(),dayWaterSituationStatisticsTableTthList);
+            }
             return RestResponse.ok();
         }else {
             return RestResponse.no("error");
@@ -369,15 +371,14 @@ public class DayWaterSituationStatisticsTableTthServiceImpl extends ServiceImpl<
         }
     }
 
-    private void updateYesterdayData(Date now){
-        List<DayWaterSituationStatisticsTableTth> dayWaterSituationStatisticsTableTthList = this.baseMapper.selectInfoList(sdf.format(now));
-        List<DayWaterSituationStatisticsTableTth> dayWaterSituationStatisticsTableTths = this.baseMapper.selectList(getDate(now, 1));
-        if(!dayWaterSituationStatisticsTableTths.isEmpty()){
-            List<DayWaterSituationStatisticsTableTth> hdList = dayWaterSituationStatisticsTableTths.stream().filter(t -> t.getTime().equals("昨日均")).collect(Collectors.toList());
-            hdList.forEach(t->{
-                t.setV(dayWaterSituationStatisticsTableTthList.stream().filter(p->p.getTableHeadId().equals(t.getTableHeadId()) && p.getV() !=null).map(DayWaterSituationStatisticsTableTth::getV).reduce(Double::sum).orElse(0.00));
+    private void updateYesterdayData(Date now,List<DayWaterSituationStatisticsTableTth> tthList){
+
+        List<DayWaterSituationStatisticsTableTth> dayWaterSituationStatisticsTableTths1 = this.baseMapper.  selectInfoAfterDayList(getDate(now,1));
+        if(!dayWaterSituationStatisticsTableTths1.isEmpty()){
+            dayWaterSituationStatisticsTableTths1.forEach(t->{
+                t.setV(tthList.stream().filter(p->p.getTableHeadId().equals(t.getTableHeadId()) && p.getV() !=null).map(DayWaterSituationStatisticsTableTth::getV).reduce(Double::sum).orElse(0.00));
             });
-            this.updateBatchById(hdList);
+            this.updateBatchById(dayWaterSituationStatisticsTableTths1);
         }
     }
 
