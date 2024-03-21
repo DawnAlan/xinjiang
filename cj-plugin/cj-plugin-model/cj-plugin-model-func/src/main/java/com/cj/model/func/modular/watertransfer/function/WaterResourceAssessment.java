@@ -83,18 +83,19 @@ public class WaterResourceAssessment {
 
         for (int i=0;i<reqList.size();i++){
             if (i==0){
-            appraise+="在调度区间内来水预报总水量为"+inflowWater[i]+"万m³,"+"其中生态需水为"+ecologyWater[i]+"万m³,"+"各单位需水总量为"+
+            appraise+="在调度期生态需水量为"+ecologyWater[i]+"万m³,"+"各单位需水总量为"+
                     waterDemand[i]+"万m³,";
             }
 
-             appraise+= schemeName[i]+"在楼庄子的蓄水量为："+dischargeLzz[i]+"万m³,头屯河蓄水量为："+dischargeTth[i]+"万m³,总蓄水量为"+storgeAll[i]+
-                     "万m³,可供水量浪费量为"+wasteWater[i]+"万m³,可供水量利用率为"+waterRate[i]+"。";
+             appraise+= schemeName[i]+":在调度区间内来水预报总水量为"+inflowWater[i]+"万m³,"+"在楼庄子的蓄水量为"+dischargeLzz[i]+"万m³,头屯河蓄水量为"+dischargeTth[i]+"万m³,总蓄水量为"+storgeAll[i]+
+                     "万m³,可供水量浪费量为"+wasteWater[i]+"万m³,可供水量利用率为"+waterRate[i]+";";
 
         }
 
-        schemeOptimization="推荐方案为"+schemeName[(int)n]+",可供水量利用率较高。";
+        schemeOptimization="推荐方案:"+schemeName[(int)n]+",可供水量利用率较高;";
+        appraise=appraise+schemeOptimization;
         appraise11.put("方案评价",appraise);
-        appraise11.put("方案推荐",schemeOptimization);
+        
       return appraise11;
     }
 

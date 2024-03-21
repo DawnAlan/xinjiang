@@ -1,5 +1,6 @@
 package com.cj.model.func.modular.FloodPredict.Calibration;
-import java.util.*;
+
+import java.util.Random;
 
 /**
  * Particle swarm optimization algorithm implementation

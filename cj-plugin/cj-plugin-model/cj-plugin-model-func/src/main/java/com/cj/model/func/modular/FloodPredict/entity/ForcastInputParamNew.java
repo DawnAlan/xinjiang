@@ -12,6 +12,9 @@ public class ForcastInputParamNew {
     private Integer modelType;
     //预报时间
     private Date predictionTime;
+    //预报时间
+
+    private Date dataStartTime;
     //时段类型(1-月 2-旬 3-日 4-小时)
     private Integer periodTimeType;
     //时段步长

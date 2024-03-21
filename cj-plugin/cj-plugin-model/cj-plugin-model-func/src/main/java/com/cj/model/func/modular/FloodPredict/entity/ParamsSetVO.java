@@ -79,8 +79,10 @@ public class ParamsSetVO {
 	public int forward;//前沿时段
 
 //	public int scalength;//影响因子的数量
-	public int influence_factor;//影响因子的数量
+//	public int influence_factor;//影响因子的数量
+	public int history_factor;//前期因子的数量
 
+	public int history_day;//前期天数
 	public int periodStepSize;//时段步长，中长期默认为1
 
 	public int periodStepNumber;//时段数量

@@ -13,7 +13,7 @@ import java.text.DecimalFormat;
 import java.util.*;
 
 
-public class ResourceOptimizationshort_DayTest
+public class ResourceOptimizationshort_DayAheadTest
 {
 //    private static double irrigate1;
 //	private static int generation1;

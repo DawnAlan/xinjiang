@@ -120,14 +120,15 @@ public class PredictionApiProvider implements PredictionApi {
             }else {
                 lzzData.setRealTimeWaterLevel(lzzGaugingStation.getRelativeWaterLevel());
             }
-
-
             lzzData.setUsedStorageCapacity(lzzGaugingStation.getStorageCapacity());
             lzzData.setRemainingStorageCapacity(7374.0 - lzzData.getUsedStorageCapacity());
         }else {
             Set<String> allKeys = redisUtil.getAllKeys("lzz:time:waterLevel:true");
             List<Date> dateList = new ArrayList<>();
             for(String s:allKeys){
+                if(s.contains("日均")){
+                    continue;
+                }
                 String[] split1 = s.split(" ");
                 String[] split2 = split1[0].split(":");
                 String dateTemp =split2[split2.length-1]+" "+split1[split1.length-1];

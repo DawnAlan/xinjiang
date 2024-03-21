@@ -65,6 +65,18 @@ public class OverallSituationUnitMgrTreeRes {
     @ApiModelProperty(value = "排序字段")
     private Integer sortNum;
 
+    //是否三维地图
+    @ApiModelProperty(value = "是否三维地图")
+    private Integer haveMap;
+
+    //经度
+    @ApiModelProperty(value = "经度")
+    private Double lon;
+
+    //纬度
+    @ApiModelProperty(value = "纬度")
+    private Double lat;
+
     @ApiModelProperty(value = "子节点")
     private List<OverallSituationUnitMgrTreeRes> children;
 }

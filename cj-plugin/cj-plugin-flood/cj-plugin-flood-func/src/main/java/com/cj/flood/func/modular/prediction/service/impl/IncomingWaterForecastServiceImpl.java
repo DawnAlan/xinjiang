@@ -137,8 +137,9 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                         forcastInputParamNew.setPeriodTimeNum(incomingWaterForecast.getPeriodTimeNum());
                         forcastInputParamNew.setPeriodTimeStep(incomingWaterForecast.getPeriodTimeStep());
                         forcastInputParamNew.setPeriodTimeType(incomingWaterForecast.getPeriodTimeType());
+                        req.getRainFallDtos().forEach(t->t.setArea("面雨量"));
                         forcastInputParamNew.setRainFallDtos(req.getRainFallDtos());
-                        List<Date> dates = TouTunHe.judgeDate(incomingWaterForecast.getPredictionTime());
+                        List<Date> dates = TouTunHe.judgeDate(incomingWaterForecast.getPredictionTime(),incomingWaterForecast.getPeriodTimeNum());
                         if(dates.isEmpty()){
                             LzzHydrologyParam lzzHydrologyParam = new LzzHydrologyParam();
                             lzzHydrologyParam.setThreeGaugingStation(lzzGaugingStationService.lambdaQuery().eq(LzzGaugingStation::getStationName,"3号桥水位站").list());
@@ -162,6 +163,7 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                             irrigatedHydrologyParam.setTthInput(irrigatedPlatformDataInfoService.lambdaQuery().eq(IrrigatedPlatformDataInfo::getMonitorName,"入库流量").list());
                             forcastInputParamNew.setLzzHydrologyParam(lzzHydrologyParam);
                             forcastInputParamNew.setIrrigatedHydrologyParam(irrigatedHydrologyParam);
+                            forcastInputParamNew.setDataStartTime(sdf.parse("2023-01-01 00:00:00"));
                         }else {
                             Date startTime = dates.get(0);
                             Date endTime = dates.get(1);
@@ -187,6 +189,7 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                             irrigatedHydrologyParam.setTthInput(irrigatedPlatformDataInfoService.lambdaQuery().eq(IrrigatedPlatformDataInfo::getMonitorName,"入库流量").between(IrrigatedPlatformDataInfo::getMonitorTime,startTime,endTime).list());
                             forcastInputParamNew.setLzzHydrologyParam(lzzHydrologyParam);
                             forcastInputParamNew.setIrrigatedHydrologyParam(irrigatedHydrologyParam);
+                            forcastInputParamNew.setDataStartTime(startTime);
                         }
 
                         //调用模型方法生成模型结果，更新到数据库

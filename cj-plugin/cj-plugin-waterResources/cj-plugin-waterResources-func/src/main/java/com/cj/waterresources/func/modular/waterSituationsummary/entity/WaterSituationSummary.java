@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.activerecord.Model;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * (WaterSituationSummary)表实体类
@@ -21,7 +22,7 @@ public class WaterSituationSummary extends Model<WaterSituationSummary> {
     //站点名称
     private String siteName;
     //记录时间
-    private String dateTime;
+    private Date dateTime;
     //年
     private Integer year;
     //月

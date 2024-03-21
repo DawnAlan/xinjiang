@@ -503,9 +503,61 @@ public class ResourceOptimizationlong_TendaysTest
         waterSupply[4]=calFit(id, reservoirs,period,wl_term,waterDemand,inflow)[10];
         watersupply_lzz=calFit(id,reservoirs,period,wl_term,waterDemand,inflow)[11];
         DecimalFormat da=new DecimalFormat("#.00");
-        if (fitness_term[0]>0){
-            throw new CommonException("请检查水位设置是否合理，下泄流量较小");
+        if (fitness_term[0]>0.05){
+            throw new CommonException("请检查水位设置是否合理，请适当降低两库末水位");
         }
+        double[]allwater=new double[period];
+        double[]ecologyWater=new double[period];
+        double[]ecologyFlow=new double[period];
+        double[]ecologyWaterNeed=new double[period];
+        for (int x=0;x<period;x++){
+            double eco=minOutflow*delatT*daynum[x]/1e4;
+            ecologyWater[x]=eco;
+            ecologyWaterNeed[x]=eco;
+        }
+        for (int x=0;x<period;x++)
+        {
+            if (waterDemand[0][x]>waterSupply[0][x]&&ecologyWater[x]>0){
+
+                double ecologyWater1=ecologyWater[x]-(waterDemand[0][x]-waterSupply[0][x]);
+                if (ecologyWater1>=0){
+                    waterSupply[0][x]=waterDemand[0][x];
+                    ecologyWater[x]=ecologyWater1;
+                }
+                else if (ecologyWater1<0){
+                    waterSupply[0][x]=ecologyWater[x]+waterSupply[0][x];
+                    ecologyWater[x]=0;
+                }
+            }
+
+            if (waterDemand[2][x]>waterSupply[2][x]&&ecologyWater[x]>0){
+
+                double ecologyWater1=ecologyWater[x]-(waterDemand[2][x]-waterSupply[2][x]);
+                if (ecologyWater1>=0){
+                    waterSupply[2][x]=waterDemand[2][x];
+                    ecologyWater[x]=ecologyWater1;
+                }
+                else if (ecologyWater1<0){
+                    waterSupply[2][x]=ecologyWater[x]+waterSupply[2][x];
+                    ecologyWater[x]=0;
+                }
+            }
+
+            if (waterDemand[1][x]>waterSupply[1][x]&&ecologyWater[x]>0){
+
+                double ecologyWater1=ecologyWater[x]-(waterDemand[1][x]-waterSupply[1][x]);
+                if (ecologyWater1>=0){
+                    waterSupply[1][x]=waterDemand[1][x];
+                    ecologyWater[x]=ecologyWater1;
+                }
+                else if (ecologyWater1<0){
+                    waterSupply[1][x]=ecologyWater[x]+waterSupply[1][x];
+                    ecologyWater[x]=0;
+                }
+            }
+
+        }
+
         for (int n1=0;n1<period;n1++){
 
             supply_water_two[0][n1]=Double.parseDouble(da.format(watersupply_lzz[n1]));
@@ -529,7 +581,39 @@ public class ResourceOptimizationlong_TendaysTest
                     waterSupply3[m][n]=0;
                 }
                 else {
-                    waterSupply3[m][n] = Double.parseDouble(da1.format((waterSupply[3][n] / waterDemand[3][n]) * waterdemand3[m][n]));
+                    if (waterSupply[3][n]>waterDemand[3][n]-waterdemand3[0][n]&&waterSupply[3][n]<waterDemand[3][n]){
+                        double westGreen ;
+                        if (waterdemand3[0][n]!=0){
+                            westGreen=1-(waterDemand[3][n]-waterSupply[3][n]) / waterdemand3[0][n];
+                        }
+                        else {
+                            westGreen=1;
+                        }
+                        if (m==0){
+                            waterSupply3[m][n]=Double.parseDouble(da1.format((westGreen*waterdemand3[m][n])));
+                        }
+                        else{
+                            waterSupply3[m][n]=Double.parseDouble(da1.format((waterdemand3[m][n])));
+                        }
+                    }
+                    else if(waterSupply[3][n]<=waterDemand[3][n]-waterdemand3[0][n]){
+                        double westIrr ;
+                        if (waterDemand[3][n]-waterdemand3[0][n]!=0){
+                            westIrr=waterSupply[3][n] / (waterDemand[3][n]-waterdemand3[0][n]);
+                        }
+                        else {
+                            westIrr=1;
+                        }
+                        if (m==0){
+                            waterSupply3[m][n]=0;
+                        }
+                        else{
+                            waterSupply3[m][n]=Double.parseDouble(da1.format((westIrr*waterdemand3[m][n])));
+                        }
+                    }
+                    else{
+                        waterSupply3[m][n] = Double.parseDouble(da1.format((waterSupply[3][n] / waterDemand[3][n]) * waterdemand3[m][n]));
+                    }
                 }
             }
         }
@@ -540,20 +624,49 @@ public class ResourceOptimizationlong_TendaysTest
                     waterSupply4[m][n]=0;
                 }
                 else {
-                    waterSupply4[m][n] = Double.parseDouble(da1.format((waterSupply[4][n] / waterDemand[4][n]) * waterdemand4[m][n]));
+                    if (waterSupply[4][n]>(waterDemand[4][n]-waterdemand4[0][n]-waterdemand4[1][n])&&waterSupply[4][n]<waterDemand[4][n]){
+                        double eastGreen ;
+                        if (waterdemand4[0][n]+waterdemand4[1][n]!=0){
+                            eastGreen=1-(waterDemand[4][n]-waterSupply[4][n]) / (waterdemand4[0][n]+waterdemand4[1][n]);
+                        }
+                        else {
+                            eastGreen=1;
+                        }
+                        if (m==0||m==1){
+                            waterSupply4[m][n]=Double.parseDouble(da1.format((eastGreen*waterdemand4[m][n])));
+                        }
+                        else{
+                            waterSupply4[m][n]=Double.parseDouble(da1.format((waterdemand4[m][n])));
+                        }
+                    }
+                    else if(waterSupply[4][n]<=(waterDemand[4][n]-waterdemand4[0][n]-waterdemand4[1][n])){
+                        double eastIrr ;
+                        if (waterDemand[4][n]-waterdemand4[0][n]-waterdemand4[1][n]!=0){
+                            eastIrr=waterSupply[4][n] / (waterDemand[4][n]-waterdemand4[0][n]-waterdemand4[1][n]);
+                        }
+                        else {
+                            eastIrr=1;
+                        }
+                        if (m==0||m==1){
+                            waterSupply4[m][n]=0;
+                        }
+                        else{
+                            waterSupply4[m][n]=Double.parseDouble(da1.format((eastIrr*waterdemand4[m][n])));
+                        }
+                    }
+                    else {
+                        waterSupply4[m][n] = Double.parseDouble(da1.format((waterSupply[4][n] / waterDemand[4][n]) * waterdemand4[m][n]));
+                    }
                 }
             }
         }
-        double[]allwater=new double[period];
-        double[]ecologyWater=new double[period];
-        double[]ecologyFlow=new double[period];
+
         for (int x=0;x<period;x++){
             double sup=waterSupply_all[x];
-            double eco=minOutflow*delatT*daynum[x]/1e4;
+            double eco=ecologyWater[x];
             double  all_num=eco+sup;
             allwater[x]=all_num;
-            ecologyWater[x]=eco;
-            ecologyFlow[x]=minOutflow;
+            ecologyFlow[x]=ecologyWater[x]*1e4/(delatT*daynum[x]);
             proportion[0][x] = (eco) / (all_num);
             proportion[1][x] = (waterSupply[0][x] + waterSupply[1][x]) / (all_num);
             proportion[2][x] = (waterSupply[2][x]) / (all_num);
@@ -612,7 +725,29 @@ public class ResourceOptimizationlong_TendaysTest
                     waterSupplyIndustry[m][n]=0;
                 }
                 else {
-                    waterSupplyIndustry[m][n] = Double.parseDouble(da1.format((waterSupply[2][n] / waterDemand[2][n]) * waterDemandIndustry[m][n]));
+                    if (waterSupply[2][n]>waterDemandIndustry[0][n]){
+                        double qushouIndustry ;
+                        if (waterDemand[2][n]-waterDemandIndustry[0][n]!=0){
+                            qushouIndustry=(waterSupply[2][n]-waterDemandIndustry[0][n]) / (waterDemand[2][n]-waterDemandIndustry[0][n]);
+                        }
+                        else {
+                            qushouIndustry=1;
+                        }
+                        if (m==0){
+                            waterSupplyIndustry[m][n]=Double.parseDouble(da1.format((waterDemandIndustry[0][n])));
+                        }
+                        else{
+                            waterSupplyIndustry[m][n]= Double.parseDouble(da1.format(qushouIndustry * waterDemandIndustry[m][n]));
+                        }
+                    }
+                    else{
+                        if (m==0){
+                            waterSupplyIndustry[0][n]=waterSupply[2][n];}
+                        else {
+                            waterSupplyIndustry[m][n]=0;
+                        }
+                    }
+//                    waterSupplyIndustry[m][n] = Double.parseDouble(da1.format((waterSupply[2][n] / waterDemand[2][n]) * waterDemandIndustry[m][n]));
                 }
             }
         }
@@ -805,6 +940,7 @@ public class ResourceOptimizationlong_TendaysTest
         waterTransfer.setAllWater(allwater);
         waterTransfer.setEcologyFlow(ecologyFlow);
         waterTransfer.setEcologyWater(ecologyWater);
+        waterTransfer.setEcologyWaterNeed(ecologyWaterNeed);
         waterTransfer.setFitness(fitness_term);
 
         result.add(waterTransfer);
@@ -942,6 +1078,11 @@ public class ResourceOptimizationlong_TendaysTest
                         {
                             fitness1 += (minOutflow + waterdemandQ[0][t]  - outflow_term[m][t]) * (delatT*daynum[t]) / 1e4;
                         }
+                        if (id==2)
+                        {
+                            fitness1 += (minOutflow + waterdemandQ[0][t]  - outflow_term[m][t]) * (delatT*daynum[t]) / 1e4*
+                                    (minOutflow + waterdemandQ[0][t]  - outflow_term[m][t]) * (delatT*daynum[t]) / 1e4;
+                        }
                         //水库1缺水额度
                         water_shortage1[m][t] =  Double.parseDouble(da.format((minOutflow + waterdemandQ[m][t]  - outflow_term[m][t]) * (delatT*daynum[t])/ 1e4));
                         waterSupply[m][t]= Double.parseDouble(da.format(waterdemandQ[0][t]*(delatT*daynum[t]) / 1e4-water_shortage1[m][t]));
@@ -951,6 +1092,11 @@ public class ResourceOptimizationlong_TendaysTest
                         if (id==1||id==3)
                         {
                             fitness1 += (minOutflow + waterdemandQ[0][t]  - outflow_term[m][t]) * (delatT*daynum[t]) / 1e4;
+                        }
+                        if (id==2)
+                        {
+                            fitness1 += (minOutflow + waterdemandQ[0][t]  - outflow_term[m][t]) * (delatT*daynum[t]) / 1e4*
+                                    (minOutflow + waterdemandQ[0][t]  - outflow_term[m][t]) * (delatT*daynum[t]) / 1e4;
                         }
                         //水库1缺水额度
                         water_shortage1[m][t] =  Double.parseDouble(da.format(waterdemandQ[0][t]*(delatT*daynum[t]) / 1e4));
@@ -975,7 +1121,12 @@ public class ResourceOptimizationlong_TendaysTest
                     if (outflow_term[m][t] > minOutflow&&outflow_term[m][t] < minOutflow + watershortage_allQ[t] )
                     {
                         if (id==1||id==3){
-                            fitness1 += (minOutflow + watershortage_allQ[t]  - outflow_term[m][t]) * (delatT*daynum[t])/ 1e4;}
+                            fitness1 += (minOutflow + watershortage_allQ[t]  - outflow_term[m][t]) * (delatT*daynum[t])/ 1e4;
+                        }
+                        if (id==2){
+                            fitness1 += (minOutflow + watershortage_allQ[t]  - outflow_term[m][t]) * (delatT*daynum[t])/ 1e4*
+                                    (minOutflow + watershortage_allQ[t]  - outflow_term[m][t]) * (delatT*daynum[t])/ 1e4;
+                        }
                         //水库2缺水额度
                         water_shortage1[m][t] =  Double.parseDouble(da.format((minOutflow +  watershortage_allQ[t]  - outflow_term[m][t]) * (delatT*daynum[t]) / 1e4));
                         //水库2可供水量
@@ -983,7 +1134,12 @@ public class ResourceOptimizationlong_TendaysTest
                     }
                     if (outflow_term[m][t] <= minOutflow){
                         if (id==1||id==3){
-                            fitness1 += (minOutflow + watershortage_allQ[t]  - outflow_term[m][t]) * (delatT*daynum[t])/ 1e4;}
+                            fitness1 += (minOutflow + watershortage_allQ[t]  - outflow_term[m][t]) * (delatT*daynum[t])/ 1e4;
+                        }
+                        if (id==2){
+                            fitness1 += (minOutflow + watershortage_allQ[t]  - outflow_term[m][t]) * (delatT*daynum[t])/ 1e4*
+                                    (minOutflow + watershortage_allQ[t]  - outflow_term[m][t]) * (delatT*daynum[t])/ 1e4;
+                        }
                         //水库2缺水额度
                         water_shortage1[m][t] =  Double.parseDouble(da.format((  watershortage_allQ[t] ) * (delatT*daynum[t]) / 1e4));
                         //水库2可供水量
@@ -1003,11 +1159,7 @@ public class ResourceOptimizationlong_TendaysTest
             }
 
         }
-        //缺水时供水比例
-        double[] f=new double[period];
-        for (int t1=0;t1<period;t1++){
-            f[t1]=1-water_shortage1[1][t1]/(watershortage_allQ[t1]* (delatT*daynum[t1]));
-        }
+
         //供水量
 
 //        if (id==1||id==3){
@@ -1055,19 +1207,19 @@ public class ResourceOptimizationlong_TendaysTest
             }
 
 
-        if (id==2)
-        {
-            for (int m=0;m<waterDemand.length;m++)
-                for (int n=0;n<period;n++)
-                {
-                    if (waterDemand[m][n]==0){
-
-                    }
-                    else {
-                        fitness1 +=1-waterSupply[m][n]/waterDemand[m][n];
-                    }
-                }
-        }
+//        if (id==2)
+//        {
+//            for (int m=0;m<waterDemand.length;m++)
+//                for (int n=0;n<period;n++)
+//                {
+//                    if (waterDemand[m][n]==0){
+//
+//                    }
+//                    else {
+//                        fitness1 +=1-waterSupply[m][n]/waterDemand[m][n];
+//                    }
+//                }
+//        }
 
 
 

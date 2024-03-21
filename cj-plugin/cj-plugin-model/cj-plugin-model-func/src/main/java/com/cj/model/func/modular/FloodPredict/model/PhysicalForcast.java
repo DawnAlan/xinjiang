@@ -17,7 +17,8 @@ import static com.cj.model.func.modular.FloodPredict.utils.DataUtils.*;
 
 public class PhysicalForcast {
     String floodLevel="一年一遇";
-    public Object[][] getphysicalresult(ForcastInputParam param, List<List<PredictInputData>> Data, Object[][] snowData) throws IOException {
+    public Object[][] getphysicalresult(ForcastInputParam param, List<List<PredictInputData>> Data, Object[][] snowData)
+            throws IOException {
         String path = "D:\\tth_system\\end\\file\\陕北-PARAM.xlsx";
         ShanBeiModel shanBeiModel = new ShanBeiModel();
         String sheetPara=param.getLocation()+"参数";
@@ -45,14 +46,14 @@ public class PhysicalForcast {
         shanBeiModel.ConfluenceCalculation();
 
         //获得径流序列包含了降水融雪地下水.是前48小时的后续可以改
-        Object[][]shortFlow = mixedFlood(param, shanBeiModel.Q, shanBeiModel.L,PreFlow,snowData);
+        Object[][]shortFlow = mixedFlood(param, shanBeiModel.Q, shanBeiModel.L,Data,snowData);
         //将Object转化为Flood类型
         Object[][] peakFlood=setPeakFlood(shortFlow,param);
         peakFlood[0][10]=floodSources(PointPreREDataList,param);//洪水来源
         peakFlood[0][11]=floodComposition(param,PreFlow,shanBeiModel.Q,snowData);//洪水组成
         if (param.getLocation().equals("楼庄子")){
-            peakFlood[0][12]=floodLevel(shortFlow);//洪水等级
-            floodLevel = floodLevel(shortFlow);
+            peakFlood[0][12]=floodLevel(shortFlow,"楼庄子");//洪水等级
+            floodLevel = floodLevel(shortFlow,"楼庄子");
         }else {
             peakFlood[0][12]=floodLevel;
         }
@@ -317,7 +318,12 @@ public class PhysicalForcast {
                 break;
             }
         }
-        floodNature[3][1]=flood[n+t-1][1];
+        int temp = n+t-1;
+        if (temp>0){
+            floodNature[3][1]=flood[temp][1];
+        }else {
+            floodNature[3][1]=flood[0][1];
+        }
         result.add(flood);
         result.add(floodNature);
         return result;
@@ -328,19 +334,21 @@ public class PhysicalForcast {
      * @param input
      * @return
      */
-    public static String floodLevel(Object[][] input){
-        String result = new String();
+    public static String floodLevel(Object[][] input,String location){
+        String result = "一年一遇";
         Object[][] floodNature = selectPeakFlood(input).get(1);
         double maxQ = (double) floodNature[2][1];
         Object[][] flood = selectPeakFlood(input).get(0);
         double volume=0.0;
         double minVolume =0.0;
-        if (flood.length<24){
+        //获得一日洪量
+        if (flood.length<24){//获得一日洪量
             for (int i = 0; i < flood.length; i++) {
                 volume +=(double)flood[i][2];
             }
             volume =volume/flood.length*24*3600/1000000;//10^6立方米
-        }else {
+        }
+        else {
             for (int i = 0; i < flood.length-24; i++) {
                 for (int j = 0; j < 24; j++) {
                     minVolume +=(double)flood[i+j][2];
@@ -351,36 +359,77 @@ public class PhysicalForcast {
                 }
             }
         }
-        if (maxQ>=944||volume>=37.7){
-            result="万年一遇";
-        } else if (maxQ>=750||volume>=30.0){
-            result="二千年一遇";
-        } else if (maxQ>=668||volume>=26.7){
-            result="千年一遇";
-        } else if (maxQ>=587||volume>=23.5){
-            result="五百年一遇";
-        } else if (maxQ>=530||volume>=21.2){
-            result="三百年一遇";
-        } else if (maxQ>=482||volume>=19.3){
-            result="二百年一遇";
-        } else if (maxQ>=405||volume>=16.2){
-            result="百年一遇";
-        } else if (maxQ>=330||volume>=13.3){
-            result="五十年一遇";
-        } else if (maxQ>=277||volume>=11.2){
-            result="三十年一遇";
-        } else if (maxQ>=236||volume>=9.7){
-            result="二十年一遇";
-        } else if (maxQ>=171||volume>=7.2) {
-            result="十年一遇";
+        //根据位置返回洪水等级
+        if (location.equals("楼庄子")){
+            if (maxQ>=944||volume>=37.7){
+                result="万年一遇";
+            }
+            else if (maxQ>=750||volume>=30.0){
+                result="二千年一遇";
+            }
+            else if (maxQ>=668||volume>=26.7){
+                result="千年一遇";
+            }
+            else if (maxQ>=587||volume>=23.5){
+                result="五百年一遇";
+            }
+            else if (maxQ>=530||volume>=21.2){
+                result="三百年一遇";
+            }
+            else if (maxQ>=482||volume>=19.3){
+                result="二百年一遇";
+            }
+            else if (maxQ>=405||volume>=16.2){
+                result="百年一遇";
+            }
+            else if (maxQ>=330||volume>=13.3){
+                result="五十年一遇";
+            }
+            else if (maxQ>=277||volume>=11.2){
+                result="三十年一遇";
+            }
+            else if (maxQ>=236||volume>=9.7){
+                result="二十年一遇";
+            }
+            else if (maxQ>=171||volume>=7.2) {
+                result="十年一遇";
+            }
+            else if (maxQ>=114||volume>=5.1) {
+                result="五年一遇";
+            }
+            else  {
+                result="一年一遇";
+            }
         }
-        else if (maxQ>=114||volume>=5.1) {
-            result="五年一遇";
+        else if (location.equals("头屯河")) {
+            if (maxQ>=1013||volume>=28){
+                result="千年一遇";
+            }
+            else if (maxQ>=883||volume>=25.5){
+                result="五百年一遇";
+            }
+            else if (maxQ>=713||volume>=22.2){
+                result="两百年一遇";
+            }
+            else if (maxQ>=590||volume>=17.8){
+                result="百年一遇";
+            }
+            else if (maxQ>=470||volume>=17.4){
+                result="五十年一遇";
+            }
+            else if (maxQ>=402||volume>=15.9){
+                result="三十年一遇";
+            }
+            else if (maxQ>=320||volume>=14.1){
+                result="二十年一遇";
+            }
+            else if (maxQ>=219||volume>=11.7) {
+                result="十年一遇";
+            }
+            else  {
+                result="一年一遇";
+            }
         }
-         else  {
-            result="一年一遇";
-        }
-
         return result;
     }
 
@@ -404,8 +453,6 @@ public class PhysicalForcast {
 
         return waterLevel;
     }
-
-
 
     /**
      * 后续更改（面雨量权重）
@@ -595,29 +642,9 @@ public class PhysicalForcast {
             for (int i = 0; i < Q_shanbei.length; i++) {
                 shanbeiFlow =shanbeiFlow +  Q_shanbei[i];
             }
-//            for (int i = 0; i < PreFlow.size(); i++) {
-//                if (PreFlow.get(i).getFlow().isNaN()){
-//                    PreFlow.get(i).setFlow(0.0);
-//                }
-//                Date time = PreFlow.get(i).getDates();
-//                int year = getSpecificDate(time).get("年");
-//
-//                Date time2 = param.getPreStartTime();
-//                int year2 = getSpecificDate(time2).get("年");
-//                if (year==year2){
-//                    Date time3 = PreFlow.get(i).getDates();
-//                    int month = getSpecificDate(time3).get("月");
-//                    if (month>=1&&month<=4){
-//                        preFlowSum = preFlowSum + PreFlow.get(i).getFlow();
-//                        preFlowNum++;
-//                    }
-//                    preFlow = preFlowSum/preFlowNum;
-//                }
-//            }
             double Sum = snowFlow+preFlow+shanbeiFlow;
             double shanbei =Math.round((float) shanbeiFlow/Sum*95)/100.0;
             double rong = Math.round((float) snowFlow/Sum*95)/100.0;
-//            double di = Math.round((float) preFlow/Sum*100)/100.0;
             result += "降水:"+ shanbei+","+"融雪:"+rong+","+"地下水:0.05";
         }
         else {
@@ -670,50 +697,104 @@ public class PhysicalForcast {
      * （后续更改）预报后所得时间
      * @param param
      * @param shanBeiQ 降水所得
-     * @param preFlow 前期径流这里取前十天平均径流
+     * @param Data data.get0为前期径流，data.get1为前10小时和预报雨量。
      * @param snowFlow 融雪径流
      * @return 预报的径流值
      */
     public static Object[][] mixedFlood (ForcastInputParam param,double[] shanBeiQ, int L,
-                                         List<PredictInputData> preFlow, Object[][] snowFlow){
+                                         List<List<PredictInputData>> Data, Object[][] snowFlow){
+        List<PredictInputData> preFlow = Data.get(0);
         //留前10小时作为落地雨
-        Object[][] result= new Object[shanBeiQ.length-10][2];
+        int before = 10;
+        Object[][] result= new Object[shanBeiQ.length-before][2];
         //减去汇流滞时
         Date currentDate = param.getPreStartTime();
-        Date[][] dates = TimeUtils.getDateList(currentDate, shanBeiQ.length-10, 0, 1);
+        Date[][] dates = TimeUtils.getDateList(currentDate, shanBeiQ.length-before, 0, 1);
        //shanBeiq为实际预报的值
-        double[] shanBeiq = new double[shanBeiQ.length-10];
-        for (int i = L; i < shanBeiQ.length-10+L; i++) {
+        double[] shanBeiq = new double[shanBeiQ.length-before];
+        for (int i = L; i < shanBeiQ.length-before+L; i++) {
             shanBeiq[i-L]=shanBeiQ[i];
+        }
+        //基础流量
+        Double baseAve = 0.0;
+        for (int j = 0; j < 10; j++) {
+            Double baseFlow = 0.0;
+            int n = preFlow.size() -1- j;
+            if (preFlow.get(n).getFlow() != null){
+                baseFlow = preFlow.get(n).getFlow();
+            }else {
+                n--;
+            }
+            baseAve += baseFlow;
+        }
+        baseAve = baseAve / 10;
+        //融雪基流
+        Double snowAverage = 0.0;
+        Double snowSum = 0.0;
+        if (param.getIsSnowMeltModel()) {
+            for (int j = 0; j < snowFlow.length; j++) {
+                snowSum = snowSum + (double) snowFlow[j][1];
+            }
+            snowAverage = snowSum / snowFlow.length;
+        }
+        double[] snowDistribution0 = flowDistribution(param,snowAverage,baseAve,Data.get(1));//融雪随温度分配曲线
+        double[] snowDistribution = new double[shanBeiQ.length-before];
+        for (int i = L; i < shanBeiQ.length-before+L; i++) {
+            snowDistribution[i-L]=snowDistribution0[i];
+        }
+
+        snowAverage = 0.0;
+        double[] baseDistribution0 = flowDistribution(param,snowAverage,baseAve,Data.get(1));//基础径流随温度分配曲线
+        double[] baseDistribution = new double[shanBeiQ.length-before];
+        for (int i = L; i < shanBeiQ.length-before+L; i++) {
+            baseDistribution[i-L]=baseDistribution0[i];
         }
         //获得混合后的径流序列
         for (int i = 0; i < shanBeiq.length ; i++){
             result[i][0]=dates[i][0];
-            Double snowAverage = 0.0;
-            Double snowSum = 0.0;
-
             if (param.getIsSnowMeltModel()){
-                for (int j = 0; j < snowFlow.length; j++) {
-                    snowSum = snowSum + (double) snowFlow[j][1];
-                }
-                snowAverage = snowSum / snowFlow.length;
-                result[i][1] = shanBeiq[i] + snowAverage;//将陕北模型和融雪模型结果相加
+                result[i][1] = shanBeiq[i] + snowDistribution[i];//将陕北模型和融雪模型结果相加
             }else {
-                Double baseAVe = 0.0;
-                for (int j = 0; j < 10; j++) {
-                    Double baseFlow = 0.0;
-                    int n = preFlow.size() -1- j;
-                    if (preFlow.get(n).getFlow() != null){
-                        baseFlow = preFlow.get(n).getFlow();
-                    }else {
-                        n--;
-                    }
-                    baseAVe += baseFlow;
-                }
-                baseAVe = baseAVe / 10;
-                result[i][1]=shanBeiq[i] + baseAVe ;//降水加上前期径流
+                result[i][1] = shanBeiq[i] + baseDistribution[i] ;//降水加上前期径流
             }
         }
         return result;
     }
+
+    /**
+     * 融雪径流减去基流后，根据温度进行分布
+     * @param param
+     * @param averageData
+     * @param input
+     * @return
+     */
+    public static double[] flowDistribution(ForcastInputParam param,Double averageData,Double baseData, List<PredictInputData> input) {
+        int l = param.getPeriodStepNumber() + 10;
+        double[] temperature = new double[l];
+        for (int i = 0; i < l; i++) {
+            temperature[i] = input.get(l).getTemperature();
+        }
+        double sum = 0;
+        for (double num : temperature) {
+            sum += num;
+        }
+        double mean = sum / temperature.length;
+        double[] flow = new double[l];
+        if (averageData>baseData){//若预报融雪大于基础流量，先去除基流影响再按温度分布
+            Double data = averageData-baseData;
+            for (int i = 0; i < l; i++) {
+                flow[i] = data * temperature[i] / mean;
+            }
+            for (int i = 0; i < l; i++) {
+                flow[i] += baseData;
+            }
+        }else {//若预报融雪小于基础流量，基流按温度分布
+            for (int i = 0; i < l; i++) {
+                flow[i] = baseData * temperature[i] / mean;
+            }
+        }
+
+        return flow;
+    }
+
 }
