@@ -55,8 +55,9 @@ public class SurfaceWaterService extends ServiceImpl<SurfaceWaterMapper, Surface
                 .tableName(surfaceWaterReq.getTableName())
                 .managerCode(surfaceWaterReq.getManagerCode())
                 .managerName(surfaceWaterReq.getManagerName())
-                .siteCode(surfaceWaterReq.getSiteCode())
-                .siteName(surfaceWaterReq.getSiteName())
+
+                .siteCode(surfaceWaterReq.getSiteCode().isEmpty() ? surfaceWaterReq.getManagerCode() : surfaceWaterReq.getSiteCode())
+                .siteName(surfaceWaterReq.getSiteName().isEmpty() ? surfaceWaterReq.getManagerName() : surfaceWaterReq.getSiteName())
                 .unit(surfaceWaterReq.getUnit())
                 .filePath(filePath)
                 .build();
@@ -161,11 +162,11 @@ public class SurfaceWaterService extends ServiceImpl<SurfaceWaterMapper, Surface
             String hh = DateUtil.format(date, "HH");
             String mm = DateUtil.format(date, "mm");
             String ss = DateUtil.format(date, "ss");
-            String namePath =yyyyMMdd+"/"+hh+"/"+mm+"/"+ss+"/"+ cn.hutool.core.lang.UUID.fastUUID().toString(true) +multipartFile.getOriginalFilename().substring(multipartFile.getOriginalFilename().lastIndexOf("."));
+            String namePath = yyyyMMdd + "/" + hh + "/" + mm + "/" + ss + "/" + cn.hutool.core.lang.UUID.fastUUID().toString(true) + multipartFile.getOriginalFilename().substring(multipartFile.getOriginalFilename().lastIndexOf("."));
             ObjectWriteResponse objectWriteResponse = minioUtils.putObject("tth", namePath, multipartFile.getInputStream(), multipartFile.getContentType());
             String object = objectWriteResponse.object();
             return object;
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
@@ -174,7 +175,7 @@ public class SurfaceWaterService extends ServiceImpl<SurfaceWaterMapper, Surface
     public void download(String id, HttpServletResponse response) {
         //从minio下载
         SurfaceWater surfaceWater = surfaceWaterMapper.selectById(id);
-        minioUtils.download("tth",surfaceWater.getFilePath(),response);
+        minioUtils.download("tth", surfaceWater.getFilePath(), response);
     }
 
 

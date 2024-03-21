@@ -43,10 +43,11 @@ public class SurfaceWaterHydrologyDetailService extends ServiceImpl<SurfaceWater
                 Iterator<Cell> cellIterator = currentRow.iterator();
                 while (cellIterator.hasNext()) {
                     Cell currentCell = cellIterator.next();
+//                    currentCell.getCellTypeEnum()
                     currentCell.setCellType(CellType.STRING);
                 }
                 try {
-                    if (Integer.parseInt(currentRow.getCell(0).getStringCellValue()) > 1) {
+                    if (Integer.parseInt(currentRow.getCell(0).getStringCellValue()) >= 1) {
                         // 定义日期格式化模式
                         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                         String[] hm = currentRow.getCell(2).getStringCellValue().split(":");
@@ -63,8 +64,8 @@ public class SurfaceWaterHydrologyDetailService extends ServiceImpl<SurfaceWater
                                 mm,
                                 ss
                         );
-                        BigDecimal flow = StringUtils.isEmpty(currentRow.getCell(3).getStringCellValue().trim())?null:new BigDecimal(currentRow.getCell(3).getStringCellValue().trim());
-                        BigDecimal level = StringUtils.isEmpty(currentRow.getCell(4).getStringCellValue().trim())?null:new BigDecimal(currentRow.getCell(4).getStringCellValue().trim());
+                        BigDecimal flow = StringUtils.isEmpty(currentRow.getCell(4).getStringCellValue().trim())?null:new BigDecimal(currentRow.getCell(3).getStringCellValue().trim());
+                        BigDecimal level = StringUtils.isEmpty(currentRow.getCell(3).getStringCellValue().trim())?null:new BigDecimal(currentRow.getCell(4).getStringCellValue().trim());
                         // 将字符串转换为日期对象
                         Date date = formatter.parse(dateString);
                         SurfaceWaterHydrologyDetail surfaceWaterHydrologyDetail = SurfaceWaterHydrologyDetail.builder()
