@@ -56,9 +56,9 @@ public class ModelOfTTH {
     int coefficient =10000 ;
     public ModelOfTTH(Object[][] pre,int delta) {
         for (int i = 0; i < pre.length; i++) {
-            Date t = (Date) pre[i][1];
+            Date t = (Date) pre[i][0];
             Time.add(t);
-            Q_Input.add((double)pre[i][2]);
+            Q_Input.add((double)pre[i][1]);
             MaxQ.add(180.0);
 
             Calendar calendar = Calendar.getInstance();

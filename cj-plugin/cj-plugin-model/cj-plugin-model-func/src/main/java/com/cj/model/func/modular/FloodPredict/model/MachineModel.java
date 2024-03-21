@@ -9,12 +9,9 @@ import com.cj.model.func.modular.FloodPredict.utils.ExcelTool;
 import com.cj.model.func.modular.FloodPredict.utils.MathUtils;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 
-
 import java.io.File;
-import java.text.DecimalFormat;
 import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -22,9 +19,9 @@ import java.util.List;
 public class MachineModel {
 
     //模型训练
-    public List<TemporaryXlsx> ModelTrain(Object[][] modelTrainInput, ForcastInputParam param) throws IOException, InvalidFormatException, ParseException {
+    public List<TemporaryXlsx> ModelTrain(Object[][] modelTrainInput, ForcastInputParam param)
+            throws IOException, InvalidFormatException {
         List<TemporaryXlsx> result = new ArrayList();
-        SimpleDateFormat sFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); //日期赋值
         ParamsSetVO pvo = pvoSet(modelTrainInput, param);//设置输入
 
         //数值的赋值
@@ -32,8 +29,8 @@ public class MachineModel {
         int K = param.vmdK;//分解层数
         int length = modelTrainInput.length;
         int trainLength = length / 4 * 3;//训练集个数
-        int influence_factor= pvo.getInfluence_factor();//影响因子个数
-        int outputNumber = modelTrainInput.length - influence_factor * 2 + 2;
+        int historyDay= pvo.getHistory_day();//前期天数
+        int outputNumber = modelTrainInput.length - historyDay * 2 + 2;
 
         Object[][] inputTemp = modelTrainInput;//输入数据，第一列为时间，第二列为历史径流
         Object[][] modelparaTemp = new Object[10][10];//初始化模型参数
@@ -52,22 +49,22 @@ public class MachineModel {
         double[][] vmdreaResult = new double[outputNumber][1];//分解后的实际值
         double[][] reaResult = new double[outputNumber][1];//真实值
 
-        for (int i = 0; i < trainLength-influence_factor+1; i++) {
-            reaResult[i][0]=Double.parseDouble(inputTemp[i + influence_factor - 1][1].toString());
+        for (int i = 0; i < trainLength-historyDay+1; i++) {
+            reaResult[i][0]=Double.parseDouble(inputTemp[i + historyDay - 1][1].toString());
             for (int j = 0; j < K; j++) {
-                vmdreaResult[i][0]=vmdreaResult[i][0]+vmdOutput[j][i + influence_factor - 1];
+                vmdreaResult[i][0]=vmdreaResult[i][0]+vmdOutput[j][i + historyDay - 1];
             }
         }
-        for (int i = trainLength-influence_factor+1; i < outputNumber; i++) {
-            reaResult[i][0]=Double.parseDouble(inputTemp[i + influence_factor * 2 - 2][1].toString());
+        for (int i = trainLength-historyDay+1; i < outputNumber; i++) {
+            reaResult[i][0]=Double.parseDouble(inputTemp[i + historyDay * 2 - 2][1].toString());
             for (int j = 0; j < K; j++) {
-                vmdreaResult[i][0]=vmdreaResult[i][0]+vmdOutput[j][i+influence_factor*2-2];
+                vmdreaResult[i][0]=vmdreaResult[i][0]+vmdOutput[j][i+historyDay*2-2];
             }
         }
 
         List<List<Double>> paramResult=new ArrayList<>();
 
-        double[][] maxmin = new double[pvo.getInfluence_factor() + 1][2 *  param.getVmdK()];
+        double[][] maxmin = new double[pvo.getHistory_day() + 1][2 *  param.getVmdK()];
         //K个子序列逐步训练
         for (int k = 0; k < K; k++) {
             Object[][] input = new Object[inputTemp.length][2];//多少列可以根据输入来改变
@@ -175,17 +172,18 @@ public class MachineModel {
         ParamsSetVO pvo = new ParamsSetVO();
         //输入时段数的确定
         String period=param.getPeriod();
+        pvo.setHistory_factor(1);
         switch (period) {
             case "月":
             case "旬":
             case "日":
-                pvo.setInfluence_factor(7);
+                pvo.setHistory_day(7);
                 break;
             case "小时":
-                pvo.setInfluence_factor(24);
+                pvo.setHistory_day(24);
                 break;
         }
-        int[] inputIndex = new int[pvo.influence_factor];
+        int[] inputIndex = new int[pvo.history_day];
         for (int i = 0; i < inputIndex.length; i++) {
             inputIndex[i] = i;
         }
@@ -198,18 +196,18 @@ public class MachineModel {
         pvo.setGamma(10);
         pvo.setMobp(10);
         pvo.setMaxRate(0.032);//这个会影响精度！！!
-        String layers = pvo.getInfluence_factor() +",11,11,1";//，输入前几个时段径流，k为输入的因素数量输出未来流量
+        String layers = pvo.getHistory_day() +",11,11,1";//，输入前几个时段径流，k为输入的因素数量输出未来流量
         pvo.setLayerCount(layers);
         pvo.setTrainNum(6000);
         pvo.setERROR(0.00001);
         pvo.setQ_max(200);
         pvo.setQ_min(0);
         //输入时间的确定
-        Date startDate = (Date) modelTrainInput[pvo.influence_factor-1][0];
+        Date startDate = (Date) modelTrainInput[pvo.history_day-1][0];
         pvo.setDataSetStartTime(startDate);//开始日期
         Date endDate = (Date) modelTrainInput[modelTrainInput.length/4*3-1][0];
         pvo.setDateSetEndTime(endDate);//结束日期
-        Date testStartDate = (Date) modelTrainInput[modelTrainInput.length/4*3+pvo.influence_factor-1][0];
+        Date testStartDate = (Date) modelTrainInput[modelTrainInput.length/4*3+pvo.history_day-1][0];
         pvo.setTestSetStartTime(testStartDate);//测试集开始时期
         Date testEndDate = (Date) modelTrainInput[modelTrainInput.length-1][0];
         pvo.setTestSetEndTime(testEndDate);//测试集结束时期

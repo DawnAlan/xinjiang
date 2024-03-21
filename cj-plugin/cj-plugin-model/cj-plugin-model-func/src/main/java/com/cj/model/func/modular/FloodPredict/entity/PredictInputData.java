@@ -1,6 +1,7 @@
 package com.cj.model.func.modular.FloodPredict.entity;
 
 import lombok.Data;
+
 import java.util.Date;
 
 @Data

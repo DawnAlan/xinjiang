@@ -1,9 +1,5 @@
 package com.cj.model.func.modular.FloodPredict.Calibration;
 
-import com.cj.model.func.modular.FloodPredict.utils.ExcelTool;
-
-import java.io.IOException;
-
 public class ShanBeiModel {
 
     /// 流域面积 单位平方公里

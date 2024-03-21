@@ -1,7 +1,6 @@
 package com.cj.model.func.modular.FloodPredict.entity;
 
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.entity.IrrigatedPlatformDataInfo;
-
 import lombok.Data;
 
 import java.util.List;

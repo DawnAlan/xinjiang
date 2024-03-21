@@ -8,8 +8,6 @@ import com.cj.model.func.modular.FloodPredict.utils.DataUtils;
 import com.cj.model.func.modular.FloodPredict.utils.MathUtils;
 import lombok.Data;
 
-
-
 import java.util.Random;
 
 @Data

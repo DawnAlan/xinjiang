@@ -297,8 +297,8 @@ public class ExcelTool {
 		}
 	}
 	public static Object[][] readExcel(String path, String sheetName) throws IOException{
-		ZipSecureFile.setMinInflateRatio(-1.0d);
 		InputStream fis = new FileInputStream(path);
+		ZipSecureFile.setMinInflateRatio(-1.0d);
 		Workbook wb = new XSSFWorkbook(fis);
 		Sheet sheet = wb.getSheet(sheetName);
 		return readSheet(sheet);

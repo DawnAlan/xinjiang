@@ -4,7 +4,6 @@ package com.cj.model.func.modular.FloodPredict.model;
 import com.cj.model.func.modular.FloodPredict.entity.TrainResult;
 import lombok.Data;
 
-
 import java.util.Random;
 
 @Data
