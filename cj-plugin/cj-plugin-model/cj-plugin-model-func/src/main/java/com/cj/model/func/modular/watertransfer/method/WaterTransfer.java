@@ -101,6 +101,16 @@ public class WaterTransfer {
     //生态流量
     private double[]ecologyFlow;
     private double[]ecologyWater;
+
+    public double[] getEcologyWaterNeed() {
+        return ecologyWaterNeed;
+    }
+
+    public void setEcologyWaterNeed(double[] ecologyWaterNeed) {
+        this.ecologyWaterNeed = ecologyWaterNeed;
+    }
+
+    private double[]ecologyWaterNeed;
     public String[] getNameAgricultureQushou() {
         return nameAgricultureQushou;
     }
