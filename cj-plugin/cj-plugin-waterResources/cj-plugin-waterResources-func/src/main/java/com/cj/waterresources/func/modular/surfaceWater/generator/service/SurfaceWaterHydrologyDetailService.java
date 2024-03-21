@@ -64,8 +64,8 @@ public class SurfaceWaterHydrologyDetailService extends ServiceImpl<SurfaceWater
                                 mm,
                                 ss
                         );
-                        BigDecimal flow = StringUtils.isEmpty(currentRow.getCell(3).getStringCellValue().trim())?null:new BigDecimal(currentRow.getCell(3).getStringCellValue().trim());
-                        BigDecimal level = StringUtils.isEmpty(currentRow.getCell(4).getStringCellValue().trim())?null:new BigDecimal(currentRow.getCell(4).getStringCellValue().trim());
+                        BigDecimal flow = StringUtils.isEmpty(currentRow.getCell(4).getStringCellValue().trim())?null:new BigDecimal(currentRow.getCell(3).getStringCellValue().trim());
+                        BigDecimal level = StringUtils.isEmpty(currentRow.getCell(3).getStringCellValue().trim())?null:new BigDecimal(currentRow.getCell(4).getStringCellValue().trim());
                         // 将字符串转换为日期对象
                         Date date = formatter.parse(dateString);
                         SurfaceWaterHydrologyDetail surfaceWaterHydrologyDetail = SurfaceWaterHydrologyDetail.builder()

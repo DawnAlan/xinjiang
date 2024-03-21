@@ -3,6 +3,7 @@ package com.cj.waterresources.func.modular.surfaceWater.generator.service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.cj.waterresources.func.modular.surfaceWater.generator.domain.SurfaceWaterFlowDetail;
 import com.cj.waterresources.func.modular.surfaceWater.generator.domain.SurfaceWaterWaterregimenDetail;
 import com.cj.waterresources.func.modular.surfaceWater.generator.mapper.SurfaceWaterWaterregimenDetailMapper;
 import lombok.RequiredArgsConstructor;
@@ -52,7 +53,7 @@ public class SurfaceWaterWaterregimenDetailService extends ServiceImpl<SurfaceWa
                     Integer month1 = Integer.parseInt(sdf2.format(sampleTime));
                     Integer day1 = Integer.parseInt(sdf3.format(sampleTime));
                     SurfaceWaterWaterregimenDetail detail;
-                    if(siteName.contains("头屯河")){
+                    if (siteName.contains("头屯河")) {
                         detail = SurfaceWaterWaterregimenDetail.builder()
                                 .id(UUID.randomUUID().toString())
                                 .sampleTime(sampleTime)
@@ -79,7 +80,7 @@ public class SurfaceWaterWaterregimenDetailService extends ServiceImpl<SurfaceWa
                                 .day(day1)
                                 .parentId(parentId)
                                 .build();
-                    }else{
+                    } else {
                         detail = SurfaceWaterWaterregimenDetail.builder()
                                 .id(UUID.randomUUID().toString())
                                 .sampleTime(sampleTime)
@@ -89,21 +90,13 @@ public class SurfaceWaterWaterregimenDetailService extends ServiceImpl<SurfaceWa
                                 .outReservoirMean(currentRow.getCell(4).getStringCellValue().trim().isEmpty() ? null : new BigDecimal(currentRow.getCell(4).getStringCellValue().trim()))
                                 .outRiverAm(currentRow.getCell(5).getStringCellValue().trim().isEmpty() ? null : new BigDecimal(currentRow.getCell(5).getStringCellValue().trim()))
                                 .outRiverMean(currentRow.getCell(6).getStringCellValue().trim().isEmpty() ? null : new BigDecimal(currentRow.getCell(6).getStringCellValue().trim()))
-//                                .outConcealedAm(currentRow.getCell(7).getStringCellValue().trim().isEmpty() ? null : new BigDecimal(currentRow.getCell(7).getStringCellValue().trim()))
-//                                .outConcealedMean(currentRow.getCell(8).getStringCellValue().trim().isEmpty() ? null : new BigDecimal(currentRow.getCell(8).getStringCellValue().trim()))
-                                .waterLevelAm(currentRow.getCell(7).getStringCellValue().trim().isEmpty() ? null : new BigDecimal(currentRow.getCell(9).getStringCellValue().trim()))
-                                .waterLevelPm(currentRow.getCell(8).getStringCellValue().trim().isEmpty() ? null : new BigDecimal(currentRow.getCell(10).getStringCellValue().trim()))
-                                .capacityAm(currentRow.getCell(9).getStringCellValue().trim().isEmpty() ? null : new BigDecimal(currentRow.getCell(11).getStringCellValue().trim()))
-                                .capacityPm(currentRow.getCell(10).getStringCellValue().trim().isEmpty() ? null : new BigDecimal(currentRow.getCell(12).getStringCellValue().trim()))
-                                .lzzSc1Am(currentRow.getCell(11).getStringCellValue().trim().isEmpty() ? null : new BigDecimal(currentRow.getCell(10).getStringCellValue().trim()))
-                                .lzzSc2Am(currentRow.getCell(12).getStringCellValue().trim().isEmpty() ? null : new BigDecimal(currentRow.getCell(11).getStringCellValue().trim()))
-                                .lzzScMean(currentRow.getCell(13).getStringCellValue().trim().isEmpty() ? null : new BigDecimal(currentRow.getCell(12).getStringCellValue().trim()))
-//                                .seepageFlow(currentRow.getCell(13).getStringCellValue().trim().isEmpty() ? null : currentRow.getCell(13).getStringCellValue().trim())
-//                                .bagangTurbidity(currentRow.getCell(14).getStringCellValue().trim().isEmpty() ? 0 : Integer.parseInt(currentRow.getCell(14).getStringCellValue().trim()))
-//                                .outTurbidityAm(currentRow.getCell(15).getStringCellValue().trim().isEmpty() ? 0 : Integer.parseInt(currentRow.getCell(15).getStringCellValue().trim()))
-//                                .outTurbidityPm(currentRow.getCell(16).getStringCellValue().trim().isEmpty() ? 0 : Integer.parseInt(currentRow.getCell(16).getStringCellValue().trim()))
-//                                .longkouTurbidityAm(currentRow.getCell(17).getStringCellValue().trim().isEmpty() ? 0 : Integer.parseInt(currentRow.getCell(17).getStringCellValue().trim()))
-//                                .longkouTurbidityPm(currentRow.getCell(18).getStringCellValue().trim().isEmpty() ? 0 : Integer.parseInt(currentRow.getCell(18).getStringCellValue().trim()))
+                                .waterLevelAm(currentRow.getCell(7).getStringCellValue().trim().isEmpty() ? null : new BigDecimal(currentRow.getCell(7).getStringCellValue().trim()))
+                                .waterLevelPm(currentRow.getCell(8).getStringCellValue().trim().isEmpty() ? null : new BigDecimal(currentRow.getCell(8).getStringCellValue().trim()))
+                                .capacityAm(currentRow.getCell(9).getStringCellValue().trim().isEmpty() ? null : new BigDecimal(currentRow.getCell(9).getStringCellValue().trim()))
+                                .capacityPm(currentRow.getCell(10).getStringCellValue().trim().isEmpty() ? null : new BigDecimal(currentRow.getCell(10).getStringCellValue().trim()))
+                                .lzzSc1Am(currentRow.getCell(11).getStringCellValue().trim().isEmpty() ? null : new BigDecimal(currentRow.getCell(11).getStringCellValue().trim()))
+                                .lzzSc2Am(currentRow.getCell(12).getStringCellValue().trim().isEmpty() ? null : new BigDecimal(currentRow.getCell(12).getStringCellValue().trim()))
+                                .lzzScMean(currentRow.getCell(13).getStringCellValue().trim().isEmpty() ? null : new BigDecimal(currentRow.getCell(13).getStringCellValue().trim()))
                                 .year(year1)
                                 .month(month1)
                                 .day(day1)
@@ -139,7 +132,9 @@ public class SurfaceWaterWaterregimenDetailService extends ServiceImpl<SurfaceWa
          * */
         HashMap<String, Object> map = new HashMap<String, Object>();
         map.put("parent_id", id);
-        return surfaceWaterWaterregimenDetailMapper.selectByMap(map).stream().sorted(Comparator.comparing(SurfaceWaterWaterregimenDetail::getSampleTime)).collect(Collectors.toList());
+        List<SurfaceWaterWaterregimenDetail> list= surfaceWaterWaterregimenDetailMapper.selectByMap(map).stream().sorted(Comparator.comparing(SurfaceWaterWaterregimenDetail::getSampleTime)).collect(Collectors.toList());
+        list.addAll(ten_day(id));
+        return list;
     }
 
     private LambdaQueryWrapper<SurfaceWaterWaterregimenDetail> wrapper(String id) {
@@ -148,6 +143,205 @@ public class SurfaceWaterWaterregimenDetailService extends ServiceImpl<SurfaceWa
                 .orderBy(true, false, SurfaceWaterWaterregimenDetail::getSampleTime);
         return wrapper;
     }
+
+    public List<SurfaceWaterWaterregimenDetail> ten_day(String id) {
+        List<SurfaceWaterWaterregimenDetail> dayList = QueryList(id);
+        // 将日期转换为旬并分组
+        List<List<SurfaceWaterWaterregimenDetail>> deciles = dayList.stream()
+                .collect(Collectors.groupingBy(it -> cn.hutool.core.date.DateUtil.dayOfMonth(it.getSampleTime()) == 31 ? 2 :
+                        (cn.hutool.core.date.DateUtil.dayOfMonth(it.getSampleTime()) - 1) / 10)) // 按照旬分组
+                .values() // 获取所有的分组
+                .stream()
+                .map(group -> group.stream().map(date -> date).collect(Collectors.toList())) // 将每个分组转换为一个列表
+                .collect(Collectors.toList()); // 收集所有的列表到一个列表中
+
+        SurfaceWaterWaterregimenDetail bu1 = SurfaceWaterWaterregimenDetail.builder()
+                .id("上旬总数")
+                .inReservoirAm(new BigDecimal(deciles.get(0).stream().mapToDouble(t -> t.getInReservoirAm().doubleValue()).sum()))
+                .inReservoirMean(new BigDecimal(deciles.get(0).stream().mapToDouble(t -> t.getInReservoirMean().doubleValue()).sum()))
+                .outReservoirAm(new BigDecimal(deciles.get(0).stream().mapToDouble(t -> t.getOutReservoirAm().doubleValue()).sum()))
+                .outReservoirMean(new BigDecimal(deciles.get(0).stream().mapToDouble(t -> t.getOutReservoirMean().doubleValue()).sum()))
+                .outRiverAm(new BigDecimal(deciles.get(0).stream().mapToDouble(t -> t.getOutRiverAm().doubleValue()).sum()))
+                .outRiverMean(new BigDecimal(deciles.get(0).stream().mapToDouble(t -> t.getOutRiverMean().doubleValue()).sum()))
+                .outConcealedAm(new BigDecimal(deciles.get(0).stream().mapToDouble(t -> t.getOutConcealedAm().doubleValue()).sum()))
+                .outConcealedMean(new BigDecimal(deciles.get(0).stream().mapToDouble(t -> t.getOutConcealedMean().doubleValue()).sum()))
+                .lzzSc1Am(new BigDecimal(deciles.get(0).stream().mapToDouble(t -> t.getLzzSc1Am().doubleValue()).sum()))
+                .lzzSc2Am(new BigDecimal(deciles.get(0).stream().mapToDouble(t -> t.getLzzSc2Am().doubleValue()).sum()))
+                .lzzScMean(new BigDecimal(deciles.get(0).stream().mapToDouble(t -> t.getLzzScMean().doubleValue()).sum()))
+                .build();
+        SurfaceWaterWaterregimenDetail bu2 = SurfaceWaterWaterregimenDetail.builder()
+                .id("上旬平均")
+                .inReservoirAm(new BigDecimal(deciles.get(0).stream().mapToDouble(t -> t.getInReservoirAm().doubleValue()).sum() / deciles.get(0).size()))
+                .inReservoirMean(new BigDecimal(deciles.get(0).stream().mapToDouble(t -> t.getInReservoirMean().doubleValue()).sum() / deciles.get(0).size()))
+                .outReservoirAm(new BigDecimal(deciles.get(0).stream().mapToDouble(t -> t.getOutReservoirAm().doubleValue()).sum() / deciles.get(0).size()))
+                .outReservoirMean(new BigDecimal(deciles.get(0).stream().mapToDouble(t -> t.getOutReservoirMean().doubleValue()).sum() / deciles.get(0).size()))
+                .outRiverAm(new BigDecimal(deciles.get(0).stream().mapToDouble(t -> t.getOutRiverAm().doubleValue()).sum() / deciles.get(0).size()))
+                .outRiverMean(new BigDecimal(deciles.get(0).stream().mapToDouble(t -> t.getOutRiverMean().doubleValue()).sum() / deciles.get(0).size()))
+                .outConcealedAm(new BigDecimal(deciles.get(0).stream().mapToDouble(t -> t.getOutConcealedAm().doubleValue()).sum() / deciles.get(0).size()))
+                .outConcealedMean(new BigDecimal(deciles.get(0).stream().mapToDouble(t -> t.getOutConcealedMean().doubleValue()).sum() / deciles.get(0).size()))
+                .lzzSc1Am(new BigDecimal(deciles.get(0).stream().mapToDouble(t -> t.getLzzSc1Am().doubleValue()).sum() / deciles.get(0).size()))
+                .lzzSc2Am(new BigDecimal(deciles.get(0).stream().mapToDouble(t -> t.getLzzSc2Am().doubleValue()).sum() / deciles.get(0).size()))
+                .lzzScMean(new BigDecimal(deciles.get(0).stream().mapToDouble(t -> t.getLzzScMean().doubleValue()).sum() / deciles.get(0).size()))
+                .build();
+        SurfaceWaterWaterregimenDetail bu3 = SurfaceWaterWaterregimenDetail.builder()
+                .id("上旬流量")
+                .inReservoirAm(new BigDecimal(deciles.get(0).stream().mapToDouble(t -> t.getInReservoirAm().doubleValue()).sum() * 86400))
+                .inReservoirMean(new BigDecimal(deciles.get(0).stream().mapToDouble(t -> t.getInReservoirMean().doubleValue()).sum() * 86400))
+                .outReservoirAm(new BigDecimal(deciles.get(0).stream().mapToDouble(t -> t.getOutReservoirAm().doubleValue()).sum() * 86400))
+                .outReservoirMean(new BigDecimal(deciles.get(0).stream().mapToDouble(t -> t.getOutReservoirMean().doubleValue()).sum() * 86400))
+                .outRiverAm(new BigDecimal(deciles.get(0).stream().mapToDouble(t -> t.getOutRiverAm().doubleValue()).sum() * 86400))
+                .outRiverMean(new BigDecimal(deciles.get(0).stream().mapToDouble(t -> t.getOutRiverMean().doubleValue()).sum() * 86400))
+                .outConcealedAm(new BigDecimal(deciles.get(0).stream().mapToDouble(t -> t.getOutConcealedAm().doubleValue()).sum() * 86400))
+                .outConcealedMean(new BigDecimal(deciles.get(0).stream().mapToDouble(t -> t.getOutConcealedMean().doubleValue()).sum() * 86400))
+                .lzzSc1Am(new BigDecimal(deciles.get(0).stream().mapToDouble(t -> t.getLzzSc1Am().doubleValue()).sum() * 86400))
+                .lzzSc2Am(new BigDecimal(deciles.get(0).stream().mapToDouble(t -> t.getLzzSc2Am().doubleValue()).sum() * 86400))
+                .lzzScMean(new BigDecimal(deciles.get(0).stream().mapToDouble(t -> t.getLzzScMean().doubleValue()).sum() * 86400))
+                .build();
+
+        SurfaceWaterWaterregimenDetail bu4 = SurfaceWaterWaterregimenDetail.builder()
+                .id("中旬总数")
+                .inReservoirAm(new BigDecimal(deciles.get(1).stream().mapToDouble(t -> t.getInReservoirAm().doubleValue()).sum()))
+                .inReservoirMean(new BigDecimal(deciles.get(1).stream().mapToDouble(t -> t.getInReservoirMean().doubleValue()).sum()))
+                .outReservoirAm(new BigDecimal(deciles.get(1).stream().mapToDouble(t -> t.getOutReservoirAm().doubleValue()).sum()))
+                .outReservoirMean(new BigDecimal(deciles.get(1).stream().mapToDouble(t -> t.getOutReservoirMean().doubleValue()).sum()))
+                .outRiverAm(new BigDecimal(deciles.get(1).stream().mapToDouble(t -> t.getOutRiverAm().doubleValue()).sum()))
+                .outRiverMean(new BigDecimal(deciles.get(1).stream().mapToDouble(t -> t.getOutRiverMean().doubleValue()).sum()))
+                .outConcealedAm(new BigDecimal(deciles.get(1).stream().mapToDouble(t -> t.getOutConcealedAm().doubleValue()).sum()))
+                .outConcealedMean(new BigDecimal(deciles.get(1).stream().mapToDouble(t -> t.getOutConcealedMean().doubleValue()).sum()))
+                .lzzSc1Am(new BigDecimal(deciles.get(1).stream().mapToDouble(t -> t.getLzzSc1Am().doubleValue()).sum()))
+                .lzzSc2Am(new BigDecimal(deciles.get(1).stream().mapToDouble(t -> t.getLzzSc2Am().doubleValue()).sum()))
+                .lzzScMean(new BigDecimal(deciles.get(1).stream().mapToDouble(t -> t.getLzzScMean().doubleValue()).sum()))
+                .build();
+        SurfaceWaterWaterregimenDetail bu5 = SurfaceWaterWaterregimenDetail.builder()
+                .id("中旬平均")
+                .inReservoirAm(new BigDecimal(deciles.get(1).stream().mapToDouble(t -> t.getInReservoirAm().doubleValue()).sum() / deciles.get(1).size()))
+                .inReservoirMean(new BigDecimal(deciles.get(1).stream().mapToDouble(t -> t.getInReservoirMean().doubleValue()).sum() / deciles.get(1).size()))
+                .outReservoirAm(new BigDecimal(deciles.get(1).stream().mapToDouble(t -> t.getOutReservoirAm().doubleValue()).sum() / deciles.get(1).size()))
+                .outReservoirMean(new BigDecimal(deciles.get(1).stream().mapToDouble(t -> t.getOutReservoirMean().doubleValue()).sum() / deciles.get(1).size()))
+                .outRiverAm(new BigDecimal(deciles.get(1).stream().mapToDouble(t -> t.getOutRiverAm().doubleValue()).sum() / deciles.get(1).size()))
+                .outRiverMean(new BigDecimal(deciles.get(1).stream().mapToDouble(t -> t.getOutRiverMean().doubleValue()).sum() / deciles.get(1).size()))
+                .outConcealedAm(new BigDecimal(deciles.get(1).stream().mapToDouble(t -> t.getOutConcealedAm().doubleValue()).sum() / deciles.get(1).size()))
+                .outConcealedMean(new BigDecimal(deciles.get(1).stream().mapToDouble(t -> t.getOutConcealedMean().doubleValue()).sum() / deciles.get(1).size()))
+                .lzzSc1Am(new BigDecimal(deciles.get(1).stream().mapToDouble(t -> t.getLzzSc1Am().doubleValue()).sum() / deciles.get(1).size()))
+                .lzzSc2Am(new BigDecimal(deciles.get(1).stream().mapToDouble(t -> t.getLzzSc2Am().doubleValue()).sum() / deciles.get(1).size()))
+                .lzzScMean(new BigDecimal(deciles.get(1).stream().mapToDouble(t -> t.getLzzScMean().doubleValue()).sum() / deciles.get(1).size()))
+                .build();
+        SurfaceWaterWaterregimenDetail bu6 = SurfaceWaterWaterregimenDetail.builder()
+                .id("中旬流量")
+                .inReservoirAm(new BigDecimal(deciles.get(1).stream().mapToDouble(t -> t.getInReservoirAm().doubleValue()).sum() * 86400))
+                .inReservoirMean(new BigDecimal(deciles.get(1).stream().mapToDouble(t -> t.getInReservoirMean().doubleValue()).sum() * 86400))
+                .outReservoirAm(new BigDecimal(deciles.get(1).stream().mapToDouble(t -> t.getOutReservoirAm().doubleValue()).sum() * 86400))
+                .outReservoirMean(new BigDecimal(deciles.get(1).stream().mapToDouble(t -> t.getOutReservoirMean().doubleValue()).sum() * 86400))
+                .outRiverAm(new BigDecimal(deciles.get(1).stream().mapToDouble(t -> t.getOutRiverAm().doubleValue()).sum() * 86400))
+                .outRiverMean(new BigDecimal(deciles.get(1).stream().mapToDouble(t -> t.getOutRiverMean().doubleValue()).sum() * 86400))
+                .outConcealedAm(new BigDecimal(deciles.get(1).stream().mapToDouble(t -> t.getOutConcealedAm().doubleValue()).sum() * 86400))
+                .outConcealedMean(new BigDecimal(deciles.get(1).stream().mapToDouble(t -> t.getOutConcealedMean().doubleValue()).sum() * 86400))
+                .lzzSc1Am(new BigDecimal(deciles.get(1).stream().mapToDouble(t -> t.getLzzSc1Am().doubleValue()).sum() * 86400))
+                .lzzSc2Am(new BigDecimal(deciles.get(1).stream().mapToDouble(t -> t.getLzzSc2Am().doubleValue()).sum() * 86400))
+                .lzzScMean(new BigDecimal(deciles.get(1).stream().mapToDouble(t -> t.getLzzScMean().doubleValue()).sum() * 86400))
+                .build();
+
+        SurfaceWaterWaterregimenDetail bu7 = SurfaceWaterWaterregimenDetail.builder()
+                .id("下旬总数")
+                .inReservoirAm(new BigDecimal(deciles.get(3).stream().mapToDouble(t -> t.getInReservoirAm().doubleValue()).sum()))
+                .inReservoirMean(new BigDecimal(deciles.get(3).stream().mapToDouble(t -> t.getInReservoirMean().doubleValue()).sum()))
+                .outReservoirAm(new BigDecimal(deciles.get(3).stream().mapToDouble(t -> t.getOutReservoirAm().doubleValue()).sum()))
+                .outReservoirMean(new BigDecimal(deciles.get(3).stream().mapToDouble(t -> t.getOutReservoirMean().doubleValue()).sum()))
+                .outRiverAm(new BigDecimal(deciles.get(3).stream().mapToDouble(t -> t.getOutRiverAm().doubleValue()).sum()))
+                .outRiverMean(new BigDecimal(deciles.get(3).stream().mapToDouble(t -> t.getOutRiverMean().doubleValue()).sum()))
+                .outConcealedAm(new BigDecimal(deciles.get(3).stream().mapToDouble(t -> t.getOutConcealedAm().doubleValue()).sum()))
+                .outConcealedMean(new BigDecimal(deciles.get(3).stream().mapToDouble(t -> t.getOutConcealedMean().doubleValue()).sum()))
+                .lzzSc1Am(new BigDecimal(deciles.get(3).stream().mapToDouble(t -> t.getLzzSc1Am().doubleValue()).sum()))
+                .lzzSc2Am(new BigDecimal(deciles.get(3).stream().mapToDouble(t -> t.getLzzSc2Am().doubleValue()).sum()))
+                .lzzScMean(new BigDecimal(deciles.get(3).stream().mapToDouble(t -> t.getLzzScMean().doubleValue()).sum()))
+                .build();
+        SurfaceWaterWaterregimenDetail bu8 = SurfaceWaterWaterregimenDetail.builder()
+                .id("下旬平均")
+                .inReservoirAm(new BigDecimal(deciles.get(3).stream().mapToDouble(t -> t.getInReservoirAm().doubleValue()).sum() / deciles.get(3).size()))
+                .inReservoirMean(new BigDecimal(deciles.get(3).stream().mapToDouble(t -> t.getInReservoirMean().doubleValue()).sum() / deciles.get(3).size()))
+                .outReservoirAm(new BigDecimal(deciles.get(3).stream().mapToDouble(t -> t.getOutReservoirAm().doubleValue()).sum() / deciles.get(3).size()))
+                .outReservoirMean(new BigDecimal(deciles.get(3).stream().mapToDouble(t -> t.getOutReservoirMean().doubleValue()).sum() / deciles.get(3).size()))
+                .outRiverAm(new BigDecimal(deciles.get(3).stream().mapToDouble(t -> t.getOutRiverAm().doubleValue()).sum() / deciles.get(3).size()))
+                .outRiverMean(new BigDecimal(deciles.get(3).stream().mapToDouble(t -> t.getOutRiverMean().doubleValue()).sum() / deciles.get(3).size()))
+                .outConcealedAm(new BigDecimal(deciles.get(3).stream().mapToDouble(t -> t.getOutConcealedAm().doubleValue()).sum() / deciles.get(3).size()))
+                .outConcealedMean(new BigDecimal(deciles.get(3).stream().mapToDouble(t -> t.getOutConcealedMean().doubleValue()).sum() / deciles.get(3).size()))
+                .lzzSc1Am(new BigDecimal(deciles.get(3).stream().mapToDouble(t -> t.getLzzSc1Am().doubleValue()).sum() / deciles.get(3).size()))
+                .lzzSc2Am(new BigDecimal(deciles.get(3).stream().mapToDouble(t -> t.getLzzSc2Am().doubleValue()).sum() / deciles.get(3).size()))
+                .lzzScMean(new BigDecimal(deciles.get(3).stream().mapToDouble(t -> t.getLzzScMean().doubleValue()).sum() / deciles.get(3).size()))
+                .build();
+        SurfaceWaterWaterregimenDetail bu9 = SurfaceWaterWaterregimenDetail.builder()
+                .id("下旬流量")
+                .inReservoirAm(new BigDecimal(deciles.get(3).stream().mapToDouble(t -> t.getInReservoirAm().doubleValue()).sum() * 86400))
+                .inReservoirMean(new BigDecimal(deciles.get(3).stream().mapToDouble(t -> t.getInReservoirMean().doubleValue()).sum() * 86400))
+                .outReservoirAm(new BigDecimal(deciles.get(3).stream().mapToDouble(t -> t.getOutReservoirAm().doubleValue()).sum() * 86400))
+                .outReservoirMean(new BigDecimal(deciles.get(3).stream().mapToDouble(t -> t.getOutReservoirMean().doubleValue()).sum() * 86400))
+                .outRiverAm(new BigDecimal(deciles.get(3).stream().mapToDouble(t -> t.getOutRiverAm().doubleValue()).sum() * 86400))
+                .outRiverMean(new BigDecimal(deciles.get(3).stream().mapToDouble(t -> t.getOutRiverMean().doubleValue()).sum() * 86400))
+                .outConcealedAm(new BigDecimal(deciles.get(3).stream().mapToDouble(t -> t.getOutConcealedAm().doubleValue()).sum() * 86400))
+                .outConcealedMean(new BigDecimal(deciles.get(3).stream().mapToDouble(t -> t.getOutConcealedMean().doubleValue()).sum() * 86400))
+                .lzzSc1Am(new BigDecimal(deciles.get(3).stream().mapToDouble(t -> t.getLzzSc1Am().doubleValue()).sum() * 86400))
+                .lzzSc2Am(new BigDecimal(deciles.get(3).stream().mapToDouble(t -> t.getLzzSc2Am().doubleValue()).sum() * 86400))
+                .lzzScMean(new BigDecimal(deciles.get(3).stream().mapToDouble(t -> t.getLzzScMean().doubleValue()).sum() * 86400))
+                .build();
+
+        SurfaceWaterWaterregimenDetail bu10 = SurfaceWaterWaterregimenDetail.builder()
+                .id("月总数")
+                .inReservoirAm(new BigDecimal(dayList.stream().mapToDouble(t -> t.getInReservoirAm().doubleValue()).sum()))
+                .inReservoirMean(new BigDecimal(dayList.stream().mapToDouble(t -> t.getInReservoirMean().doubleValue()).sum()))
+                .outReservoirAm(new BigDecimal(dayList.stream().mapToDouble(t -> t.getOutReservoirAm().doubleValue()).sum()))
+                .outReservoirMean(new BigDecimal(dayList.stream().mapToDouble(t -> t.getOutReservoirMean().doubleValue()).sum()))
+                .outRiverAm(new BigDecimal(dayList.stream().mapToDouble(t -> t.getOutRiverAm().doubleValue()).sum()))
+                .outRiverMean(new BigDecimal(dayList.stream().mapToDouble(t -> t.getOutRiverMean().doubleValue()).sum()))
+                .outConcealedAm(new BigDecimal(dayList.stream().mapToDouble(t -> t.getOutConcealedAm().doubleValue()).sum()))
+                .outConcealedMean(new BigDecimal(dayList.stream().mapToDouble(t -> t.getOutConcealedMean().doubleValue()).sum()))
+                .lzzSc1Am(new BigDecimal(dayList.stream().mapToDouble(t -> t.getLzzSc1Am().doubleValue()).sum()))
+                .lzzSc2Am(new BigDecimal(dayList.stream().mapToDouble(t -> t.getLzzSc2Am().doubleValue()).sum()))
+                .lzzScMean(new BigDecimal(dayList.stream().mapToDouble(t -> t.getLzzScMean().doubleValue()).sum()))
+                .build();
+        SurfaceWaterWaterregimenDetail bu11 = SurfaceWaterWaterregimenDetail.builder()
+                .id("下旬平均")
+                .inReservoirAm(new BigDecimal(dayList.stream().mapToDouble(t -> t.getInReservoirAm().doubleValue()).sum() / dayList.size()))
+                .inReservoirMean(new BigDecimal(dayList.stream().mapToDouble(t -> t.getInReservoirMean().doubleValue()).sum() / dayList.size()))
+                .outReservoirAm(new BigDecimal(dayList.stream().mapToDouble(t -> t.getOutReservoirAm().doubleValue()).sum() / dayList.size()))
+                .outReservoirMean(new BigDecimal(dayList.stream().mapToDouble(t -> t.getOutReservoirMean().doubleValue()).sum() / dayList.size()))
+                .outRiverAm(new BigDecimal(dayList.stream().mapToDouble(t -> t.getOutRiverAm().doubleValue()).sum() / dayList.size()))
+                .outRiverMean(new BigDecimal(dayList.stream().mapToDouble(t -> t.getOutRiverMean().doubleValue()).sum() / dayList.size()))
+                .outConcealedAm(new BigDecimal(dayList.stream().mapToDouble(t -> t.getOutConcealedAm().doubleValue()).sum() / dayList.size()))
+                .outConcealedMean(new BigDecimal(dayList.stream().mapToDouble(t -> t.getOutConcealedMean().doubleValue()).sum() / dayList.size()))
+                .lzzSc1Am(new BigDecimal(dayList.stream().mapToDouble(t -> t.getLzzSc1Am().doubleValue()).sum() / dayList.size()))
+                .lzzSc2Am(new BigDecimal(dayList.stream().mapToDouble(t -> t.getLzzSc2Am().doubleValue()).sum() / dayList.size()))
+                .lzzScMean(new BigDecimal(dayList.stream().mapToDouble(t -> t.getLzzScMean().doubleValue()).sum() / dayList.size()))
+                .build();
+        SurfaceWaterWaterregimenDetail bu12 = SurfaceWaterWaterregimenDetail.builder()
+                .id("下旬流量")
+                .inReservoirAm(new BigDecimal(dayList.stream().mapToDouble(t -> t.getInReservoirAm().doubleValue()).sum() * 86400))
+                .inReservoirMean(new BigDecimal(dayList.stream().mapToDouble(t -> t.getInReservoirMean().doubleValue()).sum() * 86400))
+                .outReservoirAm(new BigDecimal(dayList.stream().mapToDouble(t -> t.getOutReservoirAm().doubleValue()).sum() * 86400))
+                .outReservoirMean(new BigDecimal(dayList.stream().mapToDouble(t -> t.getOutReservoirMean().doubleValue()).sum() * 86400))
+                .outRiverAm(new BigDecimal(dayList.stream().mapToDouble(t -> t.getOutRiverAm().doubleValue()).sum() * 86400))
+                .outRiverMean(new BigDecimal(dayList.stream().mapToDouble(t -> t.getOutRiverMean().doubleValue()).sum() * 86400))
+                .outConcealedAm(new BigDecimal(dayList.stream().mapToDouble(t -> t.getOutConcealedAm().doubleValue()).sum() * 86400))
+                .outConcealedMean(new BigDecimal(dayList.stream().mapToDouble(t -> t.getOutConcealedMean().doubleValue()).sum() * 86400))
+                .lzzSc1Am(new BigDecimal(dayList.stream().mapToDouble(t -> t.getLzzSc1Am().doubleValue()).sum() * 86400))
+                .lzzSc2Am(new BigDecimal(dayList.stream().mapToDouble(t -> t.getLzzSc2Am().doubleValue()).sum() * 86400))
+                .lzzScMean(new BigDecimal(dayList.stream().mapToDouble(t -> t.getLzzScMean().doubleValue()).sum() * 86400))
+                .build();
+        List<SurfaceWaterWaterregimenDetail> map = new ArrayList<>();
+        map.add(bu1);
+        map.add(bu2);
+        map.add(bu3);
+        map.add(bu4);
+        map.add(bu5);
+        map.add(bu6);
+        map.add(bu7);
+        map.add(bu8);
+        map.add(bu9);
+        map.add(bu10);
+        map.add(bu11);
+        map.add(bu12);
+        return map;
+    }
+
 }
 
 
