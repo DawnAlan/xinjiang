@@ -133,7 +133,7 @@ public class SurfaceWaterWaterregimenDetailService extends ServiceImpl<SurfaceWa
         HashMap<String, Object> map = new HashMap<String, Object>();
         map.put("parent_id", id);
         List<SurfaceWaterWaterregimenDetail> list= surfaceWaterWaterregimenDetailMapper.selectByMap(map).stream().sorted(Comparator.comparing(SurfaceWaterWaterregimenDetail::getSampleTime)).collect(Collectors.toList());
-        list.addAll(ten_day(id));
+//        list.addAll(ten_day(id));
         return list;
     }
 
