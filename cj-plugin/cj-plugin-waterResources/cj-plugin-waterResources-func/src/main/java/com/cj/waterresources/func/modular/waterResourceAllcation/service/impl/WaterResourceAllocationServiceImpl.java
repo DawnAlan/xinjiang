@@ -10,7 +10,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.cj.common.exception.CommonException;
+import com.cj.auth.core.util.StpLoginUserUtil;
 import com.cj.common.model.RestResponse;
 import com.cj.common.pojo.CommonResult;
 import com.cj.common.util.ExcelUtils;
@@ -145,8 +145,7 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
         waterResourceAllocation.setId(UUIDUtils.getUUID());
         waterResourceAllocation.setDel(0);
         waterResourceAllocation.setState(1);
-        // todo 登陆用户
-        waterResourceAllocation.setCreateBy(null);
+        waterResourceAllocation.setCreateBy(StpLoginUserUtil.getLoginUser().getName());
         waterResourceAllocation.setCreateTime(now);
         this.save(waterResourceAllocation);
 
