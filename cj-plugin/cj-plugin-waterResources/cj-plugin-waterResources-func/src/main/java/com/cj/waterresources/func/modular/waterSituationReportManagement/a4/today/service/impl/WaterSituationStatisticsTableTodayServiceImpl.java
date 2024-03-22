@@ -169,9 +169,7 @@ public class WaterSituationStatisticsTableTodayServiceImpl extends ServiceImpl<W
             TrendsTableParam ld = qsTableParam.stream().filter(t -> t.getPId().equals("0") && t.getParamName().equals("漏斗")).collect(Collectors.toList()).get(0);
             TrendsTableParam byNy = qsTableParam.stream().filter(t -> t.getPId().equals(dlqTemp.getId()) && t.getParamName().equals("八一")).collect(Collectors.toList()).get(0);
             TrendsTableParam lxNy = qsTableParam.stream().filter(t -> t.getPId().equals(dlqTemp.getId()) && t.getParamName().equals("立新")).collect(Collectors.toList()).get(0);
-            TrendsTableParam lhgcb = qsTableParam.stream().filter(t -> t.getPId().equals(dlqTemp.getId()) && t.getParamName().equals("绿化工程部")).collect(Collectors.toList()).get(0);
-            TrendsTableParam lhfwb = qsTableParam.stream().filter(t -> t.getPId().equals(dlqTemp.getId()) && t.getParamName().equals("绿化服务部")).collect(Collectors.toList()).get(0);
-            TrendsTableParam ylLh = qsTableParam.stream().filter(t -> t.getPId().equals(dlqTemp.getId()) && t.getParamName().equals("园林")).collect(Collectors.toList()).get(0);
+            TrendsTableParam dlqLh = qsTableParam.stream().filter(t -> t.getPId().equals(dlqTemp.getId()) && t.getParamName().equals("灯笼渠绿化")).collect(Collectors.toList()).get(0);
             TrendsTableParam st = qsTableParam.stream().filter(t -> t.getPId().equals("0") && t.getParamName().equals("生态")).collect(Collectors.toList()).get(0);
             waterSituationStatisticsTableToday.setQsZgqDgq(data_8.stream().filter(t->t.getTableHeadId().equals(dgq.getId())).map(DayWaterSituationStatisticsTableQs::getV).collect(Collectors.toList()).get(0));
             waterSituationStatisticsTableToday.setQsZgqXgq(data_8.stream().filter(t->t.getTableHeadId().equals(xgq.getId())).map(DayWaterSituationStatisticsTableQs::getV).collect(Collectors.toList()).get(0));
@@ -186,9 +184,7 @@ public class WaterSituationStatisticsTableTodayServiceImpl extends ServiceImpl<W
                     data_8.stream().filter(t->t.getTableHeadId().equals(lxNy.getId()) && t.getV()!=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00)
             );
             waterSituationStatisticsTableToday.setQsDlqLh(
-                    data_8.stream().filter(t->t.getTableHeadId().equals(lhgcb.getId()) && t.getV()!=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00)+
-                    data_8.stream().filter(t->t.getTableHeadId().equals(lhfwb.getId()) && t.getV()!=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00)+
-                    data_8.stream().filter(t->t.getTableHeadId().equals(ylLh.getId()) && t.getV()!=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00)
+                    data_8.stream().filter(t->t.getTableHeadId().equals(dlqLh.getId()) && t.getV()!=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00)
             );
             waterSituationStatisticsTableToday.setQsDlqHj(
                     (waterSituationStatisticsTableToday.getQsDlqNy()==null?0.00:waterSituationStatisticsTableToday.getQsDlqNy())+

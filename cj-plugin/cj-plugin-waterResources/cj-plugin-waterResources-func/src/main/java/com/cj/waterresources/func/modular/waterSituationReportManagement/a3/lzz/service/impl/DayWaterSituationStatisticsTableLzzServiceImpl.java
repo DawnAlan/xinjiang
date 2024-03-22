@@ -19,6 +19,7 @@ import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hx.e
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.mapper.DayWaterSituationStatisticsTableLzzMapper;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.entity.DayWaterSituationStatisticsTableLzz;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.service.DayWaterSituationStatisticsTableLzzService;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tth.entity.DayWaterSituationStatisticsTableTth;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -272,7 +273,7 @@ public class DayWaterSituationStatisticsTableLzzServiceImpl extends ServiceImpl<
         }
         boolean b = this.updateBatchById(dayWaterSituationStatisticsTableLzzList);
         if (b) {
-            updateYesterdayData(dayWaterSituationStatisticsTableLzzList.get(0).getRecordTime());
+            updateYesterdayData(dayWaterSituationStatisticsTableLzzList.get(0).getRecordTime(),dayWaterSituationStatisticsTableLzzList);
             return RestResponse.ok();
         }else {
             return RestResponse.no("error");
@@ -373,15 +374,13 @@ public class DayWaterSituationStatisticsTableLzzServiceImpl extends ServiceImpl<
         }
     }
 
-    private void updateYesterdayData(Date now){
-        List<DayWaterSituationStatisticsTableLzz> dayWaterSituationStatisticsTablelzzList = this.baseMapper.selectInfoList(sdf.format(now));
-        List<DayWaterSituationStatisticsTableLzz> dayWaterSituationStatisticsTablelzzs = this.baseMapper.selectList(getDate(now, 1));
-        if(!dayWaterSituationStatisticsTablelzzs.isEmpty()){
-            List<DayWaterSituationStatisticsTableLzz> hdList = dayWaterSituationStatisticsTablelzzs.stream().filter(t -> t.getTime().equals("昨日均")).collect(Collectors.toList());
-            hdList.forEach(t->{
-                t.setV(dayWaterSituationStatisticsTablelzzList.stream().filter(p->p.getTableHeadId().equals(t.getTableHeadId()) && p.getV() !=null).map(DayWaterSituationStatisticsTableLzz::getV).reduce(Double::sum).orElse(0.00));
+    private void updateYesterdayData(Date now,List<DayWaterSituationStatisticsTableLzz> lzzList){
+        List<DayWaterSituationStatisticsTableLzz> dayWaterSituationStatisticsTableLzzList = this.baseMapper.selectInfoAfterDayList(getDate(now,1));
+        if(!dayWaterSituationStatisticsTableLzzList.isEmpty()){
+            dayWaterSituationStatisticsTableLzzList.forEach(t->{
+                t.setV(lzzList.stream().filter(p->p.getTableHeadId().equals(t.getTableHeadId()) && p.getV() !=null).map(DayWaterSituationStatisticsTableLzz::getV).reduce(Double::sum).orElse(0.00));
             });
-            this.updateBatchById(hdList);
+            this.updateBatchById(dayWaterSituationStatisticsTableLzzList);
         }
     }
 

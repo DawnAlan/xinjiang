@@ -7,6 +7,7 @@ import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInf
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -56,5 +57,12 @@ public interface IrrigatedPlatformDataInfoMapper extends BaseMapper<IrrigatedPla
 
     @Select("select YESTERDAY_AVG_FLOW,MONITOR_NAME FROM IRRIGATED_PLATFORM_DATA_INFO WHERE MONITOR_NAME = #{name} AND TO_CHAR(MONITOR_TIME,'YYYY-MM-DD') = #{time} order by MONITOR_TIME desc limit 1")
     SelectInfoByIrrigationNameListRes selectInfoByIrrigationNameListForHistory(@Param("name") String name,@Param("time")String time);
+
+    @Select("select * from  tth.irrigated_platform_data_info where (MONITOR_NAME, MONITOR_TIME) in\n" +
+            " (SELECT MONITOR_NAME, max(MONITOR_TIME)\n" +
+            " FROM irrigated_platform_data_info \n" +
+            " WHERE (monitor_time BETWEEN #{startTime} AND #{endTime} AND monitor_name IN ('头屯河水库水位','入库流量','出库流量'))\n" +
+            " group by MONITOR_NAME)")
+    List<IrrigatedPlatformDataInfo> getCurrentDate(@Param("startTime")String startTime, @Param("endTime")String endTime);
 }
 

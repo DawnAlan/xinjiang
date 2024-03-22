@@ -26,10 +26,10 @@ public interface DayWaterSituationStatisticsTableHxMapper extends BaseMapper<Day
     Boolean deleteByTime(@Param("date")String date);
 
     List<A3StatisticsRes> getStatistics(@Param("req") A3StatisticsReq req);
-    @Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_HX WHERE TO_CHAR(RECORD_TIME,'YYYY-MM-DD') = #{date} and TIME != '今日均'")
+    @Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_HX WHERE TO_CHAR(RECORD_TIME,'YYYY-MM-DD') = #{date} and TIME = '今日均'")
     List<DayWaterSituationStatisticsTableHx> selectInfoList(@Param("date")String date);
 
-    @Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_HX WHERE TO_CHAR(RECORD_TIME,'YYYY-MM-DD') = #{date} and TIME != '昨日均'")
+    @Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_HX WHERE TO_CHAR(RECORD_TIME,'YYYY-MM-DD') = #{date} and TIME = '昨日均'")
     List<DayWaterSituationStatisticsTableHx> selectInfoAfterDayList(@Param("date")String date);
 
 

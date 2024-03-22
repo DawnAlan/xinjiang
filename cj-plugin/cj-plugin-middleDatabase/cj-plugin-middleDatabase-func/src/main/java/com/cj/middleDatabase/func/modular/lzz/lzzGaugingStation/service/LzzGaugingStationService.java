@@ -22,5 +22,7 @@ public interface LzzGaugingStationService extends IService<LzzGaugingStation> {
     LzzGaugingStation selectInfoByTime(String time,String name);
 
     List<LzzGaugingStation> selectHistoryList(String name, String startTime, String endTime);
+
+    List<LzzGaugingStation> getCurrent(String dateTime);
 }
 

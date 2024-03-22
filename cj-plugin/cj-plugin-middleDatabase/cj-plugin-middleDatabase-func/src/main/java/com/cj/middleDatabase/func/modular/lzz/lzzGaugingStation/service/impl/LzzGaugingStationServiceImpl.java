@@ -52,5 +52,10 @@ public class LzzGaugingStationServiceImpl extends ServiceImpl<LzzGaugingStationM
     public List<LzzGaugingStation> selectHistoryList(String name, String startTime, String endTime) {
         return this.baseMapper.selectHistoryList(name,startTime,endTime);
     }
+
+    @Override
+    public List<LzzGaugingStation> getCurrent(String dateTime) {
+        return this.baseMapper.getCurrent(dateTime);
+    }
 }
 

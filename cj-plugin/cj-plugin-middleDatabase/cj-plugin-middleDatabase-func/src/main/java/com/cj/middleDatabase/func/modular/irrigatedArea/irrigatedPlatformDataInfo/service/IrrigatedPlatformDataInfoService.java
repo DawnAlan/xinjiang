@@ -6,6 +6,7 @@ import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInf
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.entity.IrrigatedPlatformDataInfo;
 import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.entity.LzzGaugingStation;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -36,5 +37,7 @@ public interface IrrigatedPlatformDataInfoService extends IService<IrrigatedPlat
     List<IrrigatedPlatformDataInfo> selectHistoryList(String name, String startTime, String endTime);
 
     List<IrrigatedPlatformDataInfo> getRealTimeWaterLevel(String station);
+
+    List<IrrigatedPlatformDataInfo> getCurrentDate(String startTime, String endTime);
 }
 

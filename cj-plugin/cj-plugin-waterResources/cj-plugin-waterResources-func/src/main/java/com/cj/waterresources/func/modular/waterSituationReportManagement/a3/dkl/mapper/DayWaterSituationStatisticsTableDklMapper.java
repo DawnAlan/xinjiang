@@ -22,7 +22,7 @@ public interface DayWaterSituationStatisticsTableDklMapper extends BaseMapper<Da
     List<DayWaterSituationStatisticsTableDkl> selectList(@Param("date")String date);
 
     @Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_DKL WHERE TO_CHAR(RECORD_TIME,'YYYY-MM-DD') = #{date} and TIME != '昨日均'")
-    List<DayWaterSituationStatisticsTableDkl> selectList1(@Param("date")String date);
+    List<DayWaterSituationStatisticsTableDkl> selectInfoAfterDayList(@Param("date")String date);
 
     @Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_DKL WHERE TO_CHAR(RECORD_TIME,'YYYY-MM-DD') = #{date} and TIME = '今日均'")
         //@Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_HD WHERE TO_DAYS( NOW( ) ) - TO_DAYS(\"RECORD_TIME\") = 1 and TIME != '昨日均'")

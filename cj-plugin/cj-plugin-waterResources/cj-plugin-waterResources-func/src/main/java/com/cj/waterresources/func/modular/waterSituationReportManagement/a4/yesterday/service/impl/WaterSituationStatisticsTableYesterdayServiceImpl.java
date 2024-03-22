@@ -284,9 +284,7 @@ public class WaterSituationStatisticsTableYesterdayServiceImpl extends ServiceIm
             TrendsTableParam ld = qsList.stream().filter(t -> t.getParamName().equals("漏斗")).collect(Collectors.toList()).get(0);
             TrendsTableParam by = qsList.stream().filter(t -> t.getParamName().equals("八一")).collect(Collectors.toList()).get(0);
             TrendsTableParam lx = qsList.stream().filter(t -> t.getParamName().equals("立新")).collect(Collectors.toList()).get(0);
-            TrendsTableParam lhgcb = qsList.stream().filter(t -> t.getParamName().equals("绿化工程部")).collect(Collectors.toList()).get(0);
-            TrendsTableParam lhfwb = qsList.stream().filter(t -> t.getParamName().equals("绿化服务部")).collect(Collectors.toList()).get(0);
-            TrendsTableParam yl = qsList.stream().filter(t -> t.getParamName().equals("园林")).collect(Collectors.toList()).get(0);
+            TrendsTableParam dlqlh = qsList.stream().filter(t -> t.getParamName().equals("灯笼渠绿化")).collect(Collectors.toList()).get(0);
             TrendsTableParam hd = qsList.stream().filter(t -> t.getParamName().equals("生态")).collect(Collectors.toList()).get(0);
             TrendsTableParam qh = qsList.stream().filter(t -> t.getParamName().equals("全河")).collect(Collectors.toList()).get(0);
             List<TrendsTableParam> dklList = trendsTableParamList.stream().filter(t->t.getUseType()==1).
@@ -305,9 +303,7 @@ public class WaterSituationStatisticsTableYesterdayServiceImpl extends ServiceIm
                     yesterdayList.stream().filter(t->t.getTableHeadId().equals(lx.getId())).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00)
             );
             waterSituationStatisticsTableYesterday.setQsDlqLh(
-                    yesterdayList.stream().filter(t->t.getTableHeadId().equals(lhgcb.getId())).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00)+
-                    yesterdayList.stream().filter(t->t.getTableHeadId().equals(lhfwb.getId())).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00)+
-                    yesterdayList.stream().filter(t->t.getTableHeadId().equals(yl.getId())).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00)
+                    yesterdayList.stream().filter(t->t.getTableHeadId().equals(dlqlh.getId())).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00)
             );
             waterSituationStatisticsTableYesterday.setQsDlqHj(
                     (waterSituationStatisticsTableYesterday.getQsDlqNy()==null?0.00:waterSituationStatisticsTableYesterday.getQsDlqNy())+
