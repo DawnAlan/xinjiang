@@ -19,4 +19,10 @@ public class HomePageTask {
     public void waterFlowAlarmEventPolling() {
         floodHomePageService.waterStorageOverviewSchedule(new Date());
     }
+
+    @Scheduled(cron = "0 0 0/1 * * ? ")
+    public void floodRetentionCapacitySchedule() {
+        floodHomePageService.calcLzzFloodRetention();
+        floodHomePageService.calcTthFloodRetention();
+    }
 }
