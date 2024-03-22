@@ -168,7 +168,8 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
     private static StringBuilder getStringBuilder(Exception e) {
         StringBuilder sb = new StringBuilder();
         Throwable cause = e;
-        while (cause != null) {
+        int deep = 0;
+        while (cause != null && deep < 5) {
             sb.append(e.getMessage()+ "\n");
             StackTraceElement[] stackTrace = cause.getStackTrace();
             for (StackTraceElement stack: stackTrace) {
@@ -176,6 +177,7 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
                 sb.append("\n");
             }
             cause = e.getCause();
+            deep++;
         }
         return sb;
     }
@@ -216,16 +218,25 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
 
     @SneakyThrows
     @Override
-    public RestResponse<WaterAllocationComparisonSelectionRes> compare(String idA, String idB) {
+    public RestResponse<WaterAllocationComparisonSelectionRes> compare(List<String> ids) {
         WaterAllocationComparisonSelectionRes waterAllocationComparisonSelectionRes = new WaterAllocationComparisonSelectionRes();
-        WaterResourceAllocation waterResourceAllocationA = baseMapper.selectById(idA);
-        WaterResourceAllocation waterResourceAllocationB = baseMapper.selectById(idB);
-        AppraiseReq appraiseReqA = getCompareAppraise(waterResourceAllocationA);
-        AppraiseReq appraiseReqB = getCompareAppraise(waterResourceAllocationB);
-        Map<String, Object> appraiseMap = new WaterResourceAssessment().WaterResourceAssessment(Arrays.asList(appraiseReqA, appraiseReqB), curveService.selectList());
+        List<AppraiseReq> toCompareList = new ArrayList<>();
+        List<WaterResourceAllocation> waterResourceAllocations = new ArrayList<>();
+        for (int i = 0; i < ids.size(); i++) {
+            WaterResourceAllocation waterResourceAllocation = baseMapper.selectById(ids.get(i));
+            waterResourceAllocations.add(waterResourceAllocation);
+            toCompareList.add(getCompareAppraise(waterResourceAllocation));
+        }
+        Map<String, Object> appraiseMap = new WaterResourceAssessment().WaterResourceAssessment(toCompareList, curveService.selectList());
         waterAllocationComparisonSelectionRes.setAppraise(appraiseMap.getOrDefault("方案评价", "") + "" + appraiseMap.getOrDefault("方案推荐", ""));
-        waterAllocationComparisonSelectionRes.setWaterRatio(getWaterRatio(appraiseReqA.getExcel2Data(), appraiseReqB.getExcel2Data()));
-        waterAllocationComparisonSelectionRes.setWaterStatistics(getWaterStatistics(waterResourceAllocationA, waterResourceAllocationB));
+
+        List<List<Excel2>> appraiseReqExcel2List = new ArrayList<>();
+        for (int i = 0; i < toCompareList.size(); i++) {
+            appraiseReqExcel2List.add(toCompareList.get(i).getExcel2Data());
+        }
+
+        waterAllocationComparisonSelectionRes.setWaterRatio(getWaterRatio(appraiseReqExcel2List));
+        waterAllocationComparisonSelectionRes.setWaterStatistics(getWaterStatistics(waterResourceAllocations));
         return RestResponse.ok(waterAllocationComparisonSelectionRes);
     }
 
@@ -540,7 +551,7 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
         waterBalance.put("楼庄子",lzzWaterBalance);
         result.put("水库供蓄对比",contrast);
         result.put("水量平衡",waterBalance);
-        RestResponse<WaterAllocationComparisonSelectionRes> compare = compare(idA, idB);
+        RestResponse<WaterAllocationComparisonSelectionRes> compare = compare(Arrays.asList(idA, idB));
         if(compare.getCode()==200){
             String appraise = compare.getData().getAppraise();
             result.put("方案优选",appraise);
@@ -677,22 +688,22 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
         return allocation;
     }
 
-    private List<WaterAllocationComparisonSelectionRes.WaterRatioDTO> getWaterRatio(List<Excel2> dataA, List<Excel2> dataB) {
-        List<String> stationsA = dataA.stream().map(n -> n.getStationType() + ":" + n.getStationName()).distinct().collect(Collectors.toList());
-        List<String> stationsB = dataB.stream().map(n -> n.getStationType() + ":" + n.getStationName()).distinct().collect(Collectors.toList());
-        stationsA.addAll(stationsB);
-        stationsA = stationsA.stream().distinct().collect(Collectors.toList());
+    private List<WaterAllocationComparisonSelectionRes.WaterRatioDTO> getWaterRatio(List<List<Excel2>> excel2Datas) {
+        Set<String> allStations = new HashSet<>();
+        for (int i = 0; i < excel2Datas.size(); i++) {
+            allStations.addAll(excel2Datas.get(i).stream().map(n -> n.getStationType() + ":" + n.getStationName()).collect(Collectors.toSet()));
+        }
         List<WaterAllocationComparisonSelectionRes.WaterRatioDTO> waterRatioDTOS = new ArrayList<>();
-        for (String station : stationsA) {
+        for (String station : allStations) {
             WaterAllocationComparisonSelectionRes.WaterRatioDTO waterRatioDTO = new WaterAllocationComparisonSelectionRes.WaterRatioDTO();
             waterRatioDTO.setArea(station.split(":")[0]);
             waterRatioDTO.setUnit(station.split(":")[1]);
             List<Double> proportions = new ArrayList<>();
             List<Double> waterLacks = new ArrayList<>();
-            proportions.add(dataA.stream().filter(n -> (n.getStationType() + ":" + n.getStationName()).equals(station)).max(Comparator.comparing(Excel2::getProportion)).orElse(new Excel2()).getProportion());
-            proportions.add(dataB.stream().filter(n -> (n.getStationType() + ":" + n.getStationName()).equals(station)).max(Comparator.comparing(Excel2::getProportion)).orElse(new Excel2()).getProportion());
-            waterLacks.add(dataA.stream().filter(n -> (n.getStationType() + ":" + n.getStationName()).equals(station)).min(Comparator.comparing(Excel2::getWaterLack)).orElse(new Excel2()).getWaterLack());
-            waterLacks.add(dataB.stream().filter(n -> (n.getStationType() + ":" + n.getStationName()).equals(station)).min(Comparator.comparing(Excel2::getWaterLack)).orElse(new Excel2()).getWaterLack());
+            for (int i = 0; i < excel2Datas.size(); i++) {
+                proportions.add(excel2Datas.get(i).stream().filter(n -> (n.getStationType() + ":" + n.getStationName()).equals(station)).max(Comparator.comparing(Excel2::getProportion)).orElse(new Excel2()).getProportion());
+                waterLacks.add(excel2Datas.get(i).stream().filter(n -> (n.getStationType() + ":" + n.getStationName()).equals(station)).min(Comparator.comparing(Excel2::getWaterLack)).orElse(new Excel2()).getWaterLack());
+            }
             waterRatioDTO.setProportion(proportions);
             waterRatioDTO.setWaterLack(waterLacks);
             waterRatioDTOS.add(waterRatioDTO);
@@ -700,40 +711,27 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
         return waterRatioDTOS;
     }
 
-    private WaterAllocationComparisonSelectionRes.WaterStatisticsDTO getWaterStatistics(WaterResourceAllocation waterResourceAllocationA, WaterResourceAllocation waterResourceAllocationB) {
-        List<AllocationDisplayData> allocationDisplayDataA = getListFromMinio(waterResourceAllocationA.getAllocationDataDisplayAddress(), AllocationDisplayData.class);
-        List<AllocationDisplayData> allocationDisplayDataB = getListFromMinio(waterResourceAllocationB.getAllocationDataDisplayAddress(), AllocationDisplayData.class);
+    private WaterAllocationComparisonSelectionRes.WaterStatisticsDTO getWaterStatistics(List<WaterResourceAllocation> waterResourceAllocations) {
         WaterAllocationComparisonSelectionRes.WaterStatisticsDTO waterStatisticsDTO = new WaterAllocationComparisonSelectionRes.WaterStatisticsDTO();
         List<Double> ecologyProportion = new ArrayList<>();
-        ecologyProportion.add(allocationDisplayDataA.stream().mapToDouble(n -> n.getEcologyProportion() * n.getAllWater()).sum() /
-                allocationDisplayDataA.stream().mapToDouble(AllocationDisplayData::getAllWater).sum());
-        ecologyProportion.add(allocationDisplayDataB.stream().mapToDouble(n -> n.getEcologyProportion() * n.getAllWater()).sum() /
-                allocationDisplayDataB.stream().mapToDouble(AllocationDisplayData::getAllWater).sum());
-
         List<Double> cityProportion = new ArrayList<>();
-        cityProportion.add(allocationDisplayDataA.stream().mapToDouble(n -> n.getCityProportion() * n.getAllWater()).sum() /
-                allocationDisplayDataA.stream().mapToDouble(AllocationDisplayData::getAllWater).sum());
-        cityProportion.add(allocationDisplayDataB.stream().mapToDouble(n -> n.getCityProportion() * n.getAllWater()).sum() /
-                allocationDisplayDataB.stream().mapToDouble(AllocationDisplayData::getAllWater).sum());
-
         List<Double> industryProportion = new ArrayList<>();
-        industryProportion.add(allocationDisplayDataA.stream().mapToDouble(n -> n.getIndustryProportion() * n.getAllWater()).sum() /
-                allocationDisplayDataA.stream().mapToDouble(AllocationDisplayData::getAllWater).sum());
-        industryProportion.add(allocationDisplayDataB.stream().mapToDouble(n -> n.getIndustryProportion() * n.getAllWater()).sum() /
-                allocationDisplayDataB.stream().mapToDouble(AllocationDisplayData::getAllWater).sum());
-
         List<Double> irrigateProportion = new ArrayList<>();
-        irrigateProportion.add(allocationDisplayDataA.stream().mapToDouble(n -> n.getIrrigateProportion() * n.getAllWater()).sum() /
-                allocationDisplayDataA.stream().mapToDouble(AllocationDisplayData::getAllWater).sum());
-        irrigateProportion.add(allocationDisplayDataB.stream().mapToDouble(n -> n.getIrrigateProportion() * n.getAllWater()).sum() /
-                allocationDisplayDataB.stream().mapToDouble(AllocationDisplayData::getAllWater).sum());
-
         List<Double> greeningProportion = new ArrayList<>();
-        greeningProportion.add(allocationDisplayDataA.stream().mapToDouble(n -> n.getGreeningProportion() * n.getAllWater()).sum() /
-                allocationDisplayDataA.stream().mapToDouble(AllocationDisplayData::getAllWater).sum());
-        greeningProportion.add(allocationDisplayDataB.stream().mapToDouble(n -> n.getGreeningProportion() * n.getAllWater()).sum() /
-                allocationDisplayDataB.stream().mapToDouble(AllocationDisplayData::getAllWater).sum());
-
+        for (int i = 0; i < waterResourceAllocations.size(); i++) {
+            WaterResourceAllocation waterResourceAllocation = waterResourceAllocations.get(i);
+            List<AllocationDisplayData> allocationDisplayData = getListFromMinio(waterResourceAllocation.getAllocationDataDisplayAddress(), AllocationDisplayData.class);
+            ecologyProportion.add(allocationDisplayData.stream().mapToDouble(n -> n.getEcologyProportion() * n.getAllWater()).sum() /
+                    allocationDisplayData.stream().mapToDouble(AllocationDisplayData::getAllWater).sum());
+            cityProportion.add(allocationDisplayData.stream().mapToDouble(n -> n.getCityProportion() * n.getAllWater()).sum() /
+                    allocationDisplayData.stream().mapToDouble(AllocationDisplayData::getAllWater).sum());
+            industryProportion.add(allocationDisplayData.stream().mapToDouble(n -> n.getIndustryProportion() * n.getAllWater()).sum() /
+                    allocationDisplayData.stream().mapToDouble(AllocationDisplayData::getAllWater).sum());
+            irrigateProportion.add(allocationDisplayData.stream().mapToDouble(n -> n.getIrrigateProportion() * n.getAllWater()).sum() /
+                    allocationDisplayData.stream().mapToDouble(AllocationDisplayData::getAllWater).sum());
+            greeningProportion.add(allocationDisplayData.stream().mapToDouble(n -> n.getGreeningProportion() * n.getAllWater()).sum() /
+                    allocationDisplayData.stream().mapToDouble(AllocationDisplayData::getAllWater).sum());
+        }
         waterStatisticsDTO.setEcologyProportion(ecologyProportion);
         waterStatisticsDTO.setCityProportion(cityProportion);
         waterStatisticsDTO.setIndustryProportion(industryProportion);
