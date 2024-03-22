@@ -45,4 +45,8 @@ public interface PredictionApi {
         return null;
     }
 
+    default void refreshWaterStorageOverview(){
+
+    }
+
 }

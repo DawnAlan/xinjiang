@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.RedisUtil;
 import com.cj.common.util.UUIDUtils;
+import com.cj.flood.api.PredictionApi;
 import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.entity.LzzGaugingStation;
 import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.service.LzzGaugingStationService;
 import com.cj.waterresources.func.modular.overallSituationUnitMgr.entity.OverallSituationUnitMgr;
@@ -47,6 +48,9 @@ public class DayWaterSituationStatisticsTableLzzServiceImpl extends ServiceImpl<
     @Autowired
     private RedisUtil redisUtil;
 
+    @Autowired
+    private PredictionApi predictionApi;
+
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
     @Override
     public RestResponse<Map<String,List<DayWaterSituationStatisticsTableLzz>>> selectList(String date) {
@@ -62,6 +66,10 @@ public class DayWaterSituationStatisticsTableLzzServiceImpl extends ServiceImpl<
             e.printStackTrace();
             return RestResponse.no("error");
         }
+    }
+
+    private void refreshWaterStorageOverview() {
+        new Thread(() -> predictionApi.refreshWaterStorageOverview()).start();
     }
 
     @Override
@@ -183,6 +191,7 @@ public class DayWaterSituationStatisticsTableLzzServiceImpl extends ServiceImpl<
         result.addAll(dayWaterSituationStatisticsTableLzzList);
         boolean b = this.saveBatch(result);
         if (b) {
+            refreshWaterStorageOverview();
             return RestResponse.ok();
         }else {
             return RestResponse.no("error");
@@ -194,6 +203,7 @@ public class DayWaterSituationStatisticsTableLzzServiceImpl extends ServiceImpl<
         List<String> collect = Arrays.stream(ids.split(",")).collect(Collectors.toList());
         boolean remove = this.lambdaUpdate().in(DayWaterSituationStatisticsTableLzz::getId, collect).remove();
         if (remove) {
+            refreshWaterStorageOverview();
             return RestResponse.ok();
         }else {
             return RestResponse.no("error");
@@ -274,6 +284,7 @@ public class DayWaterSituationStatisticsTableLzzServiceImpl extends ServiceImpl<
         boolean b = this.updateBatchById(dayWaterSituationStatisticsTableLzzList);
         if (b) {
             updateYesterdayData(dayWaterSituationStatisticsTableLzzList.get(0).getRecordTime(),dayWaterSituationStatisticsTableLzzList);
+            refreshWaterStorageOverview();
             return RestResponse.ok();
         }else {
             return RestResponse.no("error");

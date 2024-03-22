@@ -69,4 +69,7 @@ public interface PredictionFeign {
 
     @RequestMapping("/feign/provider/flood/getWaterStorageOverview")
     String getWaterStorageOverview(@RequestParam(value = "dateTime", required =true)String dateTime);
+
+    @RequestMapping("/feign/provider/flood/refreshWaterStorageOverview")
+    void refreshWaterStorageOverview();
 }

@@ -567,4 +567,9 @@ public class PredictionApiProvider implements PredictionApi {
     public String getWaterStorageOverview(String dateTime) {
         return JSONObject.toJSONString(floodHomePageService.waterStorageOverview(DateUtil.parse(dateTime)));
     }
+
+    @Override
+    public void refreshWaterStorageOverview() {
+        floodHomePageService.waterStorageOverviewSchedule(new Date());
+    }
 }

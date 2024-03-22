@@ -117,4 +117,9 @@ public class PredictionFeignProvider implements PredictionFeign {
     public String getWaterStorageOverview(String dateTime) {
         return predictionApiProvider.getWaterStorageOverview(dateTime);
     }
+
+    @Override
+    public void refreshWaterStorageOverview() {
+        predictionApiProvider.refreshWaterStorageOverview();
+    }
 }
