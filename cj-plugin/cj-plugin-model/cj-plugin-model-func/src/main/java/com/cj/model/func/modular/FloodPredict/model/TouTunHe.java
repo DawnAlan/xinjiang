@@ -7,6 +7,7 @@ import com.cj.middleDatabase.func.modular.lzz.lzzRainfallStation.entity.LzzRainf
 import com.cj.model.func.modular.FloodPredict.entity.*;
 import com.cj.model.func.modular.FloodPredict.utils.DataUtils;
 import com.cj.model.func.modular.FloodPredict.utils.ExcelTool;
+import com.cj.model.func.modular.FloodPrevent.entity.Option;
 import com.cj.model.func.modular.FloodPrevent.model.ModelOfTTH;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 
@@ -30,10 +31,11 @@ public class TouTunHe {
 
         //模型参数输入设置
         ForcastInputParamNew paramForcastInputParamNew = new ForcastInputParamNew();
-        paramForcastInputParamNew.setModelType(3);//3为场次
+        paramForcastInputParamNew.setModelType(1);//3为场次
         SimpleDateFormat sFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        paramForcastInputParamNew.setPredictionTime(sFormat.parse("2023-06-17 24:00:00"));
-        paramForcastInputParamNew.setPeriodTimeType(4);//1为月，2为旬，3为日，4为小时
+        paramForcastInputParamNew.setPredictionTime(sFormat.parse("2024-01-01 00:00:00"));
+        paramForcastInputParamNew.setDataStartTime(sFormat.parse("2023-01-01 00:00:00"));
+        paramForcastInputParamNew.setPeriodTimeType(1);//1为月，2为旬，3为日，4为小时
         paramForcastInputParamNew.setPeriodTimeStep(1);//预报步长
         paramForcastInputParamNew.setPeriodTimeNum(12);//预报数量
         paramForcastInputParamNew=objectToList(paramForcastInputParamNew);//读取表格
@@ -78,6 +80,7 @@ public class TouTunHe {
         //预报时间
         Date date= paramForcastInputParamNew.getPredictionTime();
         param.setPreStartTime(date);
+
 
         //时段
         if (paramForcastInputParamNew.getPeriodTimeType()==1) {
@@ -238,7 +241,7 @@ public class TouTunHe {
             String level = floodLevel(tthIn,"头屯河");
             Object[][] tthIndex = tthInformation.get(0);
             ModelOfTTH tthin = new ModelOfTTH(tthIn,timeLength);
-            List<List<Double>> tthInList = tthin.Calculate_S2();
+            List<Option> tthInList = tthin.Calculate_S2();
             String data = Flood_Lzz[1][10].toString()+","+Flood_qj[1][10].toString();
             StringBuilder tthRain= new StringBuilder();
             String[] pairs = data.split(",");
@@ -273,7 +276,7 @@ public class TouTunHe {
                 tthInXlsx[i][2]=tthIndex[i][0];//洪号
                 tthInXlsx[i][3]=tthIn[i][0];//时间
                 tthInXlsx[i][4]=Math.round((double) tthIn[i][1] * 100.0) / 100.0;//预报流量
-                tthInXlsx[i][5]=tthInList.get(2).get(i);//相应水位
+                tthInXlsx[i][5]=tthInList.get(i).getH1();//相应水位
                 Object[][] floodNature = tthInformation.get(1);
                 tthInXlsx[i][6]=floodNature[2][1];//洪峰
                 tthInXlsx[i][7]=floodNature[3][1];//峰现时间
@@ -282,7 +285,7 @@ public class TouTunHe {
                 tthInXlsx[i][10]=tthRain.toString();//洪水来源
                 tthInXlsx[i][11]="区间来水:"+Math.round((float)  qjFlood / (qjFlood + lzzFlood)*100)/100.0+","+"楼庄子出库:"+Math.round((float)  lzzFlood / (qjFlood + lzzFlood)*100)/100.0;//洪水组成
                 tthInXlsx[i][12]=level;
-                tthInXlsx[i][13]=tthInList.get(3).get(i);
+                tthInXlsx[i][13]=tthInList.get(i).getQOut();
             }
             result.add(tthInXlsx);
             return result;
@@ -539,8 +542,9 @@ public class TouTunHe {
         }
         threeResults.put("楼庄子",LZZResult);
 
-        //楼庄子出库日径流
-        List<PredictInputData> QJ = Scaling(LZZ);
+        //头屯河日径流
+//        List<PredictInputData> QJ = Scaling(LZZ);
+        List<PredictInputData> QJ = DataUtils.irrigatedDataConversion(paramNew.getIrrigatedHydrologyParam()).get(0);
         QJ =AddRAndT(QJ, RAT);
         QJResult.add(QJ);
         if (paramNew.getModelType()==3)
@@ -550,17 +554,11 @@ public class TouTunHe {
             //添加到区间的数据中
             List<List<PredictInputData>> QJRain = IrrigateRainIntegration(paramNew);
             for (int i = 0; i < QJRain.get(0).size(); i++) {
-                double T = Temperature.get(i).getTemperature();
-                QJRain.get(0).get(i).setTemperature(T);
+                QJRain.get(0).get(i).setTemperature(Temperature.get(i).getTemperature());
             }
-            //后续更改，目前直接等同于上游的降水情况
-            if (QJRain.get(0).size()/3==integration.get(0).size()/10){
-                QJResult.add(QJRain.get(0));
-                QJResult.add(QJRain.get(1));
-            }else {
-                QJResult.add(integration.get(0));
-                QJResult.add(integration.get(1));
-            }
+            QJResult.add(QJRain.get(0));
+            QJResult.add(QJRain.get(1));
+
         }
         threeResults.put("楼头区间",QJResult);
 
@@ -637,6 +635,9 @@ public class TouTunHe {
      */
     public static Object[][] dataIntegration(Object[][] historyInput ,Object[][] preliminaryData, ForcastInputParam param){
         Object[][] result = new Object[0][];
+        if (preliminaryData.length==0){
+            return historyInput;
+        }
         Date dateEnd = (Date) historyInput[historyInput.length-1][0];
         Date dateStart = (Date) preliminaryData[0][0];
         if (param.getPeriod().equals("日")){
@@ -706,7 +707,6 @@ public class TouTunHe {
 
 
 
-
     /**
      * 读取表格赋予初始值
      * @param input
@@ -720,6 +720,7 @@ public class TouTunHe {
     result.setPeriodTimeStep(input.getPeriodTimeStep());
     result.setPeriodTimeNum(input.getPeriodTimeNum());
     result.setPeriodTimeType(input.getPeriodTimeType());
+    result.setDataStartTime(input.getDataStartTime());
     LzzHydrologyParam lzzParam = new LzzHydrologyParam();
     IrrigatedHydrologyParam qjParam = new IrrigatedHydrologyParam();
     //楼庄子雨量站List

@@ -60,6 +60,10 @@ public class DayWaterSituationStatisticsTableHxServiceImpl extends ServiceImpl<D
 
     @Override
     public RestResponse add(List<DayWaterSituationStatisticsTableHx> dayWaterSituationStatisticsTableHxList) {
+        List<DayWaterSituationStatisticsTableHx> todayData = this.baseMapper.selectListHave(dayWaterSituationStatisticsTableHxList.get(0).getTime(),sdf.format(dayWaterSituationStatisticsTableHxList.get(0).getRecordTime()));
+        if(!todayData.isEmpty()){
+            return RestResponse.no(sdf.format(dayWaterSituationStatisticsTableHxList.get(0).getRecordTime())+" "+dayWaterSituationStatisticsTableHxList.get(0).getTime()+"数据已创建");
+        }
         dayWaterSituationStatisticsTableHxList.forEach(t->{
             t.setId(UUIDUtils.getUUID());
             String tableParamString = (String)redisUtil.get("trendsTableParam:object:"+t.getTableHeadId());
@@ -250,7 +254,7 @@ public class DayWaterSituationStatisticsTableHxServiceImpl extends ServiceImpl<D
         }
         boolean b = this.updateBatchById(dayWaterSituationStatisticsTableHxList);
         if (b) {
-            if(dayWaterSituationStatisticsTableHxList.get(0).getTime().equals("昨日均")){
+            if(dayWaterSituationStatisticsTableHxList.get(0).getTime().equals("今日均")){
                 updateYesterdayData(dayWaterSituationStatisticsTableHxList.get(0).getRecordTime(),dayWaterSituationStatisticsTableHxList);
             }
 
@@ -262,6 +266,10 @@ public class DayWaterSituationStatisticsTableHxServiceImpl extends ServiceImpl<D
 
     @Override
     public RestResponse insertTodayMeanValue() {
+        List<DayWaterSituationStatisticsTableHx> todayData = this.lambdaQuery().eq(DayWaterSituationStatisticsTableHx::getTime, "今日均").list();
+        if(!todayData.isEmpty()){
+            return RestResponse.no("今日均数据已创建");
+        }
         List<DayWaterSituationStatisticsTableHx> dayWaterSituationStatisticsTableHxList = new ArrayList<>();
         List<DayWaterSituationStatisticsTableHx> dayWaterSituationStatisticsTableHxes = this.baseMapper.selectList(sdf.format(new Date()));
         if(null!=dayWaterSituationStatisticsTableHxes && dayWaterSituationStatisticsTableHxes.size()>0){

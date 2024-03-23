@@ -126,14 +126,14 @@ public class WaterResourceApiProvider implements WaterResourceApi {
                 WaterUsePlanForViewRes res = new WaterUsePlanForViewRes();
                 res.setUnit(crop.getIrrigatedCrop());
                 res.setTotalAmount(
-                        (crop.getAprilTotal()==null?0.0:crop.getAprilTotal())+
-                        (crop.getMayTotal()==null?0.0:crop.getMayTotal())+
-                        (crop.getJuneTotal()==null?0.0:crop.getJuneTotal())+
-                        (crop.getJulyTotal()==null?0.0:crop.getJulyTotal())+
-                        (crop.getAugustTotal()==null?0.0:crop.getAugustTotal())+
-                        (crop.getSeptemberTotal()==null?0.0:crop.getSeptemberTotal())+
-                        (crop.getOctoberTotal()==null?0.0:crop.getOctoberTotal())+
-                        (crop.getNovemberTotal()==null?0.0:crop.getNovemberTotal())
+                        (crop.getAprilTotalWaterDemand()==null?0.0:crop.getAprilTotalWaterDemand())+
+                        (crop.getMayTotalWaterDemand()==null?0.0:crop.getMayTotalWaterDemand())+
+                        (crop.getJuneTotalWaterDemand()==null?0.0:crop.getJuneTotalWaterDemand())+
+                        (crop.getJulyTotalWaterDemand()==null?0.0:crop.getJulyTotalWaterDemand())+
+                        (crop.getAugustTotalWaterDemand()==null?0.0:crop.getAugustTotalWaterDemand())+
+                        (crop.getSeptemberTotalWaterDemand()==null?0.0:crop.getSeptemberTotalWaterDemand())+
+                        (crop.getOctoberTotalWaterDemand()==null?0.0:crop.getOctoberTotalWaterDemand())+
+                        (crop.getNovemberTotalWaterDemand()==null?0.0:crop.getNovemberTotalWaterDemand())
                 );
                 resList.add(res);
             }
@@ -185,7 +185,7 @@ public class WaterResourceApiProvider implements WaterResourceApi {
             for(MonthWaterUsePlanCrop crop:list){
                 WaterUsePlanForViewRes res = new WaterUsePlanForViewRes();
                 res.setUnit(crop.getUnit());
-                res.setTotalAmount(crop.getTotal()==null?0.0: crop.getTotal());
+                res.setTotalAmount(crop.getTotalCountWaterDemand()==null?0.0: crop.getTotalCountWaterDemand());
                 resList.add(res);
             }
             Double aDouble = resList.stream().filter(t->t.getTotalAmount()!=null).map(WaterUsePlanForViewRes::getTotalAmount).reduce(Double::sum).orElse(0.00);
@@ -599,10 +599,10 @@ public class WaterResourceApiProvider implements WaterResourceApi {
             List<TrendsTableParam> tthTableParam = trendsTableParamService.lambdaQuery().
                     eq(TrendsTableParam::getUseType, 1).
                     eq(TrendsTableParam::getUseStation, "头屯河水库").list();
-            TrendsTableParam tthJkllTableParam = tthTableParam.stream().filter(t -> t.getParamName().equals("进库流量")).collect(Collectors.toList()).get(0);
+            TrendsTableParam tthJkllTableParam = tthTableParam.stream().filter(t -> t.getParamName().equals("进库流量") && !t.getPId().equals("0")).collect(Collectors.toList()).get(0);
             TrendsTableParam tthCkllTableParam = tthTableParam.stream().filter(t -> t.getParamName().equals("河道流量")).collect(Collectors.toList()).get(0);
-            TrendsTableParam tthSwTableParam = tthTableParam.stream().filter(t -> t.getParamName().equals("水位")).collect(Collectors.toList()).get(0);
-            TrendsTableParam tthKrTableParam = tthTableParam.stream().filter(t -> t.getParamName().equals("库容")).collect(Collectors.toList()).get(0);
+            TrendsTableParam tthSwTableParam = tthTableParam.stream().filter(t -> t.getParamName().equals("库水位")).collect(Collectors.toList()).get(0);
+            TrendsTableParam tthKrTableParam = tthTableParam.stream().filter(t -> t.getParamName().equals("水库库容")).collect(Collectors.toList()).get(0);
             TrendsTableParam tthJkzdTableParam = tthTableParam.stream().filter(t -> t.getParamName().equals("进库浊度")).collect(Collectors.toList()).get(0);
             TrendsTableParam tthCkzdTableParam = tthTableParam.stream().filter(t -> t.getParamName().equals("河道浊度")).collect(Collectors.toList()).get(0);
             RestResponse<Map<String, List<DayWaterSituationStatisticsTableTth>>> mapRestResponse1 = dayWaterSituationStatisticsTableTthService.selectList(sdf.format(new Date()));

@@ -47,7 +47,7 @@ public class InspectionInterface {
         if(StringUtils.isEmpty(redisToken)) {
             String data = RestTemplateUtil.getToken(getTokenPath + "?password="+password,null,null);
             String token = JSONObject.parseObject(data).getString("result");
-            redisUtil.set(tokenRedisKey, token);
+            redisUtil.set(tokenRedisKey, token,30*60);
             redisToken = token;
         }
         return redisToken;

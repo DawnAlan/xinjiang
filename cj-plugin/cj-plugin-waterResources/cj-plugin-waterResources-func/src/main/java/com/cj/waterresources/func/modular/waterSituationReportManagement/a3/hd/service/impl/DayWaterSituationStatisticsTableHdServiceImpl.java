@@ -17,6 +17,7 @@ import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.dkl.
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hd.mapper.DayWaterSituationStatisticsTableHdMapper;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hd.entity.DayWaterSituationStatisticsTableHd;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hd.service.DayWaterSituationStatisticsTableHdService;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hx.entity.DayWaterSituationStatisticsTableHx;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.entity.DayWaterSituationStatisticsTableLzz;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
@@ -66,6 +67,10 @@ public class DayWaterSituationStatisticsTableHdServiceImpl extends ServiceImpl<D
     @Override
     @Transactional(rollbackFor = Exception.class)
     public RestResponse add(List<DayWaterSituationStatisticsTableHd> dayWaterSituationStatisticsTableHdList) {
+        List<DayWaterSituationStatisticsTableHd> todayData = this.baseMapper.selectListHave(dayWaterSituationStatisticsTableHdList.get(0).getTime(),sdf.format(dayWaterSituationStatisticsTableHdList.get(0).getRecordTime()));
+        if(!todayData.isEmpty()){
+            return RestResponse.no(dayWaterSituationStatisticsTableHdList.get(0).getTime()+"数据已创建");
+        }
         dayWaterSituationStatisticsTableHdList.forEach(t->{
             t.setId(UUIDUtils.getUUID());
             String tableParamString = (String)redisUtil.get("trendsTableParam:object:"+t.getTableHeadId());
@@ -263,6 +268,10 @@ public class DayWaterSituationStatisticsTableHdServiceImpl extends ServiceImpl<D
 
     @Override
     public RestResponse insertTodayMeanValue() {
+        List<DayWaterSituationStatisticsTableHd> todayData = this.lambdaQuery().eq(DayWaterSituationStatisticsTableHd::getTime, "今日均").list();
+        if(!todayData.isEmpty()){
+            return RestResponse.no("今日均数据已创建");
+        }
         List<DayWaterSituationStatisticsTableHd> dayWaterSituationStatisticsTableHdList = new ArrayList<>();
         List<DayWaterSituationStatisticsTableHd> dayWaterSituationStatisticsTableHds = this.baseMapper.selectList(sdf.format(new Date()));
         if(null!=dayWaterSituationStatisticsTableHds && dayWaterSituationStatisticsTableHds.size()>0){

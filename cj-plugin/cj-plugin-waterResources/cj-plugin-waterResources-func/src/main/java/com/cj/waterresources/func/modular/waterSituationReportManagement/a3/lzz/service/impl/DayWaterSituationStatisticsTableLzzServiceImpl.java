@@ -15,10 +15,12 @@ import com.cj.waterresources.func.modular.trendsTable.service.TrendsTableParamSe
 import com.cj.waterresources.func.modular.waterPrice.totalIdToStation.entity.TotalIdToStation;
 import com.cj.waterresources.func.modular.waterPrice.totalIdToStation.service.TotalIdToStationService;
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.entity.WaterFeeStatisticsDetails;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hd.entity.DayWaterSituationStatisticsTableHd;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hx.entity.DayWaterSituationStatisticsTableHx;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.mapper.DayWaterSituationStatisticsTableLzzMapper;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.entity.DayWaterSituationStatisticsTableLzz;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.service.DayWaterSituationStatisticsTableLzzService;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.entity.DayWaterSituationStatisticsTableQsLh;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tth.entity.DayWaterSituationStatisticsTableTth;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,6 +69,10 @@ public class DayWaterSituationStatisticsTableLzzServiceImpl extends ServiceImpl<
     @Override
     @Transactional(rollbackFor = Exception.class)
     public RestResponse add(List<DayWaterSituationStatisticsTableLzz> dayWaterSituationStatisticsTableLzzList) {
+        List<DayWaterSituationStatisticsTableLzz> todayData = this.baseMapper.selectListHave(dayWaterSituationStatisticsTableLzzList.get(0).getTime(),sdf.format(dayWaterSituationStatisticsTableLzzList.get(0).getRecordTime()));
+        if(!todayData.isEmpty()){
+            return RestResponse.no(dayWaterSituationStatisticsTableLzzList.get(0).getTime()+"数据已创建");
+        }
         for(DayWaterSituationStatisticsTableLzz t:dayWaterSituationStatisticsTableLzzList){
             t.setId(UUIDUtils.getUUID());
             String paramName = trendsTableParamService.getById(t.getTableHeadId()).getParamName();
@@ -273,7 +279,9 @@ public class DayWaterSituationStatisticsTableLzzServiceImpl extends ServiceImpl<
         }
         boolean b = this.updateBatchById(dayWaterSituationStatisticsTableLzzList);
         if (b) {
-            updateYesterdayData(dayWaterSituationStatisticsTableLzzList.get(0).getRecordTime(),dayWaterSituationStatisticsTableLzzList);
+            if(dayWaterSituationStatisticsTableLzzList.get(0).getTime().equals("今日均")) {
+                updateYesterdayData(dayWaterSituationStatisticsTableLzzList.get(0).getRecordTime(), dayWaterSituationStatisticsTableLzzList);
+            }
             return RestResponse.ok();
         }else {
             return RestResponse.no("error");
@@ -282,6 +290,10 @@ public class DayWaterSituationStatisticsTableLzzServiceImpl extends ServiceImpl<
 
     @Override
     public RestResponse insertTodayMeanValue() {
+        List<DayWaterSituationStatisticsTableLzz> todayData = this.lambdaQuery().eq(DayWaterSituationStatisticsTableLzz::getTime, "今日均").list();
+        if(!todayData.isEmpty()){
+            return RestResponse.no("今日均数据已创建");
+        }
         List<DayWaterSituationStatisticsTableLzz> dayWaterSituationStatisticsTableLzzList = new ArrayList<>();
         List<DayWaterSituationStatisticsTableLzz> dayWaterSituationStatisticsTableLzzes = this.baseMapper.selectList(sdf.format(new Date()));
         if(null!=dayWaterSituationStatisticsTableLzzes && dayWaterSituationStatisticsTableLzzes.size()>0){

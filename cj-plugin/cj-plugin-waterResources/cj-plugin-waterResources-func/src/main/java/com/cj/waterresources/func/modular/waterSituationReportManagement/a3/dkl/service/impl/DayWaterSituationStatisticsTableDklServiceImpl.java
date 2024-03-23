@@ -83,6 +83,10 @@ public class DayWaterSituationStatisticsTableDklServiceImpl extends ServiceImpl<
 
     @Override
     public RestResponse add(List<DayWaterSituationStatisticsTableDkl> dayWaterSituationStatisticsTableDklList) {
+        List<DayWaterSituationStatisticsTableDkl> todayData = this.baseMapper.selectListHave(dayWaterSituationStatisticsTableDklList.get(0).getTime(),sdf.format(dayWaterSituationStatisticsTableDklList.get(0).getRecordTime()));
+        if(!todayData.isEmpty()){
+            return RestResponse.no(dayWaterSituationStatisticsTableDklList.get(0).getTime()+"数据已创建");
+        }
         String mk = (String) redisUtil.get("trendsTableParam:list");
         if(StringUtils.isEmpty(mk)){
             trendsTableParamService.updateCache();
@@ -325,7 +329,9 @@ public class DayWaterSituationStatisticsTableDklServiceImpl extends ServiceImpl<
         }
         boolean b = this.updateBatchById(dayWaterSituationStatisticsTableDklList);
         if (b) {
-            updateYesterdayData(dayWaterSituationStatisticsTableDklList.get(0).getRecordTime(),dayWaterSituationStatisticsTableDklList);
+            if (dayWaterSituationStatisticsTableDklList.get(0).getTime().equals("今日均")){
+                updateYesterdayData(dayWaterSituationStatisticsTableDklList.get(0).getRecordTime(),dayWaterSituationStatisticsTableDklList);
+            }
             return RestResponse.ok();
         }else {
             return RestResponse.no("error");
@@ -334,6 +340,10 @@ public class DayWaterSituationStatisticsTableDklServiceImpl extends ServiceImpl<
 
     @Override
     public RestResponse insertTodayMeanValue() {
+        List<DayWaterSituationStatisticsTableDkl> todayData = this.lambdaQuery().eq(DayWaterSituationStatisticsTableDkl::getTime, "今日均").list();
+        if(!todayData.isEmpty()){
+            return RestResponse.no("今日均数据已创建");
+        }
         List<DayWaterSituationStatisticsTableDkl> dayWaterSituationStatisticsTableDklList = new ArrayList<>();
         List<DayWaterSituationStatisticsTableDkl> dayWaterSituationStatisticsTableDkls = this.baseMapper.selectList(sdf.format(new Date()));
         if(null!=dayWaterSituationStatisticsTableDkls && dayWaterSituationStatisticsTableDkls.size()>0){

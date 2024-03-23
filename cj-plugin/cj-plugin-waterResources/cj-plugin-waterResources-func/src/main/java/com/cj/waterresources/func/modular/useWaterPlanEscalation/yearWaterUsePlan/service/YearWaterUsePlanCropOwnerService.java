@@ -4,27 +4,24 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.cj.common.model.RestResponse;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.req.YearCropImportParamReq;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.req.YearCropSelectListReq;
-import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.res.SelectYearWaterUsePlanCropForSum;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.entity.YearWaterUsePlanCrop;
-import org.springframework.web.multipart.MultipartFile;
+import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.entity.YearWaterUsePlanCropOwner;
 
 import java.util.List;
 
 /**
- * 作物年用水计划(YearWaterUsePlanCrop)表服务接口
+ * (YearWaterUsePlanCropOwner)表服务接口
  *
  * @author makejava
- * @since 2023-12-01 18:26:28
+ * @since 2024-03-22 19:35:40
  */
-public interface YearWaterUsePlanCropService extends IService<YearWaterUsePlanCrop> {
+public interface YearWaterUsePlanCropOwnerService extends IService<YearWaterUsePlanCropOwner> {
 
-    RestResponse<List<YearWaterUsePlanCrop>> selectList(YearCropSelectListReq req);
+    RestResponse<List<YearWaterUsePlanCropOwner>> selectList(YearCropSelectListReq req);
 
-    RestResponse add(YearCropImportParamReq req, MultipartFile file);
+    RestResponse addList(List<YearWaterUsePlanCropOwner> yearWaterUsePlanCropOwnerList);
 
     RestResponse delete(YearCropImportParamReq req);
-
-    SelectYearWaterUsePlanCropForSum selectListForSum(Integer year, String area);
 
 }
 

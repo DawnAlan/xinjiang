@@ -1,6 +1,7 @@
 package com.cj.waterresources.func.modular.useWaterPlanEscalation.monthWaterUsePlan.controller;
 
 import com.cj.common.model.RestResponse;
+import com.cj.waterresources.func.modular.useWaterPlanEscalation.monthWaterUsePlan.bean.req.MonthCropImportParamReq;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.monthWaterUsePlan.bean.req.MonthCropSelectListReq;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.monthWaterUsePlan.entity.MonthWaterUsePlanCrop;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.monthWaterUsePlan.service.MonthWaterUsePlanCropService;
@@ -13,6 +14,7 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -35,24 +37,28 @@ public class MonthWaterUsePlanCropController {
 
     @ApiOperationSupport(order = 1)
     @ApiOperation("删除")
-    @GetMapping("/delete")
-    public RestResponse delete(@RequestParam("id") String id) {
-        return monthWaterUsePlanCropService.delete(id);
+    @PostMapping("/delete")
+    public RestResponse delete(@RequestBody MonthCropImportParamReq req) {
+        return monthWaterUsePlanCropService.delete(req);
     }
 
     @ApiOperationSupport(order = 2)
     @ApiOperation("新增")
     @PostMapping("/add")
-    public RestResponse add(@RequestBody MonthWaterUsePlanCrop monthWaterUsePlanCrop) {
-        return monthWaterUsePlanCropService.add(monthWaterUsePlanCrop);
+    public RestResponse add(@RequestParam(value = "area",required = true) String area,
+                            @RequestParam(value = "unit",required = true) String unit,
+                            @RequestParam(value = "unitId",required = true) String unitId,
+                            @RequestParam(value = "year",required = true) Integer year,
+                            @RequestParam(value = "month",required = true) Integer month,
+                            @RequestParam(value = "file",required = true) MultipartFile file) {
+        MonthCropImportParamReq req = new MonthCropImportParamReq();
+        req.setYear(year);
+        req.setArea(area);
+        req.setUnit(unit);
+        req.setUnitId(unitId);
+        req.setMonth(month);
+        return monthWaterUsePlanCropService.add(req,file);
     }
-    @ApiOperationSupport(order = 3)
-    @ApiOperation("修改")
-    @PostMapping("/update")
-    public RestResponse update(@RequestBody MonthWaterUsePlanCrop monthWaterUsePlanCrop) {
-        return monthWaterUsePlanCropService.update(monthWaterUsePlanCrop);
-    }
-
 
     @ApiOperationSupport(order = 4)
     @ApiOperation("查询列表")

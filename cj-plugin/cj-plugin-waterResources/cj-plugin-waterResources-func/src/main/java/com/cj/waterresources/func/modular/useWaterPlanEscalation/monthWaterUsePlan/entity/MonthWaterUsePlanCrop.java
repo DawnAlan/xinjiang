@@ -1,9 +1,6 @@
 package com.cj.waterresources.func.modular.useWaterPlanEscalation.monthWaterUsePlan.entity;
 
 import java.util.Date;
-
-import com.baomidou.mybatisplus.annotation.FieldStrategy;
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.extension.activerecord.Model;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -14,10 +11,11 @@ import java.io.Serializable;
  * 月用水计划作物表(MonthWaterUsePlanCrop)表实体类
  *
  * @author makejava
- * @since 2024-01-04 18:10:46
+ * @since 2024-03-23 17:05:34
  */
 @Data
 public class MonthWaterUsePlanCrop extends Model<MonthWaterUsePlanCrop> {
+
     //主键ID
     @ApiModelProperty(value = "主键ID")
     private String id;
@@ -36,43 +34,35 @@ public class MonthWaterUsePlanCrop extends Model<MonthWaterUsePlanCrop> {
 
     //灌溉面积
     @ApiModelProperty(value = "灌溉面积")
-    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double irrigatedArea;
 
     //灌溉定额
     @ApiModelProperty(value = "灌溉定额")
-    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double irrigatedQuota;
 
     //月灌溉次数
     @ApiModelProperty(value = "月灌溉次数")
-    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double monthIrrigatedCount;
 
     //需水量
     @ApiModelProperty(value = "需水量")
-    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double waterDemand;
 
-    //上旬
-    @ApiModelProperty(value = "上旬")
-    @TableField(updateStrategy = FieldStrategy.IGNORED)
-    private Double earlyOctober;
+    //上旬次数
+    @ApiModelProperty(value = "上旬次数")
+    private Double earlyOctoberCount;
 
-    //中旬
-    @ApiModelProperty(value = "中旬")
-    @TableField(updateStrategy = FieldStrategy.IGNORED)
-    private Double midDay;
+    //中旬次数
+    @ApiModelProperty(value = "中旬次数")
+    private Double midDayCount;
 
-    //下旬
-    @ApiModelProperty(value = "下旬")
-    @TableField(updateStrategy = FieldStrategy.IGNORED)
-    private Double laterOctober;
+    //下旬次数
+    @ApiModelProperty(value = "下旬次数")
+    private Double laterOctoberCount;
 
-    //合计
-    @ApiModelProperty(value = "合计")
-    @TableField(updateStrategy = FieldStrategy.IGNORED)
-    private Double total;
+    //本旬合计次数
+    @ApiModelProperty(value = "本旬合计次数")
+    private Double totalCount;
 
     //创建时间
     @ApiModelProperty(value = "创建时间")
@@ -104,7 +94,6 @@ public class MonthWaterUsePlanCrop extends Model<MonthWaterUsePlanCrop> {
 
     //灌水定额
     @ApiModelProperty(value = "灌水定额")
-    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double irrigationQuota;
 
     //单位ID
@@ -114,5 +103,21 @@ public class MonthWaterUsePlanCrop extends Model<MonthWaterUsePlanCrop> {
     //月份
     @ApiModelProperty(value = "月份")
     private Integer month;
+
+    //上旬需水
+    @ApiModelProperty(value = "上旬需水")
+    private Double earlyOctoberWaterDemand;
+
+    //中旬需水
+    @ApiModelProperty(value = "中旬需水")
+    private Double midDayWaterDemand;
+
+    //下旬需水
+    @ApiModelProperty(value = "下旬需水")
+    private Double laterOctoberWaterDemand;
+
+    //本旬合计需水
+    @ApiModelProperty(value = "本旬合计需水")
+    private Double totalCountWaterDemand;
 }
 

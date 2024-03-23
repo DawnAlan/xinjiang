@@ -148,6 +148,10 @@ public class ExcelUtils {
         return importExcel(file, 0, 1, pojoClass);
     }
 
+    public static <T> List<T> importExcelForCrop(MultipartFile file, Class<T> pojoClass) throws IOException {
+        return importExcel(file, 1, 1, pojoClass);
+    }
+
     /**
      * excel 导入
      *

@@ -43,6 +43,7 @@ public class ModelOfLZZ {
     double[][] LQ_Curve2;
 
     double[] LimitLevels;
+    List<Double> limits = new ArrayList<>();
 
     @Getter
     List<Date> Time =new ArrayList<>();
@@ -95,7 +96,9 @@ public class ModelOfLZZ {
         DesignVolume = GetV(DesignLevel);
         ProofVolume = GetV(ProofLevel);
         LimitLevels = new double[]{1394.5,1394.5,1394.5,1394.5,1394.5,1394.5,1394.5,1394.5,1394.5,1394.5,1394.5,1394.5};
-
+        for (int i = 0; i < 12; i++) {
+            limits.add(LimitLevels[i]);
+        }
 
     }
     public ModelOfLZZ(ReqFloodPrevent reqFloodPrevent){
@@ -194,31 +197,25 @@ public class ModelOfLZZ {
         ProofVolume = GetV(ProofLevel);
 
         LimitLevels= reqFloodPrevent.getLimitLevels_lzz();
+        for (int i = 0; i < 12; i++) {
+            limits.add(LimitLevels[i]);
+        }
     }
 
     //楼庄子常规调度
-    public List<List<Double>> Calculate_S1(){
-
+    public List<Option> Calculate_S1(){
         //楼庄子
         //来水小于750时，为标准内洪水：
         //（1）当库水位达到1394.5m，且库水位继续上涨时，控制溢洪洞下泄流量不超过125m3/s，持续泄洪直至水位回落到汛限水位。
         //（2）当库水位达到1397.21m，且库水位继续上涨时，全开溢洪洞下泄洪水，同时根据入库流量和库水位涨幅情况，控制泄洪冲沙兼导流洞下泄流量，尽量保证下泄洪水在安全范围内，持续泄洪直至水位回落到汛限水位。
         //（3）当库水位达到1397.41m，且库水位继续上涨时，全开溢洪洞、泄洪冲沙兼导流洞下泄洪水，持续泄洪直至水位回落到汛限水位，力求大坝安全。
         //来水超过750时，为超标准洪水，泄洪冲沙兼导流洞、溢洪洞自由下泄，力求大坝安全。
-
-        List<List<Double>> Result = new ArrayList<>();
-        List<Double> H_b =new ArrayList<>();
-        List<Double> H_e =new ArrayList<>();
-        List<Double> Q_Release =new ArrayList<>();
-        List<Double> Q_Release1=new ArrayList<>();
-        List<Double> Q_Release2=new ArrayList<>();
-        List<Double> Q_Release3=new ArrayList<>();
-        List<Double> V_list=new ArrayList<>();
-        List<Double> Retain_list=new ArrayList<>();
-
+        List<Option> result = new ArrayList<>();
         for (int i = 0; i < Q_Input.size(); i++) {
-            UpdateLimitLevel(Time.get(i));
+            Option option = new Option();
+            Date time = Time.get(i);
             double beginH;
+            double endH;
             double Q_in = Q_Input.get(i);
             double minQ = MinQ.get(i);
             double Q_out;
@@ -226,15 +223,15 @@ public class ModelOfLZZ {
             double Q_2;
             double Q_3;
             double V;
-            double endH;
             double retain;
+            UpdateLimitLevel(Time.get(i));
 
             //设定时段初水位
             if(i==0){
                 beginH=H_begin;
             }
             else{
-                beginH=H_e.get(i-1);
+                beginH=result.get(i-1).getH2();
             }
             double[] Q =ConventionalCalculate(beginH,Q_in,minQ);
             Q_out=Q[0];
@@ -245,409 +242,31 @@ public class ModelOfLZZ {
             V=GetV(endH);
             retain=Math.max(0,V-GetV(H_begin));
 
-            H_b.add(beginH);
-            H_e.add(endH);
-            Q_Release.add(Q_out);
-            Q_Release1.add(Q_1);
-            Q_Release2.add(Q_2);
-            Q_Release3.add(Q_3);
-            V_list.add(V);
-            Retain_list.add(retain);
+            double[] aa=getPercentage_lzz(V);
+            double percent1=aa[0];
+            double percent2=aa[1];
 
+            option.setTime(time);
+            option.setType("常规调度");
+            option.setName("楼庄子");
+            option.setH1(beginH);
+            option.setH2(endH);
+            option.setQIn(Q_in);
+            option.setQOut(Q_out);
+            option.setQ1(Q_1);
+            option.setQ2(Q_2);
+            option.setQ3(Q_3);
+            option.setV(V);
+            option.setRetain(retain);
+            option.setPercentage1(percent1);
+            option.setPercentage2(percent2);
+            option.setLimits(limits);
 
-//            H_b.add(BigDecimal.valueOf(beginH).setScale(2, RoundingMode.HALF_UP).doubleValue());
-//            H_e.add(BigDecimal.valueOf(endH).setScale(2, RoundingMode.HALF_UP).doubleValue());
-//            Q_Release.add(BigDecimal.valueOf(Q_out).setScale(2, RoundingMode.HALF_UP).doubleValue());
-//            Q_Release1.add(BigDecimal.valueOf(Q_1).setScale(2, RoundingMode.HALF_UP).doubleValue());
-//            Q_Release2.add(BigDecimal.valueOf(Q_2).setScale(2, RoundingMode.HALF_UP).doubleValue());
-//            Q_Release3.add(BigDecimal.valueOf(Q_3).setScale(2, RoundingMode.HALF_UP).doubleValue());
-//            V_list.add(BigDecimal.valueOf(V).setScale(2, RoundingMode.HALF_UP).doubleValue());
-//            Retain_list.add(BigDecimal.valueOf(retain).setScale(2, RoundingMode.HALF_UP).doubleValue());
-
+            result.add(option);
         }
-        Result.add(Q_Input);
-        Result.add(H_b);
-        Result.add(H_e);
-        Result.add(Q_Release);
-        Result.add(Q_Release1);
-        Result.add(Q_Release2);
-        Result.add(Q_Release3);
-        Result.add(V_list);
-        Result.add(Retain_list);
 
-        return Result;
+        return result;
     }
-    //最大调洪水位最小
-    public List<List<Double>> MinLevel(){
-        choice=1;
-        List<List<List<Double>>> Result =new ArrayList<>();
-        List<List<List<Double>>> option_temp =new ArrayList<>();
-        for (int i = 0; i < Q_Input.size()-1; i++) {
-            UpdateLimitLevel(Time.get(i));
-            Result=OneStage(Result);
-        }
-
-        UpdateLimitLevel(Time.get(Time.size()-1));
-        double Q_in = Q_Input.get(Q_Input.size()-1);
-        for (int i = 0; i < Result.size(); i++) {
-            List<List<Double>> option = new ArrayList<>(Result.get(i));
-            double H_b = option.get(2).get(option.get(2).size()-1);
-            double H_e = H_end;
-            double Q_out;
-            double Q1;
-            double Q2;
-            double Q3;
-            double V;
-            double value1;
-            double value2;
-            double retain;
-
-            double[] H_Limit = H_Limit(H_b,Q_in,MinQ.get(0));
-
-            if(H_e>=H_Limit[0]&&H_e<=H_Limit[1]){
-                Q_out = OnceBalance2(H_b,Q_in,H_e);
-                Q1 = Math.min(GetQ1((H_b+H_e)/2),Q_out);
-                Q2 = Math.min(Q_out-Q1,GetQ2((H_b+H_e)/2));
-                Q3=0;
-                V=GetV(H_e);
-
-                List<List<Double>> Result_OnePoint = new ArrayList<>();
-                List<Double> Q_in_list = new ArrayList<>(option.get(0));
-                List<Double> H_b_list= new ArrayList<>(option.get(1));
-                List<Double> H_e_list= new ArrayList<>(option.get(2));
-                List<Double> Q_out_list= new ArrayList<>(option.get(3));
-                List<Double> Q1_list= new ArrayList<>(option.get(4));
-                List<Double> Q2_list= new ArrayList<>(option.get(5));
-                List<Double> Q3_list= new ArrayList<>(option.get(6));
-                List<Double> V_list= new ArrayList<>(option.get(7));
-                List<Double> Value1= new ArrayList<>();
-                List<Double> Value2= new ArrayList<>();
-                List<Double> Retain_list= new ArrayList<>(option.get(10));
-
-                Q_in_list.add(BigDecimal.valueOf(Q_in).setScale(2, RoundingMode.HALF_UP).doubleValue());
-                H_b_list.add(BigDecimal.valueOf(H_b).setScale(2, RoundingMode.HALF_UP).doubleValue());
-                H_e_list.add(BigDecimal.valueOf(H_e).setScale(2, RoundingMode.HALF_UP).doubleValue());
-                Q_out_list.add(BigDecimal.valueOf(Q_out).setScale(2, RoundingMode.HALF_UP).doubleValue());
-                Q1_list.add(BigDecimal.valueOf(Q1).setScale(2, RoundingMode.HALF_UP).doubleValue());
-                Q2_list.add(BigDecimal.valueOf(Q2).setScale(2, RoundingMode.HALF_UP).doubleValue());
-                Q3_list.add(BigDecimal.valueOf(Q3).setScale(2, RoundingMode.HALF_UP).doubleValue());
-                V_list.add(BigDecimal.valueOf(V).setScale(2, RoundingMode.HALF_UP).doubleValue());
-
-                value1=GetObj1(H_e_list,Q_out_list,Q_Interval);
-                value2=GetObj2(H_e_list);
-                retain=Math.max(0,V-GetV(H_begin));
-                Value1.add(value1);
-                Value2.add(value2);
-                Retain_list.add(retain);
-
-                Result_OnePoint.add(Q_in_list);
-                Result_OnePoint.add(H_b_list);
-                Result_OnePoint.add(H_e_list);
-                Result_OnePoint.add(Q_out_list);
-                Result_OnePoint.add(Q1_list);
-                Result_OnePoint.add(Q2_list);
-                Result_OnePoint.add(Q3_list);
-                Result_OnePoint.add(V_list);
-                Result_OnePoint.add(Value1);
-                Result_OnePoint.add(Value2);
-                Result_OnePoint.add(Retain_list);
-
-                option_temp.add(Result_OnePoint);
-            }
-
-        }
-
-        if(option_temp.isEmpty()){
-            throw new RuntimeException("无法达成末水位:"+H_end);
-        }
-        else{
-            int num=0;
-            double Value1 = option_temp.get(0).get(8).get(0);
-            double value1 = option_temp.get(0).get(9).get(0);
-            for (int i = 1; i < option_temp.size(); i++) {
-                double Value2 = option_temp.get(i).get(8).get(0);
-                double value2 = option_temp.get(i).get(9).get(0);
-                if(Value2<Value1||(Value2==Value1&&value2<value1)){
-                    Value1=Value2;
-                    value1=value2;
-                    num=i;
-                }
-            }
-            return option_temp.get(num);
-
-        }
-    }
-    //最大下泄流量最小
-    public List<List<Double>> MinDischarge(){
-        choice=2;
-        List<List<List<Double>>> Result =new ArrayList<>();
-        List<List<List<Double>>> option_temp =new ArrayList<>();
-        for (int i = 0; i < Q_Input.size()-1; i++) {
-            UpdateLimitLevel(Time.get(i));
-            Result=OneStage(Result);
-        }
-
-        UpdateLimitLevel(Time.get(Time.size()-1));
-        double Q_in = Q_Input.get(Q_Input.size()-1);
-        for (int i = 0; i < Result.size(); i++) {
-            List<List<Double>> option = new ArrayList<>(Result.get(i));
-            double H_b = option.get(2).get(option.get(2).size()-1);
-            double H_e = H_end;
-            double Q_out;
-            double Q1;
-            double Q2;
-            double Q3;
-            double V;
-            double value1;
-            double value2;
-            double retain;
-
-            double[] H_Limit = H_Limit(H_b,Q_in,MinQ.get(0));
-
-            if(H_e>=H_Limit[0]&&H_e<=H_Limit[1]){
-                Q_out = OnceBalance2(H_b,Q_in,H_e);
-                Q1 = Math.min(GetQ1((H_b+H_e)/2),Q_out);
-                Q2 = Math.min(Q_out-Q1,GetQ2((H_b+H_e)/2));
-                Q3=0;
-                V=GetV(H_e);
-
-                List<List<Double>> Result_OnePoint = new ArrayList<>();
-                List<Double> Q_in_list = new ArrayList<>(option.get(0));
-                List<Double> H_b_list= new ArrayList<>(option.get(1));
-                List<Double> H_e_list= new ArrayList<>(option.get(2));
-                List<Double> Q_out_list= new ArrayList<>(option.get(3));
-                List<Double> Q1_list= new ArrayList<>(option.get(4));
-                List<Double> Q2_list= new ArrayList<>(option.get(5));
-                List<Double> Q3_list= new ArrayList<>(option.get(6));
-                List<Double> V_list= new ArrayList<>(option.get(7));
-                List<Double> Value1= new ArrayList<>();
-                List<Double> Value2= new ArrayList<>();
-                List<Double> Retain_list = new ArrayList<>();
-                Q_in_list.add(BigDecimal.valueOf(Q_in).setScale(2, RoundingMode.HALF_UP).doubleValue());
-                H_b_list.add(BigDecimal.valueOf(H_b).setScale(2, RoundingMode.HALF_UP).doubleValue());
-                H_e_list.add(BigDecimal.valueOf(H_e).setScale(2, RoundingMode.HALF_UP).doubleValue());
-                Q_out_list.add(BigDecimal.valueOf(Q_out).setScale(2, RoundingMode.HALF_UP).doubleValue());
-                Q1_list.add(BigDecimal.valueOf(Q1).setScale(2, RoundingMode.HALF_UP).doubleValue());
-                Q2_list.add(BigDecimal.valueOf(Q2).setScale(2, RoundingMode.HALF_UP).doubleValue());
-                Q3_list.add(BigDecimal.valueOf(Q3).setScale(2, RoundingMode.HALF_UP).doubleValue());
-                V_list.add(BigDecimal.valueOf(V).setScale(2, RoundingMode.HALF_UP).doubleValue());
-
-                value1=GetObj1(H_e_list,Q_out_list,Q_Interval);
-                value2=GetObj2(H_e_list);
-                retain=Math.max(0,V-GetV(H_begin));
-                Value1.add(value1);
-                Value2.add(value2);
-                Retain_list.add(retain);
-
-                Result_OnePoint.add(Q_in_list);
-                Result_OnePoint.add(H_b_list);
-                Result_OnePoint.add(H_e_list);
-                Result_OnePoint.add(Q_out_list);
-                Result_OnePoint.add(Q1_list);
-                Result_OnePoint.add(Q2_list);
-                Result_OnePoint.add(Q3_list);
-                Result_OnePoint.add(V_list);
-                Result_OnePoint.add(Value1);
-                Result_OnePoint.add(Value2);
-                Result_OnePoint.add(Retain_list);
-
-                option_temp.add(Result_OnePoint);
-            }
-        }
-
-        if(option_temp.isEmpty()){
-            throw new RuntimeException("无法达成末水位:"+H_end);
-        }
-        else{
-            int num=0;
-            double Value1 = option_temp.get(0).get(8).get(0);
-            double value1 = option_temp.get(0).get(9).get(0);
-            for (int i = 1; i < option_temp.size(); i++) {
-                double Value2 = option_temp.get(i).get(8).get(0);
-                double value2 = option_temp.get(i).get(9).get(0);
-                if(Value2<Value1||(Value2==Value1&&value2<value1)){
-                    Value1=Value2;
-                    value1=value2;
-                    num=i;
-                }
-            }
-            return option_temp.get(num);
-
-        }
-    }
-
-
-
-    public List<List<List<Double>>> OneStage(List<List<List<Double>>> option_last){
-        List<List<List<Double>>> option_final = new ArrayList<>();
-        List<List<List<Double>>> option_temp = new ArrayList<>();
-
-        if(option_last.isEmpty()){
-            double Q_in = Q_Input.get(0);
-            double H_b = H_begin;
-            double H_e;
-            double Q_out;
-            double Q1;
-            double Q2;
-            double Q3;
-            double V;
-            double value1;
-            double value2;
-            double retain;
-
-            double[] H_Limit = H_Limit(H_b,Q_in,MinQ.get(0));
-            List<Double> points = Discrete(H_b,H_Limit);
-            for (int i = 0; i < points.size(); i++) {
-                H_e= points.get(i);
-                Q_out = OnceBalance2(H_b,Q_in,H_e);
-                Q1 = Math.min(GetQ1((H_b+H_e)/2),Q_out);
-                Q2 = Math.min(Q_out-Q1,GetQ2((H_b+H_e)/2));
-                Q3 = 0;
-                V  = GetV(H_e);
-                List<List<Double>> Result_OnePoint = new ArrayList<>();
-                List<Double> Q_in_list = new ArrayList<>();
-                List<Double> H_b_list= new ArrayList<>();
-                List<Double> H_e_list= new ArrayList<>();
-                List<Double> Q_out_list= new ArrayList<>();
-                List<Double> Q1_list= new ArrayList<>();
-                List<Double> Q2_list= new ArrayList<>();
-                List<Double> Q3_list= new ArrayList<>();
-                List<Double> V_list= new ArrayList<>();
-                List<Double> Value1= new ArrayList<>();
-                List<Double> Value2= new ArrayList<>();
-                List<Double> Retain_list = new ArrayList<>();
-                Q_in_list.add(BigDecimal.valueOf(Q_in).setScale(2, RoundingMode.HALF_UP).doubleValue());
-                H_b_list.add(BigDecimal.valueOf(H_b).setScale(2, RoundingMode.HALF_UP).doubleValue());
-                H_e_list.add(BigDecimal.valueOf(H_e).setScale(2, RoundingMode.HALF_UP).doubleValue());
-                Q_out_list.add(BigDecimal.valueOf(Q_out).setScale(2, RoundingMode.HALF_UP).doubleValue());
-                Q1_list.add(BigDecimal.valueOf(Q1).setScale(2, RoundingMode.HALF_UP).doubleValue());
-                Q2_list.add(BigDecimal.valueOf(Q2).setScale(2, RoundingMode.HALF_UP).doubleValue());
-                Q3_list.add(BigDecimal.valueOf(Q3).setScale(2, RoundingMode.HALF_UP).doubleValue());
-                V_list.add(BigDecimal.valueOf(V).setScale(2, RoundingMode.HALF_UP).doubleValue());
-
-                value1=GetObj1(H_e_list,Q_out_list,Q_Interval);
-                value2=GetObj2(H_e_list);
-                retain=Math.max(0,V-GetV(H_begin));
-                Value1.add(BigDecimal.valueOf(value1).setScale(2, RoundingMode.HALF_UP).doubleValue());
-                Value2.add(BigDecimal.valueOf(value2).setScale(2, RoundingMode.HALF_UP).doubleValue());
-                Retain_list.add(BigDecimal.valueOf(retain).setScale(2, RoundingMode.HALF_UP).doubleValue());
-
-                Result_OnePoint.add(Q_in_list);
-                Result_OnePoint.add(H_b_list);
-                Result_OnePoint.add(H_e_list);
-                Result_OnePoint.add(Q_out_list);
-                Result_OnePoint.add(Q1_list);
-                Result_OnePoint.add(Q2_list);
-                Result_OnePoint.add(Q3_list);
-                Result_OnePoint.add(V_list);
-                Result_OnePoint.add(Value1);
-                Result_OnePoint.add(Value2);
-                Result_OnePoint.add(Retain_list);
-
-                option_temp.add(Result_OnePoint);
-            }
-        }
-        else{
-            int num = option_last.get(0).get(0).size();
-            for (int i = 0; i < option_last.size(); i++) {
-                List<List<Double>> option1 = option_last.get(i);
-                double Q_in = Q_Input.get(num);
-                double H_b = option1.get(2).get(num-1);
-                double H_e;
-                double Q_out;
-                double Q1;
-                double Q2;
-                double Q3;
-                double V;
-                double value1;
-                double value2;
-                double retain;
-
-                double[] H_Limit = H_Limit(H_b,Q_in,MinQ.get(0));
-                List<Double> points = Discrete(H_b,H_Limit);
-                for (int j = 0; j < points.size(); j++) {
-                    H_e= points.get(j);
-                    Q_out = OnceBalance2(H_b,Q_in,H_e);
-                    Q1 = Math.min(GetQ1((H_b+H_e)/2),Q_out);
-                    Q2 = Math.min(Q_out-Q1,GetQ2((H_b+H_e)/2));
-                    Q3=0;
-                    V  = GetV(H_e);
-
-                    List<List<Double>> Result_OnePoint = new ArrayList<>();
-                    List<Double> Q_in_list = new ArrayList<>(option1.get(0));
-                    List<Double> H_b_list= new ArrayList<>(option1.get(1));
-                    List<Double> H_e_list= new ArrayList<>(option1.get(2));
-                    List<Double> Q_out_list= new ArrayList<>(option1.get(3));
-                    List<Double> Q1_list= new ArrayList<>(option1.get(4));
-                    List<Double> Q2_list= new ArrayList<>(option1.get(5));
-                    List<Double> Q3_list= new ArrayList<>(option1.get(6));
-                    List<Double> V_list= new ArrayList<>(option1.get(7));
-                    List<Double> Value1= new ArrayList<>();
-                    List<Double> Value2= new ArrayList<>();
-                    List<Double> Retain_list = new ArrayList<>(option1.get(10));
-                    Q_in_list.add(BigDecimal.valueOf(Q_in).setScale(2, RoundingMode.HALF_UP).doubleValue());
-                    H_b_list.add(BigDecimal.valueOf(H_b).setScale(2, RoundingMode.HALF_UP).doubleValue());
-                    H_e_list.add(BigDecimal.valueOf(H_e).setScale(2, RoundingMode.HALF_UP).doubleValue());
-                    Q_out_list.add(BigDecimal.valueOf(Q_out).setScale(2, RoundingMode.HALF_UP).doubleValue());
-                    Q1_list.add(BigDecimal.valueOf(Q1).setScale(2, RoundingMode.HALF_UP).doubleValue());
-                    Q2_list.add(BigDecimal.valueOf(Q2).setScale(2, RoundingMode.DOWN).doubleValue());
-                    Q3_list.add(BigDecimal.valueOf(Q3).setScale(2, RoundingMode.HALF_UP).doubleValue());
-                    V_list.add(BigDecimal.valueOf(V).setScale(2, RoundingMode.HALF_UP).doubleValue());
-
-                    value1=GetObj1(H_e_list,Q_out_list,Q_Interval);
-                    value2=GetObj2(H_e_list);
-                    retain=Math.max(0,V-GetV(H_begin));
-                    Value1.add(BigDecimal.valueOf(value1).setScale(2, RoundingMode.HALF_UP).doubleValue());
-                    Value2.add(BigDecimal.valueOf(value2).setScale(2, RoundingMode.HALF_UP).doubleValue());
-                    Retain_list.add(BigDecimal.valueOf(retain).setScale(2, RoundingMode.HALF_UP).doubleValue());
-
-                    Result_OnePoint.add(Q_in_list);
-                    Result_OnePoint.add(H_b_list);
-                    Result_OnePoint.add(H_e_list);
-                    Result_OnePoint.add(Q_out_list);
-                    Result_OnePoint.add(Q1_list);
-                    Result_OnePoint.add(Q2_list);
-                    Result_OnePoint.add(Q3_list);
-                    Result_OnePoint.add(V_list);
-                    Result_OnePoint.add(Value1);
-                    Result_OnePoint.add(Value2);
-                    Result_OnePoint.add(Retain_list);
-
-                    option_temp.add(Result_OnePoint);
-                }
-            }
-        }
-        int[] mark= new int[option_temp.size()];
-        for (int i = 0; i < option_temp.size(); i++) {
-            if(mark[i]==0){
-                int num=i;
-                mark[i]=1;
-                List<List<Double>> option1 = option_temp.get(i);
-                double H1 = option1.get(2).get(option1.get(2).size()-1);
-                double Value1 = option1.get(8).get(0);
-                double value1 = option1.get(9).get(0);
-                for (int j = i; j <option_temp.size(); j++) {
-                    if(mark[j]==0){
-                        List<List<Double>> option2 = option_temp.get(j);
-                        double H2 = option2.get(2).get(option2.get(2).size()-1);
-                        double Value2 = option2.get(8).get(0);
-                        double value2 = option2.get(9).get(0);
-                        if(H1==H2){
-                            mark[j]=1;
-                            if(Value2<Value1||(Value2==Value1&&value2<value1)){
-                                Value1=Value2;
-                                value1=value2;
-                                num=j;
-                            }
-                        }
-                    }
-                }
-                option_final.add(option_temp.get(num));
-            }
-        }
-        return option_final;
-    }
-
     /**
      * 常规调度计算流量
      */
@@ -692,37 +311,294 @@ public class ModelOfLZZ {
         return Q;
     }
 
-    /**
-     * 水库泄流能力限制造成的水位限制(优化调度)
-     */
-    public double[] H_Limit(double level,double Q_Input,double MinQ){
-        double d = 0;
-        //闸门最大下泄能力
-        double QQ0;
-        if(Q_Input<=750){
-                if (level>=1397.21) {
-                    QQ0=GetQ1(level)+GetQ2(level);
-                }
-                else {
-                    QQ0=Math.min(GetQ1(level)+d*GetQ2(level),125);
-                }
-        }
-        else{
-                QQ0=GetQ1(level)+GetQ2(level);
+    //最大调洪水位最小
+    public List<Option> MinLevel(List<Option> Initial, String name){
+
+        //先从常规调度的结果中获得初始解
+        List<Option> Initial_op = new ArrayList<>();
+        for (int i = 0; i < Initial.size(); i++) {
+            if(Initial.get(i).getName().equals(name)){
+                Option object = Initial.get(i);
+                Option option = new Option();
+                option.setType("最小拦蓄");
+                option.setName(object.getName());
+                option.setTime(object.getTime());
+                option.setQIn(object.getQIn());
+                option.setH1(object.getH1());
+                option.setH2(object.getH2());
+                option.setQOut(object.getQOut());
+                Initial_op.add(option);
+            }
         }
 
-//        double Hend=OnceBalance1(level,Q_Input,QQ0);
-//        if(Q_Input<=750){
-//            if ((level+Hend)/2>=1397.21) {
-//                QQ0=GetQ1((level+Hend)/2)+GetQ2((level+Hend)/2);
-//            }
-//            else{
-//                QQ0=Math.min(GetQ1((level+Hend)/2)+d*GetQ2((level+Hend)/2),125);
-//            }
-//        }
-//        else{
-//            QQ0=GetQ1((level+Hend)/2)+GetQ2((level+Hend)/2);
-//        }
+        //总入库、总出库、总生态流量
+        double SumQ_in = 0;
+        double SumQ_out= 0;
+        double SumQ_eco= 0;
+        for (int i = 0; i < Initial_op.size(); i++) {
+            SumQ_in=SumQ_in+Initial_op.get(i).getQIn();
+            SumQ_out=SumQ_out+Initial_op.get(i).getQOut();
+            SumQ_eco=SumQ_eco+MinQ.get(i);
+        }
+
+        //时段入库、出库、初末水位、生态流量
+        double QIn;
+        double QOut;
+        double H1;
+        double H2;
+        double Q_eco;
+
+        double[] Limit;
+        double Out_limit;
+        double H2_limit;
+
+        double decline =2;
+
+        //更新总入库、总出库、总生态流量、平均出库
+        SumQ_in = 0;
+        SumQ_out= 0;
+        SumQ_eco= 0;
+        for (int i = 0; i < Initial_op.size(); i++) {
+            SumQ_in=SumQ_in+Initial_op.get(i).getQIn();
+            SumQ_out=SumQ_out+Initial_op.get(i).getQOut();
+            SumQ_eco=SumQ_eco+MinQ.get(i);
+        }
+
+        //优化
+        for (int i = 0; i < Initial_op.size(); i++) {
+            QIn= Initial_op.get(i).getQIn();
+            H1 = Initial_op.get(i).getH1();
+            Q_eco=MinQ.get(i);
+            Limit =H_LimitFront(H1,QIn,Q_eco);
+
+            //保证后续时段生态流量
+            Out_limit=SumQ_out-(SumQ_eco-MinQ.get(i));
+            H2_limit=OnceBalance1(H1,QIn,Out_limit);
+
+            //水位变化速率限制
+            double[] H_delta = new double[2];
+            H_delta[0] = H1- (double) T_Delta /3600/24*2;
+            H_delta[1] = H1+ (double) T_Delta /3600/24*2;
+
+
+            //最后一个时段
+            if(i==Initial_op.size()-1){
+                QOut=SumQ_out;
+                H2=H_end;
+                Initial_op.get(i).setH2(H2);
+                Initial_op.get(i).setQOut(QOut);
+            }
+            else{
+                H2 = Math.max(Math.max(Math.max(Limit[0],H2_limit),H_delta[0]),H_begin-decline);
+                QOut=OnceBalance2(H1,QIn,H2);
+                Initial_op.get(i).setH2(H2);
+                Initial_op.get(i).setQOut(QOut);
+                Initial_op.get(i+1).setH1(H2);
+            }
+
+            //剩余时段总出库、剩余时段总生态流量
+            SumQ_out=SumQ_out-QOut;
+            SumQ_eco=SumQ_eco-Q_eco;
+        }
+
+        //补全其他数据
+        for (int i = 0; i < Initial_op.size(); i++) {
+            Option option = Initial_op.get(i);
+            QIn= option.getQIn();
+            H1= option.getH1();
+            H2= option.getH2();
+            QOut = OnceBalance2(H1,QIn,H2);
+            double Q1 = Math.min(QOut,GetQ1((H1+H2)/2));
+            double Q2 = QOut-Q1;
+            double Q3=0;
+            double V=GetV(H2);
+            double[] aa=getPercentage_lzz(V);
+            double retain=Math.max(0,V-GetV(H_begin));
+            double percent1=aa[0];
+            double percent2=aa[1];
+            option.setQOut(QOut);
+            option.setQ1(Q1);
+            option.setQ2(Q2);
+            option.setQ3(Q3);
+            option.setV(V);
+            option.setRetain(retain);
+            option.setPercentage1(percent1);
+            option.setPercentage2(percent2);
+            option.setLimits(limits);
+        }
+        return Initial_op;
+    }
+
+    //最大下泄流量最小
+    public List<Option> MinDischarge(List<Option> Initial, String name){
+
+
+        //先从常规调度的结果中获得初始解
+        List<Option> Initial_op = new ArrayList<>();
+        for (int i = 0; i < Initial.size(); i++) {
+            if(Initial.get(i).getName().equals(name)){
+                Option object = Initial.get(i);
+                Option option = new Option();
+                option.setType("最大削峰");
+                option.setName(object.getName());
+                option.setTime(object.getTime());
+                option.setQIn(object.getQIn());
+                option.setH1(object.getH1());
+                option.setH2(object.getH2());
+                option.setQOut(object.getQOut());
+                Initial_op.add(option);
+            }
+        }
+
+        //总入库、总出库、总生态流量、平均出库
+        double SumQ_in = 0;
+        double SumQ_out= 0;
+        double SumQ_eco= 0;
+        double Q_average;
+        for (int i = 0; i < Initial_op.size(); i++) {
+            SumQ_in=SumQ_in+Initial_op.get(i).getQIn();
+            SumQ_out=SumQ_out+Initial_op.get(i).getQOut();
+            SumQ_eco=SumQ_eco+MinQ.get(i);
+        }
+
+        //时段入库、出库、初末水位、生态流量、下泄能力、死水位流量
+        double QIn;
+        double QOut;
+        double H1;
+        double H2;
+        double Q_eco;
+        double Q_max;
+        double Q_min;
+        double Q_dead;
+        double Q_proof;
+
+        double Out_limit;
+
+        SumQ_in = 0;
+        SumQ_out= 0;
+        SumQ_eco= 0;
+        for (int i = 0; i < Initial_op.size(); i++) {
+            SumQ_in=SumQ_in+Initial_op.get(i).getQIn();
+            SumQ_out=SumQ_out+Initial_op.get(i).getQOut();
+            SumQ_eco=SumQ_eco+MinQ.get(i);
+        }
+        Q_average=SumQ_out/Initial_op.size();
+
+
+        for (int i = 0; i < Initial_op.size(); i++) {
+            //时段入库、初水位、生态流量
+            QIn= Initial_op.get(i).getQIn();
+            H1 = Initial_op.get(i).getH1();
+            Q_eco=MinQ.get(i);
+
+            //保证后续时段生态流量
+            Out_limit=SumQ_out-(SumQ_eco-MinQ.get(i));
+
+            //水位变化速率限制
+            double[] H_delta = new double[2];
+            double[] Q_delta = new double[2];
+            H_delta[0] = H1- (double) T_Delta /3600/24*4;
+            H_delta[1] = H1+ (double) T_Delta /3600/24*4;
+            Q_delta[0]=OnceBalance2(H1,QIn,H_delta[1]);
+            Q_delta[1]=OnceBalance2(H1,QIn,H_delta[0]);
+
+            //最大流量限制
+            Q_dead=OnceBalance2(H1,QIn,DeadLevel);
+            Q_proof=OnceBalance2(H1,QIn,ProofLevel);
+            Q_max=MaxQ_out(H1,QIn);
+            Q_max=Math.min(Q_max,Out_limit);
+            Q_max=Math.min(Q_max,Q_dead);
+            Q_max=Math.min(Q_max,Q_delta[1]);
+
+            //最小流量限制
+            Q_min=Math.max(Q_eco,Q_delta[0]);
+
+            //本时段出库、末水位
+            if(i==Initial_op.size()-1){
+                H2=H_end;
+                QOut=OnceBalance2(H1,QIn,H2);
+            }
+            else{
+                if(Q_max<Q_proof){
+                    //水位将超过校核水位
+                    QOut=Q_max;
+                }
+                else{
+                    //水位将超过设计水位,不超过校核水位
+                    double[] Q_limit= new double[2];
+                    Q_limit[0] = Math.max(Q_proof,Q_eco);
+                    Q_limit[1] = Q_max;
+                    double rate = 1.5;
+                    double temp = rate*Q_average;
+                    if(temp>Q_max){
+                        QOut=Q_max;
+                    }
+                    else if(temp<Q_min){
+                        QOut=Q_min;
+                    }
+                    else{
+                        QOut=temp;
+                    }
+
+//                    while (temp>Q_max||temp<Q_min){
+//                        if(temp>Q_max){
+//                            rate=rate-0.1;
+//                        }else{
+//                            rate=rate+0.1;
+//                        }
+//                        temp = rate*Q_average;
+//
+//                    }
+//                    QOut=temp;
+                }
+                H2=OnceBalance1(H1,QIn,QOut);
+                Initial_op.get(i+1).setH1(H2);
+            }
+
+            Initial_op.get(i).setH2(H2);
+            Initial_op.get(i).setQOut(QOut);
+
+            //剩余时段总出库、剩余时段总生态流量
+            SumQ_out=SumQ_out-QOut;
+            SumQ_eco=SumQ_eco-Q_eco;
+            Q_average=SumQ_out/(Initial_op.size()-i-1);
+        }
+
+        //补全其他数据
+        for (int i = 0; i < Initial_op.size(); i++) {
+            Option option = Initial_op.get(i);
+            QIn= option.getQIn();
+            H1= option.getH1();
+            H2= option.getH2();
+            QOut = OnceBalance2(H1,QIn,H2);
+            double Q1 = Math.min(QOut,GetQ1((H1+H2)/2));
+            double Q2 = QOut-Q1;
+            double Q3=0;
+            double V=GetV(H2);
+            double[] aa=getPercentage_lzz(V);
+            double retain=Math.max(0,V-GetV(H_begin));
+            double percent1=aa[0];
+            double percent2=aa[1];
+            option.setQOut(QOut);
+            option.setQ1(Q1);
+            option.setQ2(Q2);
+            option.setQ3(Q3);
+            option.setV(V);
+            option.setRetain(retain);
+            option.setPercentage1(percent1);
+            option.setPercentage2(percent2);
+            option.setLimits(limits);
+        }
+        return Initial_op;
+    }
+
+    /**
+     *水库水位限制，从前往后推
+     */
+    public double[] H_LimitFront(double level,double Q_Input,double MinQ){
+        double d = 0;
+        //闸门最大下泄能力
+        double QQ0 = MaxQ_out(level,Q_Input);
 
         double H_eco = OnceBalance1(level,Q_Input,MinQ);
         double H_min =OnceBalance1(level,Q_Input,QQ0);
@@ -740,61 +616,6 @@ public class ModelOfLZZ {
         return H_Limit;
     }
 
-    /**
-     * 产生每一阶段的离散点
-     * @param H_b 阶段初水位
-     * @param H_Limit 阶段水位末范围
-     * @return 离散点序列
-     */
-    public List<Double> Discrete(double H_b , double[] H_Limit){
-        double H2_min = BigDecimal.valueOf(H_Limit[0]).setScale(2, RoundingMode.UP).doubleValue();
-        double H2_max = BigDecimal.valueOf(H_Limit[1]).setScale(2, RoundingMode.DOWN).doubleValue();
-        List<Double> DiscretePoints = new ArrayList<>();
-        if(H2_max-H2_min>Step){
-            double H_e=BigDecimal.valueOf(DeadLevel).setScale(2, RoundingMode.UP).doubleValue();
-            while (H_e<=H2_max){
-                if(H_e>=H2_min) DiscretePoints.add(H_e);
-                H_e=BigDecimal.valueOf(H_e+Step).setScale(2, RoundingMode.UP).doubleValue();;
-            }
-
-        }
-        else{
-            double H_e=BigDecimal.valueOf((H2_min+H2_max)/2).setScale(2, RoundingMode.UP).doubleValue();
-            DiscretePoints.add(H_e);
-        }
-        return DiscretePoints;
-    }
-
-    //计算目标函数
-    public double GetObj1(List<Double> LineOfH, List<Double> LineOfQ, List<Double> Q_Interval){
-        double Obj=0;
-        if(choice==1){
-            //全过程最大水位
-            Obj = LineOfH.get(0);
-            for (int i = 1; i < LineOfH.size(); i++) {
-                if(LineOfH.get(i)>Obj){
-                    Obj=LineOfH.get(i);
-                }
-            }
-        }else if(choice==2){
-            //全过程最大流量
-            Obj = LineOfQ.get(0)+Q_Interval.get(0);
-            for (int i = 1; i < LineOfQ.size(); i++) {
-                if(LineOfQ.get(i)+Q_Interval.get(i)>Obj){
-                    Obj=LineOfQ.get(i)+Q_Interval.get(i);
-                }
-            }
-        }
-        return Obj;
-    }
-    public double GetObj2(List<Double> LineOfH){
-        double Obj2=0;
-
-        for (int i = 1; i < LineOfH.size(); i++) {
-            Obj2=Obj2+(LineOfH.get(i)-H_end)*(LineOfH.get(i)-H_end)+Math.abs(LineOfH.get(i)-LineOfH.get(i-1));
-        }
-        return Obj2;
-    }
 
     //水量平衡，计算末水位、出库流量
     public double OnceBalance1(double H_begin, double Q_in, double Q_out){
@@ -806,7 +627,6 @@ public class ModelOfLZZ {
         return Q_out;
 //        return BigDecimal.valueOf(Q_out).setScale(2,RoundingMode.HALF_UP).doubleValue();
     }
-
     public double GetV(double level){
         double Volume;
         int n=0;
@@ -978,468 +798,82 @@ public class ModelOfLZZ {
         H_end=H;
     }
 
-    /**
-     * String转Date
-     * @param input
-     * @return
-     */
-    public static Date stringToDate (String input){
-        Date result =new Date();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss zzz yyyy", Locale.US);
-        LocalDateTime dateTime = LocalDateTime.parse(input, formatter);
-        ZonedDateTime zonedDateTime = dateTime.atZone(ZoneId.of("Asia/Shanghai"));
-        result = Date.from(zonedDateTime.toInstant());
-        return result;
-    }
-
 
     /**
-     * 粒子数
+     * 返回最高水位的序号
      */
-    int n=100;
-    /**
-     * 粒子维度（时段数）
-     */
-    int D;
-    /**
-     * 迭代次数
-     */
-    int K=100;
-    /**
-     * 惯性权重
-     */
-    double w;
-    double wMax=1;
-    double wMin=0.1;
-    /**
-     * 个体学习因子
-     */
-    double c1=1;
-    /**
-     * 群体学习因子
-     */
-    double c2=1;
-    /**
-     * 个体随机因子
-     */
-    double r1;
-    /**
-     * 群体随机因子
-     */
-    double r2;
-    /**
-     * 粒子群
-     */
-    Option[][] birds;
-    /**
-     * 粒子速度
-     */
-    double[][] V;
-    /**
-     * 个体最优
-     */
-    Option[][] IndividualBest;
-    /**
-     * 群体最优
-     */
-    Option[] GroupBest;
-
-    public List<Option> MinLevel(List<Option> Initial, String name){
-        initialize(Initial,name);
-        for (int i = 0; i < K; i++) {
-            Iterate_MinLevel();
-        }
-
-        List<Option> result = new ArrayList<>();
-        result.addAll(Arrays.asList(GroupBest));
-
-        //补全最优结果的其他项
-        double H_b;
-        double H_e;
-        double Q_out;
-        double Q1;
-        double Q2;
-        double Q3;
-        double V;
-        double retain;
-        double percent1;
-        double percent2;
-
-        for (int i = 0; i < result.size(); i++) {
-            H_b=result.get(i).getH1();
-            H_e=result.get(i).getH2();
-            Q_out=result.get(i).getQOut();
-            Q1 = Math.min(GetQ1((H_b+H_e)/2),Q_out);
-            Q2 = Math.min(Q_out-Q1,GetQ2((H_b+H_e)/2));
-            Q3 = 0;
-            V = GetV(H_e);
-            retain=Math.max(0,V-GetV(H_begin));
-            double[] aa=getPercentage_lzz(V);
-            percent1=aa[0];
-            percent2=aa[1];
-
-            //保留两位小数
-            Q1=BigDecimal.valueOf(Q1).setScale(2,RoundingMode.HALF_UP).doubleValue();
-            Q2=BigDecimal.valueOf(Q2).setScale(2,RoundingMode.HALF_UP).doubleValue();
-            Q3=BigDecimal.valueOf(Q3).setScale(2,RoundingMode.HALF_UP).doubleValue();
-            V=BigDecimal.valueOf(V).setScale(2,RoundingMode.HALF_UP).doubleValue();
-            retain=BigDecimal.valueOf(retain).setScale(2,RoundingMode.HALF_UP).doubleValue();
-
-            result.get(i).setType("最小拦蓄");
-            result.get(i).setQ1(Q1);
-            result.get(i).setQ2(Q2);
-            result.get(i).setQ3(Q3);
-            result.get(i).setV(V);
-            result.get(i).setRetain(retain);
-            result.get(i).setPercentage1(percent1);
-            result.get(i).setPercentage2(percent2);
-        }
-        return result;
-    }
-    public List<Option> MinDischarge(List<Option> Initial, String name){
-        initialize(Initial,name);
-        for (int i = 0; i < K; i++) {
-            Iterate_MinDischarge();
-        }
-
-        List<Option> result = new ArrayList<>();
-        result.addAll(Arrays.asList(GroupBest));
-
-        //补全最优结果的其他项
-        double H_b;
-        double H_e;
-        double Q_out;
-        double Q1;
-        double Q2;
-        double Q3;
-        double V;
-        double retain;
-        double percent1;
-        double percent2;
-
-        for (int i = 0; i < result.size(); i++) {
-            H_b=result.get(i).getH1();
-            H_e=result.get(i).getH2();
-            Q_out=result.get(i).getQOut();
-            Q1 = Math.min(GetQ1((H_b+H_e)/2),Q_out);
-            Q2 = Math.min(Q_out-Q1,GetQ2((H_b+H_e)/2));
-            Q3 = 0;
-            V = GetV(H_e);
-            retain=Math.max(0,V-GetV(H_begin));
-            double[] aa=getPercentage_lzz(V);
-            percent1=aa[0];
-            percent2=aa[1];
-
-            //保留两位小数
-            Q1=BigDecimal.valueOf(Q1).setScale(2,RoundingMode.HALF_UP).doubleValue();
-            Q2=BigDecimal.valueOf(Q2).setScale(2,RoundingMode.HALF_UP).doubleValue();
-            Q3=BigDecimal.valueOf(Q3).setScale(2,RoundingMode.HALF_UP).doubleValue();
-            V=BigDecimal.valueOf(V).setScale(2,RoundingMode.HALF_UP).doubleValue();
-            retain=BigDecimal.valueOf(retain).setScale(2,RoundingMode.HALF_UP).doubleValue();
-
-            result.get(i).setType("最大削峰");
-            result.get(i).setQ1(Q1);
-            result.get(i).setQ2(Q2);
-            result.get(i).setQ3(Q3);
-            result.get(i).setV(V);
-            result.get(i).setRetain(retain);
-            result.get(i).setPercentage1(percent1);
-            result.get(i).setPercentage2(percent2);
-        }
-        return result;
-    }
-
-    /**
-     * 初始化
-     */
-    public void initialize(List<Option> Initial,String name){
-        //先从常规调度的结果中获得初始解
-        List<Option> Initial_op = new ArrayList<>();
-        for (int i = 0; i < Initial.size(); i++) {
-            if(Initial.get(i).getName().equals(name)) Initial_op.add(Initial.get(i));
-        }
-        D=Initial.size()/2;
-
-        //初始化鸟群
-        birds = new Option[n][D];
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < D; j++) {
-                birds[i][j]=new Option();
-                birds[i][j].setName(Initial_op.get(j).getName());
-                birds[i][j].setTime(Initial_op.get(j).getTime());
-                birds[i][j].setQIn(Initial_op.get(j).getQIn());
-                birds[i][j].setH1(Initial_op.get(j).getH1());
-                birds[i][j].setH2(Initial_op.get(j).getH2());
-                birds[i][j].setQOut(Initial_op.get(j).getQOut());
-//                birds[i][j].setQ1(Initial_op.get(j).getQ1());
-//                birds[i][j].setQ2(Initial_op.get(j).getQ2());
-//                birds[i][j].setQ3(Initial_op.get(j).getQ3());
-//                birds[i][j].setV(Initial_op.get(j).getV());
-//                birds[i][j].setRetain(Initial_op.get(j).getRetain());
-//                birds[i][j].setPercentage1(Initial_op.get(j).getPercentage1());
-//                birds[i][j].setPercentage2(Initial_op.get(j).getPercentage2());
-            }
-        }
-        //初始化个体最优
-        IndividualBest = new Option[n][D];
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < D; j++) {
-                IndividualBest[i][j]=new Option();
-                IndividualBest[i][j].setName(Initial_op.get(j).getName());
-                IndividualBest[i][j].setTime(Initial_op.get(j).getTime());
-                IndividualBest[i][j].setQIn(Initial_op.get(j).getQIn());
-                IndividualBest[i][j].setH1(Initial_op.get(j).getH1());
-                IndividualBest[i][j].setH2(Initial_op.get(j).getH2());
-                IndividualBest[i][j].setQOut(Initial_op.get(j).getQOut());
-            }
-        }
-        //初始化群体最优
-        GroupBest = new Option[D];
-        for (int j = 0; j < D; j++) {
-            GroupBest[j]=new Option();
-            GroupBest[j].setName(Initial_op.get(j).getName());
-            GroupBest[j].setTime(Initial_op.get(j).getTime());
-            GroupBest[j].setQIn(Initial_op.get(j).getQIn());
-            GroupBest[j].setH1(Initial_op.get(j).getH1());
-            GroupBest[j].setH2(Initial_op.get(j).getH2());
-            GroupBest[j].setQOut(Initial_op.get(j).getQOut());
-        }
-        //初始化速度
-        Random random = new Random();
-        V=new double[n][D];
-        for (int i = 0; i < n; i++) {
-            double v_temp = 0.01*(random.nextInt(10)-5);
-            for (int j = 0; j < D; j++) {
-                V[i][j] = v_temp;
-            }
-        }
-        //初始化随机因子
-        r1=random.nextDouble();
-        r2=random.nextDouble();
-        //初始化惯性权重
-        w=wMax;
-    }
-
-    /**
-     * 一次迭代
-     */
-    public void Iterate_MinLevel(){
-        UpdateLocation();
-        UpdateIndividualBest_MinLevel();
-        UpdateGroupBest_MinLevel();
-        UpdateV();
-        UpdateW();
-    }
-    /**
-     * 一次迭代
-     */
-    public void Iterate_MinDischarge(){
-        UpdateLocation();
-        UpdateIndividualBest_MinDischarge();
-        UpdateGroupBest_MinDischarge();
-        UpdateV();
-        UpdateW();
-    }
-
-    /**
-     * 更新位置
-     */
-    public void UpdateLocation(){
-        for (int i = 0; i < n; i++) {
-            int mark=0;
-            double[] H1 = new double[D];
-            double[] H2 = new double[D];
-            double[] Q_in = new double[D];
-            double[] minQ=new double[D];
-            double[] Q_out= new double[D];
-            for (int j = 0; j < D; j++) {
-                H1[j]=birds[i][j].getH1();
-                H2[j]=birds[i][j].getH2();
-                Q_in[j]=birds[i][j].getQIn();
-                minQ[j]=MinQ.get(j);
-            }
-
-            for (int j = 0; j < D; j++) {
-                //更新时段初水位
-                if(j!=0){
-                    H1[j]=H2[j-1];
-                }
-                //计算末水位可行范围
-                double level = H1[j];
-                double q1=Q_in[j];
-                double q2=minQ[j];
-
-                double[] limit=H_Limit(H1[j],Q_in[j],minQ[j]);
-                //计算末水位
-                double H2_after = H2[j]+V[i][j];
-
-                //判断是否可行
-                if(j==D-1){
-                    //可以达成末水位
-                    if(H_end>=limit[0]&&H_end<=limit[1]){
-                        H2[j]=H_end;
-                        mark=1;
-                    }
-                }
-                else{
-                    if(H2_after>limit[1]){
-                        H2_after=limit[1];
-                    }else if (H2_after<limit[0]){
-                        H2_after=limit[0];
-                    }
-                    H2[j]=H2_after;
-                }
-            }
-
-
-            //将可行解写入option列表
-            if(mark==1){
-                for (int j = 0; j < D; j++) {
-                    birds[i][j].setH1(H1[j]);
-                    birds[i][j].setH2(H2[j]);
-                    Q_out[j]=OnceBalance2(H1[j],Q_in[j],H2[j]);
-                    birds[i][j].setQOut(Q_out[j]);
-                }
-            }
-        }
-    }
-    /**
-     * 更新速度
-     */
-    public void UpdateV(){
-        Random random = new Random();
-        r1=random.nextDouble();
-        r2=random.nextDouble();
-        for (int i = 0; i < n; i++) {
-
-            for (int j = 0; j < D; j++) {
-
-
-                V[i][j]=w*V[i][j]+c1*r1*(IndividualBest[i][j].getH2()-birds[i][j].getH2())+c2*r2*(GroupBest[j].getH2()-birds[i][j].getH2());
-            }
-        }
-    }
-    /**
-     * 更新惯性权重
-     */
-    public void UpdateW(){
-        w=wMax-(wMax-wMin)/K;
-    }
-    /**
-     * 更新个体最优水位
-     */
-    public void UpdateIndividualBest_MinLevel(){
-        for (int i = 0; i < n; i++) {
-            double best=MaxLevel(IndividualBest[i]);
-            double value=MaxLevel(birds[i]);
-            if(value<best){
-                for (int j = 0; j < D; j++) {
-                    IndividualBest[i][j].setName(birds[i][j].getName());
-                    IndividualBest[i][j].setTime(birds[i][j].getTime());
-                    IndividualBest[i][j].setQIn(birds[i][j].getQIn());
-                    IndividualBest[i][j].setH1(birds[i][j].getH1());
-                    IndividualBest[i][j].setH2(birds[i][j].getH2());
-                    IndividualBest[i][j].setQOut(birds[i][j].getQOut());
-                }
-            }
-        }
-    }
-    /**
-     * 更新群体最优水位
-     */
-    public void UpdateGroupBest_MinLevel(){
-        int num=-1;
-        double best=MaxLevel(GroupBest);
-        for (int i = 0; i < n; i++) {
-            double value=MaxLevel(IndividualBest[i]);
-            if(value<best){
-                best=value;
+    public int MaxLevel(List<Option> options){
+        double max=options.get(0).getH2();
+        int num=0;
+        for (int i = 0; i < options.size(); i++) {
+            double level = options.get(i).getH2();
+            if(level>=max){
+                max=level;
                 num=i;
             }
         }
-        if (num!=-1){
-            for (int i = 0; i < D; i++) {
-                GroupBest[i].setName(IndividualBest[num][i].getName());
-                GroupBest[i].setTime(IndividualBest[num][i].getTime());
-                GroupBest[i].setQIn(IndividualBest[num][i].getQIn());
-                GroupBest[i].setH1(IndividualBest[num][i].getH1());
-                GroupBest[i].setH2(IndividualBest[num][i].getH2());
-                GroupBest[i].setQOut(IndividualBest[num][i].getQOut());
-            }
-        }
+        return num;
     }
+
     /**
-     * 更新个体最优流量
+     * 返回最高水位的序号
      */
-    public void UpdateIndividualBest_MinDischarge(){
-        for (int i = 0; i < n; i++) {
-            double best=MaxDischarge(IndividualBest[i]);
-            double value=MaxDischarge(birds[i]);
-            if(value<best){
-                for (int j = 0; j < D; j++) {
-                    IndividualBest[i][j].setName(birds[i][j].getName());
-                    IndividualBest[i][j].setTime(birds[i][j].getTime());
-                    IndividualBest[i][j].setQIn(birds[i][j].getQIn());
-                    IndividualBest[i][j].setH1(birds[i][j].getH1());
-                    IndividualBest[i][j].setH2(birds[i][j].getH2());
-                    IndividualBest[i][j].setQOut(birds[i][j].getQOut());
-                }
-            }
-        }
-    }
-    /**
-     * 更新群体最优流量
-     */
-    public void UpdateGroupBest_MinDischarge(){
-        int num=-1;
-        double best=MaxDischarge(GroupBest);
-        for (int i = 0; i < n; i++) {
-            double value=MaxDischarge(IndividualBest[i]);
-            if(value<best){
-                best=value;
+    public int MaxRelease(List<Option> options){
+        double max=options.get(0).getQOut();
+        int num=0;
+        for (int i = 0; i < options.size(); i++) {
+            double level = options.get(i).getQOut();
+            if(level>=max){
+                max=level;
                 num=i;
             }
         }
-        if (num!=-1){
-            for (int i = 0; i < D; i++) {
-                GroupBest[i].setName(IndividualBest[num][i].getName());
-                GroupBest[i].setTime(IndividualBest[num][i].getTime());
-                GroupBest[i].setQIn(IndividualBest[num][i].getQIn());
-                GroupBest[i].setH1(IndividualBest[num][i].getH1());
-                GroupBest[i].setH2(IndividualBest[num][i].getH2());
-                GroupBest[i].setQOut(IndividualBest[num][i].getQOut());
-            }
-        }
+        return num;
     }
+
     /**
-     * 最高水位
+     * 计算最大下泄能力
      */
-    public double MaxLevel(Option[] options){
-        double max=options[0].getH2();
-        for (int i = 0; i < options.length; i++) {
-            double level = options[i].getH2();
-            if(level>=max){
-                max=level;
+    public double MaxQ_out(double level,double Q_in){
+        double Q1;
+        double Q2;
+        double Q_max;
+        double H2;
+        if(Q_in<=750){
+            if (level>=1397.21) {
+                Q1=GetQ1(level)+GetQ2(level);
+            }
+            else {
+                Q1=Math.min(GetQ1(level),125);
             }
         }
-        return max;
-    }
-    /**
-     * 最大流量
-     */
-    public double MaxDischarge(Option[] options){
-        double max=options[0].getQOut();
-        for (int i = 0; i < options.length; i++) {
-            double level = options[i].getQOut();
-            if(level>=max){
-                max=level;
+        else{
+            Q1=GetQ1(level)+GetQ2(level);
+        }
+
+        Q_max=Q1;
+
+        while (true){
+            H2=OnceBalance1(level,Q_in,Q_max);
+            if(Q_in<=750){
+                if ((level+H2)/2>=1397.21) {
+                    Q2=GetQ1((level+H2)/2)+GetQ2((level+H2)/2);
+                }
+                else {
+                    Q2=Math.min(GetQ1((level+H2)/2),125);
+                }
+            }
+            else{
+                Q2=GetQ1((level+H2)/2)+GetQ2((level+H2)/2);
+            }
+
+            if(Q2>=Q_max){
+                return Q2;
+            }else{
+                Q_max=Q_max-0.05;
             }
         }
-        return max;
     }
-
-
-
 
 
 

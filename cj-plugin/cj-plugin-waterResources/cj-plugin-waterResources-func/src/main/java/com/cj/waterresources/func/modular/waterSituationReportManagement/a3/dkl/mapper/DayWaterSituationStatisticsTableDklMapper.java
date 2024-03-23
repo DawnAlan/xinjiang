@@ -3,6 +3,7 @@ package com.cj.waterresources.func.modular.waterSituationReportManagement.a3.dkl
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.dkl.entity.DayWaterSituationStatisticsTableDkl;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hd.entity.DayWaterSituationStatisticsTableHd;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hx.entity.DayWaterSituationStatisticsTableHx;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tth.entity.DayWaterSituationStatisticsTableTth;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Param;
@@ -34,5 +35,7 @@ public interface DayWaterSituationStatisticsTableDklMapper extends BaseMapper<Da
     @Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_DKL WHERE TABLE_HEAD_ID = #{tableHeadId} TIME = '昨日均' and  TO_CHAR(RECORD_TIME,'YYYY-MM-DD') between = #{startTime} and #{endTime}")
     List<DayWaterSituationStatisticsTableDkl> selectList2(@Param("tableHeadId")String tableHeadId,@Param("startTime")String startTime,@Param("endTime")String endTime);
 
+    @Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_DKL WHERE TIME = #{time} and  TO_CHAR(RECORD_TIME,'YYYY-MM-DD') = #{recordTime}")
+    List<DayWaterSituationStatisticsTableDkl> selectListHave(@Param("recordTime")String recordTime, @Param("time")String time);
 }
 

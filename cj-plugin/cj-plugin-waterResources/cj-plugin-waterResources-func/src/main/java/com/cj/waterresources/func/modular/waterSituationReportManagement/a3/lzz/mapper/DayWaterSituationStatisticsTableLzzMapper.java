@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req.A3StatisticsReq;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req.SelectListForIndustrialWaterFeeReq;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.res.A3StatisticsRes;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hd.entity.DayWaterSituationStatisticsTableHd;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hx.entity.DayWaterSituationStatisticsTableHx;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.entity.DayWaterSituationStatisticsTableLzz;
 import org.apache.ibatis.annotations.Delete;
@@ -42,5 +43,7 @@ public interface DayWaterSituationStatisticsTableLzzMapper extends BaseMapper<Da
     @Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_LZZ WHERE TABLE_HEAD_ID = #{tableHeadId} and TIME != '昨日均' and  TO_CHAR(RECORD_TIME,'YYYY-MM-DD') between #{startTime} and #{endTime}")
     List<DayWaterSituationStatisticsTableLzz> selectList2(@Param("tableHeadId")String tableHeadId, @Param("startTime")String startTime, @Param("endTime")String endTime);
 
+    @Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_LZZ WHERE TIME = #{time} and  TO_CHAR(RECORD_TIME,'YYYY-MM-DD') = #{recordTime}")
+    List<DayWaterSituationStatisticsTableLzz> selectListHave(@Param("recordTime")String recordTime, @Param("time")String time);
 }
 

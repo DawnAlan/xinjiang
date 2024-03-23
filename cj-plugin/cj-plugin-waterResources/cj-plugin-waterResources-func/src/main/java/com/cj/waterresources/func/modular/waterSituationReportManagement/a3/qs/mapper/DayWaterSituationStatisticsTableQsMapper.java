@@ -5,6 +5,7 @@ import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.res.A3StatisticsRes;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.entity.DayWaterSituationStatisticsTableLzz;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.entity.DayWaterSituationStatisticsTableQs;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.entity.DayWaterSituationStatisticsTableQsLh;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -39,5 +40,8 @@ public interface DayWaterSituationStatisticsTableQsMapper extends BaseMapper<Day
 
     @Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_QS WHERE TIME = #{time} and  TO_CHAR(RECORD_TIME,'YYYY-MM-DD')  = #{recordTime}")
     List<DayWaterSituationStatisticsTableQs> selectListForLh(@Param("time")String time, @Param("recordTime")String recordTime);
+
+    @Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_QS WHERE TIME = #{time} and  TO_CHAR(RECORD_TIME,'YYYY-MM-DD') = #{recordTime}")
+    List<DayWaterSituationStatisticsTableQs> selectListHave(@Param("recordTime")String recordTime, @Param("time")String time);
 }
 

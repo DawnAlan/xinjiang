@@ -1,5 +1,6 @@
 package com.cj.model.func.modular.FloodPrevent.function;
 
+import com.alibaba.fastjson.JSONObject;
 import com.cj.model.func.modular.FloodPrevent.bean.req.ReqFloodPrevent;
 import com.cj.model.func.modular.FloodPrevent.bean.res.ResOption;
 import com.cj.model.func.modular.FloodPrevent.entity.Option;
@@ -26,65 +27,23 @@ public class Cascade {
         ModelOfTTH modelOfTTH = new ModelOfTTH(reqFloodPrevent);
 
         //楼庄子常规调度
-        List<List<Double>> LZZ_op1=modelOfLZZ.Calculate_S1();
+        List<Option> LZZ_op1=modelOfLZZ.Calculate_S1();
         //头屯河常规调度
-        modelOfTTH.setQ_Input(LZZ_op1.get(3));
-        List<List<Double>> TTH_op1=modelOfTTH.Calculate_S2();
+        modelOfTTH.setQ_Input2(LZZ_op1);
+        List<Option> TTH_op1=modelOfTTH.Calculate_S2();
         //两库常规调度结果保存
         File tempFile1 = File.createTempFile("option1",".xlsx");
         String path1= tempFile1.getAbsolutePath();
         List<Option> option1 = new ArrayList<>();
-        for (int i = 0; i < LZZ_op1.get(0).size(); i++) {
-            Option option = new Option();
-            option.setName("楼庄子");
-            option.setType("常规调度");
-            option.setTime(modelOfLZZ.getTime().get(i));
-            option.setQIn(LZZ_op1.get(0).get(i));
-            option.setH1(LZZ_op1.get(1).get(i));
-            option.setH2(LZZ_op1.get(2).get(i));
-            option.setQOut(LZZ_op1.get(3).get(i));
-            option.setQ1(LZZ_op1.get(4).get(i));
-            option.setQ2(LZZ_op1.get(5).get(i));
-            option.setQ3(LZZ_op1.get(6).get(i));
-            option.setV(LZZ_op1.get(7).get(i));
-            option.setRetain(LZZ_op1.get(8).get(i));
-
-            double V=modelOfLZZ.GetV(LZZ_op1.get(2).get(i));
-            double[] percentage=getPercentage_lzz(V);
-            option.setPercentage1(percentage[0]);
-            option.setPercentage2(percentage[1]);
-
-            option1.add(option);
-        }
-        for (int i = 0; i < TTH_op1.get(0).size(); i++) {
-            Option option = new Option();
-            option.setName("头屯河");
-            option.setType("常规调度");
-            option.setTime(modelOfTTH.getTime().get(i));
-            option.setQIn(TTH_op1.get(0).get(i));
-            option.setH1(TTH_op1.get(1).get(i));
-            option.setH2(TTH_op1.get(2).get(i));
-            option.setQOut(TTH_op1.get(3).get(i));
-            option.setQ1(TTH_op1.get(4).get(i));
-            option.setQ2(TTH_op1.get(5).get(i));
-            option.setQ3(TTH_op1.get(6).get(i));
-            option.setV(TTH_op1.get(7).get(i));
-            option.setRetain(TTH_op1.get(8).get(i));
-
-            double V=modelOfTTH.GetV(TTH_op1.get(2).get(i));
-            double[] percentage=getPercentage_tth(V);
-            option.setPercentage1(percentage[0]);
-            option.setPercentage2(percentage[1]);
-
-            option1.add(option);
-        }
+        option1.addAll(LZZ_op1);
+        option1.addAll(TTH_op1);
         Write(path1,option1);
 
 
         //两库常规调度时段末水位
-        double endH_lzz = LZZ_op1.get(2).get(LZZ_op1.get(2).size()-1);
+        double endH_lzz = LZZ_op1.get(LZZ_op1.size()-1).getH2();
         modelOfLZZ.SetEndH(endH_lzz);
-        double endH_tth = TTH_op1.get(2).get(TTH_op1.get(2).size()-1);
+        double endH_tth = TTH_op1.get(TTH_op1.size()-1).getH2();
         modelOfTTH.SetEndH(endH_tth);
 
 
@@ -137,6 +96,9 @@ public class Cascade {
 
         return result;
     }
+
+
+
     public static void Write(String path,List<Option> options) throws Exception {
         XSSFWorkbook workbook = new XSSFWorkbook();
         XSSFSheet sheet = workbook.createSheet();
@@ -153,21 +115,39 @@ public class Cascade {
         row0.createCell(9).setCellValue("q3");
         row0.createCell(10).setCellValue("v");
         row0.createCell(11).setCellValue("retain");
+        row0.createCell(12).setCellValue("percentage1");
+        row0.createCell(13).setCellValue("percentage2");
+        row0.createCell(14).setCellValue("limits");
         for (int i = 0; i < options.size(); i++) {
             Option line = options.get(i);
             XSSFRow row = sheet.createRow(i+1);
+
+            double Q_in = BigDecimal.valueOf(line.getQIn()).setScale(3,RoundingMode.HALF_UP).doubleValue();
+            double H1=BigDecimal.valueOf(line.getH1()).setScale(2,RoundingMode.HALF_UP).doubleValue();
+            double H2=BigDecimal.valueOf(line.getH2()).setScale(2,RoundingMode.HALF_UP).doubleValue();
+            double Q_out=BigDecimal.valueOf(line.getQOut()).setScale(3,RoundingMode.HALF_UP).doubleValue();
+            double Q1=BigDecimal.valueOf(line.getQ1()).setScale(3,RoundingMode.HALF_UP).doubleValue();
+            double Q2=BigDecimal.valueOf(line.getQ2()).setScale(3,RoundingMode.HALF_UP).doubleValue();
+            double Q3=BigDecimal.valueOf(line.getQ3()).setScale(3,RoundingMode.HALF_UP).doubleValue();
+            double V=BigDecimal.valueOf(line.getV()).setScale(3,RoundingMode.HALF_UP).doubleValue();
+            double retain=BigDecimal.valueOf(line.getRetain()).setScale(3,RoundingMode.HALF_UP).doubleValue();
             row.createCell(0).setCellValue(line.getName());
             row.createCell(1).setCellValue(line.getType());
             row.createCell(2).setCellValue(sdf.format(line.getTime()));
-            row.createCell(3).setCellValue(line.getQIn());
-            row.createCell(4).setCellValue(line.getH1());
-            row.createCell(5).setCellValue(line.getH2());
-            row.createCell(6).setCellValue(line.getQOut());
-            row.createCell(7).setCellValue(line.getQ1());
-            row.createCell(8).setCellValue(line.getQ2());
-            row.createCell(9).setCellValue(line.getQ3());
-            row.createCell(10).setCellValue(line.getV());
-            row.createCell(11).setCellValue(line.getRetain());
+            row.createCell(3).setCellValue(Q_in);
+            row.createCell(4).setCellValue(H1);
+            row.createCell(5).setCellValue(H2);
+            row.createCell(6).setCellValue(Q_out);
+            row.createCell(7).setCellValue(Q1);
+            row.createCell(8).setCellValue(Q2);
+            row.createCell(9).setCellValue(Q3);
+            row.createCell(10).setCellValue(V);
+            row.createCell(11).setCellValue(retain);
+            row.createCell(12).setCellValue(line.getPercentage1());
+            row.createCell(13).setCellValue(line.getPercentage2());
+            List<Double> limits = line.getLimits();
+            row.createCell(14).setCellValue(limits.toString());
+
         }
         try {
             FileOutputStream fop = new FileOutputStream(path);

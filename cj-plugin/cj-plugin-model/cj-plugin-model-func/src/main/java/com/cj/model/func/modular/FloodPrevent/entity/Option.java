@@ -6,6 +6,7 @@ import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 public class Option {
@@ -78,5 +79,7 @@ public class Option {
      * 调洪库容
      */
     private double percentage2;
+
+    private List<Double> limits;
 
 }

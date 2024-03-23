@@ -9,10 +9,13 @@ import com.cj.waterresources.func.modular.trendsTable.entity.TrendsTableParam;
 import com.cj.waterresources.func.modular.trendsTable.service.TrendsTableParamService;
 import com.cj.waterresources.func.modular.waterPrice.totalIdToStation.entity.TotalIdToStation;
 import com.cj.waterresources.func.modular.waterPrice.totalIdToStation.service.TotalIdToStationService;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.dkl.entity.DayWaterSituationStatisticsTableDkl;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.entity.DayWaterSituationStatisticsTableQsLh;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.mapper.DayWaterSituationStatisticsTableQsMapper;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.entity.DayWaterSituationStatisticsTableQs;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.service.DayWaterSituationStatisticsTableQsLhService;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.service.DayWaterSituationStatisticsTableQsService;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tth.entity.DayWaterSituationStatisticsTableTth;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -63,6 +66,10 @@ public class DayWaterSituationStatisticsTableQsServiceImpl extends ServiceImpl<D
     @Override
     @Transactional(rollbackFor = Exception.class)
     public RestResponse add(List<DayWaterSituationStatisticsTableQs> dayWaterSituationStatisticsTableQsList) {
+        List<DayWaterSituationStatisticsTableQs> todayData = this.baseMapper.selectListHave(dayWaterSituationStatisticsTableQsList.get(0).getTime(),sdf.format(dayWaterSituationStatisticsTableQsList.get(0).getRecordTime()));
+        if(!todayData.isEmpty()){
+            return RestResponse.no(dayWaterSituationStatisticsTableQsList.get(0).getTime()+"数据已创建");
+        }
         dayWaterSituationStatisticsTableQsList.forEach(t->{
             t.setId(UUIDUtils.getUUID());
             String tableParamString = (String)redisUtil.get("trendsTableParam:object:"+t.getTableHeadId());
@@ -342,6 +349,10 @@ public class DayWaterSituationStatisticsTableQsServiceImpl extends ServiceImpl<D
 
     @Override
     public RestResponse insertTodayMeanValue() {
+        List<DayWaterSituationStatisticsTableQs> todayData = this.lambdaQuery().eq(DayWaterSituationStatisticsTableQs::getTime, "今日均").list();
+        if(!todayData.isEmpty()){
+            return RestResponse.no("今日均数据已创建");
+        }
         List<DayWaterSituationStatisticsTableQs> dayWaterSituationStatisticsTableQsList = new ArrayList<>();
         List<DayWaterSituationStatisticsTableQs> dayWaterSituationStatisticsTableQss = this.baseMapper.selectList(sdf.format(new Date()));
         if(null!=dayWaterSituationStatisticsTableQss && dayWaterSituationStatisticsTableQss.size()>0){

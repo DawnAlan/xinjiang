@@ -12,6 +12,7 @@ import com.cj.waterresources.func.modular.trendsTable.entity.TrendsTableParam;
 import com.cj.waterresources.func.modular.trendsTable.service.TrendsTableParamService;
 import com.cj.waterresources.func.modular.waterPrice.totalIdToStation.entity.TotalIdToStation;
 import com.cj.waterresources.func.modular.waterPrice.totalIdToStation.service.TotalIdToStationService;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.dkl.entity.DayWaterSituationStatisticsTableDkl;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hd.entity.DayWaterSituationStatisticsTableHd;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.entity.DayWaterSituationStatisticsTableLzz;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.entity.DayWaterSituationStatisticsTableQs;
@@ -67,6 +68,10 @@ public class DayWaterSituationStatisticsTableTthServiceImpl extends ServiceImpl<
 
     @Override
     public RestResponse add(List<DayWaterSituationStatisticsTableTth> dayWaterSituationStatisticsTableTthList) {
+        List<DayWaterSituationStatisticsTableTth> todayData = this.baseMapper.selectListHave(dayWaterSituationStatisticsTableTthList.get(0).getTime(),sdf.format(dayWaterSituationStatisticsTableTthList.get(0).getRecordTime()));
+        if(!todayData.isEmpty()){
+            return RestResponse.no(dayWaterSituationStatisticsTableTthList.get(0).getTime()+"数据已创建");
+        }
         for(DayWaterSituationStatisticsTableTth t:dayWaterSituationStatisticsTableTthList){
             t.setId(UUIDUtils.getUUID());
             String paramName = (String)redisUtil.get("trendsTableParam:name:"+t.getTableHeadId());
@@ -276,6 +281,10 @@ public class DayWaterSituationStatisticsTableTthServiceImpl extends ServiceImpl<
 
     @Override
     public RestResponse insertTodayMeanValue() {
+        List<DayWaterSituationStatisticsTableTth> todayData = this.lambdaQuery().eq(DayWaterSituationStatisticsTableTth::getTime, "今日均").list();
+        if(!todayData.isEmpty()){
+            return RestResponse.no("今日均数据已创建");
+        }
         List<DayWaterSituationStatisticsTableTth> dayWaterSituationStatisticsTableTthList = new ArrayList<>();
         List<DayWaterSituationStatisticsTableTth> dayWaterSituationStatisticsTableTths = this.baseMapper.selectList(sdf.format(new Date()));
         if(null!=dayWaterSituationStatisticsTableTths && dayWaterSituationStatisticsTableTths.size()>0){
@@ -373,7 +382,7 @@ public class DayWaterSituationStatisticsTableTthServiceImpl extends ServiceImpl<
 
     private void updateYesterdayData(Date now,List<DayWaterSituationStatisticsTableTth> tthList){
 
-        List<DayWaterSituationStatisticsTableTth> dayWaterSituationStatisticsTableTths1 = this.baseMapper.  selectInfoAfterDayList(getDate(now,1));
+        List<DayWaterSituationStatisticsTableTth> dayWaterSituationStatisticsTableTths1 = this.baseMapper.selectInfoAfterDayList(getDate(now,1));
         if(!dayWaterSituationStatisticsTableTths1.isEmpty()){
             dayWaterSituationStatisticsTableTths1.forEach(t->{
                 t.setV(tthList.stream().filter(p->p.getTableHeadId().equals(t.getTableHeadId()) && p.getV() !=null).map(DayWaterSituationStatisticsTableTth::getV).reduce(Double::sum).orElse(0.00));
