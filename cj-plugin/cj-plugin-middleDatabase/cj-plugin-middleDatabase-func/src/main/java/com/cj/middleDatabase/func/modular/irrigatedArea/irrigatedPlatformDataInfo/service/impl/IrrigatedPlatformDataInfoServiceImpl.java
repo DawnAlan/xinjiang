@@ -156,5 +156,10 @@ public class IrrigatedPlatformDataInfoServiceImpl extends ServiceImpl<IrrigatedP
         }
         return null;
     }
+
+    @Override
+    public List<IrrigatedPlatformDataInfo> getCurrentDate(String startTime, String endTime) {
+        return this.baseMapper.getCurrentDate(startTime, endTime);
+    }
 }
 

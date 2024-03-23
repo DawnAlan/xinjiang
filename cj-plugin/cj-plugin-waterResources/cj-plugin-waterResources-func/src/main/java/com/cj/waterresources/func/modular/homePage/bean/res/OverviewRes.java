@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 public class OverviewRes {
     @ApiModelProperty(value = "水资源预警")
     private Integer waterResourceWarning;
-    @ApiModelProperty(value = "设别异常")
+    @ApiModelProperty(value = "设备异常")
     private Integer deviceAbnormality;
     @ApiModelProperty(value = "水费欠缴单位")
     private Integer unitUnpaidWaterFee;

@@ -28,7 +28,7 @@ public interface WaterResourceAllocationService extends IService<WaterResourceAl
 
     RestResponse delById(List<String> ids);
 
-    RestResponse compare(String idA, String idB);
+    RestResponse compare(List<String> ids);
 
     RestResponse<List<ViewModelRes>> viewModel(ViewModelReq id);
 
