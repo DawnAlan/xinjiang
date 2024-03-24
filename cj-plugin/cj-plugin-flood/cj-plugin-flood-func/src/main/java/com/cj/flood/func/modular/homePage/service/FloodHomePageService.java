@@ -205,7 +205,7 @@ public class FloodHomePageService {
         waterStorageOverviewResLzz.setWaterStorageName("楼庄子水库");
         waterStorageOverviewResLzz.setWaterLevel(current.get("楼庄子库水位站") == null ? null : current.get("楼庄子库水位站").get(0).getRelativeWaterLevel() < 0 ? "数据异常" : current.get("楼庄子库水位站").get(0).getRelativeWaterLevel().toString());
         waterStorageOverviewResLzz.setInFlow(current.get("楼庄子入库水位站") == null ? null : current.get("楼庄子入库水位站").get(0).getFlow());
-        waterStorageOverviewResLzz.setOutFlow(current.get("楼庄子出库水位站") == null ? null : current.get("楼庄子入库水位站").get(0).getFlow());
+        waterStorageOverviewResLzz.setOutFlow(current.get("楼庄子出库水位站") == null ? null : current.get("楼庄子出库水位站").get(0).getFlow());
         waterStorageOverviewResLzz.setStorageCapacity(current.get("楼庄子库水位站") == null ? null : current.get("楼庄子库水位站").get(0).getStorageCapacity());
         return waterStorageOverviewResLzz;
     }
