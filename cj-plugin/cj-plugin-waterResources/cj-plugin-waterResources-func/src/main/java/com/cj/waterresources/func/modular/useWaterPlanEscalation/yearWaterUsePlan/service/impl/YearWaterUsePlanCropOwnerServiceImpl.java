@@ -14,6 +14,7 @@ import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePla
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import java.util.List;
@@ -93,6 +94,7 @@ public class YearWaterUsePlanCropOwnerServiceImpl extends ServiceImpl<YearWaterU
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public RestResponse delete(YearCropImportParamReq req) {
         boolean update = this.lambdaUpdate().
                 eq(YearWaterUsePlanCropOwner::getYear,req.getYear()).
@@ -136,7 +138,6 @@ public class YearWaterUsePlanCropOwnerServiceImpl extends ServiceImpl<YearWaterU
             if(update1){
                 return RestResponse.ok("删除成功");
             }else {
-                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
                 return RestResponse.no("删除失败");
             }
         }else {

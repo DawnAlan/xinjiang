@@ -70,16 +70,21 @@ public class Option {
     /**
      * 拦蓄洪量
      */
+    @Excel(name = "retain",width = 15,orderNum = "12")
     private double retain;
     /**
      * 防洪库容
      */
+    @Excel(name = "percentage1",width = 15,orderNum = "13")
     private double percentage1;
     /**
      * 调洪库容
      */
+    @Excel(name = "percentage2",width = 15,orderNum = "14")
     private double percentage2;
 
     private List<Double> limits;
 
+    @Excel(name = "limits",width = 15,orderNum = "15")
+    private String limitString;
 }

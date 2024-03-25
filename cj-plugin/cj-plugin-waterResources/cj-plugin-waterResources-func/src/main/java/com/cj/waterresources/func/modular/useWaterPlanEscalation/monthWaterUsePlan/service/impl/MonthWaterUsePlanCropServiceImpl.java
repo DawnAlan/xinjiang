@@ -127,6 +127,7 @@ public class MonthWaterUsePlanCropServiceImpl extends ServiceImpl<MonthWaterUseP
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public RestResponse delete(MonthCropImportParamReq req) {
         boolean remove = this.lambdaUpdate().eq(MonthWaterUsePlanCrop::getYear, req.getYear()).eq(MonthWaterUsePlanCrop::getMonth, req.getMonth()).
                 eq(MonthWaterUsePlanCrop::getUnitId, req.getUnitId()).eq(MonthWaterUsePlanCrop::getArea, req.getArea()).remove();

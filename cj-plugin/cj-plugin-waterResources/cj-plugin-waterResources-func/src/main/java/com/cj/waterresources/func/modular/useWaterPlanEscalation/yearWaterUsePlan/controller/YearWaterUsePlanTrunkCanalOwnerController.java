@@ -47,5 +47,17 @@ public class YearWaterUsePlanTrunkCanalOwnerController {
     public RestResponse add(@RequestBody YearWaterUsePlanTrunkCanalOwner yearWaterUsePlanTrunkCanalOwner) {
         return yearWaterUsePlanTrunkCanalOwnerService.addTrunkCanal(yearWaterUsePlanTrunkCanalOwner);
     }
+
+    @ApiOperationSupport(order = 3)
+    @ApiOperation("删除")
+    @GetMapping("delete")
+    public RestResponse delete(@RequestParam("id") String id) {
+        boolean b = yearWaterUsePlanTrunkCanalOwnerService.removeById(id);
+        if(b){
+            return RestResponse.ok("删除成功");
+        }else {
+            return RestResponse.no("删除失败");
+        }
+    }
 }
 

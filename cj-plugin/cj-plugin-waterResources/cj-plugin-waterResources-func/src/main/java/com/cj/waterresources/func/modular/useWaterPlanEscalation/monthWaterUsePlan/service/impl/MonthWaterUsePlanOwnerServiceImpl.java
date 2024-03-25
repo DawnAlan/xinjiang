@@ -57,5 +57,15 @@ public class MonthWaterUsePlanOwnerServiceImpl extends ServiceImpl<MonthWaterUse
             return RestResponse.no("新增失败");
         }
     }
+
+    @Override
+    public RestResponse delete(String id) {
+        boolean update = this.lambdaUpdate().set(MonthWaterUsePlanOwner::getDel, 1).eq(MonthWaterUsePlanOwner::getId, id).update();
+        if(update){
+            return RestResponse.ok("删除成功");
+        }else {
+            return RestResponse.no("删除失败");
+        }
+    }
 }
 

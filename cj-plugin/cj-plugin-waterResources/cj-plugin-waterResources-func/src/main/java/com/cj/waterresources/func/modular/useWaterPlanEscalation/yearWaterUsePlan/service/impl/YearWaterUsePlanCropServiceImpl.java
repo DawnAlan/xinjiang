@@ -195,6 +195,7 @@ public class YearWaterUsePlanCropServiceImpl extends ServiceImpl<YearWaterUsePla
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public RestResponse delete(YearCropImportParamReq req) {
         boolean update = this.lambdaUpdate().
                 eq(YearWaterUsePlanCrop::getYear,req.getYear()).
@@ -236,7 +237,7 @@ public class YearWaterUsePlanCropServiceImpl extends ServiceImpl<YearWaterUsePla
                     eq(YearWaterUsePlanTrunkCanal::getYear,req.getYear()).
                     eq(YearWaterUsePlanTrunkCanal::getArea, req.getArea()).eq(YearWaterUsePlanTrunkCanal::getUnitId, req.getUnitId()).update();
             if(update1){
-                return RestResponse.ok("删除成功");
+                return yearWaterUsePlanCropOwnerService.delete(req);
             }else {
                 TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
                 return RestResponse.no("删除失败");

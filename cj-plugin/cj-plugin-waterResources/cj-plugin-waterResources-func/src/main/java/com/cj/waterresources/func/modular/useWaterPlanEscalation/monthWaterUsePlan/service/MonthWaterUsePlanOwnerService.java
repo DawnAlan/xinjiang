@@ -20,5 +20,7 @@ public interface MonthWaterUsePlanOwnerService extends IService<MonthWaterUsePla
 
     RestResponse add(MonthWaterUsePlanOwner monthWaterUsePlanOwner);
 
+    RestResponse delete(String id);
+
 }
 

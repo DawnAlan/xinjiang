@@ -207,7 +207,6 @@ public class WaterResourceApiProvider implements WaterResourceApi {
                 eq(TenDayWaterUsePlan::getMonth, month).
                 eq(TenDayWaterUsePlan::getTenDays, s).
                 eq(TenDayWaterUsePlan::getIrrigatedArea, area).
-                eq(TenDayWaterUsePlan::getDel,0).
                 list();
         if(null!= list && list.size()>0){
             List<WaterUsePlanForViewRes> resList = new ArrayList<>();
@@ -216,7 +215,7 @@ public class WaterResourceApiProvider implements WaterResourceApi {
             for(String s1:strings){
                 WaterUsePlanForViewRes res = new WaterUsePlanForViewRes();
                 res.setUnit(s1);
-                Double aDouble = collect.get(s1).stream().filter(t->t.getWaterDemandForThisMonth()!=null).map(TenDayWaterUsePlan::getWaterDemandForThisMonth).reduce(Double::sum).orElse(0.00);
+                Double aDouble = collect.get(s1).stream().filter(t->t.getWaterDemand()!=null).map(TenDayWaterUsePlan::getWaterDemand).reduce(Double::sum).orElse(0.00);
                 res.setTotalAmount(aDouble==null?0.0:aDouble);
                 resList.add(res);
             }
@@ -238,14 +237,13 @@ public class WaterResourceApiProvider implements WaterResourceApi {
                 eq(TenDayWaterUsePlan::getTenDays, s).
                 eq(TenDayWaterUsePlan::getUseWaterUser, unit).
                 eq(TenDayWaterUsePlan::getIrrigatedArea, area).
-                eq(TenDayWaterUsePlan::getDel,0).
                 list();
         if(null!= list && list.size()>0){
             List<WaterUsePlanForViewRes> resList = new ArrayList<>();
             for(TenDayWaterUsePlan plan:list){
                 WaterUsePlanForViewRes res = new WaterUsePlanForViewRes();
                 res.setUnit(plan.getUseWaterUser());
-                res.setTotalAmount(plan.getWaterDemandForThisMonth()==null?0.0:plan.getWaterDemandForThisMonth());
+                res.setTotalAmount(plan.getWaterDemand()==null?0.0:plan.getWaterDemand());
                 resList.add(res);
             }
             Double aDouble = resList.stream().filter(t->t.getTotalAmount()!=null).map(WaterUsePlanForViewRes::getTotalAmount).reduce(Double::sum).orElse(0.00);
@@ -422,13 +420,17 @@ public class WaterResourceApiProvider implements WaterResourceApi {
 
     @Override
     public String getReservoirWaterConditionAlarm(String reservoir,String time) {
+        String mk = (String) redisUtil.get("trendsTableParam:list");
+        if(StringUtils.isEmpty(mk)){
+            updateCache();
+            mk = (String) redisUtil.get("trendsTableParam:list");
+        }
+        List<TrendsTableParam> trendsTableParamListTemp = JSONObject.parseArray(mk, TrendsTableParam.class);
         if(reservoir.equals("楼庄子水库")){
-            List<TrendsTableParam> lzzTableParam = trendsTableParamService.lambdaQuery().
-                    eq(TrendsTableParam::getUseType, 1).
-                    eq(TrendsTableParam::getUseStation, "楼庄子水库").list();
+            List<TrendsTableParam> lzzTableParam = trendsTableParamListTemp.stream().filter(t->t.getUseType()==1 && t.getUseStation().equals("楼庄子水库")).collect(Collectors.toList());
             TrendsTableParam lzzJkllTableParam = lzzTableParam.stream().filter(t -> t.getParamName().equals("进库流量")).collect(Collectors.toList()).get(0);
             TrendsTableParam lzzCkllTableParam = lzzTableParam.stream().filter(t -> t.getParamName().equals("河道")).collect(Collectors.toList()).get(0);
-            TrendsTableParam lzzSwTableParam = lzzTableParam.stream().filter(t -> t.getParamName().equals("水位")).collect(Collectors.toList()).get(0);
+            TrendsTableParam lzzSwTableParam = lzzTableParam.stream().filter(t -> t.getParamName().equals("库水位")).collect(Collectors.toList()).get(0);
             TrendsTableParam lzzKrTableParam = lzzTableParam.stream().filter(t -> t.getParamName().equals("库容")).collect(Collectors.toList()).get(0);
             RestResponse<Map<String, List<DayWaterSituationStatisticsTableLzz>>> mapRestResponse = dayWaterSituationStatisticsTableLzzService.selectList(time);
             Map<String,Object> lzzResult = new HashMap<>();
@@ -454,13 +456,11 @@ public class WaterResourceApiProvider implements WaterResourceApi {
             return JSONObject.toJSONString(lzzResult);
         }
        if(reservoir.equals("头屯河水库")){
-           List<TrendsTableParam> tthTableParam = trendsTableParamService.lambdaQuery().
-                   eq(TrendsTableParam::getUseType, 1).
-                   eq(TrendsTableParam::getUseStation, "头屯河水库").list();
-           TrendsTableParam tthJkllTableParam = tthTableParam.stream().filter(t -> t.getParamName().equals("进库流量")).collect(Collectors.toList()).get(0);
+           List<TrendsTableParam> tthTableParam = trendsTableParamListTemp.stream().filter(t->t.getUseType()==1 && t.getUseStation().equals("头屯河水库")).collect(Collectors.toList());
+           TrendsTableParam tthJkllTableParam = tthTableParam.stream().filter(t -> t.getParamName().equals("进库流量") && !t.getPId().equals("0")).collect(Collectors.toList()).get(0);
            TrendsTableParam tthCkllTableParam = tthTableParam.stream().filter(t -> t.getParamName().equals("河道流量")).collect(Collectors.toList()).get(0);
-           TrendsTableParam tthSwTableParam = tthTableParam.stream().filter(t -> t.getParamName().equals("水位")).collect(Collectors.toList()).get(0);
-           TrendsTableParam tthKrTableParam = tthTableParam.stream().filter(t -> t.getParamName().equals("库容")).collect(Collectors.toList()).get(0);
+           TrendsTableParam tthSwTableParam = tthTableParam.stream().filter(t -> t.getParamName().equals("库水位")).collect(Collectors.toList()).get(0);
+           TrendsTableParam tthKrTableParam = tthTableParam.stream().filter(t -> t.getParamName().equals("水库库容")).collect(Collectors.toList()).get(0);
            RestResponse<Map<String, List<DayWaterSituationStatisticsTableTth>>> mapRestResponse1 = dayWaterSituationStatisticsTableTthService.selectList(time);
            Map<String,Object> tthResult = new HashMap<>();
            if(mapRestResponse1.getCode()==200){
@@ -489,13 +489,17 @@ public class WaterResourceApiProvider implements WaterResourceApi {
 
     @Override
     public String getTurbidityAlarm(String time) {
+        String mk = (String) redisUtil.get("trendsTableParam:list");
+        if(StringUtils.isEmpty(mk)){
+            updateCache();
+            mk = (String) redisUtil.get("trendsTableParam:list");
+        }
+        List<TrendsTableParam> trendsTableParamListTemp = JSONObject.parseArray(mk, TrendsTableParam.class);
         Map<String,Object> result = new HashMap<>();
         Map<String,Object> reservoirTurbidity = new HashMap<>();
-        List<TrendsTableParam> lzzTableParam = trendsTableParamService.lambdaQuery().
-                eq(TrendsTableParam::getUseType, 1).
-                eq(TrendsTableParam::getUseStation, "楼庄子水库").list();
+        List<TrendsTableParam> lzzTableParam = trendsTableParamListTemp.stream().filter(t->t.getUseType()==1 && t.getUseStation().equals("楼庄子水库")).collect(Collectors.toList());
         TrendsTableParam lzzJkzdTableParam = lzzTableParam.stream().filter(t -> t.getParamName().equals("进库浊度")).collect(Collectors.toList()).get(0);
-        TrendsTableParam lzzCkzdTableParam = lzzTableParam.stream().filter(t -> t.getParamName().equals("出库浊度")).collect(Collectors.toList()).get(0);
+        TrendsTableParam lzzCkzdTableParam = lzzTableParam.stream().filter(t -> t.getParamName().equals("出库河道浊度")).collect(Collectors.toList()).get(0);
         RestResponse<Map<String, List<DayWaterSituationStatisticsTableLzz>>> mapRestResponse = dayWaterSituationStatisticsTableLzzService.selectList(time);
         Map<String,Object> lzzResultTurbidity = new HashMap<>();
         if(mapRestResponse.getCode()==200){
@@ -514,12 +518,10 @@ public class WaterResourceApiProvider implements WaterResourceApi {
             lzzResultTurbidity.put("进库浊度",null);
             lzzResultTurbidity.put("出库浊度",null);
         }
-        List<TrendsTableParam> tthTableParam = trendsTableParamService.lambdaQuery().
-                eq(TrendsTableParam::getUseType, 1).
-                eq(TrendsTableParam::getUseStation, "头屯河水库").list();
+        List<TrendsTableParam> tthTableParam = trendsTableParamListTemp.stream().filter(t->t.getUseType()==1 && t.getUseStation().equals("头屯河水库")).collect(Collectors.toList());
         TrendsTableParam tthJkzdTableParam = tthTableParam.stream().filter(t -> t.getParamName().equals("进库浊度")).collect(Collectors.toList()).get(0);
         TrendsTableParam tthCkzdTableParam = tthTableParam.stream().filter(t -> t.getParamName().equals("河道浊度")).collect(Collectors.toList()).get(0);
-        TrendsTableParam tthAgzdTableParam = tthTableParam.stream().filter(t -> t.getParamName().equals("暗管浊度")).collect(Collectors.toList()).get(0);
+        TrendsTableParam tthAgzdTableParam = tthTableParam.stream().filter(t -> t.getParamName().equals("暗渠浊度")).collect(Collectors.toList()).get(0);
         RestResponse<Map<String, List<DayWaterSituationStatisticsTableTth>>> mapRestResponse1 = dayWaterSituationStatisticsTableTthService.selectList(time);
         Map<String,Object> tthResultTurbidity = new HashMap<>();
         Map<String,Object> turbidity = new HashMap<>();
@@ -555,17 +557,21 @@ public class WaterResourceApiProvider implements WaterResourceApi {
 
     @Override
     public String getRealTimeWaterSituationOfTheReservoir(String reservoir) {
+        String mk = (String) redisUtil.get("trendsTableParam:list");
+        if(StringUtils.isEmpty(mk)){
+            updateCache();
+            mk = (String) redisUtil.get("trendsTableParam:list");
+        }
+        List<TrendsTableParam> trendsTableParamListTemp = JSONObject.parseArray(mk, TrendsTableParam.class);
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         if(reservoir.equals("楼庄子水库")){
-            List<TrendsTableParam> lzzTableParam = trendsTableParamService.lambdaQuery().
-                    eq(TrendsTableParam::getUseType, 1).
-                    eq(TrendsTableParam::getUseStation, "楼庄子水库").list();
+            List<TrendsTableParam> lzzTableParam = trendsTableParamListTemp.stream().filter(t->t.getUseType()==1 && t.getUseStation().equals("楼庄子水库")).collect(Collectors.toList());
             TrendsTableParam lzzJkllTableParam = lzzTableParam.stream().filter(t -> t.getParamName().equals("进库流量")).collect(Collectors.toList()).get(0);
             TrendsTableParam lzzCkllTableParam = lzzTableParam.stream().filter(t -> t.getParamName().equals("河道")).collect(Collectors.toList()).get(0);
-            TrendsTableParam lzzSwTableParam = lzzTableParam.stream().filter(t -> t.getParamName().equals("水位")).collect(Collectors.toList()).get(0);
+            TrendsTableParam lzzSwTableParam = lzzTableParam.stream().filter(t -> t.getParamName().equals("库水位")).collect(Collectors.toList()).get(0);
             TrendsTableParam lzzKrTableParam = lzzTableParam.stream().filter(t -> t.getParamName().equals("库容")).collect(Collectors.toList()).get(0);
             TrendsTableParam lzzJkzdTableParam = lzzTableParam.stream().filter(t -> t.getParamName().equals("进库浊度")).collect(Collectors.toList()).get(0);
-            TrendsTableParam lzzCkzdTableParam = lzzTableParam.stream().filter(t -> t.getParamName().equals("出库浊度")).collect(Collectors.toList()).get(0);
+            TrendsTableParam lzzCkzdTableParam = lzzTableParam.stream().filter(t -> t.getParamName().equals("出库河道浊度")).collect(Collectors.toList()).get(0);
             RestResponse<Map<String, List<DayWaterSituationStatisticsTableLzz>>> mapRestResponse = dayWaterSituationStatisticsTableLzzService.selectList(sdf.format(new Date()));
             Map<String,Object> lzzResult = new HashMap<>();
             if(mapRestResponse.getCode()==200){
@@ -596,9 +602,7 @@ public class WaterResourceApiProvider implements WaterResourceApi {
             return JSONObject.toJSONString(lzzResult);
         }
         if(reservoir.equals("头屯河水库")){
-            List<TrendsTableParam> tthTableParam = trendsTableParamService.lambdaQuery().
-                    eq(TrendsTableParam::getUseType, 1).
-                    eq(TrendsTableParam::getUseStation, "头屯河水库").list();
+            List<TrendsTableParam> tthTableParam = trendsTableParamListTemp.stream().filter(t->t.getUseType()==1 && t.getUseStation().equals("头屯河水库")).collect(Collectors.toList());
             TrendsTableParam tthJkllTableParam = tthTableParam.stream().filter(t -> t.getParamName().equals("进库流量") && !t.getPId().equals("0")).collect(Collectors.toList()).get(0);
             TrendsTableParam tthCkllTableParam = tthTableParam.stream().filter(t -> t.getParamName().equals("河道流量")).collect(Collectors.toList()).get(0);
             TrendsTableParam tthSwTableParam = tthTableParam.stream().filter(t -> t.getParamName().equals("库水位")).collect(Collectors.toList()).get(0);
@@ -678,14 +682,18 @@ public class WaterResourceApiProvider implements WaterResourceApi {
 
     @Override
     public String getWaterFeeStatistics() {
+        String mk = (String) redisUtil.get("trendsTableParam:list");
+        if(StringUtils.isEmpty(mk)){
+            updateCache();
+            mk = (String) redisUtil.get("trendsTableParam:list");
+        }
+        List<TrendsTableParam> trendsTableParamListTemp = JSONObject.parseArray(mk, TrendsTableParam.class);
         Map<String,WaterFeeStatisticsRes> result = new HashMap<>();
         Integer year = LocalDateTime.now().getYear();
         Integer month = LocalDateTime.now().getMonth().getValue();
         Integer day = LocalDateTime.now().getDayOfMonth();
-        List<TrendsTableParam> totalId = trendsTableParamService.lambdaQuery().
-                eq(TrendsTableParam::getUseType, 2).
-                eq(TrendsTableParam::getPId, "0").
-                eq(TrendsTableParam::getParamName, "合计").list();
+        List<TrendsTableParam> totalId = trendsTableParamListTemp.stream().filter(t->t.getPId().equals("0") && t.getUseType()==2 && t.getParamName().equals("合计")).collect(Collectors.toList());
+
         List<WaterFeeStatisticsTotal> waterFeeStatisticsTotalList = waterFeeStatisticsTotalService.lambdaQuery().
                 eq(WaterFeeStatisticsTotal::getYear, year).
                 eq(WaterFeeStatisticsTotal::getMonth,month).
@@ -712,7 +720,6 @@ public class WaterResourceApiProvider implements WaterResourceApi {
         }else {
             return null;
         }
-
     }
 
     @Override
@@ -795,5 +802,14 @@ public class WaterResourceApiProvider implements WaterResourceApi {
             return "下旬";
         }
         return "";
+    }
+
+    public void updateCache(){
+        List<TrendsTableParam> listed = trendsTableParamService.list();
+        redisUtil.set("trendsTableParam:list", JSONObject.toJSONString(listed));
+        for (TrendsTableParam param:listed){
+            redisUtil.set("trendsTableParam:name:"+param.getId(), param.getParamName());
+            redisUtil.set("trendsTableParam:object:"+param.getId(), JSONObject.toJSONString(param));
+        }
     }
 }

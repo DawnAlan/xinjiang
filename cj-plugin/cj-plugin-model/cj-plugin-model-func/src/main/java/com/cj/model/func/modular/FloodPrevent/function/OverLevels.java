@@ -5,7 +5,6 @@ import com.cj.model.func.modular.FloodPrevent.entity.Option;
 import java.util.*;
 
 public class OverLevels {
-
     /**
      * 计算不同方案的超过特征水位的时段个数
      */
@@ -30,27 +29,35 @@ public class OverLevels {
 
             List<Double> H_lzz = new ArrayList<>();
             List<Double> H_tth = new ArrayList<>();
+            List<Date> Time_lzz = new ArrayList<>();
+            List<Date> Time_tth = new ArrayList<>();
+            List<Double> limits_lzz = null;
+            List<Double> limits_tth = null;
 
             for (int i = 0; i < option.size(); i++) {
                 String name = option.get(i).getName();
                 if(name.equals("楼庄子")){
                     H_lzz.add(option.get(i).getH2());
+                    Time_lzz.add(option.get(i).getTime());
+                    limits_lzz = option.get(i).getLimits();
                 }
                 else if(name.equals("头屯河")){
                     H_tth.add(option.get(i).getH2());
+                    Time_tth.add(option.get(i).getTime());
+                    limits_tth=option.get(i).getLimits();
                 }
                 else{
                     throw new RuntimeException("方案有误");
                 }
             }
 
-            int a_lzz = getBeyond("楼庄子",H_lzz)[0];
-            int b_lzz = getBeyond("楼庄子",H_lzz)[1];
-            int c_lzz = getBeyond("楼庄子",H_lzz)[2];
+            int a_lzz = getBeyond("楼庄子",H_lzz,Time_lzz,limits_lzz)[0];
+            int b_lzz = getBeyond("楼庄子",H_lzz,Time_lzz,limits_lzz)[1];
+            int c_lzz = getBeyond("楼庄子",H_lzz,Time_lzz,limits_lzz)[2];
 
-            int a_tth = getBeyond("头屯河",H_tth)[0];
-            int b_tth = getBeyond("头屯河",H_tth)[1];
-            int c_tth = getBeyond("头屯河",H_tth)[2];
+            int a_tth = getBeyond("头屯河",H_tth,Time_tth,limits_tth)[0];
+            int b_tth = getBeyond("头屯河",H_tth,Time_tth,limits_tth)[1];
+            int c_tth = getBeyond("头屯河",H_tth,Time_tth,limits_tth)[2];
 
             beyondLimit_lzz.put(key,a_lzz);
             beyondHeight_lzz.put(key,b_lzz);
@@ -75,7 +82,7 @@ public class OverLevels {
         return FinalResult;
     }
 
-    public static int[] getBeyond(String reservoirName,List<Double> H_end){
+    public static int[] getBeyond(String reservoirName,List<Double> H_end,List<Date> times,List<Double> limits){
         int[] result = new int[3];
 
         double limitLevel;
@@ -88,16 +95,16 @@ public class OverLevels {
 
 
         if(reservoirName.equals("楼庄子")) {
-            limitLevel =1394.5;
             heightLevel=1397.21;
             designLevel=1397.41;
         } else {
-            limitLevel =987;
             heightLevel=989.6;
             designLevel=991.2;
         }
 
         for (int i = 0; i < H_end.size(); i++) {
+            limitLevel=getLimitLevel(times.get(i),limits);
+
             if (H_end.get(i)>limitLevel) beyondLimitLevel++;
             if (H_end.get(i)>heightLevel) beyondHeightLevel++;
             if (H_end.get(i)>designLevel) beyondDesignLevel++;
@@ -111,5 +118,13 @@ public class OverLevels {
 
     }
 
+    public static double getLimitLevel(Date time, List<Double> limits){
+        double level;
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(time);
+        int month = calendar.get(Calendar.MONTH);
+        level=limits.get(month);
 
+        return level;
+    }
 }

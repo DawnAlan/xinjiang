@@ -47,5 +47,12 @@ public class MonthWaterUsePlanOwnerController{
         return monthWaterUsePlanOwnerService.add(monthWaterUsePlanOwner);
     }
 
+    @ApiOperationSupport(order = 3)
+    @ApiOperation("删除")
+    @GetMapping("/delete")
+    public RestResponse delete(@RequestParam("id") String id) {
+        return monthWaterUsePlanOwnerService.delete(id);
+    }
+
 }
 
