@@ -2,8 +2,10 @@ package com.cj.waterresources.func.modular.useWaterPlanEscalation.tenDaysWaterUs
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.cj.common.model.RestResponse;
+import com.cj.waterresources.func.modular.useWaterPlanEscalation.tenDaysWaterUsePlan.bean.req.TenDayWaterUsePlanImportParamReq;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.tenDaysWaterUsePlan.bean.req.TenDayWaterUsePlanSelectReq;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.tenDaysWaterUsePlan.entity.TenDayWaterUsePlan;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -17,11 +19,10 @@ public interface TenDayWaterUsePlanService extends IService<TenDayWaterUsePlan> 
 
     RestResponse<List<TenDayWaterUsePlan>> selectList(TenDayWaterUsePlanSelectReq req);
 
-    RestResponse add(TenDayWaterUsePlan tenDayWaterUsePlan);
+    RestResponse add(TenDayWaterUsePlanImportParamReq req, MultipartFile file);
 
-    RestResponse update(TenDayWaterUsePlan tenDayWaterUsePlan);
 
-    RestResponse delete(String id);
+    RestResponse delete(TenDayWaterUsePlanImportParamReq req);
 
 }
 

@@ -3,6 +3,7 @@ package com.cj.flood.func.modular.dispatch.service.impl;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.lang.UUID;
 import cn.hutool.extra.spring.SpringUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -338,6 +339,10 @@ public class FloodControlOperationServiceImpl extends ServiceImpl<FloodControlOp
                 String[] split1 = split[split.length - 1].split("\\.");
                 MultipartFile multipartFile = MultipartFileUtil.inputStreamToMultipartFile(tth, split1[0]);
                 List<Option> options1 = ExcelUtils.importExcel(multipartFile, Option.class);
+                options1.forEach(t->{
+                    List<Double> doubles = JSONObject.parseArray(t.getLimitString(), Double.class);
+                    t.setLimits(doubles);
+                });
                 options.put(op.getSchemeName(),options1);
                 tth.close();
             }

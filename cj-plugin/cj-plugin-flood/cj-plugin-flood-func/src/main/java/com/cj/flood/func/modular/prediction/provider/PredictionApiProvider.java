@@ -108,6 +108,9 @@ public class PredictionApiProvider implements PredictionApi {
                 Set<String> allKeys = redisUtil.getAllKeys("lzz:time:waterLevel:true");
                 List<Date> dateList = new ArrayList<>();
                 for(String s:allKeys){
+                    if(s.contains("日均")){
+                        continue;
+                    }
                     String[] split1 = s.split(" ");
                     String[] split2 = split1[0].split(":");
                     String dateTemp =split2[split2.length-1]+" "+split1[split1.length-1];
@@ -141,7 +144,7 @@ public class PredictionApiProvider implements PredictionApi {
             lzzData.setReservoirName("楼庄子库水位站");
             lzzData.setFloodControlLevel(1394.50);
             lzzData.setUsedStorageCapacity(null);
-            lzzData.setRemainingStorageCapacity(null);
+            lzzData.setRemainingStorageCapacity(null);//总库容：7374.0
         }
         result.add(lzzData);
         List<IrrigatedPlatformDataInfo>  irrigatedPlatformDataInfoList = irrigatedPlatformDataInfoService.selectInfoByTime(date,"头屯河水库水位");
@@ -231,7 +234,7 @@ public class PredictionApiProvider implements PredictionApi {
             lzzThreeBridgeData.setStationName(lzzThreeBridge.getStationName());
         }else {
             lzzThreeBridgeData.setFlow(null);
-            lzzThreeBridgeData.setStationName("三号桥水位站");
+            lzzThreeBridgeData.setStationName("3号桥水位站");
         }
         result.add(lzzThreeBridgeData);
         return JSONObject.toJSONString(result);

@@ -4,6 +4,7 @@ package com.cj.waterresources.func.modular.useWaterPlanEscalation.tenDaysWaterUs
 
 
 import com.cj.common.model.RestResponse;
+import com.cj.waterresources.func.modular.useWaterPlanEscalation.tenDaysWaterUsePlan.bean.req.TenDayWaterUsePlanImportParamReq;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.tenDaysWaterUsePlan.bean.req.TenDayWaterUsePlanSelectReq;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.tenDaysWaterUsePlan.entity.TenDayWaterUsePlan;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.tenDaysWaterUsePlan.service.TenDayWaterUsePlanService;
@@ -14,6 +15,8 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
 import java.util.List;
 
 /**
@@ -37,26 +40,30 @@ public class TenDayWaterUsePlanController {
 
     @ApiOperationSupport(order = 1)
     @ApiOperation("删除")
-    @GetMapping("/delete")
-    public RestResponse delete(@RequestParam("id") String id) {
-        return tenDayWaterUsePlanService.delete(id);
+    @PostMapping("/delete")
+    public RestResponse delete(TenDayWaterUsePlanImportParamReq req) {
+        return tenDayWaterUsePlanService.delete(req);
     }
 
     @ApiOperationSupport(order = 2)
     @ApiOperation("新增")
     @PostMapping("/add")
-    public RestResponse add(@RequestBody TenDayWaterUsePlan tenDayWaterUsePlan) {
-        return tenDayWaterUsePlanService.add(tenDayWaterUsePlan);
+    public RestResponse add(@RequestParam(value = "area",required = true) String area,
+                            @RequestParam(value = "year",required = true) Integer year,
+                            @RequestParam(value = "month",required = true) Integer month,
+                            @RequestParam(value = "useWaterUser",required = true) String useWaterUser,
+                            @RequestParam(value = "tenDays",required = true) String tenDays,
+                            @RequestParam(value = "file",required = true) MultipartFile file) {
+        TenDayWaterUsePlanImportParamReq req = new TenDayWaterUsePlanImportParamReq();
+        req.setTenDays(tenDays);
+        req.setYear(year);
+        req.setArea(area);
+        req.setMonth(month);
+        req.setUseWaterUser(useWaterUser);
+        return tenDayWaterUsePlanService.add(req,file);
     }
+
     @ApiOperationSupport(order = 3)
-    @ApiOperation("修改")
-    @PostMapping("/update")
-    public RestResponse update(@RequestBody TenDayWaterUsePlan tenDayWaterUsePlan) {
-        return tenDayWaterUsePlanService.update(tenDayWaterUsePlan);
-    }
-
-
-    @ApiOperationSupport(order = 4)
     @ApiOperation("查询列表")
     @PostMapping("/select")
     public RestResponse<List<TenDayWaterUsePlan>> select(@RequestBody TenDayWaterUsePlanSelectReq req) {

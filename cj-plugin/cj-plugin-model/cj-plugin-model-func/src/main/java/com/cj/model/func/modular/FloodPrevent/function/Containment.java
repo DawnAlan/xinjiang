@@ -45,6 +45,8 @@ public class Containment {
             List<Double> V_lzz = new ArrayList<>();
             List<Double> V_tth = new ArrayList<>();
 
+
+
             for (int i = 0; i < option.size(); i++) {
                 String name = option.get(i).getName();
                 if(name.equals("楼庄子")){
@@ -63,22 +65,33 @@ public class Containment {
                     throw new RuntimeException("方案有误");
                 }
             }
+            int t = (int) (option.get(1).getTime().getTime()-option.get(1).getTime().getTime());
 
-            double a_lzz = BigDecimal.valueOf(FindMax(V_lzz)-V_lzz.get(0)).setScale(2, RoundingMode.HALF_UP).doubleValue();
+            double in_lzz=Qin_lzz.get(0);
+            double out_lzz=Qout_lzz.get(0);
+            double in_tth=Qin_tth.get(0);
+            double out_tth=Qout_tth.get(0);
+            double V1_lzz=V_lzz.get(0);
+            double V1_tth=V_tth.get(0);
+            double V0_lzz=V1_lzz-t*(in_lzz-out_lzz);
+            double V0_tth=V1_tth-t*(in_tth-out_tth);
+
+
+            double a_lzz = BigDecimal.valueOf(FindMax(V_lzz)-V0_lzz).setScale(2, RoundingMode.HALF_UP).doubleValue();
             double b_lzz = BigDecimal.valueOf(7259.33-FindMax(V_lzz)).setScale(2, RoundingMode.HALF_UP).doubleValue();
             double c_lzz = BigDecimal.valueOf(FindMax(Qin_lzz)-FindMax(Qout_lzz)).setScale(2, RoundingMode.HALF_UP).doubleValue();
 
-            double a_tth = BigDecimal.valueOf(FindMax(V_tth)-V_tth.get(0)).setScale(2, RoundingMode.HALF_UP).doubleValue();
+            double a_tth = BigDecimal.valueOf(FindMax(V_tth)-V0_tth).setScale(2, RoundingMode.HALF_UP).doubleValue();
             double b_tth = BigDecimal.valueOf(1297.03-FindMax(V_tth)).setScale(2, RoundingMode.HALF_UP).doubleValue();
             double c_tth = BigDecimal.valueOf(FindMax(Qin_tth)-FindMax(Qout_tth)).setScale(2, RoundingMode.HALF_UP).doubleValue();
 
-            retain_lzz.put(key,a_lzz);
-            remain_lzz.put(key,b_lzz);
-            peakShave_lzz.put(key,c_lzz);
+            retain_lzz.put(key,Math.max(a_lzz,0));
+            remain_lzz.put(key,Math.max(b_lzz,0));
+            peakShave_lzz.put(key,Math.max(0,c_lzz));
 
-            retain_tth.put(key,a_tth);
-            remain_tth.put(key,b_tth);
-            peakShave_tth.put(key,c_tth);
+            retain_tth.put(key,Math.max(0,a_tth));
+            remain_tth.put(key,Math.max(0,b_tth));
+            peakShave_tth.put(key,Math.max(0,c_tth));
 
             //计算方案评价
             double maxH_lzz = FindMax(H_lzz);
