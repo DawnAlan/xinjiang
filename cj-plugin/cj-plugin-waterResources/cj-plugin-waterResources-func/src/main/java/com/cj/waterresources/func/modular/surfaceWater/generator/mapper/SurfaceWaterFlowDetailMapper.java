@@ -3,6 +3,10 @@ package com.cj.waterresources.func.modular.surfaceWater.generator.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.cj.waterresources.func.modular.surfaceWater.generator.domain.SurfaceWaterFlowDetail;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.Date;
+import java.util.List;
 
 /**
 * @author Administrator
@@ -13,6 +17,7 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface SurfaceWaterFlowDetailMapper extends BaseMapper<SurfaceWaterFlowDetail> {
 
+    List<SurfaceWaterFlowDetail> QueryTime(@Param("endDate") Date startDate, @Param("endDate") Date endDate, @Param("siteCode") String siteCode);
 }
 
 

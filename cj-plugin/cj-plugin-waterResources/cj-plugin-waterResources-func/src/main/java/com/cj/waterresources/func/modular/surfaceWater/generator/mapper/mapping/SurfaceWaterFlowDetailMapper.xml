@@ -4,4 +4,9 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.cj.waterresources.func.modular.surfaceWater.generator.mapper.SurfaceWaterFlowDetailMapper">
 
+    <select id="QueryTime" resultType="com.cj.waterresources.func.modular.surfaceWater.generator.domain.SurfaceWaterFlowDetail">
+        SELECT * FROM surface_water_flow_detail
+        WHERE sample_time BETWEEN #{startDate} AND #{endDate}
+        AND site_code = #{siteCode}
+    </select>
 </mapper>
