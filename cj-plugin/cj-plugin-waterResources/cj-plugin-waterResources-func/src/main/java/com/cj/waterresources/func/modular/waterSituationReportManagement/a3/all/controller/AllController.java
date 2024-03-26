@@ -3,6 +3,7 @@ package com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all
 import com.cj.common.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req.A3StatisticsReq;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req.ReportFormsReq;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req.SelectListForIndustrialWaterFeeReq;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.service.AllService;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hd.entity.DayWaterSituationStatisticsTableHd;
@@ -46,5 +47,12 @@ public class AllController {
     @PostMapping("/selectListForIndustrialWaterFee")
     public RestResponse selectListForIndustrialWaterFee(@RequestBody SelectListForIndustrialWaterFeeReq req) {
         return allService.selectListForIndustrialWaterFee(req);
+    }
+
+    @ApiOperationSupport(order = 4)
+    @ApiOperation("水情报表管理-水库报表")
+    @PostMapping("/selectReportForms")
+    public RestResponse selectReportForms(@RequestBody ReportFormsReq req) {
+        return allService.selectReportForms(req);
     }
 }

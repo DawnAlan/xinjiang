@@ -1,4 +1,4 @@
-package com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.bean.req;
+package com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;

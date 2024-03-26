@@ -9,6 +9,7 @@ import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.req
 import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.req.SelectInfoListReq;
 import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.res.HydrographRes;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req.A3StatisticsReq;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req.ReportFormsReq;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req.SelectListForIndustrialWaterFeeReq;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.res.A3StatisticsRes;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.res.SelectListForIndustrialWaterFeeRes;
@@ -20,6 +21,7 @@ import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hx.e
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hx.mapper.DayWaterSituationStatisticsTableHxMapper;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.entity.DayWaterSituationStatisticsTableLzz;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.mapper.DayWaterSituationStatisticsTableLzzMapper;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.service.DayWaterSituationStatisticsTableLzzService;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.entity.DayWaterSituationStatisticsTableQs;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.entity.DayWaterSituationStatisticsTableQsLh;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.mapper.DayWaterSituationStatisticsTableQsLhMapper;
@@ -29,6 +31,7 @@ import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.syyl
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tjc.mapper.DayWaterSituationStatisticsTableTjcMapper;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tth.entity.DayWaterSituationStatisticsTableTth;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tth.mapper.DayWaterSituationStatisticsTableTthMapper;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tth.service.DayWaterSituationStatisticsTableTthService;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.zcc.mapper.DayWaterSituationStatisticsTableZccMapper;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -57,6 +60,8 @@ public class AllServiceImpl implements AllService {
     private final DayWaterSituationStatisticsTableQsLhMapper dayWaterSituationStatisticsTableQsLhMapper;
     private final RedisUtil redisUtil;
     private final TrendsTableParamService trendsTableParamService;
+    private final DayWaterSituationStatisticsTableLzzService dayWaterSituationStatisticsTableLzzService;
+    private final DayWaterSituationStatisticsTableTthService dayWaterSituationStatisticsTableTthService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -452,6 +457,15 @@ public class AllServiceImpl implements AllService {
             return RestResponse.no("暂无流量数据");
         }else {
             return RestResponse.ok(resList);
+        }
+    }
+
+    @Override
+    public RestResponse selectReportForms(ReportFormsReq req) {
+        if(req.getReservoir().equals("楼庄子水库")){
+            return dayWaterSituationStatisticsTableLzzService.selectReportForms(req.getStartTime(),req.getEndTime());
+        }else {
+            return dayWaterSituationStatisticsTableTthService.selectReportForms(req.getStartTime(),req.getEndTime());
         }
     }
 

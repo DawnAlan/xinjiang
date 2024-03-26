@@ -14,11 +14,14 @@ import com.cj.waterresources.func.modular.waterPrice.totalIdToStation.entity.Tot
 import com.cj.waterresources.func.modular.waterPrice.totalIdToStation.service.TotalIdToStationService;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.dkl.entity.DayWaterSituationStatisticsTableDkl;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hd.entity.DayWaterSituationStatisticsTableHd;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.bean.res.LzzReportFormsRes;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.entity.DayWaterSituationStatisticsTableLzz;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.entity.DayWaterSituationStatisticsTableQs;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tth.bean.res.TthReportFormsRes;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tth.mapper.DayWaterSituationStatisticsTableTthMapper;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tth.entity.DayWaterSituationStatisticsTableTth;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tth.service.DayWaterSituationStatisticsTableTthService;
+import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -380,6 +383,57 @@ public class DayWaterSituationStatisticsTableTthServiceImpl extends ServiceImpl<
         }
     }
 
+    @SneakyThrows
+    @Override
+    public RestResponse selectReportForms(String startTime, String endTime) {
+        List<TthReportFormsRes> resList = new ArrayList<>();
+        List<DayWaterSituationStatisticsTableTth> dayWaterSituationStatisticsListThisYear = this.baseMapper.selectReportForms(startTime, endTime);
+        String lastYearStartTime = getLastYearTime(startTime);
+        String lastYearEndTime = getLastYearTime(endTime);
+        List<DayWaterSituationStatisticsTableTth> dayWaterSituationStatisticsListLastYear = this.baseMapper.selectReportForms(lastYearStartTime, lastYearEndTime);
+        String mk = (String) redisUtil.get("trendsTableParam:list");
+        if(StringUtils.isEmpty(mk)){
+            updateCache();
+            mk = (String) redisUtil.get("trendsTableParam:list");
+        }
+        List<TrendsTableParam> trendsTableParamListTemp = JSONObject.parseArray(mk, TrendsTableParam.class);
+        List<TrendsTableParam> tthTableParamList = trendsTableParamListTemp.stream().filter(t -> t.getUseType() == 1 && t.getUseStation().equals("头屯河水库")).collect(Collectors.toList());
+        String jkllTableId = tthTableParamList.stream().filter(t -> t.getParamName().equals("进库流量") && !t.getPId().equals("0")).collect(Collectors.toList()).get(0).getId();
+        String ckllTableId = tthTableParamList.stream().filter(t -> t.getParamName().equals("河道流量")).collect(Collectors.toList()).get(0).getId();
+        String bgTempTableId = tthTableParamList.stream().filter(t -> t.getParamName().equals("八钢流量")).collect(Collectors.toList()).get(0).getId();
+        String hyTableId = tthTableParamList.stream().filter(t -> t.getParamName().equals("红岩流量")).collect(Collectors.toList()).get(0).getId();
+        String bgTableId = tthTableParamList.stream().filter(t -> t.getParamName().equals("八钢流量") && t.getPId().equals(bgTempTableId)).collect(Collectors.toList()).get(0).getId();
+        String sldLlTableId = tthTableParamList.stream().filter(t -> t.getParamName().equals("渗流点流量")).collect(Collectors.toList()).get(0).getId();
+        String kswTableId = tthTableParamList.stream().filter(t -> t.getParamName().equals("库水位")).collect(Collectors.toList()).get(0).getId();
+        String krTableId = tthTableParamList.stream().filter(t -> t.getParamName().equals("水库库容")).collect(Collectors.toList()).get(0).getId();
+
+        Map<Date, List<DayWaterSituationStatisticsTableTth>> collect1 = dayWaterSituationStatisticsListThisYear.stream().collect(Collectors.groupingBy(DayWaterSituationStatisticsTableTth::getRecordTime));
+        Set<Date> dates = collect1.keySet();
+        for(Date date: dates){
+            Date lastYearDate = sdf.parse(getLastYearTime(sdf.format(date)));
+            TthReportFormsRes res = new TthReportFormsRes();
+            res.setDate(date);
+            res.setWaterLevel(dayWaterSituationStatisticsListThisYear.stream().filter(t->t.getTableHeadId().equals(kswTableId) && t.getTime().equals("08:00") && t.getV()!=null && t.getRecordTime().compareTo(date)==0).map(DayWaterSituationStatisticsTableTth::getV).reduce(Double::sum).orElse(0.00));
+            res.setStorageCapacity(dayWaterSituationStatisticsListThisYear.stream().filter(t->t.getTableHeadId().equals(krTableId) && t.getTime().equals("08:00") && t.getV()!=null && t.getRecordTime().compareTo(date)==0).map(DayWaterSituationStatisticsTableTth::getV).reduce(Double::sum).orElse(0.00));
+            res.setInputFlowThisYear(dayWaterSituationStatisticsListThisYear.stream().filter(t->t.getTableHeadId().equals(jkllTableId) && t.getTime().equals("今日均") && t.getV()!=null && t.getRecordTime().compareTo(date)==0).map(DayWaterSituationStatisticsTableTth::getV).reduce(Double::sum).orElse(0.00));
+            res.setInputFlowLastYear(dayWaterSituationStatisticsListLastYear.stream().filter(t->t.getTableHeadId().equals(jkllTableId) && t.getTime().equals("今日均") && t.getV()!=null && t.getRecordTime().compareTo(lastYearDate)==0).map(DayWaterSituationStatisticsTableTth::getV).reduce(Double::sum).orElse(0.00));
+            res.setOutputFlowThisYear(dayWaterSituationStatisticsListThisYear.stream().filter(t->t.getTableHeadId().equals(ckllTableId) && t.getTime().equals("今日均") && t.getV()!=null && t.getRecordTime().compareTo(date)==0).map(DayWaterSituationStatisticsTableTth::getV).reduce(Double::sum).orElse(0.00));
+            res.setOutputFlowLastYear(dayWaterSituationStatisticsListLastYear.stream().filter(t->t.getTableHeadId().equals(ckllTableId) && t.getTime().equals("今日均") && t.getV()!=null && t.getRecordTime().compareTo(lastYearDate)==0).map(DayWaterSituationStatisticsTableTth::getV).reduce(Double::sum).orElse(0.00));
+            res.setBgThisYear(dayWaterSituationStatisticsListThisYear.stream().filter(t->t.getTableHeadId().equals(bgTableId) && t.getTime().equals("今日均") && t.getV()!=null && t.getRecordTime().compareTo(date)==0).map(DayWaterSituationStatisticsTableTth::getV).reduce(Double::sum).orElse(0.00));
+            res.setBgLastYear(dayWaterSituationStatisticsListLastYear.stream().filter(t->t.getTableHeadId().equals(bgTableId) && t.getTime().equals("今日均") && t.getV()!=null && t.getRecordTime().compareTo(lastYearDate)==0).map(DayWaterSituationStatisticsTableTth::getV).reduce(Double::sum).orElse(0.00));
+            res.setHyThisYear(dayWaterSituationStatisticsListThisYear.stream().filter(t->t.getTableHeadId().equals(hyTableId) && t.getTime().equals("今日均") && t.getV()!=null && t.getRecordTime().compareTo(date)==0).map(DayWaterSituationStatisticsTableTth::getV).reduce(Double::sum).orElse(0.00));
+            res.setHyLastYear(dayWaterSituationStatisticsListLastYear.stream().filter(t->t.getTableHeadId().equals(hyTableId) && t.getTime().equals("今日均") && t.getV()!=null && t.getRecordTime().compareTo(lastYearDate)==0).map(DayWaterSituationStatisticsTableTth::getV).reduce(Double::sum).orElse(0.00));
+            res.setSlThisYear(dayWaterSituationStatisticsListThisYear.stream().filter(t->t.getTableHeadId().equals(sldLlTableId) && t.getTime().equals("今日均") && t.getV()!=null && t.getRecordTime().compareTo(date)==0).map(DayWaterSituationStatisticsTableTth::getV).reduce(Double::sum).orElse(0.00));
+            res.setSlLastYear(dayWaterSituationStatisticsListLastYear.stream().filter(t->t.getTableHeadId().equals(sldLlTableId) && t.getTime().equals("今日均") && t.getV()!=null && t.getRecordTime().compareTo(lastYearDate)==0).map(DayWaterSituationStatisticsTableTth::getV).reduce(Double::sum).orElse(0.00));
+            resList.add(res);
+        }
+        if(resList.isEmpty()){
+            return RestResponse.no("所选时间段暂无数据！");
+        }else {
+            return RestResponse.ok(resList);
+        }
+    }
+
     private void updateYesterdayData(Date now,List<DayWaterSituationStatisticsTableTth> tthList){
 
         List<DayWaterSituationStatisticsTableTth> dayWaterSituationStatisticsTableTths1 = this.baseMapper.selectInfoAfterDayList(getDate(now,1));
@@ -406,6 +460,19 @@ public class DayWaterSituationStatisticsTableTthServiceImpl extends ServiceImpl<
         calendar.setTime(date);
         // 将日期向前调整一天（即昨天）
         calendar.add(Calendar.DAY_OF_MONTH, num);
+        // 格式化日期输出
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        String result = dateFormat.format(calendar.getTime());
+        return result;
+    }
+
+    @SneakyThrows
+    private String getLastYearTime(String time){
+        Calendar calendar = Calendar.getInstance();
+        Date parse = sdf.parse(time);
+        calendar.setTime(parse);
+        // 将日期向前调整一天（即昨天）
+        calendar.add(Calendar.YEAR, -1);
         // 格式化日期输出
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         String result = dateFormat.format(calendar.getTime());

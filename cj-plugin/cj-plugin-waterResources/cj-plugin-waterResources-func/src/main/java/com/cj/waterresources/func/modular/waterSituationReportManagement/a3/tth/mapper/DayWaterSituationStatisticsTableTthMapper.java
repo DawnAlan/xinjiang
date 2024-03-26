@@ -43,5 +43,8 @@ public interface DayWaterSituationStatisticsTableTthMapper extends BaseMapper<Da
 
     @Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_TTH WHERE TIME = #{time} and  TO_CHAR(RECORD_TIME,'YYYY-MM-DD') = #{recordTime}")
     List<DayWaterSituationStatisticsTableTth> selectListHave(@Param("recordTime")String recordTime, @Param("time")String time);
+
+    @Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_TTH WHERE TO_CHAR(RECORD_TIME,'YYYY-MM-DD') between #{startTime} and #{endTime}")
+    List<DayWaterSituationStatisticsTableTth> selectReportForms(@Param("startTime")String startTime, @Param("endTime")String endTime);
 }
 

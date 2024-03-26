@@ -5,6 +5,7 @@ import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.req
 import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.req.SelectInfoListReq;
 import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.res.HydrographRes;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req.A3StatisticsReq;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req.ReportFormsReq;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req.SelectListForIndustrialWaterFeeReq;
 
 import java.util.List;
@@ -19,4 +20,6 @@ public interface AllService {
     List<HydrographRes> selectInfoListAllNew(SelectInfoListNewReq req);
 
     RestResponse selectListForIndustrialWaterFee(SelectListForIndustrialWaterFeeReq req);
+
+    RestResponse selectReportForms(ReportFormsReq req);
 }

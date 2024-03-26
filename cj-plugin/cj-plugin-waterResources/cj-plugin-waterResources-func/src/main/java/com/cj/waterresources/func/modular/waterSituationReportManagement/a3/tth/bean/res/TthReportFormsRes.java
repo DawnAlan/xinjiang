@@ -1,4 +1,4 @@
-package com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.bean.res;
+package com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tth.bean.res;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -7,7 +7,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 @Data
-public class ReportFormsRes implements Serializable {
+public class TthReportFormsRes implements Serializable {
 
     @ApiModelProperty(value = "日期")
     private Date date;
