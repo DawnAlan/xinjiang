@@ -98,4 +98,15 @@ public class SurfaceWaterController {
         surfaceWaterService.download(id,response);
     }
 
+    @ApiOperation(value = "昌吉州年景预报", notes = "昌吉州年景预报")
+    @PostMapping(value = "/annualList")
+    public RestResponse annualList() {
+        try {
+            return RestResponse.ok(surfaceWaterService.annualList());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return RestResponse.no("错误");
+        }
+    }
+
 }

@@ -23,11 +23,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * @author Administrator
@@ -179,6 +178,28 @@ public class SurfaceWaterService extends ServiceImpl<SurfaceWaterMapper, Surface
     }
 
 
+    public List<Map<String, Object>> annualList() {
+        List<Integer> yearlist = new ArrayList<>();
+        // 获取当前日期
+        LocalDate currentDate = LocalDate.now();
+        for (int i = 1989; i <= currentDate.getYear(); i++) {
+            yearlist.add( i);
+        }
+
+        List<Map<String, Object>> result = surfaceWaterMapper.annualList(yearlist);
+//        for (Map<String, Object> row : result) {
+//            for (Map.Entry<String, Object> entry : row.entrySet()) {
+//                String columnName = entry.getKey();
+//                Object columnValue = entry.getValue();
+//                // 处理列名和对应值
+//            }
+//
+//
+//        }
+
+        return result;
+
+    }
 }
 
 

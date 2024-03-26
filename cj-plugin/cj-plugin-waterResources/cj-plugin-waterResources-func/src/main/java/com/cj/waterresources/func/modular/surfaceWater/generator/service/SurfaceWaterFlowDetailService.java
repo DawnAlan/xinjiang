@@ -523,6 +523,12 @@ public class SurfaceWaterFlowDetailService extends ServiceImpl<SurfaceWaterFlowD
         return surfaceWaterFlowDetailVos;
     }
 
+    /*根据时间获取站点时间区间流量
+     */
+    public List<SurfaceWaterFlowDetail> getSiteToDate(Date startDate, Date endDate, String siteCode) {
+        return surfaceWaterFlowDetailMapper.QueryTime(startDate, endDate, siteCode);
+    }
+
 }
 
 
