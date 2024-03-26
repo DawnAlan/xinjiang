@@ -7,6 +7,7 @@ import com.cj.middleDatabase.func.modular.lzz.lzzRainfallStation.entity.LzzRainf
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -39,5 +40,10 @@ public interface LzzRainfallStationMapper extends BaseMapper<LzzRainfallStation>
     @Select("SELECT * FROM LZZ_RAINFALL_STATION WHERE STATION_NAME like concat('%',#{name},'%')  AND TO_CHAR(TIME,'YYYY-MM-DD') BETWEEN #{startTime} AND #{endTime}")
     List<LzzRainfallStation> selectHistoryList(@Param("name")String name, @Param("startTime")String startTime, @Param("endTime")String endTime);
 
+    @Select("select * from TTH.LZZ_RAINFALL_STATION where (TREE_ID,time) in\n" +
+        "(select TREE_ID,max(TIME) from TTH.LZZ_RAINFALL_STATION where TREE_ID in (select id from TTH.LZZ_PLATFORM_TREE where name like '%雨量%')\n" +
+        "and time <= to_date(#{dateTime},'yyyy-mm-dd hh24:mi:ss')\n" +
+        "group by TREE_ID)")
+    List<LzzRainfallStation> getRecentlyRainfalls(@Param("dateTime")String dateTime);
 }
 

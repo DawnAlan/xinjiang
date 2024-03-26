@@ -62,20 +62,37 @@ public class FloodHomePageService {
     private static final String FLOOD_RETENTION_HOUR = "08";
     private static final String FLOOD_RETENTION_HOUR_A3 = "08:00";
     private static final String FLOOD_HOME_PAGE_STORAGE_OVERVIEW_REDIS_KEY = "FLOOD_HOME_PAGE:STORAGE_OVERVIEW:";
+    private static final String FLOOD_HOME_PAGE_RAINFALL_REDIS_KEY = "FLOOD_HOME_PAGE:RAINFALL:";
 
     public RestResponse<OverviewRes> overview(Date dateTime) {
         return RestResponse.ok(new OverviewRes(null, null, null));
     }
 
     public RestResponse<List<WaterRainRes>> rainfall(Date dateTime) {
+        if (!redisUtil.hasKey(FLOOD_HOME_PAGE_RAINFALL_REDIS_KEY + DateUtil.format(dateTime, PATTERN_HOUR_OF_DAY))) {
+            rainfallSchedule(dateTime);
+        }
+        return RestResponse.ok((List<WaterRainRes>) redisUtil.get(FLOOD_HOME_PAGE_RAINFALL_REDIS_KEY + DateUtil.format(dateTime, PATTERN_HOUR_OF_DAY)));
+    }
+
+    public void rainfallSchedule(Date dateTime) {
         List<WaterRainRes> waterRainResList = new ArrayList<>();
         waterRainResList.addAll(lzzRainfall(dateTime));
         waterRainResList.addAll(tthRainfall(dateTime));
-        waterRainResList.addAll(lzzStorageRainfall(dateTime));
-        return RestResponse.ok(waterRainResList);
+        redisUtil.removeAll(FLOOD_HOME_PAGE_RAINFALL_REDIS_KEY);
+        redisUtil.set(FLOOD_HOME_PAGE_RAINFALL_REDIS_KEY + DateUtil.format(dateTime, PATTERN_HOUR_OF_DAY), waterRainResList, 60 * 60 * 2);
     }
 
     private List<WaterRainRes> lzzRainfall(Date dateTime) {
+//        List<LzzRainfallStation> rainfalls = lzzRainfallStationService.getRecentlyRainfalls(DateUtil.format(dateTime, PATTERN_SECOND_OF_DAY));
+//        List<WaterRainRes> waterRainResList = new ArrayList<>();
+//        rainfalls.forEach(rain -> {
+//            WaterRainRes waterRainRes = new WaterRainRes();
+//            waterRainRes.setStation(rain.getStationName());
+//            waterRainRes.setValue(rain.getRainfall().toString());
+//            waterRainResList.add(waterRainRes);
+//        });
+//        return waterRainResList;
         List<LzzPlatformTree> lzzPlatformTrees = lzzPlatformTreeService.lambdaQuery().like(LzzPlatformTree::getName, "雨量").list();
         List<LzzRainfallStation> rainfalls = lzzRainfallStationService.getBaseMapper().selectList(
                 new QueryWrapper<LzzRainfallStation>().select("station_name, sum(rainfall) rainfall").lambda()
@@ -94,6 +111,16 @@ public class FloodHomePageService {
     }
 
     private List<WaterRainRes> tthRainfall(Date dateTime) {
+//        List<IrrigatedPlatformDataInfo> rainfalls = irrigatedPlatformDataInfoService.getRecentlyRainfalls(DateUtil.format(dateTime, PATTERN_SECOND_OF_DAY));
+//        List<WaterRainRes> waterRainResList = new ArrayList<>();
+//        rainfalls.forEach(rain -> {
+//            WaterRainRes waterRainRes = new WaterRainRes();
+//            waterRainRes.setStation(rain.getMonitorName());
+//            waterRainRes.setValue(rain.getYqRainFallOne().toString());
+//            waterRainResList.add(waterRainRes);
+//        });
+//        return waterRainResList;
+
         List<IrrigatedPlatformTree> irrigatedPlatformTrees = irrigatedPlatformTreeService.lambdaQuery().like(IrrigatedPlatformTree::getName, "雨量").list();
         List<IrrigatedPlatformDataInfo> rainfalls = irrigatedPlatformDataInfoService.getBaseMapper().selectList(
                 new QueryWrapper<IrrigatedPlatformDataInfo>().select("monitor_name, sum(yq_rain_fall_one) yq_rain_fall_one").lambda()
@@ -112,10 +139,6 @@ public class FloodHomePageService {
             waterRainResList.add(waterRainRes);
         });
         return waterRainResList;
-    }
-
-    private List<WaterRainRes> lzzStorageRainfall(Date dateTime) {
-        return new ArrayList<>();
     }
 
     public RestResponse<List<WaterRainRes>> waterSituation(Date dateTime, String unitId) {
@@ -180,7 +203,7 @@ public class FloodHomePageService {
 
     private void setFloodRetention(WaterStorageOverviewRes waterStorageOverviewRes, Date dateTime, String type) {
         List<DailyFloodRetentionCapacity> yesterdayFloodRetention = dailyFloodRetentionCapacityService.lambdaQuery()
-                .eq(DailyFloodRetentionCapacity::getId, DateUtil.format(DateUtil.offsetDay(dateTime, -1), PATTERN_DAY) + "-" + type).list();
+                .eq(DailyFloodRetentionCapacity::getId, DateUtil.format(dateTime, PATTERN_DAY) + "-" + type).list();
         List<DailyFloodRetentionCapacity> yearFloodRetention = dailyFloodRetentionCapacityService.getBaseMapper().selectList(
                 new QueryWrapper<DailyFloodRetentionCapacity>().select("sum(capacity) capacity").lambda()
                         .eq(DailyFloodRetentionCapacity::getStationType, type)
@@ -324,8 +347,6 @@ public class FloodHomePageService {
             return 0d;
         }
 
-        DayWaterSituationStatisticsTable any = tthToday.get(0);
-        List<AThreeHeader> aThreeHeaders = JSON.parseArray(any.getFrontTableList(), AThreeHeader.class);
         List<DayWaterSituationStatisticsTable> collect;
         if (!isDailyAvg) {
             String todayMaxTm = tthToday.stream().max(Comparator.comparingInt(t -> Integer.parseInt(t.getTime().substring(0, 2)))).orElse(new DayWaterSituationStatisticsTableTth()).getTime();
@@ -333,6 +354,9 @@ public class FloodHomePageService {
         } else {
             collect = tthToday.stream().collect(Collectors.toList());
         }
+
+        DayWaterSituationStatisticsTable any = collect.get(0);
+        List<AThreeHeader> aThreeHeaders = JSON.parseArray(any.getFrontTableList(), AThreeHeader.class);
 
         String outFlow = findIdLoop(aThreeHeaders, Arrays.asList("出库流量", "河道流量"), Arrays.asList("出库", "流量", "河道流量"));
         return getV(collect, outFlow);
@@ -396,22 +420,28 @@ public class FloodHomePageService {
                 .apply("to_char(GATHER_TIME, 'hh24') = '08'")
                 .list();
 
-        DayWaterSituationStatisticsTable any = dayWaterSituationStatisticsTableLzzService.lambdaQuery().last("limit 1").one();
-        List<AThreeHeader> aThreeHeaders = JSON.parseArray(any.getFrontTableList(), AThreeHeader.class);
-        String capacityHead = findIdLoop(aThreeHeaders, Arrays.asList("库容"));
-        List<DayWaterSituationStatisticsTableLzz> lzzLastA3 = dayWaterSituationStatisticsTableLzzService.lambdaQuery()
-                .eq(DayWaterSituationStatisticsTableLzz::getTime, "08:00")
-                .eq(DayWaterSituationStatisticsTableLzz::getTableHeadId, capacityHead)
-                .apply(startTime != null, "RECORD_TIME >= to_date({0}, 'yyyy-mm-dd hh24:mi:ss')", DateUtil.format(startTime, PATTERN_SECOND_OF_DAY))
-                .list();
-
         Map<String, Double> storageWaterLevelDaily = new HashMap<>();
         for (LzzGaugingStation lzz : lzzLast) {
             if (lzz.getRelativeWaterLevel() >= 0) {
                 storageWaterLevelDaily.put(DateUtil.format(lzz.getGatherTime(), PATTERN_DAY), lzz.getStorageCapacity() == null ? 0 : lzz.getStorageCapacity());
             }
         }
-        for (DayWaterSituationStatisticsTableLzz lzzA3 : lzzLastA3) {
+
+        List<DayWaterSituationStatisticsTableLzz> lzzLastA3 = dayWaterSituationStatisticsTableLzzService.lambdaQuery()
+                .eq(DayWaterSituationStatisticsTableLzz::getTime, "08:00")
+                //.eq(DayWaterSituationStatisticsTableLzz::getTableHeadId, capacityHead)
+                .apply(startTime != null, "RECORD_TIME >= to_date({0}, 'yyyy-mm-dd hh24:mi:ss')", DateUtil.format(startTime, PATTERN_SECOND_OF_DAY))
+                .list();
+        Map<Date, List<DayWaterSituationStatisticsTableLzz>> collect = lzzLastA3.stream().collect(Collectors.groupingBy(DayWaterSituationStatisticsTableLzz::getRecordTime));
+        List<DayWaterSituationStatisticsTableLzz> lzzA3ToCalc = new ArrayList<>();
+        collect.forEach((k, v) -> {
+            DayWaterSituationStatisticsTable any = v.get(0);
+            List<AThreeHeader> aThreeHeaders = JSON.parseArray(any.getFrontTableList(), AThreeHeader.class);
+            String capacityHead = findIdLoop(aThreeHeaders, Arrays.asList("库容"));
+            lzzA3ToCalc.add(v.stream().filter(n -> n.getTableHeadId().equals(capacityHead)).findFirst().orElse(new DayWaterSituationStatisticsTableLzz()));
+        });
+
+        for (DayWaterSituationStatisticsTableLzz lzzA3 : lzzA3ToCalc) {
             String time = DateUtil.format(lzzA3.getRecordTime(), PATTERN_DAY);
             if (!storageWaterLevelDaily.containsKey(time) || (storageWaterLevelDaily.containsKey(time) && storageWaterLevelDaily.get(time) == 0)) {
                 storageWaterLevelDaily.put(time, lzzA3.getV() == null ? 0 : lzzA3.getV().doubleValue());

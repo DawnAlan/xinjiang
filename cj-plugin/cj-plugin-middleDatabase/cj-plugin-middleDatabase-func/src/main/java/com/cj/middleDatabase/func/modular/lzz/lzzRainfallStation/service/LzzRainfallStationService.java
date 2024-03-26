@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.cj.middleDatabase.func.modular.dto.RealTimeRainfallRes;
 import com.cj.middleDatabase.func.modular.lzz.lzzRainfallStation.entity.LzzRainfallStation;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -26,5 +27,6 @@ public interface LzzRainfallStationService extends IService<LzzRainfallStation> 
 
     List<LzzRainfallStation> selectHistoryList(String name, String startTime, String endTime);
 
+    List<LzzRainfallStation> getRecentlyRainfalls(String dateTime);
 }
 

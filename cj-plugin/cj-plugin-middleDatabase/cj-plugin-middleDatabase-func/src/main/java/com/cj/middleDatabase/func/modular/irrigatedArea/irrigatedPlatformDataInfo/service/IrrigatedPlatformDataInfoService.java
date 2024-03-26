@@ -39,5 +39,7 @@ public interface IrrigatedPlatformDataInfoService extends IService<IrrigatedPlat
     List<IrrigatedPlatformDataInfo> getRealTimeWaterLevel(String station);
 
     List<IrrigatedPlatformDataInfo> getCurrentDate(String startTime, String endTime);
+
+    List<IrrigatedPlatformDataInfo> getRecentlyRainfalls(String dateTime);
 }
 

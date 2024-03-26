@@ -64,5 +64,15 @@ public interface IrrigatedPlatformDataInfoMapper extends BaseMapper<IrrigatedPla
             " WHERE (monitor_time BETWEEN #{startTime} AND #{endTime} AND monitor_name IN ('头屯河水库水位','入库流量','出库流量'))\n" +
             " group by MONITOR_NAME)")
     List<IrrigatedPlatformDataInfo> getCurrentDate(@Param("startTime")String startTime, @Param("endTime")String endTime);
+
+    @Select("select MONITOR_NAME, sum(yq_rain_fall_one) yq_rain_fall_one from TTH.IRRIGATED_PLATFORM_DATA_INFO where \n" +
+            "(MONITOR_ID, to_char(MONITOR_TIME, 'yyyy-mm-dd')) in\n" +
+            "(select MONITOR_ID, to_char(max_MONITOR_TIME, 'yyyy-mm-dd') from \n" +
+            "(SELECT MONITOR_ID, max(MONITOR_TIME) max_MONITOR_TIME from TTH.IRRIGATED_PLATFORM_DATA_INFO where MONITOR_ID in \n" +
+            "(select id from TTH.IRRIGATED_PLATFORM_TREE where name like '%雨量%')\n" +
+            "and MONITOR_TIME <= to_date(#{dateTime},'yyyy-mm-dd hh24:mi:ss')\n" +
+            "group by MONITOR_ID))\n" +
+            "group by MONITOR_NAME")
+    List<IrrigatedPlatformDataInfo> getRecentlyRainfalls(@Param("dateTime")String dateTime);
 }
 
