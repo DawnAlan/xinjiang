@@ -305,6 +305,8 @@ public class FloodHomePageService {
     private Double getTthA3OutFlow(Date dateTime) {
         String sql = String.format("to_char(record_time, '%s') = '%s'", PATTERN_DAY, DateUtil.format(dateTime, PATTERN_DAY));
         String sql1 = String.format("SUBSTR(time, 0,2) <= '%s'", DateUtil.format(dateTime, PATTERN_HOUR));
+
+        boolean isDailyAvg = false;
         List<DayWaterSituationStatisticsTableTth> tthToday = dayWaterSituationStatisticsTableTthService.lambdaQuery()
                 .ne(DayWaterSituationStatisticsTableTth::getTime, "今日均")
                 .ne(DayWaterSituationStatisticsTableTth::getTime, "昨日均")
@@ -316,6 +318,7 @@ public class FloodHomePageService {
                     .eq(DayWaterSituationStatisticsTableTth::getTime, "昨日均")
                     .apply(sql)
                     .list().stream().collect(Collectors.toList());
+            isDailyAvg = true;
         }
         if (tthToday.size() == 0) {
             return 0d;
@@ -323,9 +326,14 @@ public class FloodHomePageService {
 
         DayWaterSituationStatisticsTable any = tthToday.get(0);
         List<AThreeHeader> aThreeHeaders = JSON.parseArray(any.getFrontTableList(), AThreeHeader.class);
+        List<DayWaterSituationStatisticsTable> collect;
+        if (!isDailyAvg) {
+            String todayMaxTm = tthToday.stream().max(Comparator.comparingInt(t -> Integer.parseInt(t.getTime().substring(0, 2)))).orElse(new DayWaterSituationStatisticsTableTth()).getTime();
+            collect = tthToday.stream().filter(n -> n.getTime().equals(todayMaxTm)).collect(Collectors.toList());
+        } else {
+            collect = tthToday.stream().collect(Collectors.toList());
+        }
 
-        String todayMaxTm = tthToday.stream().max(Comparator.comparingInt(t -> Integer.parseInt(t.getTime().substring(0, 2)))).orElse(new DayWaterSituationStatisticsTableTth()).getTime();
-        List<DayWaterSituationStatisticsTable> collect = tthToday.stream().filter(n -> n.getTime().equals(todayMaxTm)).collect(Collectors.toList());
         String outFlow = findIdLoop(aThreeHeaders, Arrays.asList("出库流量", "河道流量"), Arrays.asList("出库", "流量", "河道流量"));
         return getV(collect, outFlow);
     }
