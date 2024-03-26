@@ -174,7 +174,8 @@ public class FloodHomePageService {
         setFloodRetention(lzz, dateTime, "0");
         waterStorageOverviewResList.add(lzz);
         waterStorageOverviewResList.add(getTth(dateTime));
-        redisUtil.set(FLOOD_HOME_PAGE_STORAGE_OVERVIEW_REDIS_KEY + DateUtil.format(dateTime, PATTERN_HOUR_OF_DAY), waterStorageOverviewResList, 1000 * 60 * 60 * 2);
+        redisUtil.removeAll(FLOOD_HOME_PAGE_STORAGE_OVERVIEW_REDIS_KEY);
+        redisUtil.set(FLOOD_HOME_PAGE_STORAGE_OVERVIEW_REDIS_KEY + DateUtil.format(dateTime, PATTERN_HOUR_OF_DAY), waterStorageOverviewResList, 60 * 60 * 2);
     }
 
     private void setFloodRetention(WaterStorageOverviewRes waterStorageOverviewRes, Date dateTime, String type) {
@@ -213,6 +214,8 @@ public class FloodHomePageService {
     private WaterStorageOverviewRes getLzzA3(Date dateTime) {
         WaterStorageOverviewRes waterStorageOverviewResLzz = new WaterStorageOverviewRes();
         waterStorageOverviewResLzz.setWaterStorageName("楼庄子水库");
+
+        boolean isDailyAvg = false;
         String sql = String.format("to_char(record_time, '%s') = '%s'", PATTERN_DAY, DateUtil.format(dateTime, PATTERN_DAY));
         String sql1 = String.format("SUBSTR(time, 0,2) <= '%s'", DateUtil.format(dateTime, PATTERN_HOUR));
         List<DayWaterSituationStatisticsTable> lzzToday = dayWaterSituationStatisticsTableLzzService.lambdaQuery()
@@ -226,13 +229,16 @@ public class FloodHomePageService {
                     .eq(DayWaterSituationStatisticsTableLzz::getTime, "昨日均")
                     .apply(sql)
                     .list().stream().collect(Collectors.toList());
+            isDailyAvg = true;
         }
         if (lzzToday.size() == 0) {
             return waterStorageOverviewResLzz;
         }
 
-        String todayMaxTm = lzzToday.stream().max(Comparator.comparingInt(t -> Integer.parseInt(t.getTime().substring(0, 2)))).orElse(new DayWaterSituationStatisticsTableLzz()).getTime();
-        lzzToday = lzzToday.stream().filter(n -> n.getTime().equals(todayMaxTm)).collect(Collectors.toList());
+        if (!isDailyAvg) {
+            String todayMaxTm = lzzToday.stream().max(Comparator.comparingInt(t -> Integer.parseInt(t.getTime().substring(0, 2)))).orElse(new DayWaterSituationStatisticsTableLzz()).getTime();
+            lzzToday = lzzToday.stream().filter(n -> n.getTime().equals(todayMaxTm)).collect(Collectors.toList());
+        }
 
         DayWaterSituationStatisticsTable any = lzzToday.get(0);
         List<AThreeHeader> aThreeHeaders = JSON.parseArray(any.getFrontTableList(), AThreeHeader.class);
