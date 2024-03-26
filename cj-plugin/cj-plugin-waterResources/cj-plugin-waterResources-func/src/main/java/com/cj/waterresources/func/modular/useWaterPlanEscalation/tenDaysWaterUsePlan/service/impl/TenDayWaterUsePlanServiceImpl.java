@@ -19,6 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.text.DecimalFormat;
@@ -40,7 +41,7 @@ public class TenDayWaterUsePlanServiceImpl extends ServiceImpl<TenDayWaterUsePla
 
     @Override
     public RestResponse<List<TenDayWaterUsePlan>> selectList(TenDayWaterUsePlanSelectReq req) {
-        List<TenDayWaterUsePlan> list = this.lambdaQuery().eq(StringUtils.isNotEmpty(req.getIrrigatedArea()),TenDayWaterUsePlan::getIrrigatedArea, req.getIrrigatedArea()).
+        List<TenDayWaterUsePlan> list = this.lambdaQuery().eq(StringUtils.isNotEmpty(req.getIrrigatedArea()),TenDayWaterUsePlan::getArea, req.getIrrigatedArea()).
                 eq(StringUtils.isNotEmpty(req.getUseWaterUser()),TenDayWaterUsePlan::getUseWaterUser, req.getUseWaterUser()).
                 eq(StringUtils.isNotEmpty(req.getCropType()),TenDayWaterUsePlan::getCropType, req.getCropType()).
                 eq(req.getYear() !=null,TenDayWaterUsePlan::getYear, req.getYear()).
@@ -56,13 +57,23 @@ public class TenDayWaterUsePlanServiceImpl extends ServiceImpl<TenDayWaterUsePla
 
     @SneakyThrows
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public RestResponse add(TenDayWaterUsePlanImportParamReq req, MultipartFile file) {
+        this.lambdaUpdate().eq(TenDayWaterUsePlan::getArea, req.getArea())
+                .eq(TenDayWaterUsePlan::getUseWaterUser, req.getUseWaterUser())
+                .eq(TenDayWaterUsePlan::getYear, req.getYear())
+                .eq(TenDayWaterUsePlan::getMonth, req.getMonth())
+                .eq(TenDayWaterUsePlan::getTenDays, req.getTenDays())
+                .remove();
         List<TenDayWaterUsePlan> tenDayWaterUsePlanList = new ArrayList<>();
         List<TenDayWaterUsePlanOwner> tenDayWaterUsePlanOwnerList = new ArrayList<>();
         List<TenDayWaterUsePlanImportTableReq> tenDayWaterUsePlanImportTableReqs = ExcelUtils.importExcelForCrop(file, TenDayWaterUsePlanImportTableReq.class);
         for(TenDayWaterUsePlanImportTableReq table:tenDayWaterUsePlanImportTableReqs){
+            if(StringUtils.isEmpty(table.getIrrigatedCrop())){
+                continue;
+            }
             TenDayWaterUsePlan tenDayWaterUsePlan = new TenDayWaterUsePlan();
-            BeanUtils.copyProperties(table,table);
+            BeanUtils.copyProperties(table,tenDayWaterUsePlan);
             tenDayWaterUsePlan.setTenDays(req.getTenDays());
             tenDayWaterUsePlan.setArea(req.getArea());
             tenDayWaterUsePlan.setYear(req.getYear());
@@ -81,6 +92,12 @@ public class TenDayWaterUsePlanServiceImpl extends ServiceImpl<TenDayWaterUsePla
                 tenDayWaterUsePlanOwner.setWaterDemandOwner(formatDouble(tenDayWaterUsePlan.getIrrigatedArea()*tenDayWaterUsePlan.getIrrigationQuota()*tenDayWaterUsePlan.getIrrigationCount()/10000));
                 tenDayWaterUsePlanOwnerList.add(tenDayWaterUsePlanOwner);
             }
+            tenDayWaterUsePlanOwnerService.lambdaUpdate().eq(TenDayWaterUsePlanOwner::getArea, req.getArea())
+                    .eq(TenDayWaterUsePlanOwner::getUseWaterUser, req.getUseWaterUser())
+                    .eq(TenDayWaterUsePlanOwner::getYear, req.getYear())
+                    .eq(TenDayWaterUsePlanOwner::getMonth, req.getMonth())
+                    .eq(TenDayWaterUsePlanOwner::getTenDays, req.getTenDays())
+                    .remove();
             boolean b = tenDayWaterUsePlanOwnerService.saveBatch(tenDayWaterUsePlanOwnerList);
             if(b){
                 return RestResponse.ok();

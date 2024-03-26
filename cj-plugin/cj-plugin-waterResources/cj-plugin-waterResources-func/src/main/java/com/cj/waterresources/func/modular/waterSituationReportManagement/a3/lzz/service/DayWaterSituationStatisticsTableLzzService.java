@@ -26,5 +26,9 @@ public interface DayWaterSituationStatisticsTableLzzService extends IService<Day
 
     RestResponse insertTodayMeanValue();
 
+
+    RestResponse selectReportForms(String startTime, String endTime);
+
+
 }
 

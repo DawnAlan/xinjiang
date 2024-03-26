@@ -33,7 +33,7 @@ public interface LzzGaugingStationMapper extends BaseMapper<LzzGaugingStation> {
     @Select("SELECT * FROM LZZ_GAUGING_STATION WHERE TO_CHAR(GATHER_TIME,'yyyy-MM-dd hh24') = #{time} AND STATION_NAME = #{name}")
     LzzGaugingStation selectInfoByTime(@Param("time")String time,@Param("name")String name);
 
-    @Select("SELECT * FROM LZZ_GAUGING_STATION WHERE STATION_NAME = #{name} AND TO_CHAR(GATHER_TIME,'YYYY-MM-DD hh24:MI') BETWEEN #{startTime} AND #{endTime}")
+    @Select("SELECT * FROM LZZ_GAUGING_STATION WHERE STATION_NAME = #{name} AND TO_CHAR(GATHER_TIME,'YYYY-MM-DD hh24') BETWEEN #{startTime} AND #{endTime}")
     List<LzzGaugingStation> selectHistoryList(@Param("name")String name, @Param("startTime")String startTime,  @Param("endTime")String endTime);
 
     @Select("select * from TTH.LZZ_GAUGING_STATION where (STATION_NAME, GATHER_TIME) in(\n" +

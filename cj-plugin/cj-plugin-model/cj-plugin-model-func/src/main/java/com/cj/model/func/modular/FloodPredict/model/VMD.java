@@ -1,8 +1,11 @@
 package com.cj.model.func.modular.FloodPredict.model;
 
+import com.cj.model.func.modular.FloodPredict.utils.ExcelTool;
 import org.apache.commons.math3.complex.Complex;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.jtransforms.fft.DoubleFFT_1D;
 
+import java.io.IOException;
 import java.util.Arrays;
 /**
  *
@@ -29,11 +32,22 @@ import java.util.Arrays;
  * @return子序列 这个模型只返回了分解子序列的集合--u，其它两个可根据自己需求设置输出；其中行数K为分解层数，列数T为信号数
  */
 public class VMD {
-        public static void main(String[] args)  {
-        double[] signal=new double[]{1,2,3,4,5,6,7};
-        int K=4;
-        double[][] a =vmd(signal,K);
-        System.out.println(a);
+        public static void main(String[] args) throws IOException, InvalidFormatException {
+            Object[][] input = ExcelTool.readExcel("D:\\14年前数据.xlsx","Sheet1");
+            double[] signal=new double[input.length];
+            for (int i = 0; i < input.length; i++) {
+                signal[i]=(double) input[i][1];
+            }
+            int K=6;
+            double[][] a =vmd(signal,K);
+            Object[][] result = new Object[a[0].length][a.length];
+            for (int i = 0; i < a.length; i++) {
+                for (int j = 0; j < a[0].length; j++) {
+                    result[j][i]=a[i][j];
+                }
+            }
+            ExcelTool.writeObjectExcel("D:\\14年前数据.xlsx","Sheet2",result);
+            System.out.println(a);
     }
     public static double[][] vmd (double[] signal, int K) {
         //初始参数一般不做修改，如果分解拟合度较差，可以选择缩小alpha值

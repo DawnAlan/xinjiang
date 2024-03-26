@@ -34,3 +34,5 @@ tmp/
 !kingbase8-8.6.0.jar
 
 .flattened-pom.xml
+/cj-plugin/cj-plugin-model/cj-plugin-model-func/src/main/java/com/cj/model/func/modular/FloodPredict.rar
+/cj-plugin/cj-plugin-model/cj-plugin-model-func/src/main/java/com/cj/model/func/modular/FloodPredict/Calibration/testCalibration.java

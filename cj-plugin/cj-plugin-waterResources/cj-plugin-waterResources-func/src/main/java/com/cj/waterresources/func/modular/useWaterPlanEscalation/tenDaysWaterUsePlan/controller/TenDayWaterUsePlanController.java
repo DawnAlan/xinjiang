@@ -41,7 +41,7 @@ public class TenDayWaterUsePlanController {
     @ApiOperationSupport(order = 1)
     @ApiOperation("删除")
     @PostMapping("/delete")
-    public RestResponse delete(TenDayWaterUsePlanImportParamReq req) {
+    public RestResponse delete(@RequestBody TenDayWaterUsePlanImportParamReq req) {
         return tenDayWaterUsePlanService.delete(req);
     }
 

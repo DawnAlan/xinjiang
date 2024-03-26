@@ -17,8 +17,8 @@ public class ShanBeiModel {
     /// 蒸散发折减系数 KC 为流域蒸散发能力与实测水面蒸发器实测值之比, 由于干旱地区资料等方面的原因，在实际模拟计算中 KC 值往往变化很大，最后须经调试后确定，必要时可分月份优选
     double KC;
 
-    /// 流域土壤初始下渗率,相当于土壤干燥时的下渗率 1-2 mm/min,60-120 mm/h
-    //double f0;
+//     流域土壤初始下渗率,相当于土壤干燥时的下渗率 1-2 mm/min,60-120 mm/h
+    double f0;
 
     /// 流域土壤稳定下渗率 0.3-0.5 mm/min,18-30 mm/h
     double fc;
@@ -71,6 +71,10 @@ public class ShanBeiModel {
 
     /// 总的产流量,mm
     double[] R;
+    /// 为入流过程(m3/s) 汇流计算中用到
+    double[] I1;
+    /// 为入流过程(m3/s) 汇流计算中用到
+    double[] I2;
 
     /// 为入流过程(m3/s) 汇流计算中用到
     double[] I;
@@ -85,7 +89,7 @@ public class ShanBeiModel {
         Area = param[0];
         FB = param[1]; //不透水面积的比例，透水面积比例为1-FB
         WM = param[2]; //张力水蓄水容量，或最大蓄水量 60-80mm
-        KC = param[3]; //蒸散发折减系数 KC 为流
+        KC = param[3]; //蒸散发折减系数 KC
         fc = param[4]; //流域土壤稳定下渗率 0.3-0.5 mm/min
         fm = param[5]; //流域土壤最大下渗率 1-2 mm/min
         K = param[6]; //霍尔顿下渗曲线方程中的土质系数 0.04~0.05/min
@@ -106,6 +110,8 @@ public class ShanBeiModel {
         R2 = new double[NumPeriod]; // 中间结果，输出数据
         R = new double[NumPeriod]; // 中间结果，输出数据
         I = new double[NumPeriod]; // 中间结果，输入数据
+        I1 = new double[NumPeriod]; // 中间结果，输入数据
+        I2 = new double[NumPeriod]; // 中间结果，输入数据
         Q = new double[NumPeriod]; // 计算结果、输出数据
         PreImpact_P = new double[PreImpactdays]; // 输入数据
 
@@ -130,7 +136,7 @@ public class ShanBeiModel {
 
         double Wt_1 = 0; // 前一天的土壤含水量,最开始的时候（20天前）假定其为0；
         double Wt = 0;// 当前天的土壤含水量
-
+//        KC = 1.0;
         for (int j = 0; j < PreImpactdays; j++) {
             Wt = PreImpact_P[j] + KC * Wt_1;
             if (Wt > WM) {
@@ -204,7 +210,6 @@ public class ShanBeiModel {
             if (P[j] <= Ave_f) {
                 R2[j] = 0;
                 W[j + 1] = W[j] + P[j] * PeriodLength - E[j] * PeriodLength;
-
                 if (W[j + 1] > WM)// 蓄水达到上限
                 {
                     R2[j] = R2[j] + W[j + 1] - WM;
@@ -443,19 +448,20 @@ public class ShanBeiModel {
             double TempW2 = TempW; // 假定一个时段末的土壤含水量
 
             //一次计算
-            //f[j + 1] = fm - K * (TempW2 - fc * Time[j + 1]);//用这个算f越算越大
+//            f[j + 1] = fm - K * (TempW2 - fc * Time[j + 1]);//用这个算f越算越大
             f[j + 1] = fc + (fm - fc) * Math.exp(-K * Time[j + 1]);
             if (f[j + 1] > fm) {
                 f[j + 1] = fm;
             }
 
-            //Ave_f = (f[j] + f[j + 1]) / 2;// 时段平均下渗量
-            Ave_f = fm / (1 + B);// 流域的平均下渗量
+            Ave_f = (f[j] + f[j + 1]) / 2;// 时段平均下渗量
+//            Ave_f = fm / (1 + B);// 流域的平均下渗量
             if (P[j] - E[j] < fm)// 部分流域上产流
             {
                 if (P[j] - E[j] < 0) {
                     R2[j] = P[j] - E[j] - Ave_f * (1 - Math.pow(1 - (0) / fm, B + 1));
                 } else {
+                    double a = Ave_f * (1 - Math.pow(1 - (P[j] - E[j]) / fm, B + 1));
                     R2[j] = P[j] - E[j] - Ave_f * (1 - Math.pow(1 - (P[j] - E[j]) / fm, B + 1));
                 }
 
@@ -488,14 +494,14 @@ public class ShanBeiModel {
                 TempW2 = TempW2 - (TempW2 - W[j + 1]) / 10;
 
                 //再次计算
-                //f[j + 1] = fm - K * (TempW2 - fc * Time[j + 1]);//用这个算f越算越大
+//                f[j + 1] = fm - K * (TempW2 - fc * Time[j + 1]);//用这个算f越算越大
                 f[j + 1] = fc + (fm - fc) * Math.exp(-K * Time[j + 1]);
                 if (f[j + 1] > fm) {
                     f[j + 1] = fm;
                 }
 
-                //Ave_f = (f[j] + f[j + 1]) / 2;// 时段平均下渗量
-                Ave_f = fm / (1 + B);// 流域的平均下渗量
+                Ave_f = (f[j] + f[j + 1]) / 2;// 时段平均下渗量
+//                Ave_f = fm / (1 + B);// 流域的平均下渗量
 
                 if (P[j] - E[j] < fm)// 部分流域上产流
                 {
@@ -540,10 +546,13 @@ public class ShanBeiModel {
 
         for (int j = 0; j < NumPeriod; j++) {
             R[j] = R1[j] * FB + R2[j] * (1 - FB);// 单位mm/h
+            I1[j] = R1[j] / 1000 / 3600 * FB * Area * 1000000;
+            I2[j] = R2[j] / 1000 / 3600 * (1 - FB) * Area * 1000000;
             I[j] = R1[j] / 1000 / 3600 * FB * Area * 1000000 + R2[j] / 1000 / 3600 * (1 - FB) * Area * 1000000;//  Area单位是km2
         }
         return this;
     }
+
 
     // 汇流计算
     public ShanBeiModel ConfluenceCalculation() {
@@ -557,7 +566,16 @@ public class ShanBeiModel {
                 }
 
             } else {
-                Q[j] = CS * Q[j - 1] + (1 - CS) * I[j - L];
+//                Q[j] = CS * Q[j - 1] + (1 - CS) * I[j - L];
+                Q[j] = CS * Q[j - 1] + (1 - CS) * I2[j - L];
+            }
+
+        }
+        for (int j = 0; j < NumPeriod; j++) {
+            if (j==0){
+                Q[j] = 0;
+            }else {
+                Q[j] = Q[j] + I1[j-1];
             }
             Object[]Q_shanbei=new Object[NumPeriod];
             Q_shanbei[j]=Q[j];

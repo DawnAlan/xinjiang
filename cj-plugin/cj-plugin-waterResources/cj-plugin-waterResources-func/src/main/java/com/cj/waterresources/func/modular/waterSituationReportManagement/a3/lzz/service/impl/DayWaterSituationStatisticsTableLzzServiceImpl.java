@@ -23,6 +23,7 @@ import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.service.DayWaterSituationStatisticsTableLzzService;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.entity.DayWaterSituationStatisticsTableQsLh;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tth.entity.DayWaterSituationStatisticsTableTth;
+import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -396,6 +397,30 @@ public class DayWaterSituationStatisticsTableLzzServiceImpl extends ServiceImpl<
         }
     }
 
+    @SneakyThrows
+    @Override
+    public RestResponse selectReportForms(String startTime, String endTime) {
+        List<DayWaterSituationStatisticsTableLzz> allList = new ArrayList<>();
+        List<DayWaterSituationStatisticsTableLzz> dayWaterSituationStatisticsListThisYear = this.baseMapper.selectReportForms(startTime, endTime);
+        String lastYearStartTime = getLastYearTime(startTime);
+        String lastYearEndTime = getLastYearTime(endTime);
+        List<DayWaterSituationStatisticsTableLzz> dayWaterSituationStatisticsListLastYear = this.baseMapper.selectReportForms(lastYearStartTime, lastYearEndTime);
+        allList.addAll(dayWaterSituationStatisticsListThisYear);
+        allList.addAll(dayWaterSituationStatisticsListLastYear);
+        if(allList.isEmpty()){
+            return RestResponse.no("所选时间段暂无数据");
+        }
+        String mk = (String) redisUtil.get("trendsTableParam:list");
+        if(StringUtils.isEmpty(mk)){
+            updateCache();
+            mk = (String) redisUtil.get("trendsTableParam:list");
+        }
+        List<TrendsTableParam> trendsTableParamListTemp = JSONObject.parseArray(mk, TrendsTableParam.class);
+        List<TrendsTableParam> lzzTableParamList = trendsTableParamListTemp.stream().filter(t -> t.getUseType() == 1 && t.getUseStation().equals("楼庄子水库")).collect(Collectors.toList());
+
+        return null;
+    }
+
     private void updateYesterdayData(Date now,List<DayWaterSituationStatisticsTableLzz> lzzList){
         List<DayWaterSituationStatisticsTableLzz> dayWaterSituationStatisticsTableLzzList = this.baseMapper.selectInfoAfterDayList(getDate(now,1));
         if(!dayWaterSituationStatisticsTableLzzList.isEmpty()){
@@ -421,6 +446,19 @@ public class DayWaterSituationStatisticsTableLzzServiceImpl extends ServiceImpl<
         calendar.setTime(date);
         // 将日期向前调整一天（即昨天）
         calendar.add(Calendar.DAY_OF_MONTH, num);
+        // 格式化日期输出
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        String result = dateFormat.format(calendar.getTime());
+        return result;
+    }
+
+    @SneakyThrows
+    private String getLastYearTime(String time){
+        Calendar calendar = Calendar.getInstance();
+        Date parse = sdf.parse(time);
+        calendar.setTime(parse);
+        // 将日期向前调整一天（即昨天）
+        calendar.add(Calendar.YEAR, -1);
         // 格式化日期输出
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         String result = dateFormat.format(calendar.getTime());

@@ -38,7 +38,7 @@ public class TenDayWaterUsePlanImportTableReq {
     private Double irrigationQuota;
 
     //需水量
-    @ApiModelProperty(value = "需水量")
-    @Excel(name = "需水量", width = 15)
+    @ApiModelProperty(value = "总需水量")
+    @Excel(name = "总需水量", width = 15)
     private Double waterDemand;
 }

@@ -175,7 +175,7 @@ public class PredictionApiProvider implements PredictionApi {
     @Override
     public String getRealTimeReservoirLevelData(String date) {
         List<RealTimeWaterLevelDataRes> result = new ArrayList<>();
-        List<IrrigatedPlatformDataInfo>  tthInputList = irrigatedPlatformDataInfoService.selectInfoByTime(date,"入库流量");
+        List<IrrigatedPlatformDataInfo>  tthInputList = irrigatedPlatformDataInfoService.selectInfoByTime(date.split(" ")[0],"入库流量");
         IrrigatedPlatformDataInfo tthInput ;
         if(null != tthInputList && tthInputList.size()>0){
             tthInput = tthInputList.get(0);
@@ -186,12 +186,14 @@ public class PredictionApiProvider implements PredictionApi {
         if(tthInput != null){
             tthInputData.setFlow(tthInput.getSqMonitorFlow());
             tthInputData.setStationName(tthInput.getMonitorName());
+            tthInputData.setRelativeWaterLevel(tthInput.getSqWaterLevel());
         }else {
             tthInputData.setFlow(null);
+            tthInputData.setRelativeWaterLevel(null);
             tthInputData.setStationName("入库流量");
         }
         result.add(tthInputData);
-        List<IrrigatedPlatformDataInfo>  tthOutputList  = irrigatedPlatformDataInfoService.selectInfoByTime(date,"出库流量");
+        List<IrrigatedPlatformDataInfo>  tthOutputList  = irrigatedPlatformDataInfoService.selectInfoByTime(date.split(" ")[0],"出库流量");
         IrrigatedPlatformDataInfo tthOutput ;
         if(null != tthOutputList && tthOutputList.size()>0){
             tthOutput = tthOutputList.get(0);
@@ -200,10 +202,12 @@ public class PredictionApiProvider implements PredictionApi {
         }
         RealTimeWaterLevelDataRes tthOutputData = new RealTimeWaterLevelDataRes();
         if(tthOutput != null){
-            tthOutputData.setFlow(tthOutputData.getFlow());
+            tthOutputData.setFlow(tthOutput.getSqMonitorFlow());
+            tthOutputData.setRelativeWaterLevel(tthOutput.getSqWaterLevel());
             tthOutputData.setStationName(tthOutput.getMonitorName());
         }else {
             tthOutputData.setFlow(null);
+            tthOutputData.setRelativeWaterLevel(null);
             tthOutputData.setStationName("出库流量");
         }
         result.add(tthOutputData);
@@ -211,9 +215,11 @@ public class PredictionApiProvider implements PredictionApi {
         RealTimeWaterLevelDataRes lzzOutputData = new RealTimeWaterLevelDataRes();
         if(lzzOutput != null){
             lzzOutputData.setFlow(lzzOutput.getFlow());
+            lzzOutputData.setRelativeWaterLevel(lzzOutput.getRelativeWaterLevel());
             lzzOutputData.setStationName(lzzOutput.getStationName());
         }else {
             lzzOutputData.setFlow(null);
+            lzzOutputData.setRelativeWaterLevel(null);
             lzzOutputData.setStationName("楼庄子出库水位站");
         }
         result.add(lzzOutputData);
@@ -221,9 +227,11 @@ public class PredictionApiProvider implements PredictionApi {
         RealTimeWaterLevelDataRes lzzInputData = new RealTimeWaterLevelDataRes();
         if(lzzInput != null){
             lzzInputData.setFlow(lzzInput.getFlow());
+            lzzInputData.setRelativeWaterLevel(lzzInput.getRelativeWaterLevel());
             lzzInputData.setStationName(lzzInput.getStationName());
         }else {
             lzzInputData.setFlow(null);
+            lzzInputData.setRelativeWaterLevel(null);
             lzzInputData.setStationName("楼庄子入库水位站");
         }
         result.add(lzzInputData);
@@ -231,9 +239,11 @@ public class PredictionApiProvider implements PredictionApi {
         RealTimeWaterLevelDataRes lzzThreeBridgeData = new RealTimeWaterLevelDataRes();
         if(lzzThreeBridge != null){
             lzzThreeBridgeData.setFlow(lzzThreeBridge.getFlow());
+            lzzThreeBridgeData.setRelativeWaterLevel(lzzThreeBridge.getRelativeWaterLevel());
             lzzThreeBridgeData.setStationName(lzzThreeBridge.getStationName());
         }else {
             lzzThreeBridgeData.setFlow(null);
+            lzzThreeBridgeData.setRelativeWaterLevel(null);
             lzzThreeBridgeData.setStationName("3号桥水位站");
         }
         result.add(lzzThreeBridgeData);
@@ -308,6 +318,7 @@ public class PredictionApiProvider implements PredictionApi {
                 WaterLevelDataRes res = new WaterLevelDataRes();
                 res.setTime(sdf.format(station.getGatherTime()));
                 res.setFlow(station.getFlow());
+                res.setWaterLevel(station.getRelativeWaterLevel());
                 result.add(res);
             }
         }else {
@@ -317,6 +328,7 @@ public class PredictionApiProvider implements PredictionApi {
                     WaterLevelDataRes res = new WaterLevelDataRes();
                     res.setTime(info.getMonitorTime());
                     res.setFlow(info.getSqMonitorFlow());
+                    res.setWaterLevel(info.getSqWaterLevel());
                     result.add(res);
                 }
             }

@@ -10,6 +10,7 @@ import com.cj.model.func.modular.FloodPrevent.model.ModelOfLZZ;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -17,18 +18,21 @@ import static com.cj.model.func.modular.FloodPredict.utils.DataUtils.*;
 
 
 public class PhysicalForcast {
-    String floodLevel="一年一遇";
+    String floodLevel="一年一遇";//洪水等级
+
+    static int before = 10;//前期落地雨时间
     public Object[][] getphysicalresult(ForcastInputParam param, List<List<PredictInputData>> Data, Object[][] snowData)
             throws IOException {
         String path = "D:\\tth_system\\end\\file\\陕北-PARAM.xlsx";
         ShanBeiModel shanBeiModel = new ShanBeiModel();
         String sheetPara=param.getLocation()+"参数";
+        String location = param.getLocation();
         //陕北模型输入、蒸散发和前期雨量
         List<PredictInputData> PreFlow = Data.get(0);
         List<PredictInputData> PointPreREDataList=Data.get(1);
         List<PredictInputData> PointHistoryRDataList=Data.get(2);
-        List<PredictInputData> preREDataList = pointToSurface(PointPreREDataList);
-        List<PredictInputData> historyRDataList = pointToSurface(PointHistoryRDataList);
+        List<PredictInputData> preREDataList = pointToSurface(PointPreREDataList,"小时");
+        List<PredictInputData> historyRDataList = pointToSurface(PointHistoryRDataList,"日");
         Object[][] preREData = new Object[preREDataList.size()][3];
         for (int i = 0; i < preREDataList.size(); i++) {
             preREData[i][0]=preREDataList.get(i).getDates();
@@ -46,7 +50,7 @@ public class PhysicalForcast {
         shanBeiModel.RunoffYieldCalculation_UnevenInfiltration();
         shanBeiModel.ConfluenceCalculation();
 
-        //获得径流序列包含了降水融雪地下水.是前48小时的后续可以改
+        //获得径流序列包含了降水融雪地下水
         Object[][]shortFlow = mixedFlood(param, shanBeiModel.Q, shanBeiModel.L,Data,snowData);
         //将Object转化为Flood类型
         Object[][] peakFlood=setPeakFlood(shortFlow,param);
@@ -104,7 +108,7 @@ public class PhysicalForcast {
             }
             int timeLength =Integer.parseInt((String) peakFloodXlsx[1][1]);
             ModelOfLZZ lzzOut = new ModelOfLZZ(input,timeLength);
-            List<Option> lzzOutList = lzzOut.Calculate_S1();
+            List<Option> lzzOutList = lzzOut.Calculate_S1();;
             //连续列的赋值
             for (int i = 0; i < peakFloodXlsx.length; i++) {
                 peakFloodXlsx[i][5] = lzzOutList.get(i).getH1();
@@ -119,9 +123,9 @@ public class PhysicalForcast {
         }
 
     /**
-     *
+     * 记录好的洪号，洪峰，峰现时间，持续时间，洪量
      * @param predict 预报洪水过程
-     * @return 记录好的洪号，洪峰，峰现时间，持续时间，洪量
+     * @return
      */
     public static List<Object[][]> selectPeakFlood(Object[][] predict){
         List<Object[][]> result = new ArrayList<>();
@@ -319,7 +323,7 @@ public class PhysicalForcast {
                 break;
             }
         }
-        int temp = n+t-1;
+        int temp = n + t -1;
         if (temp>0){
             floodNature[3][1]=flood[temp][1];
         }else {
@@ -435,9 +439,9 @@ public class PhysicalForcast {
     }
 
     /**
-     *
+     *相应水位
      * @param predict 预报流量
-     * @return 相应水位
+     * @return
      */
     public  static double[] getWaterLevel(Object[][] predict,ForcastInputParam param){
         //水位流量关系
@@ -456,7 +460,7 @@ public class PhysicalForcast {
     }
 
     /**
-     * 后续更改（面雨量权重）
+     * 面雨量权重
      * 求洪水组成，各个雨量站代表的汇流面贡献多少水量
      * @param pointData
      * @return
@@ -684,13 +688,63 @@ public class PhysicalForcast {
      * @return
      */
     public static Object[][] temToEva(Object[][] data){
-        Object[][] preData =new Object[data.length][data[0].length];
+        //按温度分配蒸发
+        double[] temperature =new double[data.length];
         for (int i = 0; i < data.length; i++) {
-            preData[i][0]=data[i][0];
-            preData[i][1]=0.0036;//温度转为蒸发量
-            preData[i][2]=data[i][2];
+            temperature[i] = (Double)data[i][1];
         }
-        return preData;
+        double minValue = Arrays.stream(temperature).min().orElse(Double.NaN);
+        for (int i = 0; i < temperature.length; i++) {
+            temperature[i] -= minValue;
+        }
+        double sum = 0;
+        for (double num : temperature) {
+            sum += num;
+        }
+
+        //按月份分配蒸发
+        double evaporation = 0.0;
+        for (int i = 0; i < data.length; i++) {
+            int month = getSpecificDate((Date) data[i][0]).get("月");
+            switch (month){
+                case 1:evaporation=9.0*0.2*0.2*3.14/31/24;
+                    break;
+                case 2:evaporation=16.4*0.2*0.2*3.14/28/24;
+                    break;
+                case 3:evaporation=56.7*0.2*0.2*3.14/31/24;
+                    break;
+                case 4:evaporation=177.3*0.2*0.2*3.14/30/24;
+                    break;
+                case 5:evaporation=270.1*0.2*0.2*3.14/31/24;
+                    break;
+                case 6:evaporation=294.8*0.2*0.2*3.14/30/24;
+                    break;
+                case 7:evaporation=315.3*0.2*0.2*3.14/31/24;
+                    break;
+                case 8:evaporation=275.3*0.2*0.2*3.14/31/24;
+                    break;
+                case 9:evaporation=187.7*0.2*0.2*3.14/30/24;
+                    break;
+                case 10:evaporation=101.8*0.2*0.2*3.14/31/24;
+                    break;
+                case 11:evaporation=26.9*0.2*0.2*3.14/30/24;
+                    break;
+                case 12:evaporation=8.0*0.2*0.2*3.14/31/24;
+                    break;
+            }
+        }
+        for (int i = 0; i < data.length; i++) {
+            if (sum==0){
+                data[i][1] = evaporation;
+            }else {
+                if (temperature[i]<0){
+                    temperature[i]=0;
+                    data[i][1] = evaporation * temperature[i] / sum;
+                }
+                data[i][1] = evaporation * temperature[i] / sum;
+            }
+        }
+        return data;
     }
 
     /**
@@ -705,8 +759,8 @@ public class PhysicalForcast {
     public static Object[][] mixedFlood (ForcastInputParam param,double[] shanBeiQ, int L,
                                          List<List<PredictInputData>> Data, Object[][] snowFlow){
         List<PredictInputData> preFlow = Data.get(0);
-        //留前10小时作为落地雨
-        int before = 10;
+        List<PredictInputData> preTemperature= pointToSurface(Data.get(1),"小时");
+        int preNumber = param.getPeriodStepNumber();;
         Object[][] result= new Object[shanBeiQ.length-before][2];
         //减去汇流滞时
         Date currentDate = param.getPreStartTime();
@@ -718,17 +772,49 @@ public class PhysicalForcast {
         }
         //基础流量
         Double baseAve = 0.0;
-        for (int j = 0; j < 10; j++) {
-            Double baseFlow = 0.0;
-            int n = preFlow.size() -1- j;
-            if (preFlow.get(n).getFlow() != null){
-                baseFlow = preFlow.get(n).getFlow();
-            }else {
-                n--;
-            }
-            baseAve += baseFlow;
+//        for (int j = 0; j < preFlow.size(); j++) {
+//            Double baseFlow = 0.0;
+////            int n = preFlow.size() -1- j;
+////            if (preFlow.get(n).getFlow() != null){
+////                baseFlow = preFlow.get(n).getFlow();
+////            }else {
+////                n--;
+////            }
+//            if (preFlow.get(j).getFlow() != null){
+//                baseFlow = preFlow.get(j).getFlow();
+//            }else {
+//                baseFlow = 0.0;
+//            }
+//            baseAve += baseFlow;
+//        }
+//        baseAve = baseAve / preFlow.size();
+        int month = getSpecificDate(param.getPreStartTime()).get("月");
+        switch (month){//根据收集的历史数据获取基础径流
+            case 1:baseAve=1.29;
+                break;
+            case 2:baseAve=1.19;
+                break;
+            case 3:baseAve=1.77;
+                break;
+            case 4:baseAve=2.78;
+                break;
+            case 5:baseAve=5.0;
+                break;
+            case 6:baseAve=10.2;
+                break;
+            case 7:baseAve=10.0;
+                break;
+            case 8:baseAve=8.0;
+                break;
+            case 9:baseAve=4.18;
+                break;
+            case 10:baseAve=2.5;
+                break;
+            case 11:baseAve=2.23;
+                break;
+            case 12:baseAve=1.52;
+                break;
         }
-        baseAve = baseAve / 10;
         //融雪基流
         Double snowAverage = 0.0;
         Double snowSum = 0.0;
@@ -738,25 +824,20 @@ public class PhysicalForcast {
             }
             snowAverage = snowSum / snowFlow.length;
         }
-        double[] snowDistribution0 = flowDistribution(param,snowAverage,baseAve,Data.get(1));//融雪随温度分配曲线
-        double[] snowDistribution = new double[shanBeiQ.length-before];
-        for (int i = L; i < shanBeiQ.length-before+L; i++) {
-            snowDistribution[i-L]=snowDistribution0[i];
-        }
+        double[] snowDistribution = flowDistribution(preNumber,L,snowAverage,baseAve,preTemperature);//融雪随温度分配曲线
 
-        snowAverage = 0.0;
-        double[] baseDistribution0 = flowDistribution(param,snowAverage,baseAve,Data.get(1));//基础径流随温度分配曲线
-        double[] baseDistribution = new double[shanBeiQ.length-before];
-        for (int i = L; i < shanBeiQ.length-before+L; i++) {
-            baseDistribution[i-L]=baseDistribution0[i];
-        }
+
+//        snowAverage = 0.0;
+//        double[] baseDistribution = flowDistribution(preNumber,L,snowAverage,baseAve,preTemperature);//基础径流
+
         //获得混合后的径流序列
         for (int i = 0; i < shanBeiq.length ; i++){
             result[i][0]=dates[i][0];
             if (param.getIsSnowMeltModel()){
                 result[i][1] = shanBeiq[i] + snowDistribution[i];//将陕北模型和融雪模型结果相加
             }else {
-                result[i][1] = shanBeiq[i] + baseDistribution[i] ;//降水加上前期径流
+//                result[i][1] = shanBeiq[i] + baseDistribution[i] ;//降水加上前期径流
+                result[i][1] = shanBeiq[i] + baseAve;
             }
         }
         return result;
@@ -764,38 +845,63 @@ public class PhysicalForcast {
 
     /**
      * 融雪径流减去基流后，根据温度进行分布
-     * @param param
-     * @param averageData
-     * @param input
-     * @return
      */
-    public static double[] flowDistribution(ForcastInputParam param,Double averageData,Double baseData, List<PredictInputData> input) {
-        int l = param.getPeriodStepNumber() + 10;
+    public static double[] flowDistribution(int preNumber,int L,Double averageData,Double baseData, List<PredictInputData> input) {
+
+        int l = preNumber + before;
         double[] temperature = new double[l];
         for (int i = 0; i < l; i++) {
-            temperature[i] = input.get(l).getTemperature();
+            temperature[i] = input.get(i).getTemperature();
+        }
+        int number = 0;
+        for (int i = 0; i < temperature.length; i++) {
+            if (!(temperature[i]>=5)){
+                temperature[i] = 0.0;
+            }else {
+                number++;
+            }
         }
         double sum = 0;
         for (double num : temperature) {
             sum += num;
         }
-        double mean = sum / temperature.length;
+
         double[] flow = new double[l];
-        if (averageData>baseData){//若预报融雪大于基础流量，先去除基流影响再按温度分布
-            Double data = averageData-baseData;
+        double[] result = new double[preNumber];
+        if (number==0){
             for (int i = 0; i < l; i++) {
-                flow[i] = data * temperature[i] / mean;
+                flow[i] = averageData;
+                }
+            for (int i = L; i < preNumber+L; i++) {
+                result[i-L]=flow[i];
+            }
+            return result;
+        }
+        if (averageData>baseData){//若预报融雪大于基础流量，先去除基流影响再按温度分布
+            Double data = (averageData-baseData)*l;
+            for (int i = 0; i < l; i++) {
+                if (sum == 0){
+                    flow[i] = data;
+                }else {
+                    if (temperature[i]<0){
+                        temperature[i]=0;
+                    }
+                    flow[i] = data * temperature[i] / sum;
+                }
             }
             for (int i = 0; i < l; i++) {
                 flow[i] += baseData;
             }
-        }else {//若预报融雪小于基础流量，基流按温度分布
+        }else {//若预报融雪小于基础流量，基流
             for (int i = 0; i < l; i++) {
-                flow[i] = baseData * temperature[i] / mean;
+                flow[i] = baseData;
             }
         }
-
-        return flow;
+        for (int i = L; i < preNumber+L; i++) {
+            result[i-L]=flow[i];
+        }
+        return result;
     }
+
 
 }

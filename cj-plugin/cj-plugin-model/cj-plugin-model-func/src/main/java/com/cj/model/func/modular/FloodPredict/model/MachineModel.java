@@ -322,7 +322,8 @@ public class MachineModel {
      * @param pvo
      * @return
      */
-    public static Object[][] Trainresult(Object[][] de_result, double[][] reaResult,double[][] preResult, double[][] vmdreaResult,ParamsSetVO pvo) throws IOException, InvalidFormatException {
+    public static Object[][] Trainresult(Object[][] de_result, double[][] reaResult,double[][] preResult,
+                                         double[][] vmdreaResult,ParamsSetVO pvo) throws IOException, InvalidFormatException {
         Object[][] longResult =new Object[de_result.length][9];
         longResult[0][0]="时间";
         longResult[0][1]="实测流量";

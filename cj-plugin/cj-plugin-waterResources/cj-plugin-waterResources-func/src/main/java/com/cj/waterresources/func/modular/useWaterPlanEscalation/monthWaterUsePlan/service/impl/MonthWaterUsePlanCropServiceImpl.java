@@ -68,6 +68,8 @@ public class MonthWaterUsePlanCropServiceImpl extends ServiceImpl<MonthWaterUseP
     @Override
     @Transactional(rollbackFor = Exception.class)
     public RestResponse add(MonthCropImportParamReq req, MultipartFile file) {
+        this.lambdaUpdate().eq(MonthWaterUsePlanCrop::getYear, req.getYear()).eq(MonthWaterUsePlanCrop::getMonth, req.getMonth()).
+                eq(MonthWaterUsePlanCrop::getUnitId, req.getUnitId()).eq(MonthWaterUsePlanCrop::getArea, req.getArea()).remove();
         List<MonthWaterUsePlanCrop> monthWaterUsePlanCropList = new ArrayList<>();
         List<MonthCropImportTableReq> monthCropImportTableReqs = ExcelUtils.importExcelForCrop(file, MonthCropImportTableReq.class);
         for(MonthCropImportTableReq table :monthCropImportTableReqs){
@@ -117,6 +119,8 @@ public class MonthWaterUsePlanCropServiceImpl extends ServiceImpl<MonthWaterUseP
                     owner.setWaterDemandOwner(formatDouble(crop.getIrrigatedArea()*crop.getIrrigatedQuota()/10000));
                     monthWaterUsePlanCropOwnerList.add(owner);
                 }
+                monthWaterUsePlanCropOwnerService.lambdaUpdate().eq(MonthWaterUsePlanCropOwner::getYear, req.getYear()).eq(MonthWaterUsePlanCropOwner::getMonth, req.getMonth()).
+                        eq(MonthWaterUsePlanCropOwner::getUnitId, req.getUnitId()).eq(MonthWaterUsePlanCropOwner::getArea, req.getArea()).remove();
                 return monthWaterUsePlanCropOwnerService.add(monthWaterUsePlanCropOwnerList);
             }else {
                 return RestResponse.no("上传失败");

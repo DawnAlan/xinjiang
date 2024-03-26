@@ -14,4 +14,7 @@ public class WaterLevelDataRes implements Serializable {
 
     @ApiModelProperty("时间")
     private String time;
+
+    @ApiModelProperty("水位")
+    private Double relativeWaterLevel;
 }

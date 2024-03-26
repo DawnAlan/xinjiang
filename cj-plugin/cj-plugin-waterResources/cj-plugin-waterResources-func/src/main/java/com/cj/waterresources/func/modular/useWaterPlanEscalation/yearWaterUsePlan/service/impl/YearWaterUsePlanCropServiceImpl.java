@@ -65,6 +65,10 @@ public class YearWaterUsePlanCropServiceImpl extends ServiceImpl<YearWaterUsePla
     @Override
     @Transactional(rollbackFor = Exception.class)
     public RestResponse add(YearCropImportParamReq req, MultipartFile file) {
+        this.lambdaUpdate().
+                eq(YearWaterUsePlanCrop::getYear,req.getYear()).
+                eq(YearWaterUsePlanCrop::getArea,req.getArea()).
+                eq(YearWaterUsePlanCrop::getUnitId,req.getUnitId()).remove();
         List<YearWaterUsePlanCrop> yearWaterUsePlanCropList = new ArrayList<>();
         List<YearWaterUsePlanCropOwner> yearWaterUsePlanCropOwnerList = new ArrayList<>();
         List<YearCropImportTableReq> yearCropImportTableReqs = ExcelUtils.importExcelForCrop(file, YearCropImportTableReq.class);
@@ -180,6 +184,10 @@ public class YearWaterUsePlanCropServiceImpl extends ServiceImpl<YearWaterUsePla
                     owner.setWaterDemandOwner(formatDouble(crop.getIrrigatedArea()*crop.getIrrigatedQuota()/10000));
                     yearWaterUsePlanCropOwnerList.add(owner);
                 }
+                yearWaterUsePlanCropOwnerService.lambdaUpdate().
+                        eq(YearWaterUsePlanCropOwner::getYear,req.getYear()).
+                        eq(YearWaterUsePlanCropOwner::getArea,req.getArea()).
+                        eq(YearWaterUsePlanCropOwner::getUnitId,req.getUnitId()).remove();
                 RestResponse restResponse = yearWaterUsePlanCropOwnerService.addList(yearWaterUsePlanCropOwnerList);
                 if(restResponse.getCode()==200){
                     return RestResponse.ok("插入成功");

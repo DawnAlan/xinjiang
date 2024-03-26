@@ -13,4 +13,7 @@ public class RealTimeWaterLevelDataRes implements Serializable {
 
     @ApiModelProperty("当前流量")
     private Double flow;
+
+    @ApiModelProperty("水位")
+    private Double relativeWaterLevel;
 }

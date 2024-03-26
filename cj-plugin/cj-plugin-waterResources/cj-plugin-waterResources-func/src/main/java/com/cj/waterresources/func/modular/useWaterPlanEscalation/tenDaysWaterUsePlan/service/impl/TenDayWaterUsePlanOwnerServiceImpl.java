@@ -23,7 +23,7 @@ public class TenDayWaterUsePlanOwnerServiceImpl extends ServiceImpl<TenDayWaterU
 
     @Override
     public RestResponse<List<TenDayWaterUsePlanOwner>> selectList(TenDayWaterUsePlanSelectReq req) {
-        List<TenDayWaterUsePlanOwner> list = this.lambdaQuery().eq(StringUtils.isNotEmpty(req.getIrrigatedArea()),TenDayWaterUsePlanOwner::getIrrigatedArea, req.getIrrigatedArea()).
+        List<TenDayWaterUsePlanOwner> list = this.lambdaQuery().eq(StringUtils.isNotEmpty(req.getIrrigatedArea()),TenDayWaterUsePlanOwner::getArea, req.getIrrigatedArea()).
                 eq(StringUtils.isNotEmpty(req.getUseWaterUser()),TenDayWaterUsePlanOwner::getUseWaterUser, req.getUseWaterUser()).
                 eq(StringUtils.isNotEmpty(req.getCropType()),TenDayWaterUsePlanOwner::getCropType, req.getCropType()).
                 eq(req.getYear() !=null,TenDayWaterUsePlanOwner::getYear, req.getYear()).
