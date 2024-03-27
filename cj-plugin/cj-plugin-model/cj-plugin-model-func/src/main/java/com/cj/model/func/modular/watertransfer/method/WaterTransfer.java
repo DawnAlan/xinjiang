@@ -2,6 +2,8 @@ package com.cj.model.func.modular.watertransfer.method;
 
 import java.time.DateTimeException;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public class WaterTransfer {
     private Date[] time;
@@ -37,6 +39,17 @@ public class WaterTransfer {
     //3,4西干东干支渠供水
     private double [][]waterSupply3;
     private double [][]waterSupply4;
+
+    public Map<String, Object> getDataDemand() {
+        return dataDemand;
+    }
+
+    public void setDataDemand(Map<String, Object> dataDemand) {
+        this.dataDemand = dataDemand;
+    }
+
+    private Map<String, Object> dataDemand;
+
 
     public double[] getFitness() {
         return fitness;

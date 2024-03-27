@@ -2,9 +2,12 @@ package com.cj.model.func.modular.watertransfer.entity;
 
 import lombok.Data;
 
+import java.util.Date;
+
 @Data
 public class Waterdemand {
 
+    private Date date;
     //用水计划类型
     private String useWaterPlan;
     //用水数据

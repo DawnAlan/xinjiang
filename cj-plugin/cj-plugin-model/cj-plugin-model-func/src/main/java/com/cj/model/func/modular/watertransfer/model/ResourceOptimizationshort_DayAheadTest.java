@@ -148,7 +148,7 @@ public class ResourceOptimizationshort_DayAheadTest
         Map<String, Object> dataMonth=new HashMap<>();
         Map<String, Object> dataYear=new HashMap<>();
         dataMonth=InputWay.setwaterdemandTendays(waterTransferReq,whichDecade,dataYear,date[1]-1);
-        dataDemand= InputWay.setWaterdemandDay(waterTransferReq,dataMonth,xnum,(int)daynum[whichDecade],whichDecade);
+        dataDemand= InputWay.setDay(waterTransferReq,dataMonth,xnum,(int)daynum[whichDecade],whichDecade);
 
         String[]nameAgricultureEast=(String[]) dataDemand.get("河东灌溉站点名");
         String[] nameAgricultureWest=(String[]) dataDemand.get("河西灌溉站点名");
@@ -157,6 +157,21 @@ public class ResourceOptimizationshort_DayAheadTest
         String[]nameGreenQushou=(String[]) dataDemand.get("渠首绿化站点名");
         String[]nameIndustryQushou=(String[]) dataDemand.get("渠首工业站点名");
         String[]nameAgricultureQushou=(String[]) dataDemand.get("渠首农业站点名");
+
+
+        String[][]nameAgricultureEastDay=(String[][]) dataDemand.get("河东灌溉子级站点名");
+        String[][]nameAgricultureWestDay=(String[][]) dataDemand.get("河西灌溉子级站点名");
+        String[][]nameGreenEastDay=(String[][]) dataDemand.get("河东绿化子级站点名");
+        String[][]nameGreenWestDay=(String[][]) dataDemand.get("河西绿化子级站点名");
+        String[][]nameGreenQushouDay=(String[][]) dataDemand.get("渠首绿化子级站点名");
+        String[][]nameAgricultureQushouDay=(String[][]) dataDemand.get("渠首农业子级站点名");
+
+        double[][]waterAgricultureEastDay=(double[][]) dataDemand.get("河东灌溉子级需水");
+        double[][]waterAgricultureWestDay=(double[][]) dataDemand.get("河西灌溉子级需水");
+        double[][]waterGreenEastDay=(double[][]) dataDemand.get("河东绿化子级需水");
+        double[][]waterGreenWestDay=(double[][]) dataDemand.get("河西绿化子级需水");
+        double[][]waterGreenQushouDay=(double[][]) dataDemand.get("渠首绿化子级需水");
+        double[][]waterAgricultureQushouDay=(double[][]) dataDemand.get("渠首农业子级需水");
 
         double[][] waterDemand1= new double[5][calStep];
 
@@ -531,7 +546,7 @@ public class ResourceOptimizationshort_DayAheadTest
         double[]ecologyFlow=new double[period];
         double[]ecologyWaterNeed=new double[period];
         for (int x=0;x<period;x++){
-            double eco=minOutflow*delatT/1e4;
+            double eco=Double.parseDouble(da.format(minOutflow*delatT/1e4));
             ecologyWater[x]=eco;
             ecologyWaterNeed[x]=eco;
         }
@@ -687,7 +702,7 @@ public class ResourceOptimizationshort_DayAheadTest
             double eco=ecologyWater[x];
             double  all_num=eco+sup;
             allwater[x]=all_num;
-            ecologyFlow[x]= ecologyWater[x]*1e4/delatT;
+            ecologyFlow[x]=Double.parseDouble(da1.format( ecologyWater[x]*1e4/delatT));
             proportion[0][x] = (eco) / (all_num);
             proportion[1][x] = (waterSupply[0][x] + waterSupply[1][x]) / (all_num);
             proportion[2][x] = (waterSupply[2][x]) / (all_num);
@@ -771,6 +786,64 @@ public class ResourceOptimizationshort_DayAheadTest
                 }
             }
         }
+        double  eastGreen=1;
+        double  westGreen=1;
+        double  westAgriculture=1;
+        double  eastAgriculture=1;
+        if (waterdemand4[0][0]+waterdemand4[1][0]!=0){
+            eastGreen=(waterSupply4[0][0]+waterSupply4[1][0]) /( waterdemand4[0][0]+waterdemand4[1][0]);
+        }
+        if (waterdemand3[0][0]!=0){
+            westGreen=waterSupply3[0][0]/waterdemand3[0][0];
+        }
+        if (waterDemand[3][0]-waterdemand4[0][0]!=0){
+            westAgriculture=(waterSupply[3][0]-waterSupply3[0][0]) / (waterDemand[3][0]-waterdemand3[0][0]);
+        }
+        if (waterDemand[4][0]-waterdemand4[0][0]-waterdemand4[1][0]!=0){
+            eastAgriculture=(waterSupply[4][0]-waterSupply4[0][0]-waterSupply4[1][0]) / (waterDemand[4][0]-waterdemand4[0][0]-waterdemand4[1][0]);
+        }
+        //河东农业
+        for (int i=0;i<waterAgricultureEastDay.length;i++){
+            for (int ii=0;ii<waterAgricultureEastDay[i].length;ii++){
+                waterAgricultureEastDay[i][ii]=eastAgriculture*waterAgricultureEastDay[i][ii];
+            }
+        }
+        //河西农业
+        for (int i=0;i<waterAgricultureWestDay.length;i++){
+            for (int ii=0;ii<waterAgricultureWestDay[i].length;ii++){
+                waterAgricultureWestDay[i][ii]=westAgriculture*waterAgricultureWestDay[i][ii];
+            }
+        }
+        //河东绿化
+        for (int i=0;i<waterGreenEastDay.length;i++){
+            for (int ii=0;ii<waterGreenEastDay[i].length;ii++){
+                waterGreenEastDay[i][ii]=eastGreen*waterGreenEastDay[i][ii];
+            }
+        }
+        //河西绿化
+        for (int i=0;i<waterGreenWestDay.length;i++){
+            for (int ii=0;ii<waterGreenWestDay[i].length;ii++){
+                waterGreenWestDay[i][ii]=westGreen*waterGreenWestDay[i][ii];
+            }
+        }
+        //渠首绿化
+        for (int i=0;i<waterGreenQushouDay.length;i++){
+            for (int ii=0;ii<waterGreenQushouDay[i].length;ii++){
+                waterGreenQushouDay[i][ii]=eastGreen*waterGreenQushouDay[i][ii];
+            }
+        }
+        //渠首农业
+        for (int i=0;i<waterAgricultureQushouDay.length;i++){
+            for (int ii=0;ii<waterAgricultureQushouDay[i].length;ii++){
+                waterAgricultureQushouDay[i][ii]=eastAgriculture*waterAgricultureQushouDay[i][ii];
+            }
+        }
+        dataDemand.put("河东农业供水",waterAgricultureEastDay);
+        dataDemand.put("河西农业供水",waterAgricultureWestDay);
+        dataDemand.put("河东绿化供水",waterGreenEastDay);
+        dataDemand.put("河西绿化供水",waterGreenWestDay);
+        dataDemand.put("渠首绿化供水",waterGreenQushouDay);
+        dataDemand.put("渠首农业供水",waterAgricultureQushouDay);
 //        绿化配水比例
         double[][]proportionGreenEast=new double[nameGreenEast.length][period];
         double[][]proportionGreenWest=new double[nameGreenWest.length][period];
@@ -960,6 +1033,8 @@ public class ResourceOptimizationshort_DayAheadTest
         waterTransfer.setEcologyWater(ecologyWater);
         waterTransfer.setEcologyWaterNeed(ecologyWaterNeed);
         waterTransfer.setFitness(fitness_term);
+
+        waterTransfer.setDataDemand(dataDemand);
 
         result.add(waterTransfer);
         return  result;
@@ -1165,7 +1240,7 @@ public class ResourceOptimizationshort_DayAheadTest
                         water_Supply_tth[t]=0;
                     }
                     if (outflow_term[m][t] >= minOutflow + watershortage_allQ[t] ){
-                        fitness2+=(outflow_term[m][t]-(minOutflow + watershortage_allQ[t]))* delatT  / 1e4;
+                        fitness2+=Double.parseDouble(da.format((outflow_term[m][t]-(minOutflow + watershortage_allQ[t]))* delatT  / 1e4));
 
                         water_Supply_tth[t]=waterDemand[1][t]+waterDemand[2][t]+waterDemand[3][t]+waterDemand[4][t];
                         water_shortage1[m][t]=0;
@@ -1196,11 +1271,33 @@ public class ResourceOptimizationshort_DayAheadTest
                         waterSupply[3][t] = 0;
                         waterSupply[4][t] = 0;
                     }
-                    else if (waterDemand[3][t] + waterDemand[4][t]!=0)
-                    {
-                        waterSupply[3][t] = waterDemand[3][t] * (water_Supply_tth[t] - (waterDemand[1][t] + waterDemand[2][t])) / (waterDemand[3][t] + waterDemand[4][t]);
-                        waterSupply[4][t] = waterDemand[4][t] * (water_Supply_tth[t] - (waterDemand[1][t] + waterDemand[2][t])) / (waterDemand[3][t] + waterDemand[4][t]);
+                    if (waterDemand[3][t] >= waterDemand[4][t]){
+                        if (0.5 * (water_Supply_tth[t] - (waterDemand[1][t] + waterDemand[2][t]))>=waterDemand[4][t])
+                        {
+                            waterSupply[3][t] = (water_Supply_tth[t] - (waterDemand[1][t] + waterDemand[2][t]+waterDemand[4][t]));
+                            waterSupply[4][t] = waterDemand[4][t];
+                        }
+                        else {
+                            waterSupply[3][t] = 0.5*(water_Supply_tth[t] - (waterDemand[1][t] + waterDemand[2][t]));
+                            waterSupply[4][t] = 0.5*(water_Supply_tth[t] - (waterDemand[1][t] + waterDemand[2][t]));
+                        }
                     }
+                    if (waterDemand[3][t] < waterDemand[4][t]){
+                        if (0.5 * (water_Supply_tth[t] - (waterDemand[1][t] + waterDemand[2][t]))>=waterDemand[3][t])
+                        {
+                            waterSupply[3][t] = waterDemand[3][t] ;
+                            waterSupply[4][t] = (water_Supply_tth[t] - (waterDemand[1][t] + waterDemand[2][t]+waterDemand[3][t]));
+                        }
+                        else {
+                            waterSupply[3][t] = 0.5*(water_Supply_tth[t] - (waterDemand[1][t] + waterDemand[2][t]));
+                            waterSupply[4][t] = 0.5*(water_Supply_tth[t] - (waterDemand[1][t] + waterDemand[2][t]));
+                        }
+                    }
+//                    else if (waterDemand[3][t] + waterDemand[4][t]!=0)
+//                    {
+//                        waterSupply[3][t] = waterDemand[3][t] * (water_Supply_tth[t] - (waterDemand[1][t] + waterDemand[2][t])) / (waterDemand[3][t] + waterDemand[4][t]);
+//                        waterSupply[4][t] = waterDemand[4][t] * (water_Supply_tth[t] - (waterDemand[1][t] + waterDemand[2][t])) / (waterDemand[3][t] + waterDemand[4][t]);
+//                    }
                     if (waterSupply[3][t]<=0){
                         waterSupply[3][t]=0;
                     }
@@ -1222,19 +1319,6 @@ public class ResourceOptimizationshort_DayAheadTest
                 }
             }
 
-
-//        if (id==2){
-//            for (int m=0;m<waterDemand.length;m++)
-//                for (int n=0;n<period;n++)
-//                {
-//                    if (waterDemand[m][n]==0){
-//
-//                    }
-//                    else {
-//                        fitness1 +=1-waterSupply[m][n]/waterDemand[m][n];
-//                    }
-//                }
-//        }
 
         fitness1_penalty = fitness1 + penaltyFactor * constraintViolation;//
         fitness2_penalty = fitness2 - penaltyFactor * constraintViolation;//
