@@ -3,6 +3,7 @@ package com.cj.flood.func.modular.prediction.provider;
 import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.cj.common.model.RestResponse;
+import com.cj.common.util.NumberUtil;
 import com.cj.common.util.RedisUtil;
 import com.cj.flood.api.PredictionApi;
 import com.cj.flood.func.modular.dispatch.entity.FloodControlOperation;
@@ -20,10 +21,15 @@ import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.entity.LzzGaugin
 import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.service.LzzGaugingStationService;
 import com.cj.middleDatabase.func.modular.lzz.lzzRainfallStation.entity.LzzRainfallStation;
 import com.cj.middleDatabase.func.modular.lzz.lzzRainfallStation.service.LzzRainfallStationService;
+import com.cj.middleDatabase.func.modular.lzz.storageCapacityCurve.entity.StorageCapacityCurve;
+import com.cj.middleDatabase.func.modular.lzz.storageCapacityCurve.service.StorageCapacityCurveService;
 import lombok.SneakyThrows;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -49,6 +55,9 @@ public class PredictionApiProvider implements PredictionApi {
 
     @Resource
     private RedisUtil redisUtil;
+
+    @Resource
+    private StorageCapacityCurveService storageCapacityCurveService;
 
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd HH:mm");
@@ -118,13 +127,15 @@ public class PredictionApiProvider implements PredictionApi {
                     dateList.add(parse);
                 }
                 List<Date> collect = dateList.stream().sorted(Comparator.comparing(Date::getDate, Comparator.reverseOrder())).collect(Collectors.toList());
-                Double v = (Double) redisUtil.get("lzz:time:waterLevel:true:"+sdf1.format(collect.get(0)));
-                lzzData.setRealTimeWaterLevel(v);
+                Double v = collect.size()>0?(Double) redisUtil.get("lzz:time:waterLevel:true:"+sdf1.format(collect.get(0))):null;
+                lzzData.setRealTimeWaterLevel(v==null?null:formatDouble(v));
+                lzzData.setUsedStorageCapacity(v==null?null:formatDouble(calculateStorageCapacity(v,"lzz")));
+                lzzData.setRemainingStorageCapacity(v==null?null:7374.0 - lzzData.getUsedStorageCapacity());
             }else {
                 lzzData.setRealTimeWaterLevel(lzzGaugingStation.getRelativeWaterLevel());
+                lzzData.setUsedStorageCapacity(lzzGaugingStation.getStorageCapacity());
+                lzzData.setRemainingStorageCapacity(7374.0 - lzzData.getUsedStorageCapacity());
             }
-            lzzData.setUsedStorageCapacity(lzzGaugingStation.getStorageCapacity());
-            lzzData.setRemainingStorageCapacity(7374.0 - lzzData.getUsedStorageCapacity());
         }else {
             Set<String> allKeys = redisUtil.getAllKeys("lzz:time:waterLevel:true");
             List<Date> dateList = new ArrayList<>();
@@ -139,12 +150,12 @@ public class PredictionApiProvider implements PredictionApi {
                 dateList.add(parse);
             }
             List<Date> collect = dateList.stream().sorted(Comparator.comparing(Date::getDate, Comparator.reverseOrder())).collect(Collectors.toList());
-            Double v = (Double) redisUtil.get("lzz:time:waterLevel:true:"+sdf1.format(collect.get(0)));
-            lzzData.setRealTimeWaterLevel(v);
+            Double v = collect.size()>0?(Double) redisUtil.get("lzz:time:waterLevel:true:"+sdf1.format(collect.get(0))):null;
+            lzzData.setRealTimeWaterLevel(v==null?null:formatDouble(v));
             lzzData.setReservoirName("楼庄子库水位站");
             lzzData.setFloodControlLevel(1394.50);
-            lzzData.setUsedStorageCapacity(null);
-            lzzData.setRemainingStorageCapacity(null);//总库容：7374.0
+            lzzData.setUsedStorageCapacity(v==null?null:formatDouble(calculateStorageCapacity(v,"lzz")));
+            lzzData.setRemainingStorageCapacity(v==null?null:7374-lzzData.getUsedStorageCapacity());//总库容：7374.0
         }
         result.add(lzzData);
         List<IrrigatedPlatformDataInfo>  irrigatedPlatformDataInfoList = irrigatedPlatformDataInfoService.selectInfoByTime(date,"头屯河水库水位");
@@ -162,11 +173,33 @@ public class PredictionApiProvider implements PredictionApi {
             tthData.setUsedStorageCapacity(irrigatedPlatformDataInfo.getSqCapacity());
             tthData.setRemainingStorageCapacity(2030.0 - tthData.getUsedStorageCapacity());
         }else {
+            Set<String> allKeysWaterLevel = redisUtil.getAllKeys("irrigatedPlatform:sq:tth:waterLevel");
+            List<Date> dateListWaterLevel = new ArrayList<>();
+            for(String s:allKeysWaterLevel){
+                String[] split1 = s.split(" ");
+                String[] split2 = split1[0].split(":");
+                String dateTemp =split2[split2.length-1]+" "+split1[split1.length-1];
+                Date parse = sdf1.parse(dateTemp);
+                dateListWaterLevel.add(parse);
+            }
+            List<Date> collectWaterLevel = dateListWaterLevel.stream().sorted(Comparator.comparing(Date::getDate, Comparator.reverseOrder())).collect(Collectors.toList());
+            Double waterLevel = (Double) redisUtil.get("irrigatedPlatform:sq:tth:waterLevel:"+sdf1.format(collectWaterLevel.get(0)));
+            Set<String> allKeysCapacity = redisUtil.getAllKeys("irrigatedPlatform:sq:tth:capacity");
+            List<Date> dateListCapacity = new ArrayList<>();
+            for(String s:allKeysCapacity){
+                String[] split1 = s.split(" ");
+                String[] split2 = split1[0].split(":");
+                String dateTemp =split2[split2.length-1]+" "+split1[split1.length-1];
+                Date parse = sdf1.parse(dateTemp);
+                dateListCapacity.add(parse);
+            }
+            List<Date> collectCapacity = dateListCapacity.stream().sorted(Comparator.comparing(Date::getDate, Comparator.reverseOrder())).collect(Collectors.toList());
+            Double capacity = (Double) redisUtil.get("irrigatedPlatform:sq:tth:capacity:"+sdf1.format(collectCapacity.get(0)));
             tthData.setReservoirName("头屯河水库水位");
             tthData.setFloodControlLevel(988.0);
-            tthData.setRealTimeWaterLevel(null);
-            tthData.setUsedStorageCapacity(null);
-            tthData.setRemainingStorageCapacity(null);
+            tthData.setRealTimeWaterLevel(waterLevel);
+            tthData.setUsedStorageCapacity(capacity);
+            tthData.setRemainingStorageCapacity(2030.0-capacity);
         }
         result.add(tthData);
         return JSONObject.toJSONString(result);
@@ -586,5 +619,30 @@ public class PredictionApiProvider implements PredictionApi {
     @Override
     public void refreshWaterStorageOverview() {
         floodHomePageService.waterStorageOverviewSchedule(new Date());
+    }
+
+    private Double calculateStorageCapacity(Double waterLevel,String reservoir){
+        DecimalFormat df = new DecimalFormat("0.0");
+        String string = (String)redisUtil.get("storageCapacityCurve:"+reservoir);
+        if(StringUtils.isEmpty(string)){
+            List<StorageCapacityCurve> reservoirStorageCapacityCurve = storageCapacityCurveService.lambdaQuery().eq(StorageCapacityCurve::getReservoir, reservoir).list();
+            redisUtil.set("storageCapacityCurve:"+reservoir, JSONObject.toJSONString(reservoirStorageCapacityCurve));
+            string = JSONObject.toJSONString(reservoirStorageCapacityCurve);
+        }
+        List<StorageCapacityCurve> reservoirList = JSONObject.parseArray(string, StorageCapacityCurve.class);
+        String[] lzzSplit = waterLevel.toString().split("\\.");
+        List<String> strings = NumberUtil.roundDecimal(lzzSplit[0], lzzSplit[1]);
+        List<StorageCapacityCurve> list = reservoirList.stream().filter(t -> t.getWaterLevel().compareTo(new BigDecimal(strings.get(0))) == 0 && df.format(t.getInterpolation()).equals(strings.get(1).length()<2?"0.0":strings.get(1).split("\\.")[0]+"."+strings.get(1).split("\\.")[1].substring(0,1))).collect(Collectors.toList());
+        if (null != list && list.size() > 0) {
+            return list.get(0).getStorageCapacity().doubleValue();
+        } else {
+            return null;
+        }
+    }
+
+    private Double formatDouble(Double value) {
+        DecimalFormat df = new DecimalFormat("0.00");
+        String format = df.format(value);
+        return Double.parseDouble(format);
     }
 }

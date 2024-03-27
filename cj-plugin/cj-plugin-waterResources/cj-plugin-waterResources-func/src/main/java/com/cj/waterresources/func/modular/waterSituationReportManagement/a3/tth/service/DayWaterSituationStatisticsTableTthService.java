@@ -3,6 +3,7 @@ package com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tth
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.cj.common.model.RestResponse;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.entity.DayWaterSituationStatisticsTableLzz;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tth.bean.res.TthReportFormsRes;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tth.entity.DayWaterSituationStatisticsTableTth;
 
 import java.util.List;
@@ -26,6 +27,6 @@ public interface DayWaterSituationStatisticsTableTthService extends IService<Day
 
     RestResponse insertTodayMeanValue();
 
-    RestResponse selectReportForms(String startTime, String endTime);
+    RestResponse<List<TthReportFormsRes>> selectReportForms(String startTime, String endTime);
 }
 

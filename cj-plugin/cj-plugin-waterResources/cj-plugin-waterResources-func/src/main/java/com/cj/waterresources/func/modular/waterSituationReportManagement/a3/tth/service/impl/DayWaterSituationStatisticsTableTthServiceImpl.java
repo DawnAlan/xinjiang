@@ -385,7 +385,7 @@ public class DayWaterSituationStatisticsTableTthServiceImpl extends ServiceImpl<
 
     @SneakyThrows
     @Override
-    public RestResponse selectReportForms(String startTime, String endTime) {
+    public RestResponse<List<TthReportFormsRes>> selectReportForms(String startTime, String endTime) {
         List<TthReportFormsRes> resList = new ArrayList<>();
         List<DayWaterSituationStatisticsTableTth> dayWaterSituationStatisticsListThisYear = this.baseMapper.selectReportForms(startTime, endTime);
         String lastYearStartTime = getLastYearTime(startTime);
@@ -402,7 +402,7 @@ public class DayWaterSituationStatisticsTableTthServiceImpl extends ServiceImpl<
         String ckllTableId = tthTableParamList.stream().filter(t -> t.getParamName().equals("河道流量")).collect(Collectors.toList()).get(0).getId();
         String bgTempTableId = tthTableParamList.stream().filter(t -> t.getParamName().equals("八钢流量")).collect(Collectors.toList()).get(0).getId();
         String hyTableId = tthTableParamList.stream().filter(t -> t.getParamName().equals("红岩流量")).collect(Collectors.toList()).get(0).getId();
-        String bgTableId = tthTableParamList.stream().filter(t -> t.getParamName().equals("八钢流量") && t.getPId().equals(bgTempTableId)).collect(Collectors.toList()).get(0).getId();
+        String bgTableId = tthTableParamList.stream().filter(t -> t.getParamName().equals("合计") && t.getPId().equals(bgTempTableId)).collect(Collectors.toList()).get(0).getId();
         String sldLlTableId = tthTableParamList.stream().filter(t -> t.getParamName().equals("渗流点流量")).collect(Collectors.toList()).get(0).getId();
         String kswTableId = tthTableParamList.stream().filter(t -> t.getParamName().equals("库水位")).collect(Collectors.toList()).get(0).getId();
         String krTableId = tthTableParamList.stream().filter(t -> t.getParamName().equals("水库库容")).collect(Collectors.toList()).get(0).getId();
@@ -430,7 +430,8 @@ public class DayWaterSituationStatisticsTableTthServiceImpl extends ServiceImpl<
         if(resList.isEmpty()){
             return RestResponse.no("所选时间段暂无数据！");
         }else {
-            return RestResponse.ok(resList);
+            List<TthReportFormsRes> collect = resList.stream().sorted(Comparator.comparing(TthReportFormsRes::getDate, Comparator.nullsFirst(Comparator.naturalOrder()))).collect(Collectors.toList());
+            return RestResponse.ok(collect);
         }
     }
 

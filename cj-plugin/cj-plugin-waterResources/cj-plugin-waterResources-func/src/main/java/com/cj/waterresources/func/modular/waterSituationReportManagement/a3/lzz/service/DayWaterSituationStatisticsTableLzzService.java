@@ -2,6 +2,7 @@ package com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.cj.common.model.RestResponse;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.bean.res.LzzReportFormsRes;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.entity.DayWaterSituationStatisticsTableLzz;
 
 import java.util.Date;
@@ -27,7 +28,7 @@ public interface DayWaterSituationStatisticsTableLzzService extends IService<Day
     RestResponse insertTodayMeanValue();
 
 
-    RestResponse selectReportForms(String startTime, String endTime);
+    RestResponse<List<LzzReportFormsRes>> selectReportForms(String startTime, String endTime);
 
 
 }

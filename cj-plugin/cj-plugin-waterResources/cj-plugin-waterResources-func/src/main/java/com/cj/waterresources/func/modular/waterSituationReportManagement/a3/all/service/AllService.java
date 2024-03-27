@@ -22,4 +22,6 @@ public interface AllService {
     RestResponse selectListForIndustrialWaterFee(SelectListForIndustrialWaterFeeReq req);
 
     RestResponse selectReportForms(ReportFormsReq req);
+
+    RestResponse selectFloodRetentionCapacity(String date);
 }

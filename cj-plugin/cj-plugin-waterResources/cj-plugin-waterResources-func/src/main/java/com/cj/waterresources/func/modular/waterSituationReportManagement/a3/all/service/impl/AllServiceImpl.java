@@ -12,6 +12,7 @@ import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req.ReportFormsReq;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req.SelectListForIndustrialWaterFeeReq;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.res.A3StatisticsRes;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.res.FloodRetentionCapacityRes;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.res.SelectListForIndustrialWaterFeeRes;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.service.AllService;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.dkl.mapper.DayWaterSituationStatisticsTableDklMapper;
@@ -19,6 +20,7 @@ import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hd.e
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hd.mapper.DayWaterSituationStatisticsTableHdMapper;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hx.entity.DayWaterSituationStatisticsTableHx;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hx.mapper.DayWaterSituationStatisticsTableHxMapper;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.bean.res.LzzReportFormsRes;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.entity.DayWaterSituationStatisticsTableLzz;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.mapper.DayWaterSituationStatisticsTableLzzMapper;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.service.DayWaterSituationStatisticsTableLzzService;
@@ -29,17 +31,20 @@ import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.m
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.service.DayWaterSituationStatisticsTableQsLhService;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.syyl.mapper.DayWaterSituationStatisticsTableSyylMapper;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tjc.mapper.DayWaterSituationStatisticsTableTjcMapper;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tth.bean.res.TthReportFormsRes;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tth.entity.DayWaterSituationStatisticsTableTth;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tth.mapper.DayWaterSituationStatisticsTableTthMapper;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tth.service.DayWaterSituationStatisticsTableTthService;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.zcc.mapper.DayWaterSituationStatisticsTableZccMapper;
 import lombok.AllArgsConstructor;
+import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -469,6 +474,80 @@ public class AllServiceImpl implements AllService {
         }
     }
 
+    @SneakyThrows
+    @Override
+    public RestResponse selectFloodRetentionCapacity(String date) {
+        List<FloodRetentionCapacityRes> resList = new ArrayList<>();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        String endTime = date;
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(sdf.parse(endTime));
+        calendar.add(Calendar.DAY_OF_MONTH,-1);
+        Date startTimeTemp = calendar.getTime();
+        String startTime = sdf.format(startTimeTemp);
+        List<LzzReportFormsRes> lzzReportFormsResList = dayWaterSituationStatisticsTableLzzService.selectReportForms(startTime, endTime).getData();
+        List<TthReportFormsRes> tthReportFormsResList = dayWaterSituationStatisticsTableTthService.selectReportForms(startTime, endTime).getData();
+        if(!lzzReportFormsResList.isEmpty()){
+            FloodRetentionCapacityRes lzz = new FloodRetentionCapacityRes();
+            lzz.setReservoirName("楼庄子水库");
+            Double aDouble = formatDouble(lzzReportFormsResList.get(lzzReportFormsResList.size() - 1).getStorageCapacity() - lzzReportFormsResList.get(lzzReportFormsResList.size() - 2).getStorageCapacity());
+            lzz.setYesterdayFloodRetentionCapacity(aDouble>0?aDouble:0.00);
+            lzz.setYearFloodRetentionCapacity((Double)redisUtil.get("floodRetentionCapacity:lzz"));
+
+            Set<String> allKeysInputFlow = redisUtil.getAllKeys("lzz:input:"+endTime);
+            List<Date> dateListInputFlow = new ArrayList<>();
+            for(String s:allKeysInputFlow){
+                String[] split1 = s.split(" ");
+                String[] split2 = split1[0].split(":");
+                String dateTemp =split2[split2.length-1]+" "+split1[split1.length-1];
+                Date parse = sdf1.parse(dateTemp);
+                dateListInputFlow.add(parse);
+            }
+            List<Date> collectInputFlow = dateListInputFlow.stream().sorted(Comparator.comparing(Date::getDate, Comparator.reverseOrder())).collect(Collectors.toList());
+            Double inputFlow = (Double) redisUtil.get("lzz:input:"+sdf1.format(collectInputFlow.get(0)));
+            lzz.setInputFlow(inputFlow);
+            Set<String> allKeysOut = redisUtil.getAllKeys("lzz:out:"+endTime);
+            List<Date> dateListOut = new ArrayList<>();
+            for(String s:allKeysOut){
+                String[] split1 = s.split(" ");
+                String[] split2 = split1[0].split(":");
+                String dateTemp =split2[split2.length-1]+" "+split1[split1.length-1];
+                Date parse = sdf1.parse(dateTemp);
+                dateListOut.add(parse);
+            }
+            List<Date> collectOut = dateListInputFlow.stream().sorted(Comparator.comparing(Date::getDate, Comparator.reverseOrder())).collect(Collectors.toList());
+            Double out = (Double) redisUtil.get("lzz:out:"+sdf1.format(collectOut.get(0)));
+            lzz.setOutputFlow(out);
+            resList.add(lzz);
+        }
+        if(!tthReportFormsResList.isEmpty()){
+            FloodRetentionCapacityRes tth = new FloodRetentionCapacityRes();
+            tth.setReservoirName("头屯河水库");
+            Double aDouble = formatDouble(tthReportFormsResList.get(tthReportFormsResList.size() - 1).getStorageCapacity() - tthReportFormsResList.get(tthReportFormsResList.size() - 2).getStorageCapacity());
+            tth.setYesterdayFloodRetentionCapacity(aDouble>0?aDouble:0.00);
+            tth.setYearFloodRetentionCapacity((Double)redisUtil.get("floodRetentionCapacity:tth"));
+            Set<String> allKeysInputFlow = redisUtil.getAllKeys("irrigatedPlatform:sq:tth:input:"+endTime);
+            List<Date> dateListInputFlow = new ArrayList<>();
+            for(String s:allKeysInputFlow){
+                String[] split1 = s.split(" ");
+                String[] split2 = split1[0].split(":");
+                String dateTemp =split2[split2.length-1]+" "+split1[split1.length-1];
+                Date parse = sdf1.parse(dateTemp);
+                dateListInputFlow.add(parse);
+            }
+            List<Date> collectInputFlow = dateListInputFlow.stream().sorted(Comparator.comparing(Date::getDate, Comparator.reverseOrder())).collect(Collectors.toList());
+            Double inputFlow = (Double) redisUtil.get("irrigatedPlatform:sq:tth:input:"+sdf1.format(collectInputFlow.get(0)));
+            tth.setInputFlow(inputFlow);
+            resList.add(tth);
+        }
+        if(resList.isEmpty()){
+            return RestResponse.no("暂无数据计算");
+        }else {
+            return RestResponse.ok(resList);
+        }
+    }
+
     public Map<String, List<A3StatisticsRes>> change(Map<String, List<A3StatisticsRes>> collect){
         Map<String, List<A3StatisticsRes>> result = new HashMap<>();
         Set<String> strings = collect.keySet();
@@ -514,5 +593,10 @@ public class AllServiceImpl implements AllService {
             result.put(station,statistics);
         }
         return result;
+    }
+    private Double formatDouble(Double value) {
+        DecimalFormat df = new DecimalFormat("0.00");
+        String format = df.format(value);
+        return Double.parseDouble(format);
     }
 }

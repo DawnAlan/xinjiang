@@ -222,6 +222,9 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
         List<AppraiseReq> toCompareList = new ArrayList<>();
         List<WaterResourceAllocation> waterResourceAllocations = new ArrayList<>();
         for (int i = 0; i < ids.size(); i++) {
+            if(org.apache.commons.lang3.StringUtils.isEmpty(ids.get(i))){
+                continue;
+            }
             WaterResourceAllocation waterResourceAllocation = baseMapper.selectById(ids.get(i));
             waterResourceAllocations.add(waterResourceAllocation);
             toCompareList.add(getCompareAppraise(waterResourceAllocation));
@@ -835,8 +838,8 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
     private List<Waterdemand> waterNeedTenDays(Date date) {
         List<Waterdemand> demands = new ArrayList<>();
         QueryWrapper<TenDayWaterUsePlan> lqw = new QueryWrapper<>();
-        lqw.eq("del", 0).eq("year", DateUtil.year(date)).eq("month", DateUtil.month(date) + 1);
-        lqw.select("sum(WATER_DEMAND_FOR_THIS_MONTH) as DEMAND, IRRIGATED_AREA, USE_WATER_USER, YEAR, MONTH, TEN_DAYS");
+        lqw.eq("year", DateUtil.year(date)).eq("month", DateUtil.month(date) + 1);
+        lqw.select("sum(WATER_DEMAND) as DEMAND, IRRIGATED_AREA, USE_WATER_USER, YEAR, MONTH, TEN_DAYS");
         lqw.groupBy("IRRIGATED_AREA, USE_WATER_USER, YEAR, MONTH, TEN_DAYS");
         List<Map<String, Object>> maps = tenDayWaterUsePlanService.getBaseMapper().selectMaps(lqw);
         for (int i = 0; i < maps.size(); i++) {

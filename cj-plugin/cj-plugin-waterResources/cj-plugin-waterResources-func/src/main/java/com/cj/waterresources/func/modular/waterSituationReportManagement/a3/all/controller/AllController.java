@@ -55,4 +55,11 @@ public class AllController {
     public RestResponse selectReportForms(@RequestBody ReportFormsReq req) {
         return allService.selectReportForms(req);
     }
+
+    @ApiOperationSupport(order = 5)
+    @ApiOperation("查询2库的拦蓄水量")
+    @GetMapping("/selectFloodRetentionCapacity")
+    public RestResponse selectFloodRetentionCapacity(@RequestParam("date") String date) {
+        return allService.selectFloodRetentionCapacity(date);
+    }
 }

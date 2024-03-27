@@ -36,6 +36,6 @@ public interface DayWaterSituationStatisticsTableDklMapper extends BaseMapper<Da
     List<DayWaterSituationStatisticsTableDkl> selectList2(@Param("tableHeadId")String tableHeadId,@Param("startTime")String startTime,@Param("endTime")String endTime);
 
     @Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_DKL WHERE TIME = #{time} and  TO_CHAR(RECORD_TIME,'YYYY-MM-DD') = #{recordTime}")
-    List<DayWaterSituationStatisticsTableDkl> selectListHave(@Param("recordTime")String recordTime, @Param("time")String time);
+    List<DayWaterSituationStatisticsTableDkl> selectListHave(@Param("time")String time, @Param("recordTime")String recordTime);
 }
 

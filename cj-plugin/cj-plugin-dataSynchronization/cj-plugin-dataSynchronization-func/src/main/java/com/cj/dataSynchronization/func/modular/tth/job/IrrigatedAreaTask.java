@@ -16,7 +16,7 @@ public class IrrigatedAreaTask {
     private IrrigatedAreaService irrigatedAreaService;
 
 
-    //@Scheduled(cron="0 */6 * * * ?")//每小时执行一次，以空格分隔
+    @Scheduled(cron="0 */6 * * * ?")//每小时执行一次，以空格分隔
     public  void saveAffluentLevelByOneHour(){
         try {
            irrigatedAreaService.getDataById();

@@ -19,7 +19,7 @@
             <if test="req.startTime !=null and req.startTime !='' and req.endTime !=null and req.endTime !='' ">
                 and TO_CHAR(d1.RECORD_TIME,'YYYY-MM-DD') between #{req.startTime} and #{req.endTime}
             </if>
-            and d1.TIME != '昨日均'
+            and d1.TIME = '今日均'
         </where>
     </select>
 </mapper>

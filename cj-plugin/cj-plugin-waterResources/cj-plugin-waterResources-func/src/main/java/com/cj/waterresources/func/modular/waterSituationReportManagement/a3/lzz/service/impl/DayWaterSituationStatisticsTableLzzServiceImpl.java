@@ -390,7 +390,7 @@ public class DayWaterSituationStatisticsTableLzzServiceImpl extends ServiceImpl<
 
     @SneakyThrows
     @Override
-    public RestResponse selectReportForms(String startTime, String endTime) {
+    public RestResponse<List<LzzReportFormsRes>> selectReportForms(String startTime, String endTime) {
         List<LzzReportFormsRes> resList = new ArrayList<>();
         List<DayWaterSituationStatisticsTableLzz> dayWaterSituationStatisticsListThisYear = this.baseMapper.selectReportForms(startTime, endTime);
         String lastYearStartTime = getLastYearTime(startTime);
@@ -437,7 +437,8 @@ public class DayWaterSituationStatisticsTableLzzServiceImpl extends ServiceImpl<
         if(resList.isEmpty()){
             return RestResponse.no("所选时间段暂无数据！");
         }else {
-            return RestResponse.ok(resList);
+            List<LzzReportFormsRes> collect = resList.stream().sorted(Comparator.comparing(LzzReportFormsRes::getDate, Comparator.nullsFirst(Comparator.naturalOrder()))).collect(Collectors.toList());
+            return RestResponse.ok(collect);
         }
     }
 

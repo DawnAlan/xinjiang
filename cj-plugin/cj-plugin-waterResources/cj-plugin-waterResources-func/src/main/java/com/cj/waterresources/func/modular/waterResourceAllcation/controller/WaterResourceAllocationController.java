@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -86,7 +87,11 @@ public class WaterResourceAllocationController {
     @ApiOperationSupport(order = 7)
     @ApiOperation("调度方案对比")
     @PostMapping("/compare")
-    public RestResponse<WaterAllocationComparisonSelectionRes> compare(@RequestBody List<String> ids) {
+    public RestResponse<WaterAllocationComparisonSelectionRes> compare(@RequestParam(value = "idA",required = false)String idA, @RequestParam(value="idB",required = false)String idB,@RequestParam(value = "idC",required = false) String idC) {
+        List<String> ids = new ArrayList<>();
+        ids.add(idA);
+        ids.add(idB);
+        ids.add(idC);
         return waterResourceAllocationService.compare(ids);
     }
 }

@@ -27,24 +27,24 @@ public interface DayWaterSituationStatisticsTableTthMapper extends BaseMapper<Da
     @Delete("DELETE FROM DAY_WATER_SITUATION_STATISTICS_TABLE_TTH WHERE TO_CHAR(RECORD_TIME,'YYYY-MM-DD') = #{date}")
     Boolean deleteByTime(@Param("date")String date);
 
-    @Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_TTH WHERE TABLE_HEAD_ID = #{req.headId}  and  (TO_CHAR(RECORD_TIME,'YYYY-MM-DD') between #{req.startTime} and #{req.endTime}) and TIME = '今日均'")
+    @Select("select RECORD_TIME,TIME,TABLE_HEAD_ID,V from DAY_WATER_SITUATION_STATISTICS_TABLE_TTH WHERE TABLE_HEAD_ID = #{req.headId}  and  (TO_CHAR(RECORD_TIME,'YYYY-MM-DD') between #{req.startTime} and #{req.endTime}) and TIME = '今日均'")
     List<DayWaterSituationStatisticsTableTth> selectListForIndustrialWaterFee(@Param("req") SelectListForIndustrialWaterFeeReq req);
 
     List<A3StatisticsRes> getStatistics(@Param("req") A3StatisticsReq req);
 
-    @Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_TTH WHERE TO_CHAR(RECORD_TIME,'YYYY-MM-DD') = #{date} and TIME = '昨日均'")
+    @Select("select RECORD_TIME,TIME,TABLE_HEAD_ID,V from DAY_WATER_SITUATION_STATISTICS_TABLE_TTH WHERE TO_CHAR(RECORD_TIME,'YYYY-MM-DD') = #{date} and TIME = '昨日均'")
     List<DayWaterSituationStatisticsTableTth> selectInfoAfterDayList(@Param("date")String date);
 
-    @Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_TTH WHERE TO_CHAR(RECORD_TIME,'YYYY-MM-DD') = #{date} and TIME = '今日均'")
+    @Select("select RECORD_TIME,TIME,TABLE_HEAD_ID,V from DAY_WATER_SITUATION_STATISTICS_TABLE_TTH WHERE TO_CHAR(RECORD_TIME,'YYYY-MM-DD') = #{date} and TIME = '今日均'")
     List<DayWaterSituationStatisticsTableTth> selectInfoList(@Param("date")String date);
 
-    @Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_TTH WHERE TABLE_HEAD_ID = #{tableHeadId} and TIME != '昨日均' and  TO_CHAR(RECORD_TIME,'YYYY-MM-DD') between #{startTime} and #{endTime}")
+    @Select("select RECORD_TIME,TIME,TABLE_HEAD_ID,V from DAY_WATER_SITUATION_STATISTICS_TABLE_TTH WHERE TABLE_HEAD_ID = #{tableHeadId} and TIME != '昨日均' and  TO_CHAR(RECORD_TIME,'YYYY-MM-DD') between #{startTime} and #{endTime}")
     List<DayWaterSituationStatisticsTableTth> selectList2(@Param("tableHeadId")String tableHeadId, @Param("startTime")String startTime, @Param("endTime")String endTime);
 
-    @Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_TTH WHERE TIME = #{time} and  TO_CHAR(RECORD_TIME,'YYYY-MM-DD') = #{recordTime}")
-    List<DayWaterSituationStatisticsTableTth> selectListHave(@Param("recordTime")String recordTime, @Param("time")String time);
+    @Select("select RECORD_TIME,TIME,TABLE_HEAD_ID,V from DAY_WATER_SITUATION_STATISTICS_TABLE_TTH WHERE TIME = #{time} and  TO_CHAR(RECORD_TIME,'YYYY-MM-DD') = #{recordTime}")
+    List<DayWaterSituationStatisticsTableTth> selectListHave(@Param("time")String time, @Param("recordTime")String recordTime);
 
-    @Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_TTH WHERE TO_CHAR(RECORD_TIME,'YYYY-MM-DD') between #{startTime} and #{endTime}")
+    @Select("select RECORD_TIME,TIME,TABLE_HEAD_ID,V from DAY_WATER_SITUATION_STATISTICS_TABLE_TTH WHERE TO_CHAR(RECORD_TIME,'YYYY-MM-DD') between #{startTime} and #{endTime}")
     List<DayWaterSituationStatisticsTableTth> selectReportForms(@Param("startTime")String startTime, @Param("endTime")String endTime);
 }
 

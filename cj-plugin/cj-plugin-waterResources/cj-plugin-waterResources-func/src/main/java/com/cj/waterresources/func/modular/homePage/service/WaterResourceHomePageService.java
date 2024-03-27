@@ -93,6 +93,9 @@ public class WaterResourceHomePageService {
                     if (null != v.get().getSqMonitorFlow()) {
                         flow = v.get().getSqMonitorFlow().toString();
                     }
+                    if(null != v.get().getGdMonitorFlow()) {
+                        flow = v.get().getGdMonitorFlow().toString();
+                    }
                     if (null != v.get().getAvgWaterLevel()) {
                         waterLevel = v.get().getAvgWaterLevel().toString();
                     }

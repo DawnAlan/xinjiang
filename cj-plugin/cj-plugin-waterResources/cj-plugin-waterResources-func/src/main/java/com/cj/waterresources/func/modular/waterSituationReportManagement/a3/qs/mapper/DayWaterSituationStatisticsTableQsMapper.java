@@ -42,6 +42,6 @@ public interface DayWaterSituationStatisticsTableQsMapper extends BaseMapper<Day
     List<DayWaterSituationStatisticsTableQs> selectListForLh(@Param("time")String time, @Param("recordTime")String recordTime);
 
     @Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_QS WHERE TIME = #{time} and  TO_CHAR(RECORD_TIME,'YYYY-MM-DD') = #{recordTime}")
-    List<DayWaterSituationStatisticsTableQs> selectListHave(@Param("recordTime")String recordTime, @Param("time")String time);
+    List<DayWaterSituationStatisticsTableQs> selectListHave(@Param("time")String time, @Param("recordTime")String recordTime);
 }
 

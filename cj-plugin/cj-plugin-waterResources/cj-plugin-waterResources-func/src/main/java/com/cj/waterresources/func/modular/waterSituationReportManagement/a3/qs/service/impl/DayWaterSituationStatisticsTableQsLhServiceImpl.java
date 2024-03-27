@@ -58,7 +58,7 @@ public class DayWaterSituationStatisticsTableQsLhServiceImpl extends ServiceImpl
                 Map<String, List<DayWaterSituationStatisticsTableQsLh>> collect = list.stream().collect(Collectors.groupingBy(DayWaterSituationStatisticsTableQsLh::getTime));
                 return RestResponse.ok(collect);
             }else {
-                return RestResponse.no("fail");
+                return RestResponse.no("暂无数据");
             }
         }catch (Exception e){
             e.printStackTrace();

@@ -37,6 +37,6 @@ public interface DayWaterSituationStatisticsTableHxMapper extends BaseMapper<Day
     List<DayWaterSituationStatisticsTableHx> selectList2(@Param("tableHeadId")String tableHeadId, @Param("startTime")String startTime, @Param("endTime")String endTime);
 
     @Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_HX WHERE TIME = #{time} and  TO_CHAR(RECORD_TIME,'YYYY-MM-DD') = #{recordTime}")
-    List<DayWaterSituationStatisticsTableHx> selectListHave(@Param("recordTime")String recordTime, @Param("time")String time);
+    List<DayWaterSituationStatisticsTableHx> selectListHave(@Param("time")String time, @Param("recordTime")String recordTime);
 }
 
