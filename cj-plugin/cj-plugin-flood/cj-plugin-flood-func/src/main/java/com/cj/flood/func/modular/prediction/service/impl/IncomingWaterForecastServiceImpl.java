@@ -14,6 +14,7 @@ import com.cj.common.util.ExcelUtils;
 import com.cj.common.util.UUIDUtils;
 import com.cj.flood.func.modular.prediction.bean.dto.*;
 import com.cj.flood.func.modular.prediction.bean.req.IncomingWaterForecastAddReq;
+import com.cj.flood.func.modular.prediction.bean.req.WaterResourceAllocationTimeReq;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.entity.IrrigatedPlatformDataInfo;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.service.IrrigatedPlatformDataInfoService;
 import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.entity.LzzGaugingStation;
@@ -727,6 +728,19 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
         calendar.set(year, month - 1, 1); // 将日期设置为当前月份的第一天
         int daysInMonth = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
         return daysInMonth;
+    }
+
+    @Override
+    public RestResponse<List<IncomingWaterForecast>> selectListByTime(WaterResourceAllocationTimeReq req) {
+        return RestResponse.ok(this.lambdaQuery().le(IncomingWaterForecast::getPredictionTime, req.getStartTime())
+                .apply("case period_time_type \n" +
+                        "when 1 then ADD_MONTHS(PREDICTION_TIME, PERIOD_TIME_STEP * PERIOD_TIME_NUM)\n" +
+                        "when 2 then \n" +
+                        "ADD_DAYS(ADD_MONTHS(PREDICTION_TIME, PERIOD_TIME_STEP * PERIOD_TIME_NUM / 3), PERIOD_TIME_STEP * PERIOD_TIME_NUM % 3 * 10)\n" +
+                        "when 3 then ADD_DAYS(PREDICTION_TIME, PERIOD_TIME_STEP * PERIOD_TIME_NUM)\n" +
+                        "when 4 then DATEADD(HH, PERIOD_TIME_STEP * PERIOD_TIME_NUM, PREDICTION_TIME)\n" +
+                        "end >= to_date({0}, 'yyyy-mm-dd hh24:mi:ss')", sdf.format(req.getEndTime()))
+                .list());
     }
 }
 

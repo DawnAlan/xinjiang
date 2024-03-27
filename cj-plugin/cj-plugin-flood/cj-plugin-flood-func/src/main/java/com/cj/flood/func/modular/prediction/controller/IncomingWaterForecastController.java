@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.cj.common.model.RestResponse;
 import com.cj.flood.func.modular.prediction.bean.req.IncomingWaterForecastAddReq;
 import com.cj.flood.func.modular.prediction.bean.req.IncomingWaterForecastListReq;
+import com.cj.flood.func.modular.prediction.bean.req.WaterResourceAllocationTimeReq;
 import com.cj.flood.func.modular.prediction.entity.IncomingWaterForecast;
 import com.cj.flood.func.modular.prediction.service.IncomingWaterForecastService;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
@@ -13,6 +14,8 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Api(tags = "来水预报模块")
 @ApiSupport(author = "LEO-LUOXU", order = 1)
@@ -57,5 +60,12 @@ public class IncomingWaterForecastController {
     @PostMapping("/selectList")
     public RestResponse<IPage<IncomingWaterForecast>> selectList(@RequestBody IncomingWaterForecastListReq req) {
         return incomingWaterForecastService.selectList(req);
+    }
+
+    @ApiOperationSupport(order = 6)
+    @ApiOperation("配水时间查询列表")
+    @PostMapping("/selectListByTime")
+    public RestResponse<List<IncomingWaterForecast>> selectListByTime(@RequestBody WaterResourceAllocationTimeReq req) {
+        return incomingWaterForecastService.selectListByTime(req);
     }
 }
