@@ -18,6 +18,7 @@ public class HomePageTask {
     @Scheduled(cron = "0 0 0/1 * * ? ")
     public void waterFlowAlarmEventPolling() {
         floodHomePageService.waterStorageOverviewSchedule(new Date());
+        floodHomePageService.rainfallSchedule(new Date());
     }
 
     @Scheduled(cron = "0 0 0/1 * * ? ")

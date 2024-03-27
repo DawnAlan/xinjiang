@@ -16,7 +16,7 @@ public class WaterResourceAllocationAddReq implements Serializable {
     private String schemeName;
 
     //时段类型(1-年逐月 2-月逐旬 3-旬逐日)
-    @ApiModelProperty(value = "时段类型(1-年逐月 2-月逐旬 3-旬逐日)")
+    @ApiModelProperty(value = "时段类型(1-年逐月 2-月逐旬 3-旬逐日) 4-日前")
     private Integer bucketType;
 
     //配水开始时间

@@ -13,9 +13,9 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class WaterResourceAssessment {
+public class dayAssessment {
     private Reservoir[] reservoirs;
-    public Map<String, Object> WaterResourceAssessment(List<AppraiseReq> reqList,List<CurveParam> data) throws Exception {
+    public Map<String, Object> dayAssessment(List<AppraiseReq> reqList) throws Exception {
         String appraise=new String();
         String schemeOptimization=new String();
         List<Date> startTime=new ArrayList<>();
@@ -36,34 +36,24 @@ public class WaterResourceAssessment {
         if (areAllDateTypeEqual(timePeriodType)==false){
             throw new CommonException("请检查各方案时段类型是否相同");
         }
-        double[]dischargeLzz=new double[reqList.size()];
-        double[]dischargeTth=new double[reqList.size()];
-        double[]storgeAll=new double[reqList.size()];
-        double[]inflowWater=new double[reqList.size()];
+
         double[]wasteWater=new double[reqList.size()];
-        double[]waterDemand=new double[reqList.size()];
-        double[]ecologyWater=new double[reqList.size()];
+        double[]water=new double[reqList.size()];
         double[]waterLack=new double[reqList.size()];
-        double[]waterRate=new double[reqList.size()];
+
         //获取每个方案楼庄子蓄泄、头屯河蓄泄、以及两水库总蓄泄
         for (int i=0;i<reqList.size();i++){
             schemeName[i]=reqList.get(i).getName();
-            dischargeLzz[i] =storageAndDischarge(reqList.get(i),data)[0];
-            dischargeTth[i] =storageAndDischarge(reqList.get(i),data)[1];
-            storgeAll[i]=storageAndDischarge(reqList.get(i),data)[2];
-            inflowWater[i]=getInflowWater(reqList.get(i).getExcel1Data());
-            waterDemand[i]=getWaterDemand(reqList.get(i).getExcel1Data());
+            water[i]=getSum(reqList.get(i).getExcel2Data())[0];
             wasteWater[i]=getWasteWater(reqList.get(i).getExcel1Data());
-            ecologyWater[i]=getEcologyWater(reqList.get(i).getExcel2Data());
             waterLack[i]=getSum(reqList.get(i).getExcel2Data())[1];
         }
         DecimalFormat da = new DecimalFormat("#.00");
-        double bestUtilizationRate=(inflowWater[0]-wasteWater[0])/inflowWater[0];
+        double bestUtilizationRate=waterLack[0];
         double n=0;
         for (int i=0;i<reqList.size();i++){
-           double utilizationRate= (inflowWater[i]-wasteWater[i])/inflowWater[i];
-           waterRate[i]=Double.parseDouble(da.format(utilizationRate));
-           if (utilizationRate>=bestUtilizationRate)
+           double utilizationRate= waterLack[i];
+           if (utilizationRate<=bestUtilizationRate)
            {
                bestUtilizationRate=utilizationRate;
                n=i;
@@ -72,22 +62,16 @@ public class WaterResourceAssessment {
 
         Map<String, Object>  appraise11= new HashMap<>();
         appraise11.put("方案名称",schemeName);
-        appraise11.put("楼庄子蓄水量",dischargeLzz);
-        appraise11.put("头屯河蓄水量",dischargeTth);
-        appraise11.put("两水库总蓄水量",storgeAll);
-        appraise11.put("来水水量",inflowWater);
-        appraise11.put("需水数据",waterDemand);
         appraise11.put("弃水水量",wasteWater);
-        appraise11.put("生态水量",ecologyWater);
+        appraise11.put("供水水量",water);
         appraise11.put("供水缺额",waterLack);
-        appraise11.put("可用水量利用率",waterRate);
+
 
         for (int i=0;i<reqList.size();i++){
-             appraise+= schemeName[i]+"：在调度区间内来水预报总水量为"+inflowWater[i]+"万m³,"+"生态需水量为"+ecologyWater[i]+"万m³,"+"各单位需水总量为"+
-            waterDemand[i]+"万m³,"+"在楼庄子的蓄水量为"+dischargeLzz[i]+"万m³,头屯河蓄水量为"+dischargeTth[i]+"万m³,总蓄水量为"+storgeAll[i]+
-                     "万m³,可供水量浪费量为"+wasteWater[i]+"万m³,可供水量利用率为"+waterRate[i]+";";
+             appraise+= schemeName[i]+"：在调度区间内供水水量为"+water[i]+"万m³,"+"供水缺额为"+waterLack[i]+"万m³,"+getStance(reqList.get(i).getExcel2Data(),"楼庄子生活")+","+
+                     getStance(reqList.get(i).getExcel2Data(),"红岩生活")+","+getStance(reqList.get(i).getExcel2Data(),"八钢工业")+";";
         }
-        schemeOptimization="推荐方案："+schemeName[(int)n]+",可供水量利用率较高;";
+        schemeOptimization="推荐方案："+schemeName[(int)n]+",供水缺额较小;";
         appraise=appraise+schemeOptimization;
         appraise11.put("方案评价",appraise);
 
@@ -131,122 +115,8 @@ public class WaterResourceAssessment {
         return true; // 所有时段类型都与第一个相同
     }
 
-    /**
-     * 根据水位计算两个水库的蓄泄水量，0为楼庄子，1为头屯河，2为两库总蓄泄水量
-     * @param req
-     * @param data
-     * @return
-     */
-    public  double[] storageAndDischarge(AppraiseReq req,List<CurveParam> data) {
-        setReservoir(data, reservoirs);
-        DecimalFormat da1 = new DecimalFormat("#.00");
-        double dischargeLzz = Double.parseDouble(da1.format(FindValue.FindV2ByV1(reservoirs[0].wlc_wl, reservoirs[0].wlc_c, req.getLevelEndLzz())-
-                FindValue.FindV2ByV1(reservoirs[0].wlc_wl, reservoirs[0].wlc_c, req.getLevelBeginLzz())));
-        double dischargeTth = Double.parseDouble(da1.format(FindValue.FindV2ByV1(reservoirs[1].wlc_wl, reservoirs[1].wlc_c, req.getLevelEndTth())-
-                FindValue.FindV2ByV1(reservoirs[1].wlc_wl, reservoirs[1].wlc_c, req.getLevelBeginTth())));
-        double[]storage=new double[3];
-        storage[0]=dischargeLzz;
-        storage[1]=dischargeTth;
-        storage[2]=dischargeLzz+dischargeTth;
-        return storage;
-    }
-
-    /**
-     * 获得水位库容曲线
-     * @param data
-     * @param reservoir
-     */
-    public void setReservoir(List<CurveParam> data, Reservoir[] reservoir) {
-        this.reservoirs = new Reservoir[2];
-        this.reservoirs[0] = new Reservoir();
-        this.reservoirs[1] = new Reservoir();
-        List<Double> capacity = new ArrayList<>();
-        List<Double> level = new ArrayList<>();
-        List<Double> outflow = new ArrayList<>();
-        List<Double> outflow_level = new ArrayList<>();
 
 
-        for (int i = 0; i < data.size(); i++) {
-            if (data.get(i).getId() == 100) {
-                capacity.add(data.get(i).getValue());
-                level.add(data.get(i).getLevel());
-            }
-            if (data.get(i).getId() == 104) {
-                outflow.add(data.get(i).getValue());
-                outflow_level.add(data.get(i).getLevel());
-            }
-        }
-        double[] wlc_wl = new double[level.size()];
-        double[] wlc_c = new double[capacity.size()];
-        for (int i = 0; i < wlc_wl.length; i++) {
-            wlc_wl[i] = level.get(i);
-            wlc_c[i] = capacity.get(i);
-        }
-
-        double[] wlob_wl = new double[outflow_level.size()];
-        double[] wlob_ob = new double[outflow.size()];
-        for (int i = 0; i < wlob_wl.length; i++) {
-            wlob_wl[i] = outflow_level.get(i);
-            wlob_ob[i] = outflow.get(i);
-        }
-
-        this.reservoirs[0].wlc_c = wlc_c;
-        this.reservoirs[0].wlc_wl = wlc_wl;
-        this.reservoirs[0].wlob_wl = wlob_wl;
-        this.reservoirs[0].wlob_ob = wlob_ob;
-
-
-        List<Double> capacity1 = new ArrayList<>();
-        List<Double> level1 = new ArrayList<>();
-        List<Double> outflow1 = new ArrayList<>();
-        List<Double> outflow_level1 = new ArrayList<>();
-
-        for (int i = 0; i < data.size(); i++) {
-            if (data.get(i).getId() == 200) {
-                capacity1.add(data.get(i).getValue());
-                level1.add(data.get(i).getLevel());
-            }
-            if (data.get(i).getId() == 204) {
-                outflow1.add(data.get(i).getValue());
-                outflow_level1.add(data.get(i).getLevel());
-            }
-        }
-        double[] wlc_wl1 = new double[level1.size()];
-        double[] wlc_c1 = new double[capacity1.size()];
-
-        double[] wlob_wl1 = new double[outflow_level1.size()];
-        double[] wlob_ob1 = new double[outflow1.size()];
-        for (int i = 0; i < wlob_wl1.length; i++) {
-            wlob_wl1[i] = outflow_level1.get(i);
-            wlob_ob1[i] = outflow1.get(i);
-        }
-        for (int i = 0; i < wlc_wl1.length; i++) {
-            wlc_wl1[i] = level1.get(i);
-            wlc_c1[i] = capacity1.get(i);
-        }
-        this.reservoirs[1].wlc_c = wlc_c1;
-        this.reservoirs[1].wlc_wl = wlc_wl1;
-        this.reservoirs[1].wlob_wl = wlob_wl1;
-        this.reservoirs[1].wlob_ob = wlob_ob1;
-
-        this.reservoirs[0].name = "楼庄子";
-        this.reservoirs[0].levelFloodControl = 1394.5;
-        this.reservoirs[0].levelNormal = 1394.5;
-        this.reservoirs[0].levelFloodLimiting = 105;
-        this.reservoirs[0].levelDead = 1353.3;
-        this.reservoirs[0].outflowMin = 1.48;
-        this.reservoirs[0].levelFloodDesign = 1397.41;
-        this.reservoirs[0].levelFloodCheck = 1397.63;
-
-        this.reservoirs[1].name = "头屯河";
-        this.reservoirs[1].levelFloodControl = 987;
-        this.reservoirs[1].levelNormal = 989.6;
-        this.reservoirs[1].levelFloodLimiting = 105;
-        this.reservoirs[1].levelDead = 975;
-        this.reservoirs[1].outflowMin = 1.48;
-        this.reservoirs[1].levelFloodDesign = 991.2;
-        this.reservoirs[1].levelFloodCheck = 992.54;
-    }
     /**
      * 获得方案时间
      * @param data
@@ -327,6 +197,13 @@ public class WaterResourceAssessment {
         }
         return ecologyWater;
     }
+
+    /**
+     * 获得用水情况
+     * @param data
+     * @param location
+     * @return
+     */
     public String getStance(List<Excel2> data,String location)
     {
         List<Double> proportion = new ArrayList<>();
@@ -357,9 +234,9 @@ public class WaterResourceAssessment {
         List<Double> num = new ArrayList<>();
 
         Date[]time=getTime(data);
-        for (int i = 0; i < proportion.size(); i++)
+        for (int i = 0; i < waterLack.size(); i++)
         {
-            if (proportion.get(i)!=1)
+            if (waterLack.get(i)!=0)
             {
                 double n=i;
                 num.add(n);
@@ -378,11 +255,11 @@ public class WaterResourceAssessment {
         }
         String delimiter = ", "; // 自定义分隔符，例如逗号和空格
         combinedStringWithDelimiter = stringList.stream().collect(Collectors.joining(delimiter));
-        result=x+combinedStringWithDelimiter+"这些时间段并未完全满足要求";
+        result=x+"在该时间段内并未满足要求";
         }
         else
         {
-            result=x+"在配水时间段内都能满足要求" ;
+            result=x+"在配水时间段内能够满足要求" ;
         }
         return result;
     }
@@ -399,27 +276,32 @@ public class WaterResourceAssessment {
         double[]sum=new double[2];
         for (int i = 0; i < data1.size(); i++)
         {
-            if (data1.get(i).getStationType().equals("生活"))
+            if (data1.get(i).getStationType().equals("楼庄子生活"))
             {
                 water+= data1.get(i).getWater();
                 waterLack+= data1.get(i).getWaterLack();
             }
-            if (data1.get(i).getStationType().equals("工业"))
+            if (data1.get(i).getStationType().equals("红岩生活"))
             {
                 water+= data1.get(i).getWater();
                 waterLack+= data1.get(i).getWaterLack();
             }
-            if (data1.get(i).getStationType().equals("渠首"))
+            if (data1.get(i).getStationType().equals("八钢工业"))
+            {
+                water+= data1.get(i).getWater();
+                waterLack+= data1.get(i).getWaterLack();
+            }
+            if (data1.get(i).getStationType().equals("渠首工业"))
              {
                 water+= data1.get(i).getWater();
                 waterLack+= data1.get(i).getWaterLack();
             }
-            if (data1.get(i).getStationType().equals("西干渠"))
+            if (data1.get(i).getStationType().equals("总西干渠"))
             {
                 water+= data1.get(i).getWater();
                 waterLack+= data1.get(i).getWaterLack();
             }
-            if (data1.get(i).getStationType().equals("东干渠"))
+            if (data1.get(i).getStationType().equals("总东干渠"))
             {
                 water+= data1.get(i).getWater();
                 waterLack+= data1.get(i).getWaterLack();

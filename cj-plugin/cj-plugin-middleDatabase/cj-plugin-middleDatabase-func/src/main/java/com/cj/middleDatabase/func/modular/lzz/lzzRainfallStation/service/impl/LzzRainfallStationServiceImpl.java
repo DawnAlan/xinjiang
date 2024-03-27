@@ -9,6 +9,7 @@ import com.cj.middleDatabase.func.modular.lzz.lzzRainfallStation.service.LzzRain
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -56,6 +57,11 @@ public class LzzRainfallStationServiceImpl extends ServiceImpl<LzzRainfallStatio
     @Override
     public List<LzzRainfallStation> selectHistoryList(String name, String startTime, String endTime) {
         return this.baseMapper.selectHistoryList(name, startTime, endTime);
+    }
+
+    @Override
+    public List<LzzRainfallStation> getRecentlyRainfalls(String dateTime) {
+        return this.baseMapper.getRecentlyRainfalls(dateTime);
     }
 }
 

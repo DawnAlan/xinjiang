@@ -531,7 +531,7 @@ public class ResourceOptimizationshort_DayTest
         double[]ecologyFlow=new double[period];
         double[]ecologyWaterNeed=new double[period];
         for (int x=0;x<period;x++){
-            double eco=minOutflow*delatT/1e4;
+            double eco=Double.parseDouble(da.format(minOutflow*delatT/1e4));
             ecologyWater[x]=eco;
             ecologyWaterNeed[x]=eco;
         }
@@ -687,7 +687,7 @@ public class ResourceOptimizationshort_DayTest
             double eco=ecologyWater[x];
             double  all_num=eco+sup;
             allwater[x]=all_num;
-            ecologyFlow[x]= ecologyWater[x]*1e4/delatT;
+            ecologyFlow[x]=Double.parseDouble(da1.format( ecologyWater[x]*1e4/delatT));
             proportion[0][x] = (eco) / (all_num);
             proportion[1][x] = (waterSupply[0][x] + waterSupply[1][x]) / (all_num);
             proportion[2][x] = (waterSupply[2][x]) / (all_num);
@@ -1165,7 +1165,7 @@ public class ResourceOptimizationshort_DayTest
                         water_Supply_tth[t]=0;
                     }
                     if (outflow_term[m][t] >= minOutflow + watershortage_allQ[t] ){
-                        fitness2+=(outflow_term[m][t]-(minOutflow + watershortage_allQ[t]))* delatT  / 1e4;
+                        fitness2+=Double.parseDouble(da.format((outflow_term[m][t]-(minOutflow + watershortage_allQ[t]))* delatT  / 1e4));
 
                         water_Supply_tth[t]=waterDemand[1][t]+waterDemand[2][t]+waterDemand[3][t]+waterDemand[4][t];
                         water_shortage1[m][t]=0;
@@ -1196,11 +1196,34 @@ public class ResourceOptimizationshort_DayTest
                         waterSupply[3][t] = 0;
                         waterSupply[4][t] = 0;
                     }
-                    else if (waterDemand[3][t] + waterDemand[4][t]!=0)
-                    {
-                        waterSupply[3][t] = waterDemand[3][t] * (water_Supply_tth[t] - (waterDemand[1][t] + waterDemand[2][t])) / (waterDemand[3][t] + waterDemand[4][t]);
-                        waterSupply[4][t] = waterDemand[4][t] * (water_Supply_tth[t] - (waterDemand[1][t] + waterDemand[2][t])) / (waterDemand[3][t] + waterDemand[4][t]);
+
+                    if (waterDemand[3][t] >= waterDemand[4][t]){
+                        if (0.5 * (water_Supply_tth[t] - (waterDemand[1][t] + waterDemand[2][t]))>=waterDemand[4][t])
+                        {
+                            waterSupply[3][t] = (water_Supply_tth[t] - (waterDemand[1][t] + waterDemand[2][t]+waterDemand[4][t]));
+                            waterSupply[4][t] = waterDemand[4][t];
+                        }
+                        else {
+                            waterSupply[3][t] = 0.5*(water_Supply_tth[t] - (waterDemand[1][t] + waterDemand[2][t]));
+                            waterSupply[4][t] = 0.5*(water_Supply_tth[t] - (waterDemand[1][t] + waterDemand[2][t]));
+                        }
                     }
+                    if (waterDemand[3][t] < waterDemand[4][t]){
+                        if (0.5 * (water_Supply_tth[t] - (waterDemand[1][t] + waterDemand[2][t]))>=waterDemand[3][t])
+                        {
+                            waterSupply[3][t] = waterDemand[3][t] ;
+                            waterSupply[4][t] = (water_Supply_tth[t] - (waterDemand[1][t] + waterDemand[2][t]+waterDemand[3][t]));
+                        }
+                        else {
+                            waterSupply[3][t] = 0.5*(water_Supply_tth[t] - (waterDemand[1][t] + waterDemand[2][t]));
+                            waterSupply[4][t] = 0.5*(water_Supply_tth[t] - (waterDemand[1][t] + waterDemand[2][t]));
+                        }
+                    }
+//                    else if (waterDemand[3][t] + waterDemand[4][t]!=0)
+//                    {
+//                        waterSupply[3][t] = waterDemand[3][t] * (water_Supply_tth[t] - (waterDemand[1][t] + waterDemand[2][t])) / (waterDemand[3][t] + waterDemand[4][t]);
+//                        waterSupply[4][t] = waterDemand[4][t] * (water_Supply_tth[t] - (waterDemand[1][t] + waterDemand[2][t])) / (waterDemand[3][t] + waterDemand[4][t]);
+//                    }
                     if (waterSupply[3][t]<=0){
                         waterSupply[3][t]=0;
                     }
@@ -1223,18 +1246,6 @@ public class ResourceOptimizationshort_DayTest
             }
 
 
-//        if (id==2){
-//            for (int m=0;m<waterDemand.length;m++)
-//                for (int n=0;n<period;n++)
-//                {
-//                    if (waterDemand[m][n]==0){
-//
-//                    }
-//                    else {
-//                        fitness1 +=1-waterSupply[m][n]/waterDemand[m][n];
-//                    }
-//                }
-//        }
 
         fitness1_penalty = fitness1 + penaltyFactor * constraintViolation;//
         fitness2_penalty = fitness2 - penaltyFactor * constraintViolation;//

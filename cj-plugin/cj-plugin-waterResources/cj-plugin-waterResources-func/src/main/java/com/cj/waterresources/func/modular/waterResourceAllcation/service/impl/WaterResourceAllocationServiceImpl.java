@@ -33,6 +33,7 @@ import com.cj.model.func.modular.watertransfer.function.WaterResourceAssessment;
 import com.cj.model.func.modular.watertransfer.req.AppraiseReq;
 import com.cj.model.func.modular.watertransfer.req.WaterTransferReq;
 import com.cj.model.func.modular.watertransfer.res.ResOption;
+import com.cj.waterresources.func.modular.useWaterPlanEscalation.dayWaterUsePlan.entity.DayWaterUsePlan;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.dayWaterUsePlan.service.DayWaterUsePlanService;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.monthWaterUsePlan.entity.MonthWaterUsePlan;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.monthWaterUsePlan.service.MonthWaterUsePlanService;
@@ -47,6 +48,7 @@ import com.cj.waterresources.func.modular.waterResourceAllcation.bean.req.WaterR
 import com.cj.waterresources.func.modular.waterResourceAllcation.bean.req.WaterResourceAllocationQueryReq;
 import com.cj.waterresources.func.modular.waterResourceAllcation.bean.res.*;
 import com.cj.waterresources.func.modular.waterResourceAllcation.entity.AllocationDisplayData;
+import com.cj.waterresources.func.modular.waterResourceAllcation.entity.DayWaterUsePlanV;
 import com.cj.waterresources.func.modular.waterResourceAllcation.entity.IncomingWaterForecast;
 import com.cj.waterresources.func.modular.waterResourceAllcation.mapper.WaterResourceAllocationMapper;
 import com.cj.waterresources.func.modular.waterResourceAllcation.entity.WaterResourceAllocation;
@@ -671,7 +673,7 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
         waterTransferReq.setLevelEndTth(allocation.getLevelEndTth());
         waterTransferReq.setTimeCalStep(allocation.getBucketType());
         waterTransferReq.setData(data);
-        waterTransferReq.setWaterDemandData(waterNeed(allocation.getWaterDistributionStartTime(), allocation.getWaterDistributionEndTime()));
+        waterTransferReq.setWaterDemandData(waterNeed(allocation.getWaterDistributionStartTime()));
         waterTransferReq.setCurve(curveService.selectList());
         List<ResOption> calculator;
         try {
@@ -777,12 +779,13 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
 
     //year  month  tenDays day
     // 1-年逐月 2-月逐旬 3-旬逐日
-    private List<Waterdemand> waterNeed(Date startTime, Date endTime) {
+    private List<Waterdemand> waterNeed(Date startTime) {
         List<Waterdemand> demands = new ArrayList<>();
         demands.addAll(waterNeedYear(startTime));
         demands.addAll(waterNeedMonth(startTime));
         demands.addAll(waterNeedTenDays(startTime));
-        demands.addAll(waterNeedDay(startTime, endTime));
+        startTime = DateUtil.offsetDay(startTime, -1);
+        demands.addAll(waterNeedDay(startTime, startTime));
         return demands;
     }
 
@@ -851,6 +854,7 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
                 log.error(tenDays.get("USE_WATER_USER") + "旬需水计划数据异常");
             }
             Waterdemand waterdemand = new Waterdemand();
+            waterdemand.setDate(DateUtil.parse(tenDays.get("YEAR") + "-" + tenDays.get("MONTH") + "-"  + getTenDaysDay(tenDays.get("TEN_DAYS").toString()), "yyyy-MM-dd"));
             waterdemand.setUseWaterPlan("tenDays");
             waterdemand.setWaterDemendData(isNull ? 0 : ((BigDecimal) tenDays.get("DEMAND")).doubleValue());
             waterdemand.setArea(tenDays.get("IRRIGATED_AREA").toString());
@@ -861,27 +865,45 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
         return demands;
     }
 
+    private String getTenDaysDay(String tenDays) {
+        if (tenDays.equals("上旬")) {
+           return "01";
+        }
+        if (tenDays.equals("中旬")) {
+            return "11";
+        }
+        return "21";
+    }
+
     private List<Waterdemand> waterNeedDay(Date startTime, Date endTime) {
         List<Waterdemand> demands = new ArrayList<>();
-        List<Map> waterNeedDetailList = dayWaterUsePlanService.getWaterNeedDetail(startTime, endTime);
-        for (int i = 0; i < waterNeedDetailList.size(); i++) {
-            Map<String, String> waterNeedDetail = waterNeedDetailList.get(i);
-            for (Map water : JSONObject.parseArray(waterNeedDetail.get("V"), Map.class)) {
-                Waterdemand waterdemand = new Waterdemand();
-                waterdemand.setUseWaterPlan("day");
-                double flow = 0d, plan = 0d;
-                if (StringUtils.hasText(water.get("flow").toString())) {
-                    flow = Double.parseDouble(water.get("flow").toString());
+        List<DayWaterUsePlan> dayWaterUsePlans = dayWaterUsePlanService.lambdaQuery()
+                .apply("to_char(RECORD_TIME, 'yyyy-mm-dd') >= {0}", DateUtil.format(startTime, "yyyy-MM-dd"))
+                .apply("to_char(RECORD_TIME, 'yyyy-mm-dd') <= {0}", DateUtil.format(endTime, "yyyy-MM-dd")).list();
+        for (DayWaterUsePlan dayWaterUsePlan : dayWaterUsePlans) {
+            List<DayWaterUsePlanV> dayWaterUsePlanVS = JSONObject.parseArray(dayWaterUsePlan.getV(), DayWaterUsePlanV.class);
+            for (DayWaterUsePlanV usePlan : dayWaterUsePlanVS) {
+                if (usePlan.getChildren() == null) {
+                    continue;
                 }
-                if (StringUtils.hasText(water.get("waterPlan").toString())) {
-                    plan = Double.parseDouble(water.get("waterPlan").toString());
+                for (DayWaterUsePlanV usePlanSub : usePlan.getChildren()) {
+                    Waterdemand waterdemand = new Waterdemand();
+                    waterdemand.setDate(dayWaterUsePlan.getRecordTime());
+                    waterdemand.setUseWaterPlan("day");
+                    double flow = 0d, plan = 0d;
+                    if (StringUtils.hasText(usePlanSub.getFlow())) {
+                        flow = Double.parseDouble(usePlanSub.getFlow());
+                    }
+                    if (StringUtils.hasText(usePlanSub.getWaterPlan())) {
+                        plan = Double.parseDouble(usePlanSub.getWaterPlan());
+                    }
+                    waterdemand.setWaterDemendData(flow + plan);
+                    waterdemand.setArea(usePlan.getArea());
+                    waterdemand.setUnit(usePlan.getUnitName());
+                    waterdemand.setSubArea(usePlanSub.getUnitName());
+                    waterdemand.setColName("flow");
+                    demands.add(waterdemand);
                 }
-                waterdemand.setWaterDemendData(flow + plan);
-                waterdemand.setArea(waterNeedDetail.get("AREA"));
-                waterdemand.setUnit(waterNeedDetail.get("UNIT"));
-                waterdemand.setSubArea(water.get("unitName").toString());
-                waterdemand.setColName("flow");
-                demands.add(waterdemand);
             }
         }
         return demands;
@@ -913,6 +935,13 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
                 waterdemand.setArea(area.get(o).toString());
                 waterdemand.setUnit(unit.get(o).toString());
                 waterdemand.setColName(dict.get(field.getName().toUpperCase()));
+                if (planType.equalsIgnoreCase("month")) {
+                    Field year = Arrays.stream(fields).filter(f -> f.getName().equalsIgnoreCase("year")).findAny().get();
+                    Field month = Arrays.stream(fields).filter(f -> f.getName().equalsIgnoreCase("month")).findAny().get();
+                    year.setAccessible(true);
+                    month.setAccessible(true);
+                    waterdemand.setDate(DateUtil.parse(year.get(o) + "-" + month.get(o) + "-01", "yyyy-MM-dd"));
+                }
                 demands.add(waterdemand);
             }
         }
