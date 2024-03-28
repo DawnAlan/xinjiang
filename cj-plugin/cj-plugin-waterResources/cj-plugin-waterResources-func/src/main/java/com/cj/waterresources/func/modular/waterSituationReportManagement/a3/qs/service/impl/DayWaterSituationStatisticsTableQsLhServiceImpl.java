@@ -442,6 +442,12 @@ public class DayWaterSituationStatisticsTableQsLhServiceImpl extends ServiceImpl
         if(!dayWaterSituationStatisticsTableQsLhList.isEmpty()){
             dayWaterSituationStatisticsTableQsLhList.forEach(t->{
                 t.setV(qsList.stream().filter(p->p.getTableHeadId().equals(t.getTableHeadId()) && p.getV() !=null).map(DayWaterSituationStatisticsTableQsLh::getV).reduce(Double::sum).orElse(0.00));
+                String tableParamString = (String)redisUtil.get("trendsTableParam:object:"+t.getTableHeadId());
+                TrendsTableParam tableParam = JSONObject.parseObject(tableParamString, TrendsTableParam.class);
+                if(null != tableParam && !tableParam.getParamName().equals("合计")){
+                    redisUtil.set("A3:data:qs:yesterday:"+getDate(t.getRecordTime(),-1)+":"+tableParam.getUnitId(),t.getV());
+                    redisUtil.set("A3:data:qs:yesterday:forPlan:"+tableParam.getParamName(),t.getV());
+                }
             });
             this.updateBatchById(dayWaterSituationStatisticsTableQsLhList);
 

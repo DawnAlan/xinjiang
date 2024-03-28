@@ -68,11 +68,15 @@ public class TrendsTableParamServiceImpl extends ServiceImpl<TrendsTableParamMap
         if(one != null){
             return RestResponse.no("该表头名称已存在，请更换名称");
         }
+        if(!req.getParamName().equals("合计") && req.getUseType()==2){
+            if(StringUtils.isEmpty(req.getUseWaterType())){
+                return RestResponse.no("请选择用水类型");
+            }
+        }
         TrendsTableParam param = new TrendsTableParam();
         BeanUtils.copyProperties(req, param);
         if(StringUtils.isEmpty(param.getPId())){
             param.setPId("0");
-
         }
         param.setId(UUIDUtils.getUUID());
         boolean save = this.save(param);
@@ -88,11 +92,11 @@ public class TrendsTableParamServiceImpl extends ServiceImpl<TrendsTableParamMap
                 totalIdToStation.setName(param.getParamName());
                 totalIdToStationService.save(totalIdToStation);
             }
-            if(!req.getParamName().equals("合计") && param.getUseType()==2){
+            /*if(!req.getParamName().equals("合计") && param.getUseType()==2){
                 if(StringUtils.isEmpty(req.getUseWaterType())){
-                    throw new RuntimeException("请选择用水类型");
+                    return RestResponse.no("请选择用水类型");
                 }
-            }
+            }*/
             if(param.getUseType()==2 && !req.getParamName().equals("合计")){
                 WaterPriceManagement waterPriceManagement = new WaterPriceManagement();
                 waterPriceManagement.setUseWaterType(req.getUseWaterType());

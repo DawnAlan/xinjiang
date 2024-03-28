@@ -149,7 +149,7 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
         List<TrendsTableParam> trendsTableParamList = trendsTableParamListTemp.stream().filter(t -> t.getUseType() == 2).collect(Collectors.toList());
         String station = waterFeeStatisticsDetails.get(0).getStation();
         String dateTemp = waterFeeStatisticsDetails.get(0).getYear()+"-"+waterFeeStatisticsDetails.get(0).getStatisticsDate().substring(0,2)+"-"+waterFeeStatisticsDetails.get(0).getStatisticsDate().substring(3,5);
-        if(station.equals("渠首管理站")){
+        /*if(station.equals("渠首管理站")){
             waterFeeStatisticsDetails.forEach(t->{
                 Map<String, Double> lanternCanalInfoByDate = getLanternCanalInfoByDate(t.getYear(),t.getMonth(),t.getTenDays(),t.getStatisticsDate());
                 String paramName = (String)redisUtil.get("trendsTableParam:name:"+t.getTableHeadId());
@@ -197,7 +197,34 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                     throw new RuntimeException(e);
                 }
             });
-        }
+        }*/
+        waterFeeStatisticsDetails.forEach(t->{
+            if(!sdf.format(new Date()).equals(dateTemp)){
+                String paramName = (String)redisUtil.get("trendsTableParam:name:"+t.getTableHeadId());
+                if(!paramName.equals("合计")){
+                    String tableParamString = (String)redisUtil.get("trendsTableParam:object:"+t.getTableHeadId());
+                    TrendsTableParam tableParam = JSONObject.parseObject(tableParamString, TrendsTableParam.class);
+                    if(t.getStation().contains("河东")){
+                        Double v = (Double)redisUtil.get("A3:data:hd:yesterday:"+dateTemp+":"+tableParam.getUnitId());
+                        t.setV(v==null?null:v);
+                    }
+                    if(t.getStation().contains("河西")){
+                        Double v = (Double)redisUtil.get("A3:data:hx:yesterday:"+dateTemp+":"+tableParam.getUnitId());
+                        t.setV(v==null?null:v);
+                    }
+                    if(t.getStation().contains("渠首")){
+                        Double v = (Double)redisUtil.get("A3:data:qs:yesterday:"+dateTemp+":"+tableParam.getUnitId());
+                        t.setV(v==null?null:v);
+                    }
+                }
+            }
+            t.setId(UUIDUtils.getUUID());
+            try {
+                t.setRecordTime(sdf.parse(dateTemp));
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+        });
 
         List<TotalIdToStation> list = totalIdToStationService.lambdaQuery().eq(TotalIdToStation::getUseType, 2).eq(TotalIdToStation::getStation, waterFeeStatisticsDetails.get(0).getStation()).list();
         //计算行合计
@@ -257,7 +284,7 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                 }
             }
         }
-        if(station.equals("渠首管理站")){
+        /*if(station.equals("渠首管理站")){
             Double laishui = 0.0;
             Double yinshui = 0.0;
             Double zonggan = 0.0;
@@ -306,7 +333,7 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                     details.setV(laishui);
                 }
             }
-        }
+        }*/
         boolean b = this.saveBatch(waterFeeStatisticsDetails);
         //计算列合计
         if (b) {
@@ -349,7 +376,7 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                     Double payableWaterFee = byId==null?0:byId.getWaterPrice()==null?0:byId.getWaterPrice()*waterFeeStatisticsTotal.getAccumulatedWaterVolume();
                     //应交水费
                     waterFeeStatisticsTotal.setPayableWaterFee(payableWaterFee);
-                    if(tempObj.getStation().equals("河东管理站绿化") || tempObj.getStation().equals("渠首砂厂")){
+                    if(tempObj.getStation().contains("绿化") || tempObj.getStation().contains("砂厂")){
                         waterFeeStatisticsTotal.setPayableWaterResource(Double.valueOf(waterResourcePrice)*waterFeeStatisticsTotal.getAccumulatedWaterVolume());
                     }
                     WaterFeeStatisticsTotal lastYear = waterFeeStatisticsTotalService.lambdaQuery().eq(WaterFeeStatisticsTotal::getYear, temp.getYear()-1).
@@ -363,7 +390,7 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                 }
 
 
-                if(tempObj.getStation().equals("河东管理站绿化") || tempObj.getStation().equals("渠首砂厂")){
+                if(tempObj.getStation().contains("绿化") || tempObj.getStation().contains("砂厂")){
                     //预交水资源费(单位)
                     Map<String,Double> tempMap = new HashMap<>();
                     for(WaterFeeStatisticsTotal total :waterFeeStatisticsTotalList){
@@ -846,7 +873,7 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                     Double payableWaterFee = byId==null?0:byId.getWaterPrice()==null?0:byId.getWaterPrice()*waterFeeStatisticsTotal.getAccumulatedWaterVolume();
                     //应交水费
                     waterFeeStatisticsTotal.setPayableWaterFee(payableWaterFee);
-                    if(tempObj.getStation().equals("河东管理站绿化") || tempObj.getStation().equals("渠首砂厂")){
+                    if(tempObj.getStation().contains("绿化") || tempObj.getStation().contains("砂厂")){
                         waterFeeStatisticsTotal.setPayableWaterResource(Double.valueOf(waterResourcePrice)*waterFeeStatisticsTotal.getAccumulatedWaterVolume());
                     }
                     WaterFeeStatisticsTotal lastYear = waterFeeStatisticsTotalService.lambdaQuery().eq(WaterFeeStatisticsTotal::getYear, temp.getYear()-1).
@@ -858,7 +885,7 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                     waterFeeStatisticsTotal.setWaterVolumeDuringLastYear(lastYear==null?0:lastYear.getAccumulatedWaterVolume());
                     waterFeeStatisticsTotalList.add(waterFeeStatisticsTotal);
                 }
-                if(tempObj.getStation().equals("河东管理站绿化") || tempObj.getStation().equals("渠首砂厂")){
+                if(tempObj.getStation().contains("绿化") || tempObj.getStation().contains("砂厂")){
                     //预交水资源费(单位)
                     Map<String,Double> tempMap = new HashMap<>();
                     for(WaterFeeStatisticsTotal total :waterFeeStatisticsTotalList){
@@ -1381,7 +1408,7 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                     }
                 }
             }
-            if(station.equals("渠首管理站")){
+            /*if(station.equals("渠首管理站")){
                 Double laishui = 0.0;
                 Double yinshui = 0.0;
                 Double zonggan = 0.0;
@@ -1430,7 +1457,7 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                         details.setV(laishui);
                     }
                 }
-            }
+            }*/
             boolean b = this.updateBatchById(waterFeeStatisticsDetails);
             if (b) {
                 return RestResponse.ok("更新成功");
@@ -1499,7 +1526,7 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                 Double payableWaterFee = byId==null?0:byId.getWaterPrice()==null?0:byId.getWaterPrice()*waterFeeStatisticsTotal.getAccumulatedWaterVolume();
                 //应交水费
                 waterFeeStatisticsTotal.setPayableWaterFee(payableWaterFee);
-                if(tempObj.getStation().equals("河东管理站绿化") || tempObj.getStation().equals("渠首砂厂")){
+                if(tempObj.getStation().contains("绿化") || tempObj.getStation().contains("砂厂")){
                     waterFeeStatisticsTotal.setPayableWaterResource(Double.valueOf(waterResourcePrice)*waterFeeStatisticsTotal.getAccumulatedWaterVolume());
                 }
                 WaterFeeStatisticsTotal lastYear = waterFeeStatisticsTotalService.lambdaQuery().eq(WaterFeeStatisticsTotal::getYear, tempObj.getYear()-1).
@@ -1511,7 +1538,7 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                 waterFeeStatisticsTotal.setWaterVolumeDuringLastYear(lastYear==null?0:lastYear.getAccumulatedWaterVolume());
                 waterFeeStatisticsTotalList.add(waterFeeStatisticsTotal);
             }
-            if(tempObj.getStation().equals("河东管理站绿化") || tempObj.getStation().equals("渠首砂厂")){
+            if(tempObj.getStation().contains("绿化") || tempObj.getStation().contains("砂厂")){
                 //预交水资源费(单位)
                 Map<String,Double> tempMap = new HashMap<>();
                 for(WaterFeeStatisticsTotal total :waterFeeStatisticsTotalList){
@@ -2128,7 +2155,7 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
             for(List<WaterFeeStatisticsDetails> waterFeeStatisticsDetails:waterFeeStatisticsDetailsList){
                 String station = waterFeeStatisticsDetails.get(0).getStation();
                 String dateTemp = waterFeeStatisticsDetails.get(0).getYear()+"-"+waterFeeStatisticsDetails.get(0).getStatisticsDate().substring(0,2)+"-"+waterFeeStatisticsDetails.get(0).getStatisticsDate().substring(3,5);
-                if(station.equals("渠首管理站")){
+                /*if(station.equals("渠首管理站")){
                     waterFeeStatisticsDetails.forEach(t->{
                         Map<String, Double> lanternCanalInfoByDate = getLanternCanalInfoByDate(t.getYear(),t.getMonth(),t.getTenDays(),t.getStatisticsDate());
                         String paramName = (String)redisUtil.get("trendsTableParam:name:"+t.getTableHeadId());
@@ -2171,7 +2198,35 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                         }
                         t.setId(UUIDUtils.getUUID());
                     });
-                }
+                }*/
+
+                waterFeeStatisticsDetails.forEach(t->{
+                    if(!sdf.format(new Date()).equals(dateTemp)){
+                        String paramName = (String)redisUtil.get("trendsTableParam:name:"+t.getTableHeadId());
+                        if(!paramName.equals("合计")){
+                            String tableParamString = (String)redisUtil.get("trendsTableParam:object:"+t.getTableHeadId());
+                            TrendsTableParam tableParam = JSONObject.parseObject(tableParamString, TrendsTableParam.class);
+                            if(t.getStation().contains("河东")){
+                                Double v = (Double)redisUtil.get("A3:data:hd:yesterday:"+dateTemp+":"+tableParam.getUnitId());
+                                t.setV(v==null?null:v);
+                            }
+                            if(t.getStation().contains("河西")){
+                                Double v = (Double)redisUtil.get("A3:data:hx:yesterday:"+dateTemp+":"+tableParam.getUnitId());
+                                t.setV(v==null?null:v);
+                            }
+                            if(t.getStation().contains("渠首")){
+                                Double v = (Double)redisUtil.get("A3:data:qs:yesterday:"+dateTemp+":"+tableParam.getUnitId());
+                                t.setV(v==null?null:v);
+                            }
+                        }
+                    }
+                    try {
+                        t.setRecordTime(sdf.parse(dateTemp));
+                    } catch (ParseException e) {
+                        throw new RuntimeException(e);
+                    }
+                    t.setId(UUIDUtils.getUUID());
+                });
 
                 List<TotalIdToStation> list = totalIdToStationService.lambdaQuery().eq(TotalIdToStation::getUseType, 2).eq(TotalIdToStation::getStation, waterFeeStatisticsDetails.get(0).getStation()).list();
                 //计算行合计
@@ -2231,7 +2286,7 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                         }
                     }
                 }
-                if(station.equals("渠首管理站")){
+                /*if(station.equals("渠首管理站")){
                     Double laishui = 0.0;
                     Double yinshui = 0.0;
                     Double zonggan = 0.0;
@@ -2280,7 +2335,7 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                             details.setV(laishui);
                         }
                     }
-                }
+                }*/
                 boolean b = this.saveBatch(waterFeeStatisticsDetails);
                 //计算列合计
                 if (b) {
@@ -2323,7 +2378,7 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                             Double payableWaterFee = byId==null?0:byId.getWaterPrice()==null?0:byId.getWaterPrice()*waterFeeStatisticsTotal.getAccumulatedWaterVolume();
                             //应交水费
                             waterFeeStatisticsTotal.setPayableWaterFee(payableWaterFee);
-                            if(tempObj.getStation().equals("河东管理站绿化") || tempObj.getStation().equals("渠首砂厂")){
+                            if(tempObj.getStation().contains("绿化") || tempObj.getStation().contains("砂厂")){
                                 waterFeeStatisticsTotal.setPayableWaterResource(Double.valueOf(waterResourcePrice)*waterFeeStatisticsTotal.getAccumulatedWaterVolume());
                             }
                             WaterFeeStatisticsTotal lastYear = waterFeeStatisticsTotalService.lambdaQuery().eq(WaterFeeStatisticsTotal::getYear, temp.getYear()-1).
@@ -2337,7 +2392,7 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                         }
 
 
-                        if(tempObj.getStation().equals("河东管理站绿化") || tempObj.getStation().equals("渠首砂厂")){
+                        if(tempObj.getStation().contains("绿化") || tempObj.getStation().contains("砂厂")){
                             //预交水资源费(单位)
                             Map<String,Double> tempMap = new HashMap<>();
                             for(WaterFeeStatisticsTotal total :waterFeeStatisticsTotalList){
@@ -2820,7 +2875,7 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                             Double payableWaterFee = byId==null?0:byId.getWaterPrice()==null?0:byId.getWaterPrice()*waterFeeStatisticsTotal.getAccumulatedWaterVolume();
                             //应交水费
                             waterFeeStatisticsTotal.setPayableWaterFee(payableWaterFee);
-                            if(tempObj.getStation().equals("河东管理站绿化") || tempObj.getStation().equals("渠首砂厂")){
+                            if(tempObj.getStation().contains("绿化") || tempObj.getStation().contains("砂厂")){
                                 waterFeeStatisticsTotal.setPayableWaterResource(Double.valueOf(waterResourcePrice)*waterFeeStatisticsTotal.getAccumulatedWaterVolume());
                             }
                             WaterFeeStatisticsTotal lastYear = waterFeeStatisticsTotalService.lambdaQuery().eq(WaterFeeStatisticsTotal::getYear, temp.getYear()-1).
@@ -2832,7 +2887,7 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                             waterFeeStatisticsTotal.setWaterVolumeDuringLastYear(lastYear==null?0:lastYear.getAccumulatedWaterVolume());
                             waterFeeStatisticsTotalList.add(waterFeeStatisticsTotal);
                         }
-                        if(tempObj.getStation().equals("河东管理站绿化") || tempObj.getStation().equals("渠首砂厂")){
+                        if(tempObj.getStation().contains("绿化") || tempObj.getStation().contains("砂厂")){
                             //预交水资源费(单位)
                             Map<String,Double> tempMap = new HashMap<>();
                             for(WaterFeeStatisticsTotal total :waterFeeStatisticsTotalList){
@@ -3289,6 +3344,7 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
         }catch (Exception e){
             log.error("水费创建失败，事务回滚");
             redisUtil.del("waterFee:"+details1.getStation()+details1.getYear()+details1.getMonth()+details1.getTenDays());
+            e.printStackTrace();
             throw new RuntimeException("水费创建失败");
         }
     }

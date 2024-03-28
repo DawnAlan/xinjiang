@@ -505,7 +505,7 @@ public class AllServiceImpl implements AllService {
                 dateListInputFlow.add(parse);
             }
             List<Date> collectInputFlow = dateListInputFlow.stream().sorted(Comparator.comparing(Date::getDate, Comparator.reverseOrder())).collect(Collectors.toList());
-            Double inputFlow = (Double) redisUtil.get("lzz:input:"+sdf1.format(collectInputFlow.get(0)));
+            Double inputFlow = collectInputFlow.size()>0?(Double) redisUtil.get("lzz:input:"+sdf1.format(collectInputFlow.get(0))):null;
             lzz.setInputFlow(inputFlow);
             Set<String> allKeysOut = redisUtil.getAllKeys("lzz:out:"+endTime);
             List<Date> dateListOut = new ArrayList<>();
@@ -517,7 +517,7 @@ public class AllServiceImpl implements AllService {
                 dateListOut.add(parse);
             }
             List<Date> collectOut = dateListInputFlow.stream().sorted(Comparator.comparing(Date::getDate, Comparator.reverseOrder())).collect(Collectors.toList());
-            Double out = (Double) redisUtil.get("lzz:out:"+sdf1.format(collectOut.get(0)));
+            Double out = collectOut.size()>0?(Double) redisUtil.get("lzz:out:"+sdf1.format(collectOut.get(0))):null;
             lzz.setOutputFlow(out);
             resList.add(lzz);
         }
