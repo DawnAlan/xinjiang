@@ -503,9 +503,9 @@ public class ResourceOptimizationlong_TendaysTest
         waterSupply[4]=calFit(id, reservoirs,period,wl_term,waterDemand,inflow)[10];
         watersupply_lzz=calFit(id,reservoirs,period,wl_term,waterDemand,inflow)[11];
         DecimalFormat da=new DecimalFormat("#.00");
-        if (fitness_term[0]>0.05){
-            throw new CommonException("请检查水位设置是否合理，请适当降低两库末水位");
-        }
+//        if (fitness_term[0]>0.05){
+//            throw new CommonException("请检查水位设置是否合理，请适当降低两库末水位");
+//        }
         double[]allwater=new double[period];
         double[]ecologyWater=new double[period];
         double[]ecologyFlow=new double[period];
@@ -768,6 +768,9 @@ public class ResourceOptimizationlong_TendaysTest
                     proportion3[m][n] = 1;
                 } else {
                     proportion3[m][n] = Double.parseDouble(da1.format(waterSupply3[m][n] / waterdemand3[m][n]));
+                    if (proportion3[m][n]>1){
+                        proportion3[m][n] = 1;
+                    }
                 }
             }
         }
@@ -777,6 +780,9 @@ public class ResourceOptimizationlong_TendaysTest
                     proportion4[m][n] = 1;
                 } else {
                     proportion4[m][n] = Double.parseDouble(da1.format(waterSupply4[m][n] / waterdemand4[m][n]));
+                    if (proportion4[m][n]>1){
+                        proportion4[m][n] = 1;
+                    }
                 }
             }
         }
@@ -789,6 +795,9 @@ public class ResourceOptimizationlong_TendaysTest
                 else
                 {
                     proportionGreenEast[m][n] = Double.parseDouble(da1.format(waterSupplyGreenEast[m][n]/ waterDemandGreenEast[m][n]));
+                    if (proportionGreenEast[m][n]>1){
+                        proportionGreenEast[m][n]=1;
+                    }
                 }
             }
         }
@@ -799,6 +808,9 @@ public class ResourceOptimizationlong_TendaysTest
                 }
                 else {
                     proportionGreenWest[m][n] = Double.parseDouble(da1.format(waterSupplyGreenWest[m][n]/ waterDemandGreenWest[m][n]));
+                    if (proportionGreenWest[m][n]>1){
+                        proportionGreenWest[m][n]=1;
+                    }
                 }
             }
         }
@@ -810,6 +822,9 @@ public class ResourceOptimizationlong_TendaysTest
                 }
                 else{
                     proportionGreenQushou[m][n] = Double.parseDouble(da1.format(waterSupplyGreenQushou[m][n] / waterDemandGreenQushou[m][n]));
+                    if (proportionGreenQushou[m][n]>1){
+                        proportionGreenQushou[m][n] = 1;
+                    }
                 }
             }
         }
@@ -821,6 +836,9 @@ public class ResourceOptimizationlong_TendaysTest
                 }
                 else {
                     proportionIndustry[m][n] = Double.parseDouble(da1.format(waterSupplyIndustry[m][n]/ waterDemandIndustry[m][n]));
+                    if ( proportionIndustry[m][n]>1){
+                        proportionIndustry[m][n]=1;
+                    }
                 }
             }
         }

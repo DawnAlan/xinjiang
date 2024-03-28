@@ -38,9 +38,14 @@ public class InputWay {
         double[][] demandIndustryQushou = new double[nameIndustryQushou.length][12];
         for (int x = 0; x < nameIndustryQushou.length; x++) {
             demandIndustryQushou[x] = setDataYearCity(waterDemandData, nameIndustryQushou[x], "渠首工业");
-            double n = getDataMonthPlan(waterDemandData, nameIndustryQushou[x], "渠首工业");
-            if (n != -100&&n!=0) {
-                demandIndustryQushou[x][monthNum] = n;
+            List<List<Double>> update=new ArrayList<>();
+            update = getDataMonthPlan(waterDemandData, nameIndustryQushou[x], "渠首工业");
+            List<Double> month = update.get(0);
+            List<Double> waterData = update.get(1);
+            for (int i=0;i<month.size();i++){
+                if (waterData.get(i)>0){
+                    demandIndustryQushou[x][month.get(i).intValue()] = waterData.get(i);
+                }
             }
             data1.put(nameIndustryQushou[x], demandIndustryQushou[x]);
         }
@@ -48,9 +53,14 @@ public class InputWay {
         double[][] demandAgricultureEast = new double[nameAgricultureEast.length][12];
         for (int x = 0; x < nameAgricultureEast.length; x++) {
             demandAgricultureEast[x] = setDataYearIrrigate(waterDemandData, nameAgricultureEast[x], "河东农业");
-            double n = getDataMonthPlan(waterDemandData, nameAgricultureEast[x], "河东农业");
-            if (n != -100&&n!=0) {
-                demandAgricultureEast[x][monthNum] = n;
+            List<List<Double>> update=new ArrayList<>();
+            update = getDataMonthPlan(waterDemandData, nameAgricultureEast[x], "河东农业");
+            List<Double> month = update.get(0);
+            List<Double> waterData = update.get(1);
+            for (int i=0;i<month.size();i++){
+                if (waterData.get(i)>0){
+                    demandAgricultureEast[x][month.get(i).intValue()] = waterData.get(i);
+                }
             }
             data1.put(nameAgricultureEast[x], demandAgricultureEast[x]);
         }
@@ -58,9 +68,14 @@ public class InputWay {
         double[][] demandAgricultureWest = new double[nameAgricultureWest.length][12];
         for (int x = 0; x < nameAgricultureWest.length; x++) {
             demandAgricultureWest[x] = setDataYearIrrigate(waterDemandData, nameAgricultureWest[x], "河西农业");
-            double n = getDataMonthPlan(waterDemandData, nameAgricultureWest[x], "河西农业");
-            if (n != -100&&n!=0) {
-                demandAgricultureWest[x][monthNum] = n;
+            List<List<Double>> update=new ArrayList<>();
+            update = getDataMonthPlan(waterDemandData, nameAgricultureWest[x], "河西农业");
+            List<Double> month = update.get(0);
+            List<Double> waterData = update.get(1);
+            for (int i=0;i<month.size();i++){
+                if (waterData.get(i)>0){
+                    demandAgricultureWest[x][month.get(i).intValue()] = waterData.get(i);
+                }
             }
             data1.put(nameAgricultureWest[x], demandAgricultureWest[x]);
         }
@@ -68,9 +83,14 @@ public class InputWay {
         double[][] demandGreenEast = new double[nameGreenEast.length][12];
         for (int x = 0; x < nameGreenEast.length; x++) {
             demandGreenEast[x] = setDataYearGreen(waterDemandData, nameGreenEast[x], "河东绿化");
-            double n = getDataMonthPlan(waterDemandData, nameGreenEast[x], "河东绿化");
-            if (n != -100&&n!=0) {
-                demandGreenEast[x][monthNum] = n;
+            List<List<Double>> update=new ArrayList<>();
+            update = getDataMonthPlan(waterDemandData, nameGreenEast[x], "河东绿化");
+            List<Double> month = update.get(0);
+            List<Double> waterData = update.get(1);
+            for (int i=0;i<month.size();i++){
+                if (waterData.get(i)>0){
+                    demandGreenEast[x][month.get(i).intValue()] = waterData.get(i);
+                }
             }
             data1.put(nameGreenEast[x], demandGreenEast[x]);
         }
@@ -78,9 +98,14 @@ public class InputWay {
         double[][] demandGreenWest = new double[nameGreenWest.length][12];
         for (int x = 0; x < nameGreenWest.length; x++) {
             demandGreenWest[x] = setDataYearGreen(waterDemandData, nameGreenWest[x], "河西绿化");
-            double n = getDataMonthPlan(waterDemandData, nameGreenWest[x], "河西绿化");
-            if (n != -100&&n!=0) {
-                demandGreenWest[x][monthNum] = n;
+            List<List<Double>> update=new ArrayList<>();
+            update = getDataMonthPlan(waterDemandData, nameGreenWest[x], "河西绿化");
+            List<Double> month = update.get(0);
+            List<Double> waterData = update.get(1);
+            for (int i=0;i<month.size();i++){
+                if (waterData.get(i)>0){
+                    demandGreenWest[x][month.get(i).intValue()] =  waterData.get(i);
+                }
             }
             data1.put(nameGreenWest[x], demandGreenWest[x]);
         }
@@ -88,9 +113,14 @@ public class InputWay {
         double[][] demandAgricultureQushou = new double[nameAgricultureQushou.length][12];
         for (int x = 0; x < nameAgricultureQushou.length; x++) {
             demandAgricultureQushou[x] = setDataYearIrrigate(waterDemandData, nameAgricultureQushou[x], "渠首农业");
-            double n = getDataMonthPlan(waterDemandData, nameAgricultureQushou[x], "渠首农业");
-            if (n != -100&&n!=0) {
-                demandAgricultureQushou[x][monthNum] = n;
+            List<List<Double>> update=new ArrayList<>();
+            update = getDataMonthPlan(waterDemandData, nameAgricultureQushou[x], "渠首农业");
+            List<Double> month = update.get(0);
+            List<Double> waterData = update.get(1);
+            for (int i=0;i<month.size();i++){
+                if (waterData.get(i)>0){
+                    demandAgricultureQushou[x][month.get(i).intValue()] = waterData.get(i);
+                }
             }
             data1.put(nameAgricultureQushou[x], demandAgricultureQushou[x]);
         }
@@ -98,28 +128,50 @@ public class InputWay {
         double[][] demandGreenQushou = new double[nameGreenQushou.length][12];
         for (int x = 0; x < nameGreenQushou.length; x++) {
             demandGreenQushou[x] = setDataYearGreen(waterDemandData, nameGreenQushou[x], "渠首绿化");
-            double n = getDataMonthPlan(waterDemandData, nameGreenQushou[x], "渠首绿化");
-            if (n != -100&&n!=0) {
-                demandGreenQushou[x][monthNum] = n;
+            List<List<Double>> update=new ArrayList<>();
+            update = getDataMonthPlan(waterDemandData, nameGreenQushou[x], "渠首绿化");
+            List<Double> month = update.get(0);
+            List<Double> waterData = update.get(1);
+            for (int i=0;i<month.size();i++){
+                if (waterData.get(i)>0){
+                    demandGreenQushou[x][month.get(i).intValue()] = waterData.get(i);
+                }
             }
             data1.put(nameGreenQushou[x], demandGreenQushou[x]);
         }
+
         double[] demand_bagang = setDataYearCity(waterDemandData, "月水量(万m³)", "八钢工业");
-        double n1 = getDataMonthPlan(waterDemandData, "水量", "八钢工业");
-        if (n1 != -100&&n1!=0) {
-            demand_bagang[monthNum] = n1;
+        List<List<Double>> update1=new ArrayList<>();
+        update1 = getDataMonthPlan(waterDemandData, "水量", "八钢工业");
+
+        List<Double> month1 = update1.get(0);
+        List<Double> waterData1 = update1.get(1);
+        for (int i=0;i<month1.size();i++){
+            if (waterData1.get(i)>0){
+                demand_bagang[month1.get(i).intValue()] = waterData1.get(i);
+            }
         }
 
         double[] demand_hongyan = setDataYearCity(waterDemandData, "月水量", "红岩");
-        double n2 = getDataMonthPlan(waterDemandData, "水量", "红岩");
-        if (n2 != -100&&n2!=0) {
-            demand_hongyan[monthNum] = n2;
+        List<List<Double>> update2=new ArrayList<>();
+        update2 = getDataMonthPlan(waterDemandData, "水量", "红岩");
+        List<Double> month2 = update2.get(0);
+        List<Double> waterData2 = update2.get(1);
+        for (int i=0;i<month2.size();i++){
+            if (waterData2.get(i)>0){
+                demand_hongyan[month2.get(i).intValue()] = waterData2.get(i);
+            }
         }
 
         double[] demand_lzz = setDataYearCity(waterDemandData, "月水量", "楼庄子水厂");
-        double n3 = getDataMonthPlan(waterDemandData, "水量", "楼庄子水厂");
-        if (n3 != -100&&n3!=0) {
-            demand_lzz[monthNum] = n3;
+        List<List<Double>> update3=new ArrayList<>();
+        update3 = getDataMonthPlan(waterDemandData, "水量", "楼庄子水厂");
+        List<Double> month3 = update3.get(0);
+        List<Double> waterData3 = update3.get(1);
+        for (int i=0;i<month3.size();i++){
+            if (waterData3.get(i)>0){
+                demand_lzz[month3.get(i).intValue()] = waterData3.get(i);
+            }
         }
         data1.put("八钢", demand_bagang);
         data1.put("红岩", demand_hongyan);
@@ -137,6 +189,7 @@ public class InputWay {
     }
 
     /**
+     * 月逐旬计划
      * @param req      入参
      * @param xnum     本月第几旬-1
      * @param monthNum 本月第几月-1
@@ -177,10 +230,15 @@ public class InputWay {
                     demandAgricultureEast[x][i]= datayear[monthNum]/3;
                 }
             }
-
-            double n = getDataRealTime(waterDemandData, nameAgricultureEast[x], "河东管理站");
-            if (n != -100&&n!=0) {
-                demandAgricultureEast[x][xnum] = n;
+            List<List<Double>> update=new ArrayList<>();
+            update = getDataRealTime(waterDemandData, nameAgricultureEast[x], "河东管理站");
+            List<Double> tenDays = update.get(0);
+            List<Double> waterData = update.get(1);
+            for (int ii=0;ii<tenDays.size();ii++){
+                if (waterData.get(ii)>0)
+                {
+                    demandAgricultureEast[x][tenDays.get(ii).intValue()] = waterData.get(ii);
+                }
             }
             data1.put(nameAgricultureEast[x], demandAgricultureEast[x]);
         }
@@ -198,9 +256,15 @@ public class InputWay {
                     demandAgricultureWest[x][i]= datayear[monthNum]/3;
                 }
             }
-            double n = getDataRealTime(waterDemandData, nameAgricultureWest[x], "河西管理站");
-            if (n != -100&&n!=0) {
-                demandAgricultureWest[x][xnum] = n;
+            List<List<Double>> update=new ArrayList<>();
+            update = getDataRealTime(waterDemandData, nameAgricultureWest[x], "河西管理站");
+            List<Double> tenDays = update.get(0);
+            List<Double> waterData = update.get(1);
+            for (int ii=0;ii<tenDays.size();ii++){
+                if (waterData.get(ii)>0)
+                {
+                    demandAgricultureWest[x][tenDays.get(ii).intValue()] = waterData.get(ii);
+                }
             }
             data1.put(nameAgricultureWest[x], demandAgricultureWest[x]);
         }
@@ -217,9 +281,15 @@ public class InputWay {
                     demandAgricultureQushou[x][i]= datayear[monthNum]/3;
                 }
             }
-            double n = getDataRealTime(waterDemandData, nameAgricultureQushou[x], "渠首管理站");
-            if (n != -100&&n!=0) {
-                demandAgricultureQushou[x][xnum] = n;
+            List<List<Double>> update=new ArrayList<>();
+            update = getDataRealTime(waterDemandData, nameAgricultureQushou[x], "渠首管理站");
+            List<Double> tenDays = update.get(0);
+            List<Double> waterData = update.get(1);
+            for (int ii=0;ii<tenDays.size();ii++){
+                if (waterData.get(ii)>0)
+                {
+                    demandAgricultureQushou[x][tenDays.get(ii).intValue()] = waterData.get(ii);
+                }
             }
             data1.put(nameAgricultureQushou[x], demandAgricultureQushou[x]);
         }
@@ -406,23 +476,42 @@ public class InputWay {
         for (int x = 0; x < nameAgricultureQushou.length; x++) {
 
             demand = (double[]) dataMonth.get(nameAgricultureQushou[x]);
-            double tenDay=getDataRealTime(waterDemandData,nameAgricultureQushou[x],"渠首管理站");
-            if (tenDay!=-100&&tenDay!=0)
-            {
-                for (int x1 = 0; x1 < step; x1++) {
-                    demendAgricultureQushou[x][x1] = tenDay / num;
-                }
-            }
-            else
-             {
+            List<List<Double>> update=new ArrayList<>();
+            update=getDataRealTime(waterDemandData,nameAgricultureQushou[x],"渠首管理站");
+            List<Double> tenDays = update.get(0);
+            List<Double> waterData = update.get(1);
+            if (tenDays.size()==0){
                 for (int x1 = 0; x1 < step; x1++) {
                     demendAgricultureQushou[x][x1] = demand[id] / num;
                 }
             }
-            double n = getDataRealDay(waterDemandData, nameAgricultureQushou[x], "渠首管理站");
-            if (n != -100) {
-                demendAgricultureQushou[x][dayNum] = n;
+            for (int i = 0; i < tenDays.size(); i++) {
+                if (tenDays.get(i).intValue()==id){
+                    if (waterData.get(i)>0)
+                    {
+                        for (int x1 = 0; x1 < step; x1++) {
+                            demendAgricultureQushou[x][x1] = waterData.get(i) / num;
+                        }
+                    }
+                    else
+                    {
+                        for (int x1 = 0; x1 < step; x1++) {
+                            demendAgricultureQushou[x][x1] = demand[id] / num;
+                        }
+                    }
+                }
+
             }
+            List<List<Double>> updateDay=new ArrayList<>();
+            updateDay = getDataRealDay(waterDemandData, nameAgricultureQushou[x], "渠首管理站");
+            List<Double> day = updateDay.get(0);
+            List<Double> waterDataday = updateDay.get(1);
+            for (int i = 0; i < day.size(); i++) {
+                if (waterDataday.get(i)>=0) {
+                    demendAgricultureQushou[x][day.get(i).intValue()] = waterDataday.get(i);
+                }
+            }
+
             data.put(nameAgricultureQushou[x], demendAgricultureQushou[x]);
         }
         // 渠首绿化
@@ -432,9 +521,14 @@ public class InputWay {
             for (int x1 = 0; x1 < step; x1++) {
                 demendGreenQushou[x][x1] = demand[id] / num;
             }
-            double n = getDataRealDay(waterDemandData, nameGreenQushou[x], "渠首管理站");
-            if (n != -100) {
-                demendGreenQushou[x][dayNum] = n;
+            List<List<Double>> updateDay=new ArrayList<>();
+            updateDay = getDataRealDay(waterDemandData, nameGreenQushou[x], "渠首管理站");
+            List<Double> day = updateDay.get(0);
+            List<Double> waterDataday = updateDay.get(1);
+            for (int i = 0; i < day.size(); i++) {
+                if (waterDataday.get(i)>=0) {
+                    demendGreenQushou[x][day.get(i).intValue()] = waterDataday.get(i);
+                }
             }
             data.put(nameGreenQushou[x], demendGreenQushou[x]);
         }
@@ -445,9 +539,14 @@ public class InputWay {
             for (int x1 = 0; x1 < step; x1++) {
                 demendGreenEast[x][x1] = demand[id] / num;
             }
-            double n = getDataRealDay(waterDemandData, nameGreenEast[x], "河东管理站");
-            if (n != -100) {
-                demendGreenEast[x][dayNum] = n;
+            List<List<Double>> updateDay=new ArrayList<>();
+            updateDay = getDataRealDay(waterDemandData, nameGreenEast[x], "河东管理站");
+            List<Double> day = updateDay.get(0);
+            List<Double> waterDataday = updateDay.get(1);
+            for (int i = 0; i < day.size(); i++) {
+                if (waterDataday.get(i)>=0) {
+                    demendGreenEast[x][day.get(i).intValue()] = waterDataday.get(i);
+                }
             }
             data.put(nameGreenEast[x], demendGreenEast[x]);
         }
@@ -458,9 +557,14 @@ public class InputWay {
             for (int x1 = 0; x1 < step; x1++) {
                 demendGreenWest[x][x1] = demand[id] / num;
             }
-            double n = getDataRealDay(waterDemandData, nameGreenWest[x], "河西管理站");
-            if (n != -100) {
-                demendGreenWest[x][dayNum] = n;
+            List<List<Double>> updateDay=new ArrayList<>();
+            updateDay = getDataRealDay(waterDemandData, nameGreenWest[x], "河西管理站");
+            List<Double> day = updateDay.get(0);
+            List<Double> waterDataday = updateDay.get(1);
+            for (int i = 0; i < day.size(); i++) {
+                if (waterDataday.get(i)>=0) {
+                    demendGreenWest[x][day.get(i).intValue()] = waterDataday.get(i);
+                }
             }
             data.put(nameGreenWest[x], demendGreenWest[x]);
         }
@@ -469,22 +573,39 @@ public class InputWay {
         double[][] demendAgricultureEast = new double[nameAgricultureEast.length][step];
         for (int x = 0; x < nameAgricultureEast.length; x++) {
             demand = (double[]) dataMonth.get(nameAgricultureEast[x]);
-            double tenDay=getDataRealTime(waterDemandData,nameAgricultureEast[x],"河东管理站");
-            if (tenDay!=-100&&tenDay!=0)
-            {
-                for (int x1 = 0; x1 < step; x1++) {
-                    demendAgricultureEast[x][x1] = tenDay / num;
-                }
-            }
-            else
-            {
+            List<List<Double>> update=new ArrayList<>();
+            update=getDataRealTime(waterDemandData,nameAgricultureEast[x],"河东管理站");
+            List<Double> tenDays = update.get(0);
+            List<Double> waterData = update.get(1);
+            if (tenDays.size()==0){
                 for (int x1 = 0; x1 < step; x1++) {
                     demendAgricultureEast[x][x1] = demand[id] / num;
                 }
             }
-            double n = getDataRealDay(waterDemandData, nameAgricultureEast[x], "河东管理站");
-            if (n != -100) {
-                demendAgricultureEast[x][dayNum] = n;
+            for (int i = 0; i < tenDays.size(); i++) {
+                if (tenDays.get(i).intValue()==id){
+                    if (waterData.get(i)>0)
+                    {
+                        for (int x1 = 0; x1 < step; x1++) {
+                            demendAgricultureEast[x][x1] = waterData.get(i) / num;
+                        }
+                    }
+                    else
+                    {
+                        for (int x1 = 0; x1 < step; x1++) {
+                            demendAgricultureEast[x][x1] = demand[id] / num;
+                        }
+                    }
+                }
+            }
+            List<List<Double>> updateDay=new ArrayList<>();
+            updateDay = getDataRealDay(waterDemandData, nameAgricultureEast[x], "河东管理站");
+            List<Double> day = updateDay.get(0);
+            List<Double> waterDataday = updateDay.get(1);
+            for (int i = 0; i < day.size(); i++) {
+                if (waterDataday.get(i)>=0) {
+                    demendAgricultureEast[x][day.get(i).intValue()] =  waterDataday.get(i);
+                }
             }
             data.put(nameAgricultureEast[x], demendAgricultureEast[x]);
         }
@@ -493,22 +614,39 @@ public class InputWay {
         double[][] demendAgricultureWest = new double[nameAgricultureWest.length][step];
         for (int x = 0; x < nameAgricultureWest.length; x++) {
             demand = (double[]) dataMonth.get(nameAgricultureWest[x]);
-            double tenDay=getDataRealTime(waterDemandData,nameAgricultureWest[x],"河西管理站");
-            if (tenDay!=-100&&tenDay!=0)
-            {
-                for (int x1 = 0; x1 < step; x1++) {
-                    demendAgricultureWest[x][x1] = tenDay / num;
-                }
-            }
-            else
-            {
+            List<List<Double>> update=new ArrayList<>();
+            update=getDataRealTime(waterDemandData,nameAgricultureWest[x],"河西管理站");
+            List<Double> tenDays = update.get(0);
+            List<Double> waterData = update.get(1);
+            if (tenDays.size()==0){
                 for (int x1 = 0; x1 < step; x1++) {
                     demendAgricultureWest[x][x1] = demand[id] / num;
                 }
             }
-            double n = getDataRealDay(waterDemandData, nameAgricultureWest[x], "河西管理站");
-            if (n != -100) {
-                demendAgricultureWest[x][dayNum] = n;
+            for (int i = 0; i < tenDays.size(); i++) {
+                if (tenDays.get(i).intValue()==id){
+                    if (waterData.get(i)>0)
+                    {
+                        for (int x1 = 0; x1 < step; x1++) {
+                            demendAgricultureWest[x][x1] = waterData.get(i) / num;
+                        }
+                    }
+                    else
+                    {
+                        for (int x1 = 0; x1 < step; x1++) {
+                            demendAgricultureWest[x][x1] = demand[id] / num;
+                        }
+                    }
+                }
+            }
+            List<List<Double>> updateDay=new ArrayList<>();
+            updateDay = getDataRealDay(waterDemandData, nameAgricultureWest[x], "河西管理站");
+            List<Double> day = updateDay.get(0);
+            List<Double> waterDataday = updateDay.get(1);
+            for (int i = 0; i < day.size(); i++) {
+                if (waterDataday.get(i)>=0) {
+                    demendAgricultureWest[x][day.get(i).intValue()] = waterDataday.get(i);
+                }
             }
             data.put(nameAgricultureWest[x], demendAgricultureWest[x]);
         }
@@ -620,22 +758,40 @@ public class InputWay {
         for (int x = 0; x < nameAgricultureQushou.length; x++) {
 
             demand = (double[]) dataMonth.get(nameAgricultureQushou[x]);
-            double tenDay=getDataRealTime(waterDemandData,nameAgricultureQushou[x],"渠首管理站");
-            if (tenDay!=-100&&tenDay!=0)
-            {
-                for (int x1 = 0; x1 < step; x1++) {
-                    demendAgricultureQushou[x][x1] = tenDay / num;
-                }
-            }
-            else
-            {
+            List<List<Double>> update=new ArrayList<>();
+            update=getDataRealTime(waterDemandData,nameAgricultureQushou[x],"渠首管理站");
+            List<Double> tenDays = update.get(0);
+            List<Double> waterData = update.get(1);
+            if (tenDays.size()==0){
                 for (int x1 = 0; x1 < step; x1++) {
                     demendAgricultureQushou[x][x1] = demand[id] / num;
                 }
             }
-            double n = getDataRealDay(waterDemandData, nameAgricultureQushou[x], "渠首管理站");
-            if (n != -100) {
-                demendAgricultureQushou[x][dayNum] = n;
+            for (int i = 0; i < tenDays.size(); i++) {
+                if (tenDays.get(i).intValue()==id){
+                    if (waterData.get(i)>0)
+                    {
+                        for (int x1 = 0; x1 < step; x1++) {
+                            demendAgricultureQushou[x][x1] = waterData.get(i) / num;
+                        }
+                    }
+                    else
+                    {
+                        for (int x1 = 0; x1 < step; x1++) {
+                            demendAgricultureQushou[x][x1] = demand[id] / num;
+                        }
+                    }
+                }
+
+            }
+            List<List<Double>> updateDay=new ArrayList<>();
+            updateDay = getDataRealDay(waterDemandData, nameAgricultureQushou[x], "渠首管理站");
+            List<Double> day = updateDay.get(0);
+            List<Double> waterDataday = updateDay.get(1);
+            for (int i = 0; i < day.size(); i++) {
+                if (waterDataday.get(i)>=0) {
+                    demendAgricultureQushou[x][day.get(i).intValue()] = waterDataday.get(i);
+                }
             }
             data.put(nameAgricultureQushou[x], demendAgricultureQushou[x]);
         }
@@ -646,9 +802,14 @@ public class InputWay {
             for (int x1 = 0; x1 < step; x1++) {
                 demendGreenQushou[x][x1] = demand[id] / num;
             }
-            double n = getDataRealDay(waterDemandData, nameGreenQushou[x], "渠首管理站");
-            if (n != -100) {
-                demendGreenQushou[x][dayNum] = n;
+            List<List<Double>> updateDay=new ArrayList<>();
+            updateDay = getDataRealDay(waterDemandData, nameGreenQushou[x], "渠首管理站");
+            List<Double> day = updateDay.get(0);
+            List<Double> waterDataday = updateDay.get(1);
+            for (int i = 0; i < day.size(); i++) {
+                if (waterDataday.get(i)>=0) {
+                    demendGreenQushou[x][day.get(i).intValue()] = waterDataday.get(i);
+                }
             }
             data.put(nameGreenQushou[x], demendGreenQushou[x]);
         }
@@ -659,9 +820,14 @@ public class InputWay {
             for (int x1 = 0; x1 < step; x1++) {
                 demendGreenEast[x][x1] = demand[id] / num;
             }
-            double n = getDataRealDay(waterDemandData, nameGreenEast[x], "河东管理站");
-            if (n != -100) {
-                demendGreenEast[x][dayNum] = n;
+            List<List<Double>> updateDay=new ArrayList<>();
+            updateDay = getDataRealDay(waterDemandData, nameGreenEast[x], "河东管理站");
+            List<Double> day = updateDay.get(0);
+            List<Double> waterDataday = updateDay.get(1);
+            for (int i = 0; i < day.size(); i++) {
+                if (waterDataday.get(i)>=0) {
+                    demendGreenEast[x][day.get(i).intValue()] = waterDataday.get(i);
+                }
             }
             data.put(nameGreenEast[x], demendGreenEast[x]);
         }
@@ -672,9 +838,14 @@ public class InputWay {
             for (int x1 = 0; x1 < step; x1++) {
                 demendGreenWest[x][x1] = demand[id] / num;
             }
-            double n = getDataRealDay(waterDemandData, nameGreenWest[x], "河西管理站");
-            if (n != -100) {
-                demendGreenWest[x][dayNum] = n;
+            List<List<Double>> updateDay=new ArrayList<>();
+            updateDay = getDataRealDay(waterDemandData, nameGreenWest[x], "河西管理站");
+            List<Double> day = updateDay.get(0);
+            List<Double> waterDataday = updateDay.get(1);
+            for (int i = 0; i < day.size(); i++) {
+                if (waterDataday.get(i)>=0) {
+                    demendGreenWest[x][day.get(i).intValue()] = waterDataday.get(i);
+                }
             }
             data.put(nameGreenWest[x], demendGreenWest[x]);
         }
@@ -683,22 +854,39 @@ public class InputWay {
         double[][] demendAgricultureEast = new double[nameAgricultureEast.length][step];
         for (int x = 0; x < nameAgricultureEast.length; x++) {
             demand = (double[]) dataMonth.get(nameAgricultureEast[x]);
-            double tenDay=getDataRealTime(waterDemandData,nameAgricultureEast[x],"河东管理站");
-            if (tenDay!=-100&&tenDay!=0)
-            {
-                for (int x1 = 0; x1 < step; x1++) {
-                    demendAgricultureEast[x][x1] = tenDay / num;
-                }
-            }
-            else
-            {
+            List<List<Double>> update=new ArrayList<>();
+            update=getDataRealTime(waterDemandData,nameAgricultureEast[x],"河东管理站");
+            List<Double> tenDays = update.get(0);
+            List<Double> waterData = update.get(1);
+            if (tenDays.size()==0){
                 for (int x1 = 0; x1 < step; x1++) {
                     demendAgricultureEast[x][x1] = demand[id] / num;
                 }
             }
-            double n = getDataRealDay(waterDemandData, nameAgricultureEast[x], "河东管理站");
-            if (n != -100) {
-                demendAgricultureEast[x][dayNum] = n;
+            for (int i = 0; i < tenDays.size(); i++) {
+                if (tenDays.get(i).intValue()==id){
+                    if (waterData.get(i)>0)
+                    {
+                        for (int x1 = 0; x1 < step; x1++) {
+                            demendAgricultureEast[x][x1] = waterData.get(i) / num;
+                        }
+                    }
+                    else
+                    {
+                        for (int x1 = 0; x1 < step; x1++) {
+                            demendAgricultureEast[x][x1] = demand[id] / num;
+                        }
+                    }
+                }
+            }
+            List<List<Double>> updateDay=new ArrayList<>();
+            updateDay = getDataRealDay(waterDemandData, nameAgricultureEast[x], "河东管理站");
+            List<Double> day = updateDay.get(0);
+            List<Double> waterDataday = updateDay.get(1);
+            for (int i = 0; i < day.size(); i++) {
+                if (waterDataday.get(i)>=0) {
+                    demendAgricultureEast[x][day.get(i).intValue()] =  waterDataday.get(i);
+                }
             }
             data.put(nameAgricultureEast[x], demendAgricultureEast[x]);
         }
@@ -707,22 +895,39 @@ public class InputWay {
         double[][] demendAgricultureWest = new double[nameAgricultureWest.length][step];
         for (int x = 0; x < nameAgricultureWest.length; x++) {
             demand = (double[]) dataMonth.get(nameAgricultureWest[x]);
-            double tenDay=getDataRealTime(waterDemandData,nameAgricultureWest[x],"河西管理站");
-            if (tenDay!=-100&&tenDay!=0)
-            {
-                for (int x1 = 0; x1 < step; x1++) {
-                    demendAgricultureWest[x][x1] = tenDay / num;
-                }
-            }
-            else
-            {
+            List<List<Double>> update=new ArrayList<>();
+            update=getDataRealTime(waterDemandData,nameAgricultureWest[x],"河西管理站");
+            List<Double> tenDays = update.get(0);
+            List<Double> waterData = update.get(1);
+            if (tenDays.size()==0){
                 for (int x1 = 0; x1 < step; x1++) {
                     demendAgricultureWest[x][x1] = demand[id] / num;
                 }
             }
-            double n = getDataRealDay(waterDemandData, nameAgricultureWest[x], "河西管理站");
-            if (n != -100) {
-                demendAgricultureWest[x][dayNum] = n;
+            for (int i = 0; i < tenDays.size(); i++) {
+                if (tenDays.get(i).intValue()==id){
+                    if (waterData.get(i)>0)
+                    {
+                        for (int x1 = 0; x1 < step; x1++) {
+                            demendAgricultureWest[x][x1] = waterData.get(i) / num;
+                        }
+                    }
+                    else
+                    {
+                        for (int x1 = 0; x1 < step; x1++) {
+                            demendAgricultureWest[x][x1] = demand[id] / num;
+                        }
+                    }
+                }
+            }
+            List<List<Double>> updateDay=new ArrayList<>();
+            updateDay = getDataRealDay(waterDemandData, nameAgricultureWest[x], "河西管理站");
+            List<Double> day = updateDay.get(0);
+            List<Double> waterDataday = updateDay.get(1);
+            for (int i = 0; i < day.size(); i++) {
+                if (waterDataday.get(i)>=0) {
+                    demendAgricultureWest[x][day.get(i).intValue()] = waterDataday.get(i);
+                }
             }
             data.put(nameAgricultureWest[x], demendAgricultureWest[x]);
         }
@@ -757,26 +962,47 @@ public class InputWay {
      * @param tableName
      * @return
      */
-    public static double getDataMonthPlan(List<Waterdemand> data, String name, String tableName) {
-        double n = -100;
-        for (int i = 0; i < data.size(); i++) {
-            String UseWaterPlan = data.get(i).getUseWaterPlan();
-            String Area = data.get(i).getArea();
-            String Unit = data.get(i).getUnit();
-            String ColName = data.get(i).getColName();
-            if (UseWaterPlan != null && Area != null && Unit != null && ColName != null) {
-                if (data.get(i).getUseWaterPlan().equals("month")) {
-                    if (data.get(i).getArea().equals(tableName)) {
-                        if (data.get(i).getUnit().equals(name)) {
-                            if (data.get(i).getColName().equals("合计")) {
-                                n = data.get(i).getWaterDemendData();
+    public static List<List<Double>> getDataMonthPlan(List<Waterdemand> data, String name, String tableName) {
+
+        List<Date> dateNum = new ArrayList<>();
+        List<Double> month = new ArrayList<>();
+        List<Double> waterData = new ArrayList<>();
+        List<List<Double>> update=new ArrayList<>();
+        dateNum = data.stream().filter(n -> n.getArea().equals(tableName)&&n.getUnit().equals(name)&&n.getUseWaterPlan().equals("month")).
+                map(Waterdemand::getDate).distinct().collect(Collectors.toList());
+        dateNum.sort(null);
+        Calendar CC = Calendar.getInstance();
+
+        for (int i=0;i<dateNum.size();i++){
+            CC.setTime(dateNum.get(i));
+            month.add((double)CC.get(Calendar.MONTH));
+        }
+        for (int x=0;x<dateNum.size();x++){
+                double n = -100;
+                for (int i = 0; i < data.size(); i++) {
+                    String UseWaterPlan = data.get(i).getUseWaterPlan();
+                    String Area = data.get(i).getArea();
+                    String Unit = data.get(i).getUnit();
+                    String ColName = data.get(i).getColName();
+                    if (UseWaterPlan != null && Area != null && Unit != null && ColName != null) {
+                        if (data.get(i).getUseWaterPlan().equals("month")&&data.get(i).getArea().equals(tableName)
+                        &&data.get(i).getUnit().equals(name)&&data.get(i).getColName().equals("合计")&&
+                                data.get(i).getDate().equals(dateNum.get(x))) {
+                            n = data.get(i).getWaterDemendData();
+                            if (n>=0){
+                                waterData.add(n);
                             }
+                            else {
+                                waterData.add(0.0);
+                            }
+
                         }
                     }
                 }
-            }
         }
-        return n;
+        update.add(month);
+        update.add(waterData);
+        return update;
     }
 
     /**
@@ -786,32 +1012,79 @@ public class InputWay {
      * @param name
      * @return
      */
-    public static double getDataRealTime(List<Waterdemand> data, String name, String tableName) {
-        double n = -100;
-        if (data==null){
-            return n;
+    public static List<List<Double>> getDataRealTime(List<Waterdemand> data, String name, String tableName) {
+
+        List<Date> dateNum = new ArrayList<>();
+        List<Double> tenDays = new ArrayList<>();
+        List<Double> waterData = new ArrayList<>();
+        List<List<Double>> update=new ArrayList<>();
+        dateNum = data.stream().filter(n -> n.getArea().equals(tableName)&&n.getUnit().equals(name)&&n.getUseWaterPlan().equals("tenDays")).
+                map(Waterdemand::getDate).distinct().collect(Collectors.toList());
+        dateNum.sort(null);
+        for (int i=0;i<dateNum.size();i++){
+            tenDays.add(getTenDay(dateNum.get(i)));
         }
-        else{
 
+        for (int x=0;x<dateNum.size();x++) {
+            double n = -100;
             for (int i = 0; i < data.size(); i++) {
-                String UseWaterPlan=data.get(i).getUseWaterPlan();
-                String Area=data.get(i).getArea();
-                String Unit=data.get(i).getUnit();
-                if (UseWaterPlan!=null&&Area!=null&&Unit!=null){
-                if (data.get(i).getUseWaterPlan().equals("tenDays")) {
-                    if (data.get(i).getArea().equals(tableName)) {
-                        if (data.get(i).getUnit().equals(name)) {
-                            n = data.get(i).getWaterDemendData();
-
+                String UseWaterPlan = data.get(i).getUseWaterPlan();
+                String Area = data.get(i).getArea();
+                String Unit = data.get(i).getUnit();
+                if (UseWaterPlan != null && Area != null && Unit != null) {
+                    if (data.get(i).getUseWaterPlan().equals("tenDays")&&data.get(i).getArea().equals(tableName)
+                   &&data.get(i).getUnit().equals(name)&&data.get(i).getDate().equals(dateNum.get(x))) {
+                        n = data.get(i).getWaterDemendData();
+                        if (n>=0){
+                            waterData.add(n);
+                        }
+                        else {
+                            waterData.add(0.0);
                         }
                     }
                 }
             }
-            }
-            return n;
         }
+        update.add(tenDays);
+        update.add(waterData);
+        return update;
     }
 
+    /**
+     * 获得当前第几旬
+     * @param date
+     * @return
+     */
+    public static double getTenDay(Date date) {
+        Calendar c = Calendar.getInstance();
+        c.setTime(date);
+        int i = c.get(Calendar.DAY_OF_MONTH);
+        if (i < 11)
+            return 0;
+        else if (i < 21)
+            return 1;
+        else
+            return 2;
+    }
+
+    /**
+     * 获得本旬第几天
+     * @param date
+     * @return
+     */
+    public static double getDay(Date date) {
+        Calendar c = Calendar.getInstance();
+        c.setTime(date);
+        c.add(Calendar.DATE, 1);
+        int i = c.get(Calendar.DAY_OF_MONTH);
+        double day=0;
+        if (i < 11)
+            return i-1;
+        else if (i < 21)
+            return i-11;
+        else
+            return i-21;
+    }
     /**
      * 获得当天的用水计划
      *
@@ -820,35 +1093,43 @@ public class InputWay {
      * @param tableName
      * @return
      */
-    public static double getDataRealDay(List<Waterdemand> data, String name, String tableName) {
-        double n = -100;
-        double x = 0;
-        if (data==null){
-            return n;
+    public static List<List<Double>> getDataRealDay(List<Waterdemand> data, String name, String tableName) {
+
+        List<Date> dateNum = new ArrayList<>();
+        List<Double> day = new ArrayList<>();
+        List<Double> waterData = new ArrayList<>();
+        List<List<Double>> update=new ArrayList<>();
+        dateNum = data.stream().filter(n -> n.getArea().equals(tableName)&&n.getUnit().equals(name)&&n.getUseWaterPlan().equals("day")).
+                map(Waterdemand::getDate).distinct().collect(Collectors.toList());
+        dateNum.sort(null);
+        for (int i=0;i<dateNum.size();i++){
+            day.add(getDay(dateNum.get(i)));
         }
-        else{
+
+        for (int x=0;x<dateNum.size();x++) {
+            double x1 = 0;
             for (int i = 0; i < data.size(); i++) {
-                String UseWaterPlan=data.get(i).getUseWaterPlan();
-                String Area=data.get(i).getArea();
-                String Unit=data.get(i).getUnit();
-                String ColName=data.get(i).getColName();
-                if (UseWaterPlan!=null&&Area!=null&&Unit!=null&&ColName!=null){
-                    if (data.get(i).getUseWaterPlan().equals("day")) {
-                        if (data.get(i).getArea().equals(tableName)) {
-                            if (data.get(i).getUnit().equals(name)) {
-                                if (data.get(i).getColName().equals("flow")) {
-                                    x += data.get(i).getWaterDemendData()*8.64;
-                                }
+                    String UseWaterPlan=data.get(i).getUseWaterPlan();
+                    String Area=data.get(i).getArea();
+                    String Unit=data.get(i).getUnit();
+                    String ColName=data.get(i).getColName();
+                    if (UseWaterPlan!=null&&Area!=null&&Unit!=null&&ColName!=null){
+                        if (data.get(i).getUseWaterPlan().equals("day")&&data.get(i).getArea().equals(tableName)&&data.get(i).getUnit().equals(name)
+                        &&data.get(i).getColName().equals("flow")&&data.get(i).getDate().equals(dateNum.get(x))) {
+                            x1 = data.get(i).getWaterDemendData() * 8.64;
+                            if (x1>=0){
+                                waterData.add(x1);
+                            }
+                            else {
+                                waterData.add(0.0);
                             }
                         }
                     }
                 }
-            }
-            if (x != 0) {
-                n = x;
-            }
-            return n;
         }
+        update.add(day);
+        update.add(waterData);
+        return update;
     }
 
     /**
@@ -873,7 +1154,7 @@ public class InputWay {
                         if (data.get(i).getArea().equals(tableName)) {
                             if (data.get(i).getSubArea().equals(name[ii])) {
                                 if (data.get(i).getColName().equals("flow")) {
-                                    x = data.get(i).getWaterDemendData()*8.64;
+                                    x += data.get(i).getWaterDemendData()*8.64;
                                     if (x>=0){
                                         demand.add(x);
                                     }

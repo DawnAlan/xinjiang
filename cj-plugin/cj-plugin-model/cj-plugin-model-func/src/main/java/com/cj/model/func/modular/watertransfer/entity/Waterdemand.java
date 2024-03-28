@@ -6,7 +6,7 @@ import java.util.Date;
 
 @Data
 public class Waterdemand {
-
+    //用水计划查询
     private Date date;
     //用水计划类型
     private String useWaterPlan;
