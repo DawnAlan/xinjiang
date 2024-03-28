@@ -17,4 +17,6 @@ public class WaterResourceAllocationTimeReq {
     @DateTimeFormat("yyyy-MM-dd")
     @ApiModelProperty(value = "配水结束时间")
     private Date endTime;
+    @ApiModelProperty(value = "时段类型(1-年逐月 2-月逐旬 3-旬逐日 4-日前)")
+    private Integer bucketType;
 }
