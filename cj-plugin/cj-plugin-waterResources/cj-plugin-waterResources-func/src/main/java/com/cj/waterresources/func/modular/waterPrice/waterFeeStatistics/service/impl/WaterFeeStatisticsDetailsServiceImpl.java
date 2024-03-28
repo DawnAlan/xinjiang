@@ -79,9 +79,6 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
     @Autowired
     private WaterFeeStatisticsTotalService waterFeeStatisticsTotalService;
 
-    @Value("${waterResourcePrice}")
-    private String waterResourcePrice;
-
     @Autowired
     private WaterDistributionRatioService waterDistributionRatioService;
 
@@ -205,15 +202,15 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                     String tableParamString = (String)redisUtil.get("trendsTableParam:object:"+t.getTableHeadId());
                     TrendsTableParam tableParam = JSONObject.parseObject(tableParamString, TrendsTableParam.class);
                     if(t.getStation().contains("河东")){
-                        Double v = (Double)redisUtil.get("A3:data:hd:yesterday:"+dateTemp+":"+tableParam.getUnitId());
+                        Double v = (Double)redisUtil.get("A3:data:hd:waterFee:today:"+dateTemp+":"+tableParam.getUnitId());
                         t.setV(v==null?null:v);
                     }
                     if(t.getStation().contains("河西")){
-                        Double v = (Double)redisUtil.get("A3:data:hx:yesterday:"+dateTemp+":"+tableParam.getUnitId());
+                        Double v = (Double)redisUtil.get("A3:data:hx:waterFee:today:"+dateTemp+":"+tableParam.getUnitId());
                         t.setV(v==null?null:v);
                     }
                     if(t.getStation().contains("渠首")){
-                        Double v = (Double)redisUtil.get("A3:data:qs:yesterday:"+dateTemp+":"+tableParam.getUnitId());
+                        Double v = (Double)redisUtil.get("A3:data:qs:waterFee:today:"+dateTemp+":"+tableParam.getUnitId());
                         t.setV(v==null?null:v);
                     }
                 }
@@ -374,10 +371,11 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                     waterFeeStatisticsTotal.setAccumulatedWaterVolume(waterFeeStatisticsTotal.getCurrentWaterVolume()+waterFeeStatisticsTotal.getWaterVolumeFirstTenDays());
                     WaterPriceManagement byId = waterPriceManagementService.getById(tempTotal.getTableHeadId());
                     Double payableWaterFee = byId==null?0:byId.getWaterPrice()==null?0:byId.getWaterPrice()*waterFeeStatisticsTotal.getAccumulatedWaterVolume();
+                    Double waterResourceFeePrice = byId==null?0:byId.getWaterResourcePrice()==null?0:byId.getWaterResourcePrice();
                     //应交水费
                     waterFeeStatisticsTotal.setPayableWaterFee(payableWaterFee);
                     if(tempObj.getStation().contains("绿化") || tempObj.getStation().contains("砂厂")){
-                        waterFeeStatisticsTotal.setPayableWaterResource(Double.valueOf(waterResourcePrice)*waterFeeStatisticsTotal.getAccumulatedWaterVolume());
+                        waterFeeStatisticsTotal.setPayableWaterResource(Double.valueOf(waterResourceFeePrice)*waterFeeStatisticsTotal.getAccumulatedWaterVolume());
                     }
                     WaterFeeStatisticsTotal lastYear = waterFeeStatisticsTotalService.lambdaQuery().eq(WaterFeeStatisticsTotal::getYear, temp.getYear()-1).
                             eq(WaterFeeStatisticsTotal::getMonth,  temp.getMonth()).
@@ -871,10 +869,11 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                     waterFeeStatisticsTotal.setAccumulatedWaterVolume(waterFeeStatisticsTotal.getCurrentWaterVolume()+waterFeeStatisticsTotal.getWaterVolumeFirstTenDays());
                     WaterPriceManagement byId = waterPriceManagementService.getById(string);
                     Double payableWaterFee = byId==null?0:byId.getWaterPrice()==null?0:byId.getWaterPrice()*waterFeeStatisticsTotal.getAccumulatedWaterVolume();
+                    Double waterResourceFeePrice = byId==null?0:byId.getWaterResourcePrice()==null?0:byId.getWaterResourcePrice();
                     //应交水费
                     waterFeeStatisticsTotal.setPayableWaterFee(payableWaterFee);
                     if(tempObj.getStation().contains("绿化") || tempObj.getStation().contains("砂厂")){
-                        waterFeeStatisticsTotal.setPayableWaterResource(Double.valueOf(waterResourcePrice)*waterFeeStatisticsTotal.getAccumulatedWaterVolume());
+                        waterFeeStatisticsTotal.setPayableWaterResource(Double.valueOf(waterResourceFeePrice)*waterFeeStatisticsTotal.getAccumulatedWaterVolume());
                     }
                     WaterFeeStatisticsTotal lastYear = waterFeeStatisticsTotalService.lambdaQuery().eq(WaterFeeStatisticsTotal::getYear, temp.getYear()-1).
                             eq(WaterFeeStatisticsTotal::getMonth,  temp.getMonth()).
@@ -1524,10 +1523,11 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                 waterFeeStatisticsTotal.setAccumulatedWaterVolume(waterFeeStatisticsTotal.getCurrentWaterVolume()+waterFeeStatisticsTotal.getWaterVolumeFirstTenDays());
                 WaterPriceManagement byId = waterPriceManagementService.getById(total.getTableHeadId());
                 Double payableWaterFee = byId==null?0:byId.getWaterPrice()==null?0:byId.getWaterPrice()*waterFeeStatisticsTotal.getAccumulatedWaterVolume();
+                Double waterResourceFeePrice = byId==null?0:byId.getWaterResourcePrice()==null?0:byId.getWaterResourcePrice();
                 //应交水费
                 waterFeeStatisticsTotal.setPayableWaterFee(payableWaterFee);
                 if(tempObj.getStation().contains("绿化") || tempObj.getStation().contains("砂厂")){
-                    waterFeeStatisticsTotal.setPayableWaterResource(Double.valueOf(waterResourcePrice)*waterFeeStatisticsTotal.getAccumulatedWaterVolume());
+                    waterFeeStatisticsTotal.setPayableWaterResource(Double.valueOf(waterResourceFeePrice)*waterFeeStatisticsTotal.getAccumulatedWaterVolume());
                 }
                 WaterFeeStatisticsTotal lastYear = waterFeeStatisticsTotalService.lambdaQuery().eq(WaterFeeStatisticsTotal::getYear, tempObj.getYear()-1).
                         eq(WaterFeeStatisticsTotal::getMonth,  tempObj.getMonth()).
@@ -2207,15 +2207,15 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                             String tableParamString = (String)redisUtil.get("trendsTableParam:object:"+t.getTableHeadId());
                             TrendsTableParam tableParam = JSONObject.parseObject(tableParamString, TrendsTableParam.class);
                             if(t.getStation().contains("河东")){
-                                Double v = (Double)redisUtil.get("A3:data:hd:yesterday:"+dateTemp+":"+tableParam.getUnitId());
+                                Double v = (Double)redisUtil.get("A3:data:hd:waterFee:today:"+dateTemp+":"+tableParam.getUnitId());
                                 t.setV(v==null?null:v);
                             }
                             if(t.getStation().contains("河西")){
-                                Double v = (Double)redisUtil.get("A3:data:hx:yesterday:"+dateTemp+":"+tableParam.getUnitId());
+                                Double v = (Double)redisUtil.get("A3:data:hx:waterFee:today:"+dateTemp+":"+tableParam.getUnitId());
                                 t.setV(v==null?null:v);
                             }
                             if(t.getStation().contains("渠首")){
-                                Double v = (Double)redisUtil.get("A3:data:qs:yesterday:"+dateTemp+":"+tableParam.getUnitId());
+                                Double v = (Double)redisUtil.get("A3:data:qs:waterFee:today:"+dateTemp+":"+tableParam.getUnitId());
                                 t.setV(v==null?null:v);
                             }
                         }
@@ -2376,10 +2376,11 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                             waterFeeStatisticsTotal.setAccumulatedWaterVolume(waterFeeStatisticsTotal.getCurrentWaterVolume()+waterFeeStatisticsTotal.getWaterVolumeFirstTenDays());
                             WaterPriceManagement byId = waterPriceManagementService.getById(tempTotal.getTableHeadId());
                             Double payableWaterFee = byId==null?0:byId.getWaterPrice()==null?0:byId.getWaterPrice()*waterFeeStatisticsTotal.getAccumulatedWaterVolume();
+                            Double waterResourceFeePrice = byId==null?0:byId.getWaterResourcePrice()==null?0:byId.getWaterResourcePrice();
                             //应交水费
                             waterFeeStatisticsTotal.setPayableWaterFee(payableWaterFee);
                             if(tempObj.getStation().contains("绿化") || tempObj.getStation().contains("砂厂")){
-                                waterFeeStatisticsTotal.setPayableWaterResource(Double.valueOf(waterResourcePrice)*waterFeeStatisticsTotal.getAccumulatedWaterVolume());
+                                waterFeeStatisticsTotal.setPayableWaterResource(Double.valueOf(waterResourceFeePrice)*waterFeeStatisticsTotal.getAccumulatedWaterVolume());
                             }
                             WaterFeeStatisticsTotal lastYear = waterFeeStatisticsTotalService.lambdaQuery().eq(WaterFeeStatisticsTotal::getYear, temp.getYear()-1).
                                     eq(WaterFeeStatisticsTotal::getMonth,  temp.getMonth()).
@@ -2873,10 +2874,11 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                             waterFeeStatisticsTotal.setAccumulatedWaterVolume(waterFeeStatisticsTotal.getCurrentWaterVolume()+waterFeeStatisticsTotal.getWaterVolumeFirstTenDays());
                             WaterPriceManagement byId = waterPriceManagementService.getById(string);
                             Double payableWaterFee = byId==null?0:byId.getWaterPrice()==null?0:byId.getWaterPrice()*waterFeeStatisticsTotal.getAccumulatedWaterVolume();
+                            Double waterResourceFeePrice = byId==null?0:byId.getWaterResourcePrice()==null?0:byId.getWaterResourcePrice();
                             //应交水费
                             waterFeeStatisticsTotal.setPayableWaterFee(payableWaterFee);
                             if(tempObj.getStation().contains("绿化") || tempObj.getStation().contains("砂厂")){
-                                waterFeeStatisticsTotal.setPayableWaterResource(Double.valueOf(waterResourcePrice)*waterFeeStatisticsTotal.getAccumulatedWaterVolume());
+                                waterFeeStatisticsTotal.setPayableWaterResource(Double.valueOf(waterResourceFeePrice)*waterFeeStatisticsTotal.getAccumulatedWaterVolume());
                             }
                             WaterFeeStatisticsTotal lastYear = waterFeeStatisticsTotalService.lambdaQuery().eq(WaterFeeStatisticsTotal::getYear, temp.getYear()-1).
                                     eq(WaterFeeStatisticsTotal::getMonth,  temp.getMonth()).

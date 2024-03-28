@@ -184,7 +184,7 @@ public class WaterResourceApiProvider implements WaterResourceApi {
             List<WaterUsePlanForViewRes> resList = new ArrayList<>();
             for(MonthWaterUsePlanCrop crop:list){
                 WaterUsePlanForViewRes res = new WaterUsePlanForViewRes();
-                res.setUnit(crop.getUnit());
+                res.setUnit(crop.getIrrigatedCrop());
                 res.setTotalAmount(crop.getTotalCountWaterDemand()==null?0.0: crop.getTotalCountWaterDemand());
                 resList.add(res);
             }
@@ -206,7 +206,7 @@ public class WaterResourceApiProvider implements WaterResourceApi {
                 eq(TenDayWaterUsePlan::getYear, year).
                 eq(TenDayWaterUsePlan::getMonth, month).
                 eq(TenDayWaterUsePlan::getTenDays, s).
-                eq(TenDayWaterUsePlan::getIrrigatedArea, area).
+                eq(TenDayWaterUsePlan::getArea, area).
                 list();
         if(null!= list && list.size()>0){
             List<WaterUsePlanForViewRes> resList = new ArrayList<>();
@@ -236,13 +236,13 @@ public class WaterResourceApiProvider implements WaterResourceApi {
                 eq(TenDayWaterUsePlan::getMonth, month).
                 eq(TenDayWaterUsePlan::getTenDays, s).
                 eq(TenDayWaterUsePlan::getUseWaterUser, unit).
-                eq(TenDayWaterUsePlan::getIrrigatedArea, area).
+                eq(TenDayWaterUsePlan::getArea, area).
                 list();
         if(null!= list && list.size()>0){
             List<WaterUsePlanForViewRes> resList = new ArrayList<>();
             for(TenDayWaterUsePlan plan:list){
                 WaterUsePlanForViewRes res = new WaterUsePlanForViewRes();
-                res.setUnit(plan.getUseWaterUser());
+                res.setUnit(plan.getIrrigatedCrop());
                 res.setTotalAmount(plan.getWaterDemand()==null?0.0:plan.getWaterDemand());
                 resList.add(res);
             }

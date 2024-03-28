@@ -29,7 +29,7 @@ public class FloodRetentionCapacityTask {
     @Autowired
     private RedisUtil redisUtil;
 
-    @Scheduled(cron="0 0 0 * * ?")//每天0点执行一次
+    @Scheduled(cron="0 30 08 * * ?")//每天20:30
     public void floodRetentionCapacity(){
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         String startTime = "2021-01-01";

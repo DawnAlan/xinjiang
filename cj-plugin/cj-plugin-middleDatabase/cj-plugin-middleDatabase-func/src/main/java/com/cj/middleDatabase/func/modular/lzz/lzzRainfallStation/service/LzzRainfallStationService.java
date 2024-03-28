@@ -20,7 +20,7 @@ public interface LzzRainfallStationService extends IService<LzzRainfallStation> 
 
     List<LzzRainfallStation> selectInfoByCondition(String id,String time,String startTime,String endTime);
 
-    List<LzzRainfallStation> selectYesterday(String name,String time);
+    List<LzzRainfallStation> selectYesterday1(String name,String time);
     List<LzzRainfallStation> selectYesterday(String time);
 
     List<RealTimeRainfallRes> getRealTimeRainfall(String startTime, String endTime);

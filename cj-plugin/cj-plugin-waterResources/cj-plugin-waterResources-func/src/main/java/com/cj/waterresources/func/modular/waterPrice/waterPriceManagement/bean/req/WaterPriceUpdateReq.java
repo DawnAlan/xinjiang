@@ -45,4 +45,7 @@ public class WaterPriceUpdateReq implements Serializable {
     @ApiModelProperty(value = "第三阶段价格")
     private Double thirdTierPrice;
 
+    @ApiModelProperty(value = "水资源费")
+    private Double waterResourcePrice;
+
 }

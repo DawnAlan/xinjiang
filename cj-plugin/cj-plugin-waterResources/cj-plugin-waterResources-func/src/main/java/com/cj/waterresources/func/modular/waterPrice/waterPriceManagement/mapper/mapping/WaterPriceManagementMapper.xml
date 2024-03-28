@@ -6,7 +6,7 @@
 
     <select id="waterPriceSelectList" parameterType="com.cj.waterresources.func.modular.waterPrice.waterPriceManagement.bean.req.WaterPriceSelectListReq" resultType="com.cj.waterresources.func.modular.waterPrice.waterPriceManagement.bean.res.WaterPriceSelectListRes">
         SELECT ID,USE_WATER_TYPE,STATION,USER_NAME,WATER_PRICE,P_ID,QUOTA_WATER_QUANTITY,FIXED_WATER_PRICE,
-        FIRST_LEVEL_STANDARD,FIRST_TIER_PRICE,SECOND_LEVEL_STANDARD,SECOND_TIER_PRICE,THIRD_LEVEL_STANDARD,THIRD_TIER_PRICE
+        FIRST_LEVEL_STANDARD,FIRST_TIER_PRICE,SECOND_LEVEL_STANDARD,SECOND_TIER_PRICE,THIRD_LEVEL_STANDARD,THIRD_TIER_PRICE,WATER_RESOURCE_PRICE
         FROM WATER_PRICE_MANAGEMENT
         <where>
             <if test="req.isAgriculture==1">

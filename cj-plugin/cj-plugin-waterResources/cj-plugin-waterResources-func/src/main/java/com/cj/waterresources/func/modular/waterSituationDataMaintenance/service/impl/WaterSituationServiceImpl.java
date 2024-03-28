@@ -226,7 +226,7 @@ public class WaterSituationServiceImpl implements WaterSituationService {
         if(StringUtils.isNotEmpty(byId.getMonitorId())){
             List<IrrigatedPlatformDataInfo> listTth = irrigatedPlatformDataInfoService.selectInfoByCondition(byId.getMonitorId(),null,req.getStartTime(),req.getEndTime());
             if(null != listTth && listTth.size()>0) {
-                listTth.forEach(t->{
+                listTth.stream().filter(t->t.getSqMonitorFlow()!=null).collect(Collectors.toList()).forEach(t->{
                     HydrographRes res = new HydrographRes();
                     res.setName(t.getMonitorName());
                     res.setTime(t.getMonitorTime());
@@ -237,7 +237,7 @@ public class WaterSituationServiceImpl implements WaterSituationService {
             }
             List<LzzRainfallStation> listLzzRain = lzzRainfallStationService.selectInfoByCondition(byId.getMonitorId(),null,req.getStartTime(),req.getEndTime());
             if(null != listLzzRain && listLzzRain.size()>0){
-                listLzzRain.forEach(t->{
+                listLzzRain.stream().filter(t->t.getRainfall()!=null).collect(Collectors.toList()).forEach(t->{
                     HydrographRes res = new HydrographRes();
                     res.setName(t.getStationName());
                     res.setTime(sdf.format(t.getTime()));
@@ -248,7 +248,7 @@ public class WaterSituationServiceImpl implements WaterSituationService {
             }
             List<LzzGaugingStation> listLzzGaugingStation = lzzGaugingStationService.selectInfoByCondition(byId.getMonitorId(),null,req.getStartTime(),req.getEndTime());
             if(null != listLzzGaugingStation && listLzzGaugingStation.size()>0){
-                listLzzGaugingStation.forEach(t->{
+                listLzzGaugingStation.stream().filter(t->t.getFlow()!=null).collect(Collectors.toList()).forEach(t->{
                     HydrographRes res = new HydrographRes();
                     res.setName(t.getStationName());
                     res.setTime(sdf.format(t.getGatherTime()));
@@ -259,7 +259,9 @@ public class WaterSituationServiceImpl implements WaterSituationService {
             }
         }else {
             List<HydrographRes> hydrographResList = allService.selectInfoListAllNew(req);
-            resList.addAll(hydrographResList);
+            if(null!=hydrographResList){
+                resList.addAll(hydrographResList);
+            }
         }
         if(resList.isEmpty()){
             return RestResponse.no("暂无数据");

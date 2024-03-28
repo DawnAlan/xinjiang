@@ -258,6 +258,13 @@ public class DayWaterSituationStatisticsTableHdServiceImpl extends ServiceImpl<D
         boolean b = this.updateBatchById(dayWaterSituationStatisticsTableHdList);
         if (b) {
             if(dayWaterSituationStatisticsTableHdList.get(0).getTime().equals("今日均")){
+                dayWaterSituationStatisticsTableHdList.forEach(t->{
+                    String tableParamString = (String)redisUtil.get("trendsTableParam:object:"+t.getTableHeadId());
+                    TrendsTableParam tableParam = JSONObject.parseObject(tableParamString, TrendsTableParam.class);
+                    if(null != tableParam && !tableParam.getParamName().equals("合计")){
+                        redisUtil.set("A3:data:hd:waterFee:today:"+sdf.format(t.getRecordTime())+":"+tableParam.getUnitId(),t.getV());
+                    }
+                });
                 updateYesterdayData(dayWaterSituationStatisticsTableHdList.get(0).getRecordTime(),dayWaterSituationStatisticsTableHdList);
             }
             return RestResponse.ok();
@@ -377,7 +384,7 @@ public class DayWaterSituationStatisticsTableHdServiceImpl extends ServiceImpl<D
                 String tableParamString = (String)redisUtil.get("trendsTableParam:object:"+t.getTableHeadId());
                 TrendsTableParam tableParam = JSONObject.parseObject(tableParamString, TrendsTableParam.class);
                 if(null != tableParam && !tableParam.getParamName().equals("合计")){
-                    redisUtil.set("A3:data:hd:yesterday:"+getDate(t.getRecordTime(),-1)+":"+tableParam.getUnitId(),t.getV());
+                    redisUtil.set("A3:data:hd:yesterday:"+t.getRecordTime()+":"+tableParam.getUnitId(),t.getV());
                     redisUtil.set("A3:data:hd:yesterday:forPlan:"+tableParam.getParamName(),t.getV());
                 }
             });
