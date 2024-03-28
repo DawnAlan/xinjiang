@@ -733,6 +733,14 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
     @Override
     public RestResponse<List<IncomingWaterForecast>> selectListByTime(WaterResourceAllocationTimeReq req) {
         return RestResponse.ok(this.lambdaQuery().le(IncomingWaterForecast::getPredictionTime, req.getStartTime())
+                .eq(req.getBucketType().equals(1), IncomingWaterForecast::getModelType, 1)//中长期
+                .eq(req.getBucketType().equals(1), IncomingWaterForecast::getPeriodTimeType, 1)//月
+
+                .eq(req.getBucketType().equals(2), IncomingWaterForecast::getModelType, 1)//中长期
+                .eq(req.getBucketType().equals(2), IncomingWaterForecast::getPeriodTimeType, 2)//旬
+
+                .eq(req.getBucketType().equals(3) || req.getBucketType().equals(4), IncomingWaterForecast::getModelType, 2)//短期
+
                 .apply("case period_time_type \n" +
                         "when 1 then ADD_MONTHS(PREDICTION_TIME, PERIOD_TIME_STEP * PERIOD_TIME_NUM)\n" +
                         "when 2 then \n" +
