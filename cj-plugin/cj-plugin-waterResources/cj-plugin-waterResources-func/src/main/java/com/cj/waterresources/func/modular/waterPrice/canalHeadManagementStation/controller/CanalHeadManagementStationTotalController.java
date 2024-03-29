@@ -1,5 +1,6 @@
 package com.cj.waterresources.func.modular.waterPrice.canalHeadManagementStation.controller;
 
+import com.cj.common.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.cj.waterresources.func.modular.waterPrice.canalHeadManagementStation.entity.CanalHeadManagementStationTotal;
 import com.cj.waterresources.func.modular.waterPrice.canalHeadManagementStation.service.CanalHeadManagementStationTotalService;
@@ -29,14 +30,16 @@ public class CanalHeadManagementStationTotalController{
     private CanalHeadManagementStationTotalService canalHeadManagementStationTotalService;
 
     @ApiOperationSupport(order = 1)
-    @ApiOperation("查询列表")
+    @ApiOperation("水费统计详情模块-渠首管理站总计查询列表")
+    @CommonLog(value = "水费统计详情模块-渠首管理站总计查询列表")
     @PostMapping("/select")
     public RestResponse select(@RequestBody WaterFeeStatisticsDetailsSelectListReq req) {
         return canalHeadManagementStationTotalService.selectList(req);
     }
 
     @ApiOperationSupport(order = 1)
-    @ApiOperation("修改备注")
+    @ApiOperation("水费统计详情模块-渠首管理站总计修改备注")
+    @CommonLog(value = "水费统计详情模块-渠首管理站总计修改备注")
     @PostMapping("/updateRemark")
     public RestResponse updateRemark(@RequestBody CanalHeadManagementStationTotal total) {
         boolean update = canalHeadManagementStationTotalService.lambdaUpdate().set(CanalHeadManagementStationTotal::getRemark, total.getRemark()).

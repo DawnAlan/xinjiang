@@ -1,5 +1,6 @@
 package com.cj.waterresources.func.modular.useWaterPlanEscalation.monthWaterUsePlan.controller;
 
+import com.cj.common.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.monthWaterUsePlan.bean.req.MonthCropSelectListReq;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.monthWaterUsePlan.entity.MonthWaterUsePlanCropOwner;
@@ -33,7 +34,8 @@ public class MonthWaterUsePlanCropOwnerController{
     private MonthWaterUsePlanCropOwnerService monthWaterUsePlanCropOwnerService;
 
     @ApiOperationSupport(order = 1)
-    @ApiOperation("查询列表")
+    @ApiOperation("月用水计划作物表模块(供水科)查询列表")
+    @CommonLog(value = "月用水计划作物表模块(供水科)查询列表")
     @PostMapping("/select")
     public RestResponse<List<MonthWaterUsePlanCropOwner>> select(@RequestBody MonthCropSelectListReq req) {
         return monthWaterUsePlanCropOwnerService.selectList(req);

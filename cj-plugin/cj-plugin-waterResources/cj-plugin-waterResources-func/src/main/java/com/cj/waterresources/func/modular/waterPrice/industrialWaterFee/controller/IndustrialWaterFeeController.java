@@ -1,5 +1,6 @@
 package com.cj.waterresources.func.modular.waterPrice.industrialWaterFee.controller;
 
+import com.cj.common.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.UUIDUtils;
 import com.cj.waterresources.func.modular.waterPrice.industrialWaterFee.entity.IndustrialWaterFee;
@@ -33,7 +34,8 @@ public class IndustrialWaterFeeController {
     private IndustrialWaterFeeService industrialWaterFeeService;
 
     @ApiOperationSupport(order = 1)
-    @ApiOperation("新增")
+    @ApiOperation("工业水费新增")
+    @CommonLog(value = "工业水费新增")
     @PostMapping("/add")
     public RestResponse add(@RequestBody List<IndustrialWaterFee> industrialWaterFeeList) {
         boolean b = industrialWaterFeeService.saveBatch(industrialWaterFeeList);
@@ -45,7 +47,8 @@ public class IndustrialWaterFeeController {
     }
 
     @ApiOperationSupport(order = 2)
-    @ApiOperation("删除")
+    @ApiOperation("工业水费删除")
+    @CommonLog(value = "工业水费删除")
     @GetMapping("/delete")
     public RestResponse delete(@RequestParam("station") String station,
                                @RequestParam("year") Integer year,@RequestParam("month") Integer month) {
@@ -59,7 +62,8 @@ public class IndustrialWaterFeeController {
     }
 
     @ApiOperationSupport(order = 3)
-    @ApiOperation("修改")
+    @ApiOperation("工业水费修改")
+    @CommonLog(value = "工业水费修改")
     @PostMapping("/update")
     public RestResponse update(@RequestBody List<IndustrialWaterFee> industrialWaterFeeList) {
         boolean b = industrialWaterFeeService.updateBatchById(industrialWaterFeeList);
@@ -71,7 +75,8 @@ public class IndustrialWaterFeeController {
     }
 
     @ApiOperationSupport(order = 4)
-    @ApiOperation("查询列表")
+    @ApiOperation("工业水费查询列表")
+    @CommonLog(value = "工业水费查询列表")
     @GetMapping("/select")
     public RestResponse<List<IndustrialWaterFee>> select(@RequestParam("station") String station,
                                                          @RequestParam("year") Integer year,

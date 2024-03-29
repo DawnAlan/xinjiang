@@ -537,7 +537,7 @@ public class AllServiceImpl implements AllService {
                 dateListInputFlow.add(parse);
             }
             List<Date> collectInputFlow = dateListInputFlow.stream().sorted(Comparator.comparing(Date::getDate, Comparator.reverseOrder())).collect(Collectors.toList());
-            Double inputFlow = (Double) redisUtil.get("irrigatedPlatform:sq:tth:input:"+sdf1.format(collectInputFlow.get(0)));
+            Double inputFlow = collectInputFlow.size()>0?(Double) redisUtil.get("irrigatedPlatform:sq:tth:input:"+sdf1.format(collectInputFlow.get(0))):null;
             tth.setInputFlow(inputFlow);
             Set<String> allKeysOutputFlow = redisUtil.getAllKeys("A3:tth:out:"+endTime);
             List<Date> dateListOutputFlow = new ArrayList<>();

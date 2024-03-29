@@ -413,7 +413,7 @@ public class DayWaterSituationStatisticsTableTthServiceImpl extends ServiceImpl<
         String sldLlTableId = tthTableParamList.stream().filter(t -> t.getParamName().equals("渗流点流量")).collect(Collectors.toList()).get(0).getId();
         String kswTableId = tthTableParamList.stream().filter(t -> t.getParamName().equals("库水位")).collect(Collectors.toList()).get(0).getId();
         String krTableId = tthTableParamList.stream().filter(t -> t.getParamName().equals("水库库容")).collect(Collectors.toList()).get(0).getId();
-
+        dayWaterSituationStatisticsListThisYear.forEach(t->t.setRecordTime(formatDateNotMoment(t.getRecordTime())));
         Map<Date, List<DayWaterSituationStatisticsTableTth>> collect1 = dayWaterSituationStatisticsListThisYear.stream().collect(Collectors.groupingBy(DayWaterSituationStatisticsTableTth::getRecordTime));
         Set<Date> dates = collect1.keySet();
         for(Date date: dates){
@@ -485,6 +485,14 @@ public class DayWaterSituationStatisticsTableTthServiceImpl extends ServiceImpl<
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         String result = dateFormat.format(calendar.getTime());
         return result;
+    }
+
+    @SneakyThrows
+    private Date formatDateNotMoment(Date date){
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        String format = dateFormat.format(date);
+        Date formatDate = dateFormat.parse(format);
+        return formatDate;
     }
 }
 

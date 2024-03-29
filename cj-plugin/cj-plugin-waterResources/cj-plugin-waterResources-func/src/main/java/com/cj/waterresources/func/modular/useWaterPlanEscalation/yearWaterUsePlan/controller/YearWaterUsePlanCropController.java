@@ -1,5 +1,6 @@
 package com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.controller;
 
+import com.cj.common.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.req.YearCropImportParamReq;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.req.YearCropSelectListReq;
@@ -34,14 +35,16 @@ public class YearWaterUsePlanCropController {
     private YearWaterUsePlanCropService yearWaterUsePlanCropService;
 
     @ApiOperationSupport(order = 1)
-    @ApiOperation("删除")
+    @ApiOperation("年用水计划模块-作物删除")
+    @CommonLog(value = "年用水计划模块-作物删除")
     @PostMapping("/delete")
     public RestResponse delete(@RequestBody YearCropImportParamReq req) {
         return yearWaterUsePlanCropService.delete(req);
     }
 
     @ApiOperationSupport(order = 2)
-    @ApiOperation("新增")
+    @ApiOperation("年用水计划模块-作物新增")
+    @CommonLog(value = "年用水计划模块-作物新增")
     @PostMapping("/add")
     public RestResponse add(@RequestParam(value = "area",required = true) String area,
                             @RequestParam(value = "unit",required = true) String unit,
@@ -58,7 +61,8 @@ public class YearWaterUsePlanCropController {
 
 
     @ApiOperationSupport(order = 3)
-    @ApiOperation("查询列表")
+    @ApiOperation("年用水计划模块-作物查询列表")
+    @CommonLog(value = "年用水计划模块-作物查询列表")
     @PostMapping("/select")
     public RestResponse<List<YearWaterUsePlanCrop>> select(@RequestBody YearCropSelectListReq req) {
         return yearWaterUsePlanCropService.selectList(req);

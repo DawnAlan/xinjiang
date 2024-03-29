@@ -1,5 +1,6 @@
 package com.cj.waterresources.func.modular.waterStorageScheduling.waterStorageSchedulingTth.controller;
 
+import com.cj.common.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.UUIDUtils;
 import com.cj.waterresources.func.modular.waterStorageScheduling.waterStorageSchedulingTth.service.WaterStorageSchedulingTthService;
@@ -32,7 +33,8 @@ public class WaterStorageSchedulingTthController{
     private WaterStorageSchedulingTthService waterStorageSchedulingTthService;
 
     @ApiOperationSupport(order = 1)
-    @ApiOperation("删除")
+    @ApiOperation("头屯河水库蓄水调度计划表模块删除")
+    @CommonLog("头屯河水库蓄水调度计划表模块删除")
     @GetMapping("/delete")
     public RestResponse delete(@RequestParam("id") String id) {
         boolean b = waterStorageSchedulingTthService.lambdaUpdate().set(WaterStorageSchedulingTth::getDel,1).eq(WaterStorageSchedulingTth::getId,id).update();
@@ -44,13 +46,15 @@ public class WaterStorageSchedulingTthController{
     }
 
     @ApiOperationSupport(order = 2)
-    @ApiOperation("新增")
+    @ApiOperation("头屯河水库蓄水调度计划表模块新增")
+    @CommonLog("头屯河水库蓄水调度计划表模块新增")
     @PostMapping("/add")
     public RestResponse add(@RequestParam("formId") String formId) {
         return waterStorageSchedulingTthService.add(formId);
     }
     @ApiOperationSupport(order = 3)
-    @ApiOperation("修改")
+    @ApiOperation("头屯河水库蓄水调度计划表模块修改")
+    @CommonLog("头屯河水库蓄水调度计划表模块修改")
     @PostMapping("/update")
     public RestResponse update(@RequestBody WaterStorageSchedulingTth waterStorageSchedulingTth) {
         return waterStorageSchedulingTthService.edit(waterStorageSchedulingTth);
@@ -58,7 +62,8 @@ public class WaterStorageSchedulingTthController{
 
 
     @ApiOperationSupport(order = 4)
-    @ApiOperation("查询列表")
+    @ApiOperation("头屯河水库蓄水调度计划表模块查询列表")
+    @CommonLog("头屯河水库蓄水调度计划表模块查询列表")
     @GetMapping("/select")
     public RestResponse<List<WaterStorageSchedulingTth>> select(@RequestParam(value = "formId") String formId) {
         List<WaterStorageSchedulingTth> list = waterStorageSchedulingTthService.lambdaQuery().eq(WaterStorageSchedulingTth::getFormId, formId).eq(WaterStorageSchedulingTth::getDel, 0).list();

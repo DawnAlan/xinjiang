@@ -1,6 +1,7 @@
 package com.cj.waterresources.func.modular.waterPrice.waterPriceManagement.controller;
 
 
+import com.cj.common.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.cj.waterresources.func.modular.waterPrice.waterPriceManagement.bean.req.WaterPriceSelectListReq;
 import com.cj.waterresources.func.modular.waterPrice.waterPriceManagement.bean.req.WaterPriceUpdateReq;
@@ -33,21 +34,24 @@ public class WaterPriceManagementController {
     private WaterPriceManagementService waterPriceManagementService;
 
     @ApiOperationSupport(order = 1)
-    @ApiOperation("删除")
+    @ApiOperation("水价管理模块删除")
+    @CommonLog(value = "水价管理模块删除")
     @GetMapping("/delete")
     public RestResponse delete(@RequestParam("id") String id) {
         return waterPriceManagementService.deleteWaterPrice(id);
     }
 
     @ApiOperationSupport(order = 2)
-    @ApiOperation("修改")
+    @ApiOperation("水价管理模块修改")
+    @CommonLog(value = "水价管理模块修改")
     @PostMapping("/update")
     public RestResponse update(@RequestBody WaterPriceUpdateReq req) {
         return waterPriceManagementService.updateWaterPrice(req);
     }
 
     @ApiOperationSupport(order = 3)
-    @ApiOperation("查询列表")
+    @ApiOperation("水价管理模块查询列表")
+    @CommonLog(value = "水价管理模块查询列表")
     @PostMapping("/select")
     public RestResponse<List<WaterPriceSelectListRes>> select(@RequestBody WaterPriceSelectListReq req) {
         return waterPriceManagementService.waterPriceSelectList(req);

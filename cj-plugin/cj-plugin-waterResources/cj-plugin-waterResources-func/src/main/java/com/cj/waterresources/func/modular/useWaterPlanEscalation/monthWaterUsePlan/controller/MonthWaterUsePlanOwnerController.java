@@ -1,5 +1,6 @@
 package com.cj.waterresources.func.modular.useWaterPlanEscalation.monthWaterUsePlan.controller;
 
+import com.cj.common.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.monthWaterUsePlan.bean.req.MonthWaterUsePlanSelectListReq;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.monthWaterUsePlan.entity.MonthWaterUsePlan;
@@ -34,21 +35,24 @@ public class MonthWaterUsePlanOwnerController{
     private MonthWaterUsePlanOwnerService monthWaterUsePlanOwnerService;
 
     @ApiOperationSupport(order = 1)
-    @ApiOperation("查询列表")
+    @ApiOperation("月用水计划管理模块(供水科)查询列表")
+    @CommonLog(value = "月用水计划管理模块(供水科)查询列表")
     @PostMapping("/select")
     public RestResponse<List<MonthWaterUsePlanOwner>> select(@RequestBody MonthWaterUsePlanSelectListReq req) {
         return monthWaterUsePlanOwnerService.selectList(req);
     }
 
     @ApiOperationSupport(order = 2)
-    @ApiOperation("新增")
+    @ApiOperation("月用水计划管理模块(供水科)新增")
+    @CommonLog(value = "月用水计划管理模块(供水科)新增")
     @PostMapping("/add")
     public RestResponse add(@RequestBody MonthWaterUsePlanOwner monthWaterUsePlanOwner) {
         return monthWaterUsePlanOwnerService.add(monthWaterUsePlanOwner);
     }
 
     @ApiOperationSupport(order = 3)
-    @ApiOperation("删除")
+    @ApiOperation("月用水计划管理模块(供水科)删除")
+    @CommonLog(value = "月用水计划管理模块(供水科)删除")
     @GetMapping("/delete")
     public RestResponse delete(@RequestParam("id") String id) {
         return monthWaterUsePlanOwnerService.delete(id);

@@ -47,21 +47,24 @@ public class TrendsTableParamController {
     }
 
     @ApiOperationSupport(order = 2)
-    @ApiOperation("删除")
+    @ApiOperation("动态表头模块删除")
+    @CommonLog(value = "动态表头模块删除")
     @GetMapping("/delete")
     public RestResponse delete(@RequestParam("id") String id) {
         return trendsTableParamService.delete(id);
     }
 
     @ApiOperationSupport(order = 3)
-    @ApiOperation("修改")
+    @ApiOperation("动态表头模块修改")
+    @CommonLog(value = "动态表头模块修改")
     @PostMapping("/update")
     public RestResponse update(@RequestBody TrendsTableParamUpdateReq param) {
         return trendsTableParamService.update(param);
     }
 
     @ApiOperationSupport(order = 4)
-    @ApiOperation("查询列表")
+    @ApiOperation("动态表头模块查询列表")
+    @CommonLog(value = "动态表头模块查询列表")
     @PostMapping("/select")
     public RestResponse<List<WaterDailyParamSelectRes>> select(@RequestBody QueryTrendsTableParamReq req) {
         return trendsTableParamService.select(req);

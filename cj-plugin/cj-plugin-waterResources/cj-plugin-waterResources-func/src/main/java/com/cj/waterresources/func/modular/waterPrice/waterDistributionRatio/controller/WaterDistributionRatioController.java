@@ -1,5 +1,6 @@
 package com.cj.waterresources.func.modular.waterPrice.waterDistributionRatio.controller;
 
+import com.cj.common.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.UUIDUtils;
 import com.cj.waterresources.func.modular.trendsTable.bean.req.QueryTrendsTableParamReq;
@@ -52,7 +53,8 @@ public class WaterDistributionRatioController{
 
 
     @ApiOperationSupport(order = 1)
-    @ApiOperation("新增")
+    @ApiOperation("水费缴纳管理-配水比例新增")
+    @CommonLog(value = "水费缴纳管理-配水比例新增")
     @PostMapping("/add")
     public RestResponse add(@RequestBody List<WaterDistributionRatio> waterDistributionRatios) {
         WaterDistributionRatio waterDistributionRatio = waterDistributionRatios.get(0);
@@ -122,7 +124,8 @@ public class WaterDistributionRatioController{
     }
 
     @ApiOperationSupport(order = 2)
-    @ApiOperation("修改")
+    @ApiOperation("水费缴纳管理-配水比例修改")
+    @CommonLog(value = "水费缴纳管理-配水比例修改")
     @PostMapping("/update")
     public RestResponse update(@RequestBody List<WaterDistributionRatio> waterDistributionRatios) {
         List<TotalIdToStation> list = totalIdToStationService.lambdaQuery().eq(TotalIdToStation::getUseType, 2).eq(TotalIdToStation::getStation, waterDistributionRatios.get(0).getStation()).list();
@@ -181,7 +184,8 @@ public class WaterDistributionRatioController{
     }
 
     @ApiOperationSupport(order = 3)
-    @ApiOperation("查询列表")
+    @ApiOperation("水费缴纳管理-配水比例查询列表")
+    @CommonLog(value = "水费缴纳管理-配水比例查询列表")
     @PostMapping("/select")
     public RestResponse<List<WaterDistributionRatio>> select(@RequestBody WaterFeeStatisticsDetailsSelectListReq req) {
         List<WaterDistributionRatio> list = waterDistributionRatioService.lambdaQuery().eq(StringUtils.isNotEmpty(req.getStation()), WaterDistributionRatio::getStation, req.getStation()).

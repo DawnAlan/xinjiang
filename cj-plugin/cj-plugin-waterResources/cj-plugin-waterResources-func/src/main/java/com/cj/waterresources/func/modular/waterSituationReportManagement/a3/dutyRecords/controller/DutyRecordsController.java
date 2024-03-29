@@ -1,5 +1,6 @@
 package com.cj.waterresources.func.modular.waterSituationReportManagement.a3.dutyRecords.controller;
 
+import com.cj.common.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.dutyRecords.bean.req.DutyRecordsSelectListReq;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.dutyRecords.entity.DutyRecords;
@@ -29,28 +30,32 @@ public class DutyRecordsController {
     private DutyRecordsService dutyRecordsService;
 
     @ApiOperationSupport(order = 1)
-    @ApiOperation("新增")
+    @ApiOperation("值班记录新增")
+    @CommonLog("值班记录新增")
     @PostMapping("/add")
     public RestResponse add(@RequestBody DutyRecords dutyRecords) {
         return dutyRecordsService.add(dutyRecords);
     }
 
     @ApiOperationSupport(order = 2)
-    @ApiOperation("查询列表")
+    @ApiOperation("值班记录查询列表")
+    @CommonLog("值班记录查询列表")
     @PostMapping("/selectList")
     public RestResponse selectList(@RequestBody DutyRecordsSelectListReq req) {
         return dutyRecordsService.selectList(req);
     }
 
     @ApiOperationSupport(order = 3)
-    @ApiOperation("删除")
+    @ApiOperation("值班记录删除")
+    @CommonLog("值班记录删除")
     @GetMapping("/delete")
     public RestResponse delete(@RequestParam(value = "id") String id) {
         return dutyRecordsService.delete(id);
     }
 
     @ApiOperationSupport(order = 4)
-    @ApiOperation("修改")
+    @ApiOperation("值班记录修改")
+    @CommonLog("值班记录修改")
     @PostMapping("/update")
     public RestResponse update(@RequestBody DutyRecords dutyRecords) {
         return dutyRecordsService.update(dutyRecords);

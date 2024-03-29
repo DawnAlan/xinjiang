@@ -1,6 +1,7 @@
 package com.cj.waterresources.func.modular.waterResourceAllcation.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.cj.common.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.cj.waterresources.func.modular.waterResourceAllcation.bean.dto.IncomingWaterForecastDto;
 import com.cj.waterresources.func.modular.waterResourceAllcation.bean.req.ViewModelReq;
@@ -41,7 +42,8 @@ public class WaterResourceAllocationController {
     private WaterResourceAllocationService waterResourceAllocationService;
 
     @ApiOperationSupport(order = 1)
-    @ApiOperation("查询")
+    @ApiOperation("水资源调配模块查询")
+    @CommonLog(value = "水资源调配模块查询")
     @GetMapping("/getListByTime")
     public RestResponse<List<IncomingWaterForecastDto>> getListByTime(@RequestParam("startTime") String startTime,
                                                                       @RequestParam("endTime") String endTime,
@@ -50,42 +52,48 @@ public class WaterResourceAllocationController {
     }
 
     @ApiOperationSupport(order = 2)
-    @ApiOperation("模型生成")
+    @ApiOperation("水资源调配模块模型生成")
+    @CommonLog(value = "水资源调配模块模型生成")
     @PostMapping("/generativeModel")
     public RestResponse generativeModel(@RequestBody WaterResourceAllocationAddReq req) {
         return waterResourceAllocationService.generativeModel(req);
     }
 
     @ApiOperationSupport(order = 3)
-    @ApiOperation("模型预览")
+    @ApiOperation("水资源调配模块模型预览")
+    @CommonLog(value = "水资源调配模块模型预览")
     @PostMapping("/viewModel")
     public RestResponse<List<ViewModelRes>> viewModel(@RequestBody ViewModelReq req) {
         return waterResourceAllocationService.viewModel(req);
     }
 
     @ApiOperationSupport(order = 4)
-    @ApiOperation("分页查询调度方案")
+    @ApiOperation("水资源调配模块分页查询调度方案")
+    @CommonLog(value = "水资源调配模块分页查询调度方案")
     @PostMapping("/getAllocationPage")
     public RestResponse<IPage<WaterResourceAllocation>> getAllocationPage(@RequestBody WaterResourceAllocationQueryReq req) {
         return waterResourceAllocationService.getAllocationPage(req);
     }
 
     @ApiOperationSupport(order = 5)
-    @ApiOperation("修改调度方案")
+    @ApiOperation("水资源调配模块修改调度方案")
+    @CommonLog(value = "水资源调配模块修改调度方案")
     @PostMapping("/update")
     public RestResponse update(@RequestBody WaterResourceAllocation waterResourceAllocation) {
         return waterResourceAllocationService.updateAllocation(waterResourceAllocation);
     }
 
     @ApiOperationSupport(order = 6)
-    @ApiOperation("删除调度方案")
+    @ApiOperation("水资源调配模块删除调度方案")
+    @CommonLog(value = "水资源调配模块删除调度方案")
     @PostMapping("/delById")
     public RestResponse delById(@RequestBody List<String> ids) {
         return waterResourceAllocationService.delById(ids);
     }
 
     @ApiOperationSupport(order = 7)
-    @ApiOperation("调度方案对比")
+    @ApiOperation("水资源调配模块调度方案对比")
+    @CommonLog(value = "水资源调配模块调度方案对比")
     @PostMapping("/compare")
     public RestResponse<WaterAllocationComparisonSelectionRes> compare(@RequestBody List<String> ids) {
         return waterResourceAllocationService.compare(ids);

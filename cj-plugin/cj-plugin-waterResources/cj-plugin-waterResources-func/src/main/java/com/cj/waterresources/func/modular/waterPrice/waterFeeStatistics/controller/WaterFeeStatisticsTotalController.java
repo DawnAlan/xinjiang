@@ -1,6 +1,7 @@
 package com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.controller;
 
 
+import com.cj.common.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.bean.req.WaterFeeStatisticsDetailsSelectListReq;
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.entity.WaterFeeStatisticsDetails;
@@ -33,14 +34,16 @@ public class WaterFeeStatisticsTotalController{
     private WaterFeeStatisticsTotalService waterFeeStatisticsTotalService;
 
     @ApiOperationSupport(order = 1)
-    @ApiOperation("查询列表")
+    @ApiOperation("水费统计总计模块查询列表")
+    @CommonLog(value = "水费统计总计模块查询列表")
     @PostMapping("/select")
     public RestResponse<List<WaterFeeStatisticsTotal>> select(@RequestBody WaterFeeStatisticsDetailsSelectListReq req) {
         return waterFeeStatisticsTotalService.selectInfoList(req);
     }
 
     @ApiOperationSupport(order = 1)
-    @ApiOperation("修改备注")
+    @ApiOperation("水费统计总计模块修改备注")
+    @CommonLog(value = "水费统计总计模块修改备注")
     @PostMapping("/updateRemark")
     public RestResponse updateRemark(@RequestBody WaterFeeStatisticsTotal total) {
         boolean update = waterFeeStatisticsTotalService.lambdaUpdate().set(WaterFeeStatisticsTotal::getRemark, total.getRemark()).eq(WaterFeeStatisticsTotal::getId, total.getId()).update();

@@ -1,5 +1,6 @@
 package com.cj.waterresources.func.modular.quotaStatisticsManagement.tenDaysWaterBalance.controller;
 
+import com.cj.common.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.cj.waterresources.func.modular.quotaStatisticsManagement.tenDaysWaterBalance.bean.req.TenDaysWaterBalanceSelectListReq;
 import com.cj.waterresources.func.modular.quotaStatisticsManagement.tenDaysWaterBalance.entity.TenDaysWaterBalance;
@@ -33,7 +34,8 @@ public class TenDaysWaterBalanceController{
     private TenDaysWaterBalanceService tenDaysWaterBalanceService;
 
     @ApiOperationSupport(order = 1)
-    @ApiOperation("查询列表")
+    @ApiOperation("旬水量平衡查询列表")
+    @CommonLog(value = "旬水量平衡查询列表")
     @PostMapping("/selectList")
     public RestResponse<List<TenDaysWaterBalance>> selectList(@RequestBody TenDaysWaterBalanceSelectListReq req) {
         return tenDaysWaterBalanceService.selectList(req);

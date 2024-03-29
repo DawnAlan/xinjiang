@@ -28,7 +28,7 @@ public class AllController {
     private AllService allService;
 
     @ApiOperationSupport(order = 2)
-    @ApiOperation("删除")
+    @ApiOperation("A3表删除")
     @CommonLog("A3表删除")
     @GetMapping("/delete")
     public RestResponse delete(@RequestParam(value = "date")String date) {
@@ -36,28 +36,32 @@ public class AllController {
     }
 
     @ApiOperationSupport(order = 1)
-    @ApiOperation("水情查询统计")
+    @ApiOperation("A3表水情查询统计")
+    @CommonLog(value = "A3表水情查询统计")
     @PostMapping("/statistics")
     public RestResponse statistics(@RequestBody A3StatisticsReq req) {
         return allService.statistics(req);
     }
 
     @ApiOperationSupport(order = 3)
-    @ApiOperation("工业水费根据站点查询时间区间流量")
+    @ApiOperation("A3表工业水费根据站点查询时间区间流量")
+    @CommonLog(value = "A3表工业水费根据站点查询时间区间流量")
     @PostMapping("/selectListForIndustrialWaterFee")
     public RestResponse selectListForIndustrialWaterFee(@RequestBody SelectListForIndustrialWaterFeeReq req) {
         return allService.selectListForIndustrialWaterFee(req);
     }
 
     @ApiOperationSupport(order = 4)
-    @ApiOperation("水情报表管理-水库报表")
+    @ApiOperation("A3表水情报表管理-水库报表")
+    @CommonLog(value = "A3表水情报表管理-水库报表")
     @PostMapping("/selectReportForms")
     public RestResponse selectReportForms(@RequestBody ReportFormsReq req) {
         return allService.selectReportForms(req);
     }
 
     @ApiOperationSupport(order = 5)
-    @ApiOperation("查询2库的拦蓄水量")
+    @ApiOperation("A3表查询2库的拦蓄水量")
+    @CommonLog(value = "A3表查询2库的拦蓄水量")
     @GetMapping("/selectFloodRetentionCapacity")
     public RestResponse selectFloodRetentionCapacity(@RequestParam("date") String date) {
         return allService.selectFloodRetentionCapacity(date);

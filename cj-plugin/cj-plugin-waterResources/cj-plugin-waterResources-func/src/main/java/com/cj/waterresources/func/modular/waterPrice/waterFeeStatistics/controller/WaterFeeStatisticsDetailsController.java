@@ -1,6 +1,7 @@
 package com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.cj.common.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.cj.waterresources.func.modular.waterPrice.paymentWaterFees.bean.req.PaymentWaterFeesAddReq;
 import com.cj.waterresources.func.modular.waterPrice.paymentWaterFees.bean.req.PaymentWaterFeesSelectListReq;
@@ -38,49 +39,56 @@ public class WaterFeeStatisticsDetailsController {
     private WaterFeeStatisticsDetailsService waterFeeStatisticsDetailsService;
 
     @ApiOperationSupport(order = 1)
-    @ApiOperation("新增")
+    @ApiOperation("水费统计详情模块新增")
+    @CommonLog(value = "水费统计详情模块新增")
     @PostMapping("/insert")
     public RestResponse insert(@RequestBody List<WaterFeeStatisticsDetails> waterFeeStatisticsDetails) {
         return waterFeeStatisticsDetailsService.add(waterFeeStatisticsDetails);
     }
 
     @ApiOperationSupport(order = 2)
-    @ApiOperation("更新")
+    @ApiOperation("水费统计详情模块更新")
+    @CommonLog(value = "水费统计详情模块更新")
     @PostMapping("/update")
     public RestResponse update(@RequestBody List<WaterFeeStatisticsDetails> waterFeeStatisticsDetails) {
         return waterFeeStatisticsDetailsService.update(waterFeeStatisticsDetails);
     }
 
     @ApiOperationSupport(order = 3)
-    @ApiOperation("查询列表")
+    @ApiOperation("水费统计详情模块查询列表")
+    @CommonLog(value = "水费统计详情模块查询列表")
     @PostMapping("/select")
     public RestResponse<Map<String, List<WaterFeeStatisticsDetails>>> select(@RequestBody WaterFeeStatisticsDetailsSelectListReq req) {
         return waterFeeStatisticsDetailsService.selectList(req);
     }
 
     @ApiOperationSupport(order = 4)
-    @ApiOperation("清空表格")
+    @ApiOperation("水费统计详情模块清空表格")
+    @CommonLog(value = "水费统计详情模块清空表格")
     @PostMapping("/clearTable")
     public RestResponse clearTable(@RequestBody WaterFeeStatisticsDetailsSelectListReq req) {
         return waterFeeStatisticsDetailsService.clearTable(req);
     }
 
     @ApiOperationSupport(order = 5)
-    @ApiOperation("新增历史记录")
+    @ApiOperation("水费统计详情模块新增历史记录")
+    @CommonLog(value = "水费统计详情模块新增历史记录")
     @PostMapping("/insertHistory")
     public RestResponse insertHistory(@RequestBody List<List<WaterFeeStatisticsDetails>> waterFeeStatisticsDetailsList) {
         return waterFeeStatisticsDetailsService.addHistory(waterFeeStatisticsDetailsList);
     }
 
     @ApiOperationSupport(order = 6)
-    @ApiOperation("用水类型统计")
+    @ApiOperation("水费统计详情模块用水类型统计")
+    @CommonLog(value = "水费统计详情模块用水类型统计")
     @PostMapping("/useWaterTypeStatistics")
     public RestResponse useWaterTypeStatistics(@RequestBody UseWaterTypeStatisticsReq req) {
         return waterFeeStatisticsDetailsService.useWaterTypeStatistics(req);
     }
 
     @ApiOperationSupport(order = 7)
-    @ApiOperation("删除用户创建缓存")
+    @ApiOperation("水费统计详情模块删除用户创建缓存")
+    @CommonLog(value = "水费统计详情模块删除用户创建缓存")
     @PostMapping("/deleteRedisData")
     public RestResponse deleteRedisData(@RequestBody WaterFeeStatisticsDetailsSelectListReq req) {
         return waterFeeStatisticsDetailsService.deleteRedisData(req);

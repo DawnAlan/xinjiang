@@ -1,5 +1,6 @@
 package com.cj.waterresources.func.modular.overallSituationUnitMgr.controller;
 
+import com.cj.common.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.cj.waterresources.func.modular.overallSituationUnitMgr.bean.res.OverallSituationUnitMgrTreeRes;
 import com.cj.waterresources.func.modular.overallSituationUnitMgr.entity.OverallSituationUnitMgr;
@@ -32,34 +33,39 @@ public class OverallSituationUnitMgrController{
     private OverallSituationUnitMgrService overallSituationUnitMgrService;
 
     @ApiOperationSupport(order = 1)
-    @ApiOperation("新增")
+    @ApiOperation("全局单位管理新增")
+    @CommonLog(value = "全局单位管理新增")
     @PostMapping("/add")
     public RestResponse add(@RequestBody OverallSituationUnitMgr overallSituationUnitMgr) {
         return overallSituationUnitMgrService.add(overallSituationUnitMgr);
     }
 
     @ApiOperationSupport(order = 2)
-    @ApiOperation("删除")
+    @ApiOperation("全局单位管理删除")
+    @CommonLog(value = "全局单位管理删除")
     @GetMapping("/delete")
     public RestResponse delete(@RequestParam("id") String id) {
         return overallSituationUnitMgrService.delete(id);
     }
 
     @ApiOperationSupport(order = 3)
-    @ApiOperation("修改")
+    @ApiOperation("全局单位管理修改")
+    @CommonLog(value = "全局单位管理修改")
     @PostMapping("/update")
     public RestResponse update(@RequestBody OverallSituationUnitMgr overallSituationUnitMgr) {
         return overallSituationUnitMgrService.update(overallSituationUnitMgr);
     }
 
     @ApiOperationSupport(order = 4)
-    @ApiOperation("查询tree")
+    @ApiOperation("全局单位管理查询tree")
+    @CommonLog(value = "全局单位管理查询tree")
     @PostMapping("/select")
     public RestResponse<List<OverallSituationUnitMgrTreeRes>> select() {
         return overallSituationUnitMgrService.selectTree();
     }
     @ApiOperationSupport(order = 5)
-    @ApiOperation("更新监测点数据")
+    @ApiOperation("全局单位管理更新监测点数据")
+    @CommonLog(value = "全局单位管理更新监测点数据")
     @PostMapping("/updateMonitor")
     public RestResponse updateMonitor() {
         return overallSituationUnitMgrService.updateMonitor();

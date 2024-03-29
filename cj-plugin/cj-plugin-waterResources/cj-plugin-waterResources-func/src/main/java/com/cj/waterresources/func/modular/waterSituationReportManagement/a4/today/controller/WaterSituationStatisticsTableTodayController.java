@@ -1,5 +1,6 @@
 package com.cj.waterresources.func.modular.waterSituationReportManagement.a4.today.controller;
 
+import com.cj.common.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a4.today.entity.WaterSituationStatisticsTableToday;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a4.today.service.WaterSituationStatisticsTableTodayService;
@@ -29,28 +30,32 @@ public class WaterSituationStatisticsTableTodayController {
     private WaterSituationStatisticsTableTodayService waterSituationStatisticsTableTodayService;
 
     @ApiOperationSupport(order = 1)
-    @ApiOperation("新增")
+    @ApiOperation("今日水情日报表新增")
+    @CommonLog("今日水情日报表新增")
     @PostMapping("/add")
     public RestResponse add(@RequestBody WaterSituationStatisticsTableToday waterSituationStatisticsTableToday) {
         return waterSituationStatisticsTableTodayService.add(waterSituationStatisticsTableToday);
     }
 
     @ApiOperationSupport(order = 2)
-    @ApiOperation("查询列表")
+    @ApiOperation("今日水情日报表查询列表")
+    @CommonLog("今日水情日报表查询列表")
     @GetMapping("/selectList")
     public RestResponse selectList(@RequestParam(value = "date")String date) {
         return waterSituationStatisticsTableTodayService.select(date);
     }
 
     @ApiOperationSupport(order = 3)
-    @ApiOperation("删除")
+    @ApiOperation("今日水情日报表删除")
+    @CommonLog("今日水情日报表删除")
     @GetMapping("/delete")
     public RestResponse delete(@RequestParam(value = "id") String id) {
         return waterSituationStatisticsTableTodayService.delete(id);
     }
 
     @ApiOperationSupport(order = 4)
-    @ApiOperation("修改")
+    @ApiOperation("今日水情日报表修改")
+    @CommonLog("今日水情日报表修改")
     @PostMapping("/update")
     public RestResponse update(@RequestBody WaterSituationStatisticsTableToday waterSituationStatisticsTableToday) {
         return waterSituationStatisticsTableTodayService.update(waterSituationStatisticsTableToday);

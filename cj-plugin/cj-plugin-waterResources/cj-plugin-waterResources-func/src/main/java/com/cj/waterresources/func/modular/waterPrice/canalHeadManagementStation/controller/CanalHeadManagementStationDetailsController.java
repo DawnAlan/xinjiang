@@ -1,5 +1,6 @@
 package com.cj.waterresources.func.modular.waterPrice.canalHeadManagementStation.controller;
 
+import com.cj.common.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.cj.waterresources.func.modular.waterPrice.canalHeadManagementStation.entity.CanalHeadManagementStationDetails;
 import com.cj.waterresources.func.modular.waterPrice.canalHeadManagementStation.service.CanalHeadManagementStationDetailsService;
@@ -34,28 +35,32 @@ public class CanalHeadManagementStationDetailsController {
 
 
     @ApiOperationSupport(order = 1)
-    @ApiOperation("新增")
+    @ApiOperation("水费统计详情模块-渠首管理站明细新增")
+    @CommonLog(value = "水费统计详情模块-渠首管理站明细新增")
     @PostMapping("/insert")
     public RestResponse insert(@RequestBody CanalHeadManagementStationDetails canalHeadManagementStationDetails) {
         return canalHeadManagementStationDetailsService.add(canalHeadManagementStationDetails);
     }
 
     @ApiOperationSupport(order = 2)
-    @ApiOperation("更新")
+    @ApiOperation("水费统计详情模块-渠首管理站明细更新")
+    @CommonLog(value = "水费统计详情模块-渠首管理站明细更新")
     @PostMapping("/update")
     public RestResponse update(@RequestBody CanalHeadManagementStationDetails canalHeadManagementStationDetails) {
         return canalHeadManagementStationDetailsService.update(canalHeadManagementStationDetails);
     }
 
     @ApiOperationSupport(order = 3)
-    @ApiOperation("查询列表")
+    @ApiOperation("水费统计详情模块-渠首管理站明细查询列表")
+    @CommonLog(value = "水费统计详情模块-渠首管理站明细查询列表")
     @PostMapping("/select")
     public RestResponse select(@RequestBody WaterFeeStatisticsDetailsSelectListReq req) {
         return canalHeadManagementStationDetailsService.selectList(req);
     }
 
     @ApiOperationSupport(order = 3)
-    @ApiOperation("清空表")
+    @ApiOperation("水费统计详情模块-渠首管理站明细清空表")
+    @CommonLog(value = "水费统计详情模块-渠首管理站明细清空表")
     @PostMapping("/remove")
     public RestResponse remove(@RequestBody WaterFeeStatisticsDetailsSelectListReq req) {
         return canalHeadManagementStationDetailsService.remove(req);

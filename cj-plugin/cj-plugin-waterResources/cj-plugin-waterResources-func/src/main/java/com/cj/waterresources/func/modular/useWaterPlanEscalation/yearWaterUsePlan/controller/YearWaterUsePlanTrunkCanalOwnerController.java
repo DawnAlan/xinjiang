@@ -1,6 +1,7 @@
 package com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.controller;
 
 
+import com.cj.common.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.req.TrunkCanalSelectListReq;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.entity.YearWaterUsePlanTrunkCanal;
@@ -35,21 +36,24 @@ public class YearWaterUsePlanTrunkCanalOwnerController {
 
 
     @ApiOperationSupport(order = 1)
-    @ApiOperation("查询列表")
+    @ApiOperation("年用水计划模块-干渠(供水科)查询列表")
+    @CommonLog(value = "年用水计划模块-干渠(供水科)查询列表")
     @PostMapping("/select")
     public RestResponse<List<YearWaterUsePlanTrunkCanalOwner>> select(@RequestBody TrunkCanalSelectListReq req) {
         return yearWaterUsePlanTrunkCanalOwnerService.selectList(req);
     }
 
     @ApiOperationSupport(order = 2)
-    @ApiOperation("新增")
+    @ApiOperation("年用水计划模块-干渠(供水科)新增")
+    @CommonLog(value = "年用水计划模块-干渠(供水科)新增")
     @PostMapping("/add")
     public RestResponse add(@RequestBody YearWaterUsePlanTrunkCanalOwner yearWaterUsePlanTrunkCanalOwner) {
         return yearWaterUsePlanTrunkCanalOwnerService.addTrunkCanal(yearWaterUsePlanTrunkCanalOwner);
     }
 
     @ApiOperationSupport(order = 3)
-    @ApiOperation("删除")
+    @ApiOperation("年用水计划模块-干渠(供水科)删除")
+    @CommonLog(value = "年用水计划模块-干渠(供水科)删除")
     @GetMapping("delete")
     public RestResponse delete(@RequestParam("id") String id) {
         boolean b = yearWaterUsePlanTrunkCanalOwnerService.removeById(id);

@@ -1,6 +1,7 @@
 package com.cj.waterresources.func.modular.useWaterPlanEscalation.useWaterManagement.controller;
 
 
+import com.cj.common.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.useWaterManagement.bean.req.UseWaterManagementAddReq;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.useWaterManagement.bean.req.UseWaterManagementQueryReq;
@@ -34,21 +35,24 @@ public class UseWaterManagementController {
     private UseWaterManagementService useWaterManagementService;
 
     @ApiOperationSupport(order = 1)
-    @ApiOperation("删除")
+    @ApiOperation("用水单位管理模块删除")
+    @CommonLog(value = "用水单位管理模块删除")
     @GetMapping("/delete")
     public RestResponse delete(@RequestParam("id") String id,@RequestParam("useWaterPlan") String useWaterPlan) {
         return useWaterManagementService.delete(id,useWaterPlan);
     }
 
     @ApiOperationSupport(order = 2)
-    @ApiOperation("新增")
+    @ApiOperation("用水单位管理模块新增")
+    @CommonLog(value = "用水单位管理模块新增")
     @PostMapping("/insert")
     public RestResponse insert(@RequestBody UseWaterManagementAddReq req) {
         return useWaterManagementService.insert(req);
     }
 
     @ApiOperationSupport(order = 3)
-    @ApiOperation("查询列表")
+    @ApiOperation("用水单位管理模块查询列表")
+    @CommonLog(value = "用水单位管理模块查询列表")
     @PostMapping("/select")
     public RestResponse<List<UseWaterManagementQueryRes>> select(@RequestBody UseWaterManagementQueryReq req) {
         return useWaterManagementService.select(req);

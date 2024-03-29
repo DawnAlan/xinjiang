@@ -1,5 +1,6 @@
 package com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.controller;
 
+import com.cj.common.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.req.TrunkCanalSelectListReq;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.entity.YearWaterUsePlanTrunkCanal;
@@ -32,13 +33,15 @@ public class YearWaterUsePlanTrunkCanalController {
     private YearWaterUsePlanTrunkCanalService yearWaterUsePlanTrunkCanalService;
 
     @ApiOperationSupport(order = 1)
-    @ApiOperation("新增")
+    @ApiOperation("年用水计划模块-干渠新增")
+    @CommonLog(value = "年用水计划模块-干渠新增")
     @PostMapping("/add")
     public RestResponse add(@RequestBody YearWaterUsePlanTrunkCanal yearWaterUsePlanTrunkCanal) {
         return yearWaterUsePlanTrunkCanalService.addTrunkCanal(yearWaterUsePlanTrunkCanal);
     }
     @ApiOperationSupport(order = 2)
-    @ApiOperation("修改")
+    @ApiOperation("年用水计划模块-干渠修改")
+    @CommonLog(value = "年用水计划模块-干渠修改")
     @PostMapping("/update")
     public RestResponse update(@RequestBody YearWaterUsePlanTrunkCanal yearWaterUsePlanTrunkCanal) {
         return yearWaterUsePlanTrunkCanalService.updateTrunkCanal(yearWaterUsePlanTrunkCanal);
@@ -46,14 +49,16 @@ public class YearWaterUsePlanTrunkCanalController {
 
 
     @ApiOperationSupport(order = 3)
-    @ApiOperation("查询列表")
+    @ApiOperation("年用水计划模块-干渠查询列表")
+    @CommonLog(value = "年用水计划模块-干渠查询列表")
     @PostMapping("/select")
     public RestResponse<List<YearWaterUsePlanTrunkCanal>> select(@RequestBody TrunkCanalSelectListReq req) {
         return yearWaterUsePlanTrunkCanalService.selectList(req);
     }
 
     @ApiOperationSupport(order = 4)
-    @ApiOperation("删除")
+    @ApiOperation("年用水计划模块-干渠删除")
+    @CommonLog(value = "年用水计划模块-干渠删除")
     @GetMapping("delete")
     public RestResponse delete(@RequestParam("id") String id) {
         boolean b = yearWaterUsePlanTrunkCanalService.removeById(id);

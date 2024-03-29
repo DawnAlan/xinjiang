@@ -1,6 +1,7 @@
 package com.cj.waterresources.func.modular.surfaceWater.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.cj.common.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.cj.waterresources.func.modular.surfaceWater.entity.DelReq;
 import com.cj.waterresources.func.modular.surfaceWater.entity.QueryListReq;
@@ -28,7 +29,8 @@ import java.util.List;
 public class SurfaceWaterController {
     private final SurfaceWaterService surfaceWaterService;
 
-    @ApiOperation(value = "新增", notes = "新增")
+    @ApiOperation(value = "地表水情数据新增", notes = "地表水情数据新增")
+    @CommonLog(value = "地表水情数据新增")
     @PostMapping(value = "/add")
     public RestResponse<SurfaceWater> add(
             @RequestPart("file") MultipartFile file,
@@ -59,7 +61,8 @@ public class SurfaceWaterController {
     }
 
 
-    @ApiOperation(value = "列表查询", notes = "列表查询")
+    @ApiOperation(value = "地表水情数据列表查询", notes = "地表水情数据列表查询")
+    @CommonLog(value = "地表水情数据列表查询")
     @PostMapping(value = "/queryList")
     public RestResponse<IPage<SurfaceWater>> queryList(@RequestBody QueryListReq input) {
         try {
@@ -70,7 +73,8 @@ public class SurfaceWaterController {
         }
     }
 
-    @ApiOperation(value = "查询详情", notes = "查询详情")
+    @ApiOperation(value = "地表水情数据查询详情", notes = "地表水情数据查询详情")
+    @CommonLog(value = "地表水情数据查询详情")
     @PostMapping(value = "/query")
     public RestResponse<SurfaceWaterVo> query(@RequestBody QueryReq input) {
         try {
@@ -81,7 +85,8 @@ public class SurfaceWaterController {
         }
     }
 
-    @ApiOperation(value = "删除", notes = "删除")
+    @ApiOperation(value = "地表水情数据删除", notes = "地表水情数据删除")
+    @CommonLog(value = "地表水情数据删除")
     @PostMapping(value = "/del")
     public RestResponse<Boolean> del(@RequestBody DelReq input) {
         try {
@@ -92,13 +97,15 @@ public class SurfaceWaterController {
         }
     }
 
-    @ApiOperation(value = "下载原始文件", notes = "下载原始文件")
+    @ApiOperation(value = "地表水情数据下载原始文件", notes = "地表水情数据下载原始文件")
+    @CommonLog(value = "地表水情数据下载原始文件")
     @GetMapping(value = "/downloadResourceFile")
     public void downloadResourceFile(@RequestParam("id") String id, HttpServletResponse response) {
         surfaceWaterService.download(id,response);
     }
 
-    @ApiOperation(value = "昌吉州年景预报", notes = "昌吉州年景预报")
+    @ApiOperation(value = "地表水情数据昌吉州年景预报", notes = "地表水情数据昌吉州年景预报")
+    @CommonLog(value = "地表水情数据昌吉州年景预报")
     @PostMapping(value = "/annualList")
     public RestResponse annualList() {
         try {

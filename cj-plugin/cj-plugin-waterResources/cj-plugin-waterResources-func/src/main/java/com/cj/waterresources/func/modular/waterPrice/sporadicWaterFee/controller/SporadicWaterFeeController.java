@@ -1,5 +1,6 @@
 package com.cj.waterresources.func.modular.waterPrice.sporadicWaterFee.controller;
 
+import com.cj.common.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.cj.waterresources.func.modular.waterPrice.sporadicWaterFee.bean.req.SporadicWaterFeeSelectListReq;
 import com.cj.waterresources.func.modular.waterPrice.sporadicWaterFee.entity.SporadicWaterFee;
@@ -32,28 +33,32 @@ public class SporadicWaterFeeController {
     private SporadicWaterFeeService sporadicWaterFeeService;
 
     @ApiOperationSupport(order = 1)
-    @ApiOperation("新增")
+    @ApiOperation("零星水费新增")
+    @CommonLog(value = "零星水费新增")
     @PostMapping("/add")
     public RestResponse add(@RequestBody SporadicWaterFee sporadicWaterFee) {
         return sporadicWaterFeeService.add(sporadicWaterFee);
     }
 
     @ApiOperationSupport(order = 2)
-    @ApiOperation("删除")
+    @ApiOperation("零星水费删除")
+    @CommonLog(value = "零星水费删除")
     @GetMapping("/delete")
     public RestResponse delete(@RequestParam("ids") String ids) {
         return sporadicWaterFeeService.delete(ids);
     }
 
     @ApiOperationSupport(order = 3)
-    @ApiOperation("修改")
+    @ApiOperation("零星水费修改")
+    @CommonLog(value = "零星水费修改")
     @PostMapping("/update")
     public RestResponse update(@RequestBody SporadicWaterFee sporadicWaterFee) {
         return sporadicWaterFeeService.update(sporadicWaterFee);
     }
 
     @ApiOperationSupport(order = 4)
-    @ApiOperation("查询列表")
+    @ApiOperation("零星水费查询列表")
+    @CommonLog(value = "零星水费查询列表")
     @PostMapping("/select")
     public RestResponse<List<SporadicWaterFee>> select(@RequestBody SporadicWaterFeeSelectListReq req) {
         return sporadicWaterFeeService.selectList(req);

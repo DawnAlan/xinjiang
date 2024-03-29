@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -411,7 +412,7 @@ public class DayWaterSituationStatisticsTableLzzServiceImpl extends ServiceImpl<
         String scgdTwoTableId = lzzTableParamList.stream().filter(t -> t.getParamName().equals("楼庄子水厂管道2") && t.getPId().equals(ckllPid)).collect(Collectors.toList()).get(0).getId();
         String kswTableId = lzzTableParamList.stream().filter(t -> t.getParamName().equals("库水位")).collect(Collectors.toList()).get(0).getId();
         String krTableId = lzzTableParamList.stream().filter(t -> t.getParamName().equals("库容")).collect(Collectors.toList()).get(0).getId();
-
+        dayWaterSituationStatisticsListThisYear.forEach(t->t.setRecordTime(formatDateNotMoment(t.getRecordTime())));
         Map<Date, List<DayWaterSituationStatisticsTableLzz>> collect1 = dayWaterSituationStatisticsListThisYear.stream().collect(Collectors.groupingBy(DayWaterSituationStatisticsTableLzz::getRecordTime));
         Set<Date> dates = collect1.keySet();
         for(Date date: dates){
@@ -424,14 +425,14 @@ public class DayWaterSituationStatisticsTableLzzServiceImpl extends ServiceImpl<
             res.setInputFlowLastYear(dayWaterSituationStatisticsListLastYear.stream().filter(t->t.getTableHeadId().equals(jkllTableId) && t.getTime().equals("今日均") && t.getV()!=null && t.getRecordTime().compareTo(lastYearDate)==0).map(DayWaterSituationStatisticsTableLzz::getV).reduce(Double::sum).orElse(0.00));
             res.setOutputFlowThisYear(dayWaterSituationStatisticsListThisYear.stream().filter(t->t.getTableHeadId().equals(ckllTableId) && t.getTime().equals("今日均") && t.getV()!=null && t.getRecordTime().compareTo(date)==0).map(DayWaterSituationStatisticsTableLzz::getV).reduce(Double::sum).orElse(0.00));
             res.setOutputFlowLastYear(dayWaterSituationStatisticsListLastYear.stream().filter(t->t.getTableHeadId().equals(ckllTableId) && t.getTime().equals("今日均") && t.getV()!=null && t.getRecordTime().compareTo(lastYearDate)==0).map(DayWaterSituationStatisticsTableLzz::getV).reduce(Double::sum).orElse(0.00));
-            res.setScThisYear(
+            res.setScThisYear(formatDoubleForThreeDecimal(
                     (dayWaterSituationStatisticsListThisYear.stream().filter(t->t.getTableHeadId().equals(scgdOneTableId) && t.getTime().equals("今日均") && t.getV()!=null && t.getRecordTime().compareTo(date)==0).map(DayWaterSituationStatisticsTableLzz::getV).reduce(Double::sum).orElse(0.00))+
                     (dayWaterSituationStatisticsListThisYear.stream().filter(t->t.getTableHeadId().equals(scgdTwoTableId) && t.getTime().equals("今日均") && t.getV()!=null && t.getRecordTime().compareTo(date)==0).map(DayWaterSituationStatisticsTableLzz::getV).reduce(Double::sum).orElse(0.00))
-            );
-            res.setScLastYear(
+            ));
+            res.setScLastYear(formatDoubleForThreeDecimal(
                     (dayWaterSituationStatisticsListLastYear.stream().filter(t->t.getTableHeadId().equals(scgdOneTableId) && t.getTime().equals("今日均") && t.getV()!=null && t.getRecordTime().compareTo(lastYearDate)==0).map(DayWaterSituationStatisticsTableLzz::getV).reduce(Double::sum).orElse(0.00))+
                     (dayWaterSituationStatisticsListLastYear.stream().filter(t->t.getTableHeadId().equals(scgdTwoTableId) && t.getTime().equals("今日均") && t.getV()!=null && t.getRecordTime().compareTo(lastYearDate)==0).map(DayWaterSituationStatisticsTableLzz::getV).reduce(Double::sum).orElse(0.00))
-            );
+            ));
             resList.add(res);
         }
         if(resList.isEmpty()){
@@ -484,6 +485,21 @@ public class DayWaterSituationStatisticsTableLzzServiceImpl extends ServiceImpl<
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         String result = dateFormat.format(calendar.getTime());
         return result;
+    }
+
+    @SneakyThrows
+    private Date formatDateNotMoment(Date date){
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        String format = dateFormat.format(date);
+        Date formatDate = dateFormat.parse(format);
+        return formatDate;
+    }
+
+    private Double formatDoubleForThreeDecimal(Double value){
+        DecimalFormat df = new DecimalFormat("#0.000");
+        String format = df.format(value);
+        double v = Double.parseDouble(format);
+        return v;
     }
 }
 

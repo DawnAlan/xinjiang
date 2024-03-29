@@ -1,5 +1,6 @@
 package com.cj.waterresources.func.modular.useWaterPlanEscalation.dayWaterUsePlan.controller;
 
+import com.cj.common.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.bean.res.SelectInfoByIrrigationNameListRes;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.dayWaterUsePlan.bean.req.DayWaterUsePlanSelectReq;
@@ -35,20 +36,23 @@ public class DayWaterUsePlanController {
     private DayWaterUsePlanService dayWaterUsePlanService;
 
     @ApiOperationSupport(order = 2)
-    @ApiOperation("新增")
+    @ApiOperation("日用水计划模块新增")
+    @CommonLog(value = "日用水计划模块新增")
     @PostMapping("/add")
     public RestResponse add(@RequestBody DayWaterUsePlan dayWaterUsePlan) {
         return dayWaterUsePlanService.add(dayWaterUsePlan);
     }
     @ApiOperationSupport(order = 3)
-    @ApiOperation("修改")
+    @ApiOperation("日用水计划模块修改")
+    @CommonLog(value = "日用水计划模块修改")
     @PostMapping("/update")
     public RestResponse update(@RequestBody DayWaterUsePlan dayWaterUsePlan) {
         return dayWaterUsePlanService.update(dayWaterUsePlan);
     }
 
     @ApiOperationSupport(order = 4)
-    @ApiOperation("查询列表")
+    @ApiOperation("日用水计划模块查询列表")
+    @CommonLog(value = "日用水计划模块查询列表")
     @PostMapping("/select")
     public RestResponse<DayWaterUsePlan> select(@RequestBody DayWaterUsePlanSelectReq req) {
         return dayWaterUsePlanService.select(req);
@@ -56,7 +60,8 @@ public class DayWaterUsePlanController {
 
 
     @ApiOperationSupport(order = 5)
-    @ApiOperation("查询实时流量")
+    @ApiOperation("日用水计划模块查询实时流量")
+    @CommonLog(value = "日用水计划模块查询实时流量")
     @GetMapping("/selectValue")
     public RestResponse<List<SelectInfoByIrrigationNameListRes>> selectValue(@RequestParam("names") String names,@RequestParam("station") String station) {
         return dayWaterUsePlanService.selectValue(names,station);

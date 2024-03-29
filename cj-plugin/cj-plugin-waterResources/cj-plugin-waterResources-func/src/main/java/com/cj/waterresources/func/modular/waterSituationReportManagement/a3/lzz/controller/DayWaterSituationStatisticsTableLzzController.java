@@ -1,6 +1,7 @@
 package com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.controller;
 
 
+import com.cj.common.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.entity.WaterFeeStatisticsDetails;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.entity.DayWaterSituationStatisticsTableLzz;
@@ -34,28 +35,32 @@ public class DayWaterSituationStatisticsTableLzzController {
     private DayWaterSituationStatisticsTableLzzService dayWaterSituationStatisticsTableLzzService;
 
     @ApiOperationSupport(order = 1)
-    @ApiOperation("新增")
+    @ApiOperation("楼庄子水库日水情统计表新增")
+    @CommonLog("楼庄子水库日水情统计表新增")
     @PostMapping("/add")
     public RestResponse add(@RequestBody List<DayWaterSituationStatisticsTableLzz> list) {
         return dayWaterSituationStatisticsTableLzzService.add(list);
     }
 
     @ApiOperationSupport(order = 2)
-    @ApiOperation("查询列表")
+    @ApiOperation("楼庄子水库日水情统计表查询列表")
+    @CommonLog("楼庄子水库日水情统计表查询列表")
     @GetMapping("/selectList")
     public RestResponse selectList(@RequestParam(value = "date")String date) {
         return dayWaterSituationStatisticsTableLzzService.selectList(date);
     }
 
     @ApiOperationSupport(order = 3)
-    @ApiOperation("删除")
+    @ApiOperation("楼庄子水库日水情统计表删除")
+    @CommonLog("楼庄子水库日水情统计表删除")
     @GetMapping("/delete")
     public RestResponse delete(@RequestParam(value = "ids") String ids) {
         return dayWaterSituationStatisticsTableLzzService.delete(ids);
     }
 
     @ApiOperationSupport(order = 4)
-    @ApiOperation("修改")
+    @ApiOperation("楼庄子水库日水情统计表修改")
+    @CommonLog("楼庄子水库日水情统计表修改")
     @PostMapping("/update")
     public RestResponse update(@RequestBody List<DayWaterSituationStatisticsTableLzz> list) {
         return dayWaterSituationStatisticsTableLzzService.update(list);

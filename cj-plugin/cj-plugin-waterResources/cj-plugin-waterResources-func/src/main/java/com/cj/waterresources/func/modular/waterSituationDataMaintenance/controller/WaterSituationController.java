@@ -1,5 +1,6 @@
 package com.cj.waterresources.func.modular.waterSituationDataMaintenance.controller;
 
+import com.cj.common.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.req.SelectInfoListNewReq;
 import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.req.SelectInfoListReq;
@@ -25,14 +26,16 @@ public class WaterSituationController {
     private WaterSituationService waterSituationService;
 
     @ApiOperationSupport(order = 1)
-    @ApiOperation("查询结构树")
+    @ApiOperation("水情数据维护模块查询结构树")
+    @CommonLog(value = "水情数据维护模块查询结构树")
     @PostMapping("/selectTree")
     public RestResponse selectTree() {
         return waterSituationService.selectTree();
     }
 
     @ApiOperationSupport(order = 2)
-    @ApiOperation("查询水情信息")
+    @ApiOperation("水情数据维护模块查询水情信息")
+    @CommonLog(value = "水情数据维护模块查询水情信息")
     @PostMapping("/selectInfoList")
     public RestResponse selectInfoList(@RequestBody SelectInfoListReq req) {
         return waterSituationService.selectInfoList(req);
@@ -40,21 +43,24 @@ public class WaterSituationController {
 
 
     @ApiOperationSupport(order = 5)
-    @ApiOperation("修改水情信息")
+    @ApiOperation("水情数据维护模块修改水情信息")
+    @CommonLog(value = "水情数据维护模块修改水情信息")
     @PostMapping("/update")
     public RestResponse update(@RequestBody UpdateInfoReq req) {
         return waterSituationService.update(req);
     }
 
     @ApiOperationSupport(order = 6)
-    @ApiOperation("查询地图上监测点信息")
+    @ApiOperation("水情数据维护模块查询地图上监测点信息")
+    @CommonLog(value = "水情数据维护模块查询地图上监测点信息")
     @PostMapping("/selectInfoAllList")
     public RestResponse selectInfoAllList(@RequestBody SelectInfoListReq req) {
         return waterSituationService.selectInfoListAll(req);
     }
 
     @ApiOperationSupport(order = 7)
-    @ApiOperation("查询地图上监测点信息(new)")
+    @ApiOperation("水情数据维护模块查询地图上监测点信息(new)")
+    @CommonLog(value = "水情数据维护模块查询地图上监测点信息")
     @PostMapping("/selectInfoListAllNew")
     public RestResponse selectInfoListAllNew(@RequestBody SelectInfoListNewReq req) {
         return waterSituationService.selectInfoListAllNew(req);

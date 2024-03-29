@@ -105,9 +105,9 @@ public class WaterStorageSchedulingLzzServiceImpl extends ServiceImpl<WaterStora
                 lzz.setMonth(vo.getMonth());
                 lzz.setTenDays(vo.getName()==1?"上旬":vo.getName()==2?"中旬":"下旬");
                 lzz.setYear(byId.getYear());
-                lzz.setReservoirInflow(changeNum(vo.getValue().doubleValue()));
+                lzz.setReservoirInflow(vo.getValue()==null?0.0:changeNum(vo.getValue().doubleValue()));
                 lzz.setFineTuning(100.00);
-                lzz.setFineTuningReservoirInflow(changeNum((lzz.getFineTuning()/100)*lzz.getReservoirInflow()));
+                lzz.setFineTuningReservoirInflow(lzz.getReservoirInflow()==null?0.0:changeNum((lzz.getFineTuning()/100)*lzz.getReservoirInflow()));
                 List<TenDayVo> lzzTempData = lzzData.stream().filter(t -> t.getMonth() == vo.getMonth() && t.getName() == vo.getName()).collect(Collectors.toList());
                 if(null != lzzTempData && lzzTempData.size()>0){
                     TenDayVo lzzResultData = lzzTempData.get(0);
@@ -226,12 +226,12 @@ public class WaterStorageSchedulingLzzServiceImpl extends ServiceImpl<WaterStora
     private List<TenDayVo> getInflowData(Integer year) {
         QueryListReq req = new QueryListReq();
         req.setYear(year);
-        req.setTableName("日平均流量表");
+        req.setTableName("楼庄子水库进库日均");
         req.setManagerName("楼庄子水库");
         req.setPageNo(1);
         req.setPageSize(1);
         IPage<SurfaceWater> surfaceWaterIPage = surfaceWaterService.queryList(req);
-        if(surfaceWaterIPage.getTotal()<0){
+        if(surfaceWaterIPage.getTotal()==0){
             return null;
         }
         List<TenDayVo> tenDayVos = surfaceWaterFlowDetailService.ten_day(surfaceWaterIPage.getRecords().get(0).getId());

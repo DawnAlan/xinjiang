@@ -3,6 +3,7 @@ package com.cj.waterresources.func.modular.useWaterPlanEscalation.tenDaysWaterUs
 
 
 
+import com.cj.common.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.tenDaysWaterUsePlan.bean.req.TenDayWaterUsePlanImportParamReq;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.tenDaysWaterUsePlan.bean.req.TenDayWaterUsePlanSelectReq;
@@ -39,14 +40,16 @@ public class TenDayWaterUsePlanController {
 
 
     @ApiOperationSupport(order = 1)
-    @ApiOperation("删除")
+    @ApiOperation("旬用水计划模块删除")
+    @CommonLog(value = "旬用水计划模块删除")
     @PostMapping("/delete")
     public RestResponse delete(@RequestBody TenDayWaterUsePlanImportParamReq req) {
         return tenDayWaterUsePlanService.delete(req);
     }
 
     @ApiOperationSupport(order = 2)
-    @ApiOperation("新增")
+    @ApiOperation("旬用水计划模块新增")
+    @CommonLog(value = "旬用水计划模块新增")
     @PostMapping("/add")
     public RestResponse add(@RequestParam(value = "area",required = true) String area,
                             @RequestParam(value = "year",required = true) Integer year,
@@ -64,7 +67,8 @@ public class TenDayWaterUsePlanController {
     }
 
     @ApiOperationSupport(order = 3)
-    @ApiOperation("查询列表")
+    @ApiOperation("旬用水计划模块查询列表")
+    @CommonLog(value = "旬用水计划模块查询列表")
     @PostMapping("/select")
     public RestResponse<List<TenDayWaterUsePlan>> select(@RequestBody TenDayWaterUsePlanSelectReq req) {
         return tenDayWaterUsePlanService.selectList(req);

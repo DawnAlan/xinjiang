@@ -1,5 +1,6 @@
 package com.cj.waterresources.func.modular.useWaterPlanEscalation.tenDaysWaterUsePlan.controller;
 
+import com.cj.common.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.tenDaysWaterUsePlan.bean.req.TenDayWaterUsePlanSelectReq;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.tenDaysWaterUsePlan.entity.TenDayWaterUsePlanOwner;
@@ -31,7 +32,8 @@ public class TenDayWaterUsePlanOwnerController{
     private TenDayWaterUsePlanOwnerService tenDayWaterUsePlanOwnerService;
 
     @ApiOperationSupport(order = 1)
-    @ApiOperation("查询列表")
+    @ApiOperation("旬用水计划模块(供水科专看)查询列表")
+    @CommonLog(value = "旬用水计划模块(供水科专看)查询列表")
     @PostMapping("/select")
     public RestResponse<List<TenDayWaterUsePlanOwner>> select(@RequestBody TenDayWaterUsePlanSelectReq req) {
         return tenDayWaterUsePlanOwnerService.selectList(req);

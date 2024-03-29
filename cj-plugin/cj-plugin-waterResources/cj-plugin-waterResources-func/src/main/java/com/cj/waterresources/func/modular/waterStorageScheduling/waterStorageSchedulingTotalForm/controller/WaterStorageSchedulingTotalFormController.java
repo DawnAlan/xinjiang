@@ -1,5 +1,6 @@
 package com.cj.waterresources.func.modular.waterStorageScheduling.waterStorageSchedulingTotalForm.controller;
 
+import com.cj.common.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.UUIDUtils;
 import com.cj.waterresources.func.modular.waterStorageScheduling.waterStorageSchedulingLzz.entity.WaterStorageSchedulingLzz;
@@ -34,21 +35,24 @@ public class WaterStorageSchedulingTotalFormController{
     private WaterStorageSchedulingTotalFormService waterStorageSchedulingTotalFormService;
 
     @ApiOperationSupport(order = 1)
-    @ApiOperation("删除")
+    @ApiOperation("供水计划管理总表删除")
+    @CommonLog("供水计划管理总表删除")
     @GetMapping("/delete")
     public RestResponse delete(@RequestParam("id") String id) {
         return waterStorageSchedulingTotalFormService.remove(id);
     }
 
     @ApiOperationSupport(order = 2)
-    @ApiOperation("新增")
+    @ApiOperation("供水计划管理总表新增")
+    @CommonLog("供水计划管理总表新增")
     @PostMapping("/add")
     public RestResponse add(@RequestBody WaterStorageSchedulingTotalForm waterStorageSchedulingTotalForm) {
         return waterStorageSchedulingTotalFormService.add(waterStorageSchedulingTotalForm);
     }
 
     @ApiOperationSupport(order = 3)
-    @ApiOperation("查询列表")
+    @ApiOperation("供水计划管理总表查询列表")
+    @CommonLog("供水计划管理总表查询列表")
     @GetMapping("/select")
     public RestResponse<List<WaterStorageSchedulingTotalForm>> select() {
         List<WaterStorageSchedulingTotalForm> list = waterStorageSchedulingTotalFormService.list();

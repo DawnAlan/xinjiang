@@ -1,5 +1,6 @@
 package com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuota.controller;
 
+import com.cj.common.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuota.bean.req.IrrigationQuotaListReq;
 import com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuota.entity.IrrigationQuota;
@@ -39,35 +40,40 @@ public class IrrigationQuotaController {
 
 
     @ApiOperationSupport(order = 1)
-    @ApiOperation("新增")
+    @ApiOperation("灌溉额度表新增")
+    @CommonLog(value = "灌溉额度表新增")
     @PostMapping("/add")
     public RestResponse add(@RequestBody IrrigationQuota irrigationQuota) {
         return irrigationQuotaService.add(irrigationQuota);
     }
 
     @ApiOperationSupport(order = 2)
-    @ApiOperation("查询列表")
+    @ApiOperation("灌溉额度表查询列表")
+    @CommonLog(value = "灌溉额度表查询列表")
     @PostMapping("/selectList")
     public RestResponse selectList(@RequestBody IrrigationQuotaListReq req) {
         return irrigationQuotaService.selectList(req);
     }
 
     @ApiOperationSupport(order = 3)
-    @ApiOperation("删除")
+    @ApiOperation("灌溉额度表删除")
+    @CommonLog(value = "灌溉额度表删除")
     @GetMapping("/delete")
     public RestResponse delete(@RequestParam(value = "id") String id) {
         return irrigationQuotaService.delete(id);
     }
 
     @ApiOperationSupport(order = 4)
-    @ApiOperation("修改")
+    @ApiOperation("灌溉额度表修改")
+    @CommonLog(value = "灌溉额度表修改")
     @PostMapping("/update")
     public RestResponse update(@RequestBody IrrigationQuota irrigationQuota) {
         return irrigationQuotaService.update(irrigationQuota);
     }
 
     @ApiOperationSupport(order = 5)
-    @ApiOperation("统计")
+    @ApiOperation("灌溉额度表统计")
+    @CommonLog(value = "灌溉额度表统计")
     @PostMapping("/statistics")
     public RestResponse statistics(@RequestBody StatisticsReq req) {
         return irrigationQuotaDetailsService.statistics(req);

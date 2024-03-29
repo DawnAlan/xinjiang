@@ -2,6 +2,7 @@ package com.cj.waterresources.func.modular.waterPrice.paymentWaterFees.controlle
 
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.cj.common.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.cj.waterresources.func.modular.waterPrice.paymentWaterFees.bean.req.PaymentWaterFeesAddReq;
 import com.cj.waterresources.func.modular.waterPrice.paymentWaterFees.bean.req.PaymentWaterFeesSelectListReq;
@@ -31,21 +32,24 @@ public class PaymentWaterFeesController{
     private PaymentWaterFeesService paymentWaterFeesService;
 
     @ApiOperationSupport(order = 1)
-    @ApiOperation("删除")
+    @ApiOperation("水费缴纳管理模块删除")
+    @CommonLog(value = "水费缴纳管理模块删除")
     @GetMapping("/delete")
     public RestResponse delete(@RequestParam("id") String id) {
         return paymentWaterFeesService.delete(id);
     }
 
     @ApiOperationSupport(order = 2)
-    @ApiOperation("新增")
+    @ApiOperation("水费缴纳管理模块新增")
+    @CommonLog(value = "水费缴纳管理模块新增")
     @PostMapping("/insert")
     public RestResponse insert(@RequestBody PaymentWaterFeesAddReq req) {
         return paymentWaterFeesService.paymentWaterFeesAdd(req);
     }
 
     @ApiOperationSupport(order = 3)
-    @ApiOperation("查询列表")
+    @ApiOperation("水费缴纳管理模块查询列表")
+    @CommonLog(value = "水费缴纳管理模块查询列表")
     @PostMapping("/select")
     public RestResponse<IPage<PaymentWaterFeesSelectListRes>> select(@RequestBody PaymentWaterFeesSelectListReq req) {
         return paymentWaterFeesService.paymentWaterFeesSelectList(req);

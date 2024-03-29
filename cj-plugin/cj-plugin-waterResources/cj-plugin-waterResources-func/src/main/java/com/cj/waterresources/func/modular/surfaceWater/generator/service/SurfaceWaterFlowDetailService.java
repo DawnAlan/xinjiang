@@ -513,9 +513,9 @@ public class SurfaceWaterFlowDetailService extends ServiceImpl<SurfaceWaterFlowD
             sum1.setName(1);
             sum2.setName(2);
             sum3.setName(3);
-            sum1.setValue(BigDecimal.valueOf(deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum() * 86400 / 10000));
-            sum2.setValue(BigDecimal.valueOf(deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum() * 86400 / 10000));
-            sum3.setValue(BigDecimal.valueOf(deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum() * 86400 / 10000));
+            sum1.setValue(deciles.size()<1?null:BigDecimal.valueOf(deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum() * 86400 / 10000));
+            sum2.setValue(deciles.size()<2?null:BigDecimal.valueOf(deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum() * 86400 / 10000));
+            sum3.setValue(deciles.size()<3?null:BigDecimal.valueOf(deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum() * 86400 / 10000));
             surfaceWaterFlowDetailVos.add(sum1);
             surfaceWaterFlowDetailVos.add(sum2);
             surfaceWaterFlowDetailVos.add(sum3);
