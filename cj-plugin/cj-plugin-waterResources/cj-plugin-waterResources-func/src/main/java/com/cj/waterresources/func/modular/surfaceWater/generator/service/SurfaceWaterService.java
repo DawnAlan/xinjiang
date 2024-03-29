@@ -1,31 +1,31 @@
 package com.cj.waterresources.func.modular.surfaceWater.generator.service;
 
 import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.cj.common.util.RedisUtil;
 import com.cj.model.func.core.util.MinioUtils;
 import com.cj.waterresources.func.modular.surfaceWater.entity.QueryListReq;
 import com.cj.waterresources.func.modular.surfaceWater.entity.SurfaceWaterReq;
+import com.cj.waterresources.func.modular.surfaceWater.entity.TypicalYearDetailReq;
+import com.cj.waterresources.func.modular.surfaceWater.entity.TypicalYearReq;
 import com.cj.waterresources.func.modular.surfaceWater.generator.domain.*;
 import com.cj.waterresources.func.modular.surfaceWater.generator.mapper.SurfaceWaterMapper;
 import com.cj.waterresources.func.modular.surfaceWater.vo.SurfaceWaterVo;
+import com.cj.waterresources.func.modular.surfaceWater.vo.TypicalYearVo;
 import io.minio.ObjectWriteResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.*;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /**
@@ -44,6 +44,7 @@ public class SurfaceWaterService extends ServiceImpl<SurfaceWaterMapper, Surface
     private final SurfaceWaterWaterregimenDetailService waterregimenDetailService;
 
     private final MinioUtils minioUtils;
+    private final RedisUtil redisUtil;
 
     public SurfaceWater add(MultipartFile file, SurfaceWaterReq surfaceWaterReq) {
         String filePath = uploadFile(file);
@@ -182,23 +183,79 @@ public class SurfaceWaterService extends ServiceImpl<SurfaceWaterMapper, Surface
         List<Integer> yearlist = new ArrayList<>();
         // 获取当前日期
         LocalDate currentDate = LocalDate.now();
-        for (int i = 1989; i <= currentDate.getYear(); i++) {
-            yearlist.add( i);
+        for (int i = 1989; i < currentDate.getYear(); i++) {
+            yearlist.add(i);
         }
 
         List<Map<String, Object>> result = surfaceWaterMapper.annualList(yearlist);
-//        for (Map<String, Object> row : result) {
-//            for (Map.Entry<String, Object> entry : row.entrySet()) {
-//                String columnName = entry.getKey();
-//                Object columnValue = entry.getValue();
-//                // 处理列名和对应值
-//            }
-//
-//
-//        }
-
         return result;
 
+    }
+
+
+    public TypicalYearVo typicalYear(TypicalYearReq input) {
+        if (input.getYear() == null) {
+            String s = (String) redisUtil.get("typicalYear");
+            return JSONObject.parseObject(s,TypicalYearVo.class);
+        }
+        // 找到最大值所在的行
+        OptionalDouble maxValue = input.getTypicalYearDetailReqList().stream()
+                .mapToDouble(TypicalYearDetailReq::getAvgFlow)
+                .max();
+        TypicalYearDetailReq maxDataPoint = maxValue.isPresent() ?
+                input.getTypicalYearDetailReqList().stream()
+                        .filter(dp -> dp.getAvgFlow() == maxValue.getAsDouble())
+                        .findFirst()
+                        .orElse(null) : null;
+
+        // 找到最小值所在的行
+        OptionalDouble minValue = input.getTypicalYearDetailReqList().stream()
+                .mapToDouble(TypicalYearDetailReq::getAvgFlow)
+                .min();
+        TypicalYearDetailReq minDataPoint = minValue.isPresent() ?
+                input.getTypicalYearDetailReqList().stream()
+                        .filter(dp -> dp.getAvgFlow() == minValue.getAsDouble())
+                        .findFirst()
+                        .orElse(null) : null;
+
+        // 计算平均值并找到最接近平均值的行
+        double avgValue = input.getTypicalYearDetailReqList().stream()
+                .mapToDouble(TypicalYearDetailReq::getAvgFlow)
+                .average()
+                .orElse(0.0);
+        TypicalYearDetailReq closestToAvgDataPoint = input.getTypicalYearDetailReqList().stream()
+                .min((dp1, dp2) -> Double.compare(Math.abs(dp1.getAvgFlow() - avgValue), Math.abs(dp2.getAvgFlow() - avgValue)))
+                .orElse(null);
+
+        Double bbb = input.getPredictionYear().doubleValue();
+
+        TypicalYearDetailReq typicalDataPoint = input.getTypicalYearDetailReqList().stream()
+                .min((dp1, dp2) -> Double.compare(Math.abs(dp1.getSumWater() - bbb), Math.abs(dp2.getSumWater() - bbb)))
+                .orElse(null);
+
+        TypicalYearVo typicalYearVo = new TypicalYearVo();
+        typicalYearVo.setPredictionYear(input.getYear());
+        typicalYearVo.setPrediction3(input.getPrediction3());
+        typicalYearVo.setPrediction4(input.getPrediction4());
+        typicalYearVo.setPrediction5(input.getPrediction5());
+        typicalYearVo.setYear(input.getYear());
+
+        typicalYearVo.setTypicalYear(typicalDataPoint.getYear());
+        typicalYearVo.setTypicalFlow(typicalDataPoint.getAvgFlow());
+        typicalYearVo.setTypicalWater(typicalDataPoint.getAvgWater());
+        typicalYearVo.setAvgYear(closestToAvgDataPoint.getYear());
+        typicalYearVo.setAvgFlow(closestToAvgDataPoint.getAvgFlow());
+        typicalYearVo.setAvgWater(closestToAvgDataPoint.getAvgWater());
+        typicalYearVo.setMaxYear(maxDataPoint.getYear());
+        typicalYearVo.setMaxFlow(maxDataPoint.getAvgFlow());
+        typicalYearVo.setMaxWater(maxDataPoint.getAvgWater());
+        typicalYearVo.setMinYear(minDataPoint.getYear());
+        typicalYearVo.setMinFlow(minDataPoint.getAvgFlow());
+        typicalYearVo.setMinWater(minDataPoint.getAvgWater());
+        redisUtil.del("typicalYear");
+        redisUtil.set("typicalYear", JSONObject.toJSONString(typicalYearVo));
+
+        return typicalYearVo;
     }
 }
 
