@@ -73,8 +73,8 @@ public class Containment {
             double out_tth=Qout_tth.get(0);
             double V1_lzz=V_lzz.get(0);
             double V1_tth=V_tth.get(0);
-            double V0_lzz=V1_lzz-t*(in_lzz-out_lzz);
-            double V0_tth=V1_tth-t*(in_tth-out_tth);
+            double V0_lzz=V1_lzz-t*(in_lzz-out_lzz)/10000;
+            double V0_tth=V1_tth-t*(in_tth-out_tth)/10000;
 
 
             double a_lzz = BigDecimal.valueOf(FindMax(V_lzz)-V0_lzz).setScale(2, RoundingMode.HALF_UP).doubleValue();

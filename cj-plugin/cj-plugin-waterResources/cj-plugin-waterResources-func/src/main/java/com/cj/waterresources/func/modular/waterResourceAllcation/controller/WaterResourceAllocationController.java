@@ -87,11 +87,7 @@ public class WaterResourceAllocationController {
     @ApiOperationSupport(order = 7)
     @ApiOperation("调度方案对比")
     @PostMapping("/compare")
-    public RestResponse<WaterAllocationComparisonSelectionRes> compare(@RequestParam(value = "idA",required = false)String idA, @RequestParam(value="idB",required = false)String idB,@RequestParam(value = "idC",required = false) String idC) {
-        List<String> ids = new ArrayList<>();
-        ids.add(idA);
-        ids.add(idB);
-        ids.add(idC);
+    public RestResponse<WaterAllocationComparisonSelectionRes> compare(@RequestBody List<String> ids) {
         return waterResourceAllocationService.compare(ids);
     }
 }
