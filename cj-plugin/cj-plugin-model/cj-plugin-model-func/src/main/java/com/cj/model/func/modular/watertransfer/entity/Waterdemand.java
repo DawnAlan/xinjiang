@@ -22,6 +22,4 @@ public class Waterdemand {
     private String colName;
     //子节点
     private int children;
-
-
 }

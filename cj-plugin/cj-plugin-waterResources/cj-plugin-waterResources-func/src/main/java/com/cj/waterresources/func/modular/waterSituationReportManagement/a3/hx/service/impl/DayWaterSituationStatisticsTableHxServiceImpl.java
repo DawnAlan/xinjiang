@@ -255,6 +255,13 @@ public class DayWaterSituationStatisticsTableHxServiceImpl extends ServiceImpl<D
         boolean b = this.updateBatchById(dayWaterSituationStatisticsTableHxList);
         if (b) {
             if(dayWaterSituationStatisticsTableHxList.get(0).getTime().equals("今日均")){
+                dayWaterSituationStatisticsTableHxList.forEach(t->{
+                    String tableParamString = (String)redisUtil.get("trendsTableParam:object:"+t.getTableHeadId());
+                    TrendsTableParam tableParam = JSONObject.parseObject(tableParamString, TrendsTableParam.class);
+                    if(null != tableParam && !tableParam.getParamName().equals("合计")){
+                        redisUtil.set("A3:data:hx:waterFee:today:"+sdf.format(t.getRecordTime())+":"+tableParam.getUnitId(),t.getV());
+                    }
+                });
                 updateYesterdayData(dayWaterSituationStatisticsTableHxList.get(0).getRecordTime(),dayWaterSituationStatisticsTableHxList);
             }
 
@@ -370,6 +377,12 @@ public class DayWaterSituationStatisticsTableHxServiceImpl extends ServiceImpl<D
         if(!dayWaterSituationStatisticsTableHxList.isEmpty()){
             dayWaterSituationStatisticsTableHxList.forEach(t->{
                 t.setV(hxList.stream().filter(p->p.getTableHeadId().equals(t.getTableHeadId()) && p.getV() !=null).map(DayWaterSituationStatisticsTableHx::getV).reduce(Double::sum).orElse(0.00));
+                String tableParamString = (String)redisUtil.get("trendsTableParam:object:"+t.getTableHeadId());
+                TrendsTableParam tableParam = JSONObject.parseObject(tableParamString, TrendsTableParam.class);
+                if(null != tableParam && !tableParam.getParamName().equals("合计")){
+                    redisUtil.set("A3:data:hx:yesterday:"+t.getRecordTime()+":"+tableParam.getUnitId(),t.getV());
+                    redisUtil.set("A3:data:hx:yesterday:forPlan:"+tableParam.getParamName(),t.getV());
+                }
             });
             this.updateBatchById(dayWaterSituationStatisticsTableHxList);
         }

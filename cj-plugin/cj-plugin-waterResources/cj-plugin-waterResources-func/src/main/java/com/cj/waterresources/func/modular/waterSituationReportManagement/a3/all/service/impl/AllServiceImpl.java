@@ -309,7 +309,7 @@ public class AllServiceImpl implements AllService {
             mk = (String) redisUtil.get("trendsTableParam:list");
         }
         List<TrendsTableParam> trendsTableParamList = JSONObject.parseArray(mk, TrendsTableParam.class);
-        List<TrendsTableParam> collect = trendsTableParamList.stream().filter(t -> t.getUnitId().equals(req.getId())).collect(Collectors.toList());
+        List<TrendsTableParam> collect = trendsTableParamList.stream().filter(t ->t.getUnitId()!=null && t.getUnitId().equals(req.getId())).collect(Collectors.toList());
         if(collect.isEmpty()){
             return null;
         }
@@ -319,7 +319,7 @@ public class AllServiceImpl implements AllService {
             if(dayWaterSituationStatisticsTableHds.isEmpty()){
                 return null;
             }else {
-                dayWaterSituationStatisticsTableHds.forEach(t->{
+                dayWaterSituationStatisticsTableHds.stream().filter(t->t.getV()!=null).collect(Collectors.toList()).forEach(t->{
                     HydrographRes res = new HydrographRes();
                     res.setName((String)redisUtil.get("trendsTableParam:name:"+t.getTableHeadId()));
                     res.setFlow(t.getV());
@@ -333,7 +333,7 @@ public class AllServiceImpl implements AllService {
             if(dayWaterSituationStatisticsTableHxes.isEmpty()){
                 return null;
             }else {
-                dayWaterSituationStatisticsTableHxes.forEach(t->{
+                dayWaterSituationStatisticsTableHxes.stream().filter(t->t.getV()!=null).collect(Collectors.toList()).forEach(t->{
                     HydrographRes res = new HydrographRes();
                     res.setName((String)redisUtil.get("trendsTableParam:name:"+t.getTableHeadId()));
                     res.setFlow(t.getV());
@@ -347,7 +347,7 @@ public class AllServiceImpl implements AllService {
             if(dayWaterSituationStatisticsTableQs.isEmpty()){
                 return null;
             }else {
-                dayWaterSituationStatisticsTableQs.forEach(t->{
+                dayWaterSituationStatisticsTableQs.stream().filter(t->t.getV()!=null).collect(Collectors.toList()).forEach(t->{
                     HydrographRes res = new HydrographRes();
                     res.setName((String)redisUtil.get("trendsTableParam:name:"+t.getTableHeadId()));
                     res.setFlow(t.getV());
@@ -361,7 +361,7 @@ public class AllServiceImpl implements AllService {
             if(dayWaterSituationStatisticsTableQsLhs.isEmpty()){
                 return null;
             }else {
-                dayWaterSituationStatisticsTableQsLhs.forEach(t->{
+                dayWaterSituationStatisticsTableQsLhs.stream().filter(t->t.getV()!=null).collect(Collectors.toList()).forEach(t->{
                     HydrographRes res = new HydrographRes();
                     res.setName((String)redisUtil.get("trendsTableParam:name:"+t.getTableHeadId()));
                     res.setFlow(t.getV());
@@ -375,7 +375,7 @@ public class AllServiceImpl implements AllService {
             if(dayWaterSituationStatisticsTableTths.isEmpty()){
                 return null;
             }else {
-                dayWaterSituationStatisticsTableTths.forEach(t->{
+                dayWaterSituationStatisticsTableTths.stream().filter(t->t.getV()!=null).collect(Collectors.toList()).forEach(t->{
                     HydrographRes res = new HydrographRes();
                     res.setName((String)redisUtil.get("trendsTableParam:name:"+t.getTableHeadId()));
                     res.setFlow(t.getV());
@@ -389,7 +389,7 @@ public class AllServiceImpl implements AllService {
             if(dayWaterSituationStatisticsTableLzzes.isEmpty()){
                 return null;
             }else {
-                dayWaterSituationStatisticsTableLzzes.forEach(t->{
+                dayWaterSituationStatisticsTableLzzes.stream().filter(t->t.getV()!=null).collect(Collectors.toList()).forEach(t->{
                     HydrographRes res = new HydrographRes();
                     res.setName((String)redisUtil.get("trendsTableParam:name:"+t.getTableHeadId()));
                     res.setFlow(t.getV());
@@ -505,7 +505,7 @@ public class AllServiceImpl implements AllService {
                 dateListInputFlow.add(parse);
             }
             List<Date> collectInputFlow = dateListInputFlow.stream().sorted(Comparator.comparing(Date::getDate, Comparator.reverseOrder())).collect(Collectors.toList());
-            Double inputFlow = (Double) redisUtil.get("lzz:input:"+sdf1.format(collectInputFlow.get(0)));
+            Double inputFlow = collectInputFlow.size()>0?(Double) redisUtil.get("lzz:input:"+sdf1.format(collectInputFlow.get(0))):null;
             lzz.setInputFlow(inputFlow);
             Set<String> allKeysOut = redisUtil.getAllKeys("lzz:out:"+endTime);
             List<Date> dateListOut = new ArrayList<>();
@@ -517,7 +517,7 @@ public class AllServiceImpl implements AllService {
                 dateListOut.add(parse);
             }
             List<Date> collectOut = dateListInputFlow.stream().sorted(Comparator.comparing(Date::getDate, Comparator.reverseOrder())).collect(Collectors.toList());
-            Double out = (Double) redisUtil.get("lzz:out:"+sdf1.format(collectOut.get(0)));
+            Double out = collectOut.size()>0?(Double) redisUtil.get("lzz:out:"+sdf1.format(collectOut.get(0))):null;
             lzz.setOutputFlow(out);
             resList.add(lzz);
         }
@@ -539,6 +539,18 @@ public class AllServiceImpl implements AllService {
             List<Date> collectInputFlow = dateListInputFlow.stream().sorted(Comparator.comparing(Date::getDate, Comparator.reverseOrder())).collect(Collectors.toList());
             Double inputFlow = (Double) redisUtil.get("irrigatedPlatform:sq:tth:input:"+sdf1.format(collectInputFlow.get(0)));
             tth.setInputFlow(inputFlow);
+            Set<String> allKeysOutputFlow = redisUtil.getAllKeys("A3:tth:out:"+endTime);
+            List<Date> dateListOutputFlow = new ArrayList<>();
+            for(String s:allKeysOutputFlow){
+                String[] split1 = s.split(" ");
+                String[] split2 = split1[0].split(":");
+                String dateTemp =split2[split2.length-1]+" "+split1[split1.length-1];
+                Date parse = sdf1.parse(dateTemp);
+                dateListOutputFlow.add(parse);
+            }
+            List<Date> collectOutputFlow = dateListOutputFlow.stream().sorted(Comparator.comparing(Date::getDate, Comparator.reverseOrder())).collect(Collectors.toList());
+            Double outputFlow = collectOutputFlow.size()>0?(Double) redisUtil.get("A3:tth:out:"+sdf1.format(collectOutputFlow.get(0))):null;
+            tth.setOutputFlow(outputFlow);
             resList.add(tth);
         }
         if(resList.isEmpty()){

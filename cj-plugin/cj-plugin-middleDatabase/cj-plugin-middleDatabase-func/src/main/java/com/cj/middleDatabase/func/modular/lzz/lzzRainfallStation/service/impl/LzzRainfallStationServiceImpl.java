@@ -40,13 +40,13 @@ public class LzzRainfallStationServiceImpl extends ServiceImpl<LzzRainfallStatio
     }
 
     @Override
-    public List<LzzRainfallStation> selectYesterday(String name, String time) {
+    public List<LzzRainfallStation> selectYesterday1(String name, String time) {
         return this.baseMapper.selectYesterday(name, time);
     }
 
     @Override
     public List<LzzRainfallStation> selectYesterday(String time) {
-        return this.baseMapper.selectYesterday(time);
+        return this.baseMapper.selectYesterday1(time);
     }
 
     @Override

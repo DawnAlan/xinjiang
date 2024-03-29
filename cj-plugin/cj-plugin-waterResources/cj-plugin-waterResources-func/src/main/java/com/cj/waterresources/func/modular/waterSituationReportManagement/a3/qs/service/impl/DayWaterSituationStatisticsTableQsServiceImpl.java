@@ -339,6 +339,13 @@ public class DayWaterSituationStatisticsTableQsServiceImpl extends ServiceImpl<D
         boolean b = this.updateBatchById(dayWaterSituationStatisticsTableQsList);
         if (b) {
             if(dayWaterSituationStatisticsTableQsList.get(0).getTime().equals("今日均")){
+                dayWaterSituationStatisticsTableQsList.forEach(t->{
+                    String tableParamString = (String)redisUtil.get("trendsTableParam:object:"+t.getTableHeadId());
+                    TrendsTableParam tableParam = JSONObject.parseObject(tableParamString, TrendsTableParam.class);
+                    if(null != tableParam && !tableParam.getParamName().equals("合计")){
+                        redisUtil.set("A3:data:qs:waterFee:today:"+sdf.format(t.getRecordTime())+":"+tableParam.getUnitId(),t.getV());
+                    }
+                });
                 updateYesterdayData(dayWaterSituationStatisticsTableQsList.get(0).getRecordTime(),dayWaterSituationStatisticsTableQsList);
             }
             return RestResponse.ok();
@@ -491,6 +498,12 @@ public class DayWaterSituationStatisticsTableQsServiceImpl extends ServiceImpl<D
         if(!dayWaterSituationStatisticsTableQsList.isEmpty()){
             dayWaterSituationStatisticsTableQsList.forEach(t->{
                 t.setV(qsList.stream().filter(p->p.getTableHeadId().equals(t.getTableHeadId()) && p.getV() !=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00));
+                String tableParamString = (String)redisUtil.get("trendsTableParam:object:"+t.getTableHeadId());
+                TrendsTableParam tableParam = JSONObject.parseObject(tableParamString, TrendsTableParam.class);
+                if(null != tableParam && !tableParam.getParamName().equals("合计")){
+                    redisUtil.set("A3:data:qs:yesterday:"+t.getRecordTime()+":"+tableParam.getUnitId(),t.getV());
+                    redisUtil.set("A3:data:qs:yesterday:forPlan:"+tableParam.getParamName(),t.getV());
+                }
             });
             this.updateBatchById(dayWaterSituationStatisticsTableQsList);
         }

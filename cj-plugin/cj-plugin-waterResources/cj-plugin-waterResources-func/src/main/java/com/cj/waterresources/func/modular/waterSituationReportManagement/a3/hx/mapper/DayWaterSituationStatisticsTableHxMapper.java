@@ -33,7 +33,7 @@ public interface DayWaterSituationStatisticsTableHxMapper extends BaseMapper<Day
     List<DayWaterSituationStatisticsTableHx> selectInfoAfterDayList(@Param("date")String date);
 
 
-    @Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_HX WHERE TABLE_HEAD_ID = #{tableHeadId} and  TIME != '昨日均' and  TO_CHAR(RECORD_TIME,'YYYY-MM-DD') between = #{startTime} and #{endTime}")
+    @Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_HX WHERE TABLE_HEAD_ID = #{tableHeadId} and  TIME != '昨日均' and TIME != '今日均' and  TO_CHAR(RECORD_TIME,'YYYY-MM-DD') between  #{startTime} and #{endTime}")
     List<DayWaterSituationStatisticsTableHx> selectList2(@Param("tableHeadId")String tableHeadId, @Param("startTime")String startTime, @Param("endTime")String endTime);
 
     @Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_HX WHERE TIME = #{time} and  TO_CHAR(RECORD_TIME,'YYYY-MM-DD') = #{recordTime}")

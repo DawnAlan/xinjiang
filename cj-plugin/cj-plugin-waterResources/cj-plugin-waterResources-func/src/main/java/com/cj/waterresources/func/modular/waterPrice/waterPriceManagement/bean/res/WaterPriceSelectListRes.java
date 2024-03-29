@@ -56,6 +56,9 @@ public class WaterPriceSelectListRes implements Serializable {
     @ApiModelProperty(value = "第三阶段价格")
     private Double thirdTierPrice;
 
+    @ApiModelProperty(value = "水资源费")
+    private Double waterResourcePrice;
+
     @ApiModelProperty(value = "子节点")
     private List<WaterPriceSelectListRes> children;
 }

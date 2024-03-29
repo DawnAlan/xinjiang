@@ -215,7 +215,7 @@ public class DayWaterSituationStatisticsTableTthServiceImpl extends ServiceImpl<
             mk = (String) redisUtil.get("trendsTableParam:list");
         }
         List<TrendsTableParam> trendsTableParamListTemp = JSONObject.parseArray(mk, TrendsTableParam.class);
-        List<TrendsTableParam> trendsTableParamList = trendsTableParamListTemp.stream().filter(t -> t.getUseType() == 1).collect(Collectors.toList());
+        List<TrendsTableParam> trendsTableParamList = trendsTableParamListTemp.stream().filter(t -> t.getUseType() == 1 && t.getUseStation().equals("头屯河水库")).collect(Collectors.toList());
         //计算行合计
         if(null != totalIdToStationList && totalIdToStationList.size()>0){
             Double total = 0.0;
@@ -275,6 +275,13 @@ public class DayWaterSituationStatisticsTableTthServiceImpl extends ServiceImpl<
         if (b) {
             if(dayWaterSituationStatisticsTableTthList.get(0).getTime().equals("今日均")){
                 updateYesterdayData(dayWaterSituationStatisticsTableTthList.get(0).getRecordTime(),dayWaterSituationStatisticsTableTthList);
+            }else {
+                TrendsTableParam hdTableId = trendsTableParamList.stream().filter(t -> t.getParamName().equals("河道流量")).collect(Collectors.toList()).get(0);
+                dayWaterSituationStatisticsTableTthList.forEach(t->{
+                    if(t.getTableHeadId().equals(hdTableId.getId())){
+                        redisUtil.set("A3:tth:out:"+sdf.format(t.getRecordTime())+" "+t.getTime(),t.getV());
+                    }
+                });
             }
             return RestResponse.ok();
         }else {

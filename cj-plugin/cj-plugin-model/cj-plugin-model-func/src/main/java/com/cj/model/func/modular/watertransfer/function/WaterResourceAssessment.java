@@ -36,6 +36,7 @@ public class WaterResourceAssessment {
         if (areAllDateTypeEqual(timePeriodType)==false){
             throw new CommonException("请检查各方案时段类型是否相同");
         }
+        DecimalFormat da = new DecimalFormat("#.00");
         double[]dischargeLzz=new double[reqList.size()];
         double[]dischargeTth=new double[reqList.size()];
         double[]storgeAll=new double[reqList.size()];
@@ -51,13 +52,13 @@ public class WaterResourceAssessment {
             dischargeLzz[i] =storageAndDischarge(reqList.get(i),data)[0];
             dischargeTth[i] =storageAndDischarge(reqList.get(i),data)[1];
             storgeAll[i]=storageAndDischarge(reqList.get(i),data)[2];
-            inflowWater[i]=getInflowWater(reqList.get(i).getExcel1Data());
-            waterDemand[i]=getWaterDemand(reqList.get(i).getExcel1Data());
-            wasteWater[i]=getWasteWater(reqList.get(i).getExcel1Data());
-            ecologyWater[i]=getEcologyWater(reqList.get(i).getExcel2Data());
-            waterLack[i]=getSum(reqList.get(i).getExcel2Data())[1];
+            inflowWater[i]=Double.parseDouble(da.format(getInflowWater(reqList.get(i).getExcel1Data())));
+            waterDemand[i]=Double.parseDouble(da.format(getWaterDemand(reqList.get(i).getExcel1Data())));
+            wasteWater[i]=Double.parseDouble(da.format(getWasteWater(reqList.get(i).getExcel1Data())));
+            ecologyWater[i]=Double.parseDouble(da.format(getEcologyWater(reqList.get(i).getExcel2Data())));
+            waterLack[i]=Double.parseDouble(da.format(getSum(reqList.get(i).getExcel2Data())[1]));
         }
-        DecimalFormat da = new DecimalFormat("#.00");
+
         double bestUtilizationRate=(inflowWater[0]-wasteWater[0])/inflowWater[0];
         double n=0;
         for (int i=0;i<reqList.size();i++){

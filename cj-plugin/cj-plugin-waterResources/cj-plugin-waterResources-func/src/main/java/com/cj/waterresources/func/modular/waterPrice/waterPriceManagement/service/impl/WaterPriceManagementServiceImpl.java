@@ -57,6 +57,7 @@ public class WaterPriceManagementServiceImpl extends ServiceImpl<WaterPriceManag
                     set(req.getSecondTierPrice()!=null,WaterPriceManagement::getSecondTierPrice, req.getSecondTierPrice()).
                     set(req.getThirdLevelStandard()!=null,WaterPriceManagement::getThirdLevelStandard, req.getThirdLevelStandard()).
                     set(req.getThirdTierPrice()!=null,WaterPriceManagement::getThirdTierPrice, req.getThirdTierPrice()).
+                    set(req.getWaterResourcePrice()!=null,WaterPriceManagement::getWaterResourcePrice, req.getWaterResourcePrice()).
                     in(WaterPriceManagement::getId, Arrays.stream(req.getIds().split(",")).collect(Collectors.toList())).update();
             if(update){
                 return RestResponse.ok("修改成功");

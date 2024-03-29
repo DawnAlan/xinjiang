@@ -43,14 +43,9 @@ public class InspectionInterface {
     //private final String token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MDUxNDc5MTIsInVzZXJuYW1lIjoia2pncyJ9.-BQgXhYiZzE6Uvss-qNMI6xYJEpq4D2WaAU781ZoG9I";
 
     private String getToken() {
-        String redisToken = (String)redisUtil.get(tokenRedisKey);
-        if(StringUtils.isEmpty(redisToken)) {
-            String data = RestTemplateUtil.getToken(getTokenPath + "?password="+password,null,null);
-            String token = JSONObject.parseObject(data).getString("result");
-            redisUtil.set(tokenRedisKey, token,30*60);
-            redisToken = token;
-        }
-        return redisToken;
+        String data = RestTemplateUtil.getToken(getTokenPath + "?password="+password,null,null);
+        String token = JSONObject.parseObject(data).getString("result");
+        return token;
     }
 
     private HttpHeaders getHeader() {
