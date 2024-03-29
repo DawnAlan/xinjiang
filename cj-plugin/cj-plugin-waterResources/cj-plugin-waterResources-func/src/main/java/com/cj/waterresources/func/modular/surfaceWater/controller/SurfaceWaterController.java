@@ -2,10 +2,7 @@ package com.cj.waterresources.func.modular.surfaceWater.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.cj.common.model.RestResponse;
-import com.cj.waterresources.func.modular.surfaceWater.entity.DelReq;
-import com.cj.waterresources.func.modular.surfaceWater.entity.QueryListReq;
-import com.cj.waterresources.func.modular.surfaceWater.entity.QueryReq;
-import com.cj.waterresources.func.modular.surfaceWater.entity.SurfaceWaterReq;
+import com.cj.waterresources.func.modular.surfaceWater.entity.*;
 import com.cj.waterresources.func.modular.surfaceWater.generator.domain.SurfaceWater;
 import com.cj.waterresources.func.modular.surfaceWater.generator.service.SurfaceWaterService;
 import com.cj.waterresources.func.modular.surfaceWater.vo.SurfaceWaterVo;
@@ -103,6 +100,17 @@ public class SurfaceWaterController {
     public RestResponse annualList() {
         try {
             return RestResponse.ok(surfaceWaterService.annualList());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return RestResponse.no("错误");
+        }
+    }
+
+    @ApiOperation(value = "典型年对比", notes = "典型年对比")
+    @PostMapping(value = "/typicalYear")
+    public RestResponse typicalYear(@RequestBody TypicalYearReq input) {
+        try {
+            return RestResponse.ok(surfaceWaterService.typicalYear(input));
         } catch (Exception e) {
             e.printStackTrace();
             return RestResponse.no("错误");

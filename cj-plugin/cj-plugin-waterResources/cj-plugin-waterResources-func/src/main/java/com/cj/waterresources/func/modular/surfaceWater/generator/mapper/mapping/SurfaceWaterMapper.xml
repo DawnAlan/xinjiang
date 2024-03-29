@@ -48,13 +48,13 @@
         )
         SELECT * FROM nbtable
         UNION ALL
-        SELECT NULL AS MONTH,'合计' AS period,
+        SELECT NULL AS MONTH,'流量合计' AS period,
         <foreach item="item" index="index" collection="yearlist" open="" separator="," close="">
             SUM("${item}") AS "${item}"
         </foreach>
         FROM nbtable
         UNION ALL
-        SELECT NULL AS MONTH,'平均' AS period,
+        SELECT NULL AS MONTH,'流量平均' AS period,
         <foreach item="item" index="index" collection="yearlist" open="" separator="," close="">
             ROUND(AVG("${item}"), 3) AS "${item}"
         </foreach>
@@ -62,13 +62,13 @@
         UNION ALL
         SELECT NULL AS MONTH,'水量合计' AS period,
         <foreach item="item" index="index" collection="yearlist" open="" separator="," close="">
-            ROUND(SUM("${item}")*8.64*365,3) AS "${item}"
+            ROUND(SUM("${item}")*8.64*365 / 100000000,3) AS "${item}"
         </foreach>
         FROM nbtable
         UNION ALL
         SELECT NULL AS MONTH,'水量平均' AS period,
         <foreach item="item" index="index" collection="yearlist" open="" separator="," close="">
-            ROUND(AVG("${item}")*8.64*365, 3) AS "${item}"
+            ROUND(AVG("${item}")*8.64*365 / 10000, 3) AS "${item}"
         </foreach>
         FROM nbtable
 
