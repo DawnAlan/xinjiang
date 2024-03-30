@@ -33,6 +33,7 @@ import com.cj.model.func.modular.FloodPredict.entity.IrrigatedHydrologyParam;
 import com.cj.model.func.modular.FloodPredict.entity.LzzHydrologyParam;
 import com.cj.model.func.modular.FloodPredict.entity.TemporaryXlsx;
 import com.cj.model.func.modular.FloodPredict.model.TouTunHe;
+import com.cj.model.func.modular.FloodPredict.utils.inputUtils;
 import com.cj.model.func.modular.entity.Flood;
 import io.minio.ObjectWriteResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -51,6 +52,8 @@ import java.util.stream.Collectors;
 
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+
+import static com.cj.model.func.modular.FloodPredict.utils.inputUtils.judgeDate;
 
 /**
 * @author July Lion
@@ -138,9 +141,14 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                         forcastInputParamNew.setPeriodTimeNum(incomingWaterForecast.getPeriodTimeNum());
                         forcastInputParamNew.setPeriodTimeStep(incomingWaterForecast.getPeriodTimeStep());
                         forcastInputParamNew.setPeriodTimeType(incomingWaterForecast.getPeriodTimeType());
-                        req.getRainFallDtos().forEach(t->t.setArea("面雨量"));
+                        if(!req.getIsSimulation()){
+                            req.getRainFallDtos().forEach(t->t.setArea("面雨量"));
+                        }
+                        forcastInputParamNew.setIsSimulation(req.getIsSimulation());
                         forcastInputParamNew.setRainFallDtos(req.getRainFallDtos());
-                        List<Date> dates = TouTunHe.judgeDate(incomingWaterForecast.getPredictionTime(),incomingWaterForecast.getPeriodTimeNum());
+                        forcastInputParamNew.setPreFlow(req.getPreFlow());
+                        forcastInputParamNew.setPreRainFall(req.getPreRainFall());
+                        List<Date> dates = inputUtils.judgeDate(incomingWaterForecast.getPredictionTime(),incomingWaterForecast.getPeriodTimeNum());
                         if(dates.isEmpty()){
                             LzzHydrologyParam lzzHydrologyParam = new LzzHydrologyParam();
                             lzzHydrologyParam.setThreeGaugingStation(lzzGaugingStationService.lambdaQuery().eq(LzzGaugingStation::getStationName,"3号桥水位站").list());

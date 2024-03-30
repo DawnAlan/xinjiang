@@ -7,6 +7,7 @@ import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hd.entity.DayWaterSituationStatisticsTableHd;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hx.entity.DayWaterSituationStatisticsTableHx;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.entity.DayWaterSituationStatisticsTableLzz;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.entity.DayWaterSituationStatisticsTableQsLh;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -48,5 +49,8 @@ public interface DayWaterSituationStatisticsTableLzzMapper extends BaseMapper<Da
 
     @Select("select RECORD_TIME,TIME,TABLE_HEAD_ID,V from DAY_WATER_SITUATION_STATISTICS_TABLE_LZZ WHERE TO_CHAR(RECORD_TIME,'YYYY-MM-DD') between #{startTime} and #{endTime}")
     List<DayWaterSituationStatisticsTableLzz> selectReportForms(@Param("startTime")String startTime, @Param("endTime")String endTime);
+
+    @Select("select table_head_id,v,END_TABLE_LIST from DAY_WATER_SITUATION_STATISTICS_TABLE_LZZ WHERE RECORD_TIME = #{date} and TIME != '今日均' and TIME != '昨日均' limit #{num} order by time desc ")
+    List<DayWaterSituationStatisticsTableLzz> selectListForTodayWaterSituation(@Param("date")String date, @Param("num") Integer num);
 }
 

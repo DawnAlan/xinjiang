@@ -11,8 +11,9 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import static com.cj.model.func.modular.FloodPredict.utils.DataUtils.DateCompare;
-import static com.cj.model.func.modular.FloodPredict.utils.DataUtils.duration;
+import static com.cj.model.func.modular.FloodPredict.utils.TimeUtils.DateCompare;
+import static com.cj.model.func.modular.FloodPredict.utils.TimeUtils.duration;
+
 
 public class dataProcessing {
 

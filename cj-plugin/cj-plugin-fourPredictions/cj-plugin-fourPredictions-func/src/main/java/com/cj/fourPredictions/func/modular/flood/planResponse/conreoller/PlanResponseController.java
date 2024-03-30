@@ -1,5 +1,6 @@
 package com.cj.fourPredictions.func.modular.flood.planResponse.conreoller;
 
+import com.cj.common.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.cj.fourPredictions.func.modular.flood.forecastEarlyWarning.bean.res.IncomingWaterForecast;
 import com.cj.fourPredictions.func.modular.flood.planResponse.bean.res.FloodControlOperation;
@@ -28,28 +29,32 @@ public class PlanResponseController {
     private PlanResponseService planResponseService;
 
     @ApiOperationSupport(order = 1)
-    @ApiOperation("根据来水预报id查询洪水调度方案列表")
+    @ApiOperation("防洪兴利-预案响应根据来水预报id查询洪水调度方案列表")
+    @CommonLog(value = "防洪兴利-预案响应根据来水预报id查询洪水调度方案列表")
     @GetMapping("/getFloodControlOperationListById")
     public RestResponse<List<FloodControlOperation>> getFloodControlOperationListById(@RequestParam(value = "id")String id) {
         return planResponseService.getFloodControlOperationListById(id);
     }
 
     @ApiOperationSupport(order = 2)
-    @ApiOperation("根据洪水调度方案id查询洪水调度方案部分信息")
+    @ApiOperation("防洪兴利-预案响应根据洪水调度方案id查询洪水调度方案部分信息")
+    @CommonLog(value = "防洪兴利-预案响应根据洪水调度方案id查询洪水调度方案部分信息")
     @GetMapping("/getFloodControlOperationFrontViewById")
     public RestResponse getFloodControlOperationFrontViewById(@RequestParam(value = "id")String id) {
         return planResponseService.getFloodControlOperationFrontViewById(id);
     }
 
     @ApiOperationSupport(order = 2)
-    @ApiOperation("根据洪水调度方案id查询洪水调度方案详情")
+    @ApiOperation("防洪兴利-预案响应根据洪水调度方案id查询洪水调度方案详情")
+    @CommonLog(value = "防洪兴利-预案响应根据洪水调度方案id查询洪水调度方案详情")
     @GetMapping("/getFloodControlOperationDetails")
     public RestResponse getFloodControlOperationDetails(@RequestParam(value = "id")String id) {
         return planResponseService.getFloodControlOperationDetails(id);
     }
 
     @ApiOperationSupport(order = 4)
-    @ApiOperation("获取场次来水预报模型列表")
+    @ApiOperation("防洪兴利-预案响应获取场次来水预报模型列表")
+    @CommonLog(value = "防洪兴利-预案响应获取场次来水预报模型列表")
     @GetMapping("/getProgrammeListForFloodControlOperation")
     public RestResponse<List<IncomingWaterForecast>> getProgrammeListForFloodControlOperation() {
         return planResponseService.getProgrammeListForFloodControlOperation();

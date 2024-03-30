@@ -230,7 +230,9 @@ public class ExcelTool {
 		Cell cell12 = row0.createCell(12);
 		cell12.setCellValue("FLOOD_LEVEL");//洪水等级
 		Cell cell13 = row0.createCell(13);
-		cell13.setCellValue("OUT_Q");//洪水等级
+		cell13.setCellValue("OUT_Q");//出库径流
+		Cell cell14 = row0.createCell(14);
+		cell14.setCellValue("WARNING_TIME");//超过警戒水位时间
 		// 先判断工作簿是否存在，不存在则创建，存在则继续填写
 		if (sheet != null) {
 			int nextRowNum = sheet.getLastRowNum() + 1;

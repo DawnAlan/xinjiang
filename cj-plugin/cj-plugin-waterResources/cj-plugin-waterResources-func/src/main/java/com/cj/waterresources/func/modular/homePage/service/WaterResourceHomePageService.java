@@ -87,7 +87,7 @@ public class WaterResourceHomePageService {
         list.stream()
                 .collect(Collectors.groupingBy(IrrigatedPlatformDataInfo::getMonitorName,
                         Collectors.maxBy((n1, n2) ->
-                                DateUtil.compare(DateUtil.parse(n1.getMonitorTime(), PATTERN_MINUTE_OF_DAY), DateUtil.parse(n2.getMonitorTime(), PATTERN_MINUTE_OF_DAY)))))
+                                DateUtil.compare(n1.getMonitorTime(), n2.getMonitorTime()))))
                 .forEach((k, v) -> {
                     String flow = "无数据", waterLevel = "无数据";
                     if (null != v.get().getSqMonitorFlow()) {
@@ -99,7 +99,7 @@ public class WaterResourceHomePageService {
                     if (null != v.get().getAvgWaterLevel()) {
                         waterLevel = v.get().getAvgWaterLevel().toString();
                     }
-                    waterSituationResList.add(new WaterSituationRes(k, DateUtil.parse(v.get().getMonitorTime(), PATTERN_MINUTE_OF_DAY), waterLevel, flow));
+                    waterSituationResList.add(new WaterSituationRes(k, v.get().getMonitorTime(), waterLevel, flow));
                 });
 
         return RestResponse.ok(waterSituationResList);

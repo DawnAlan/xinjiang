@@ -150,7 +150,7 @@ public class FloodHomePageService {
         list.stream()
                 .collect(Collectors.groupingBy(IrrigatedPlatformDataInfo::getMonitorName,
                         Collectors.maxBy((n1, n2) ->
-                                DateUtil.compare(DateUtil.parse(n1.getMonitorTime(), PATTERN_MINUTE_OF_DAY), DateUtil.parse(n2.getMonitorTime(), PATTERN_MINUTE_OF_DAY)))))
+                                DateUtil.compare(n1.getMonitorTime(), n2.getMonitorTime()))))
                 .forEach((k, v) -> {
                     String value = "0.000";
                     if (null != v.get().getSqMonitorFlow()) {
@@ -478,7 +478,7 @@ public class FloodHomePageService {
                 .apply(startTime != null, "monitor_time >= to_date({0}, 'yyyy-mm-dd hh24:mi:ss')", DateUtil.format(startTime, PATTERN_SECOND_OF_DAY))
                 .apply("SUBSTR(MONITOR_TIME, 12, 2) = '08'")
                 .list().stream()
-                .collect(Collectors.groupingBy(n -> n.getMonitorTime().substring(0, 10),
+                .collect(Collectors.groupingBy(n -> DateUtil.format(n.getMonitorTime(),PATTERN_SECOND_OF_DAY).substring(0, 10),
                         Collectors.averagingDouble(n -> n.getSqCapacity() == null ? 0 : n.getSqCapacity())));
 
         getFloodRetentionCapacityListAndDate(storageWaterLevelDaily).forEach((k, v) -> {

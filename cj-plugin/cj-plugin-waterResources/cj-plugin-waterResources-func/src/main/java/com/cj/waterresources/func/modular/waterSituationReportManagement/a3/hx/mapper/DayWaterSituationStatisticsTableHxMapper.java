@@ -38,5 +38,8 @@ public interface DayWaterSituationStatisticsTableHxMapper extends BaseMapper<Day
 
     @Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_HX WHERE TIME = #{time} and  TO_CHAR(RECORD_TIME,'YYYY-MM-DD') = #{recordTime}")
     List<DayWaterSituationStatisticsTableHx> selectListHave(@Param("time")String time, @Param("recordTime")String recordTime);
+
+    @Select("select table_head_id,v,END_TABLE_LIST from DAY_WATER_SITUATION_STATISTICS_TABLE_HX WHERE RECORD_TIME = #{date} and TIME != '今日均' and TIME != '昨日均' limit #{num} order by time desc ")
+    List<DayWaterSituationStatisticsTableHx> selectListForTodayWaterSituation(@Param("date")String date,@Param("num") Integer num);
 }
 

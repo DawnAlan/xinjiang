@@ -4,7 +4,6 @@ import com.cj.model.func.modular.FloodPredict.entity.ForcastInputParam;
 import com.cj.model.func.modular.FloodPredict.entity.ModelSaveEntity;
 import com.cj.model.func.modular.FloodPredict.entity.ParamsSetVO;
 import com.cj.model.func.modular.FloodPredict.entity.TemporaryXlsx;
-import com.cj.model.func.modular.FloodPredict.utils.DataUtils;
 import com.cj.model.func.modular.FloodPredict.utils.ExcelTool;
 import com.cj.model.func.modular.FloodPredict.utils.MathUtils;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
@@ -16,11 +15,20 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import static com.cj.model.func.modular.FloodPredict.utils.DataUtils.inputProcessing;
+
 public class MachineModel {
 
-    //模型训练
-    public List<TemporaryXlsx> ModelTrain(Object[][] modelTrainInput, ForcastInputParam param)
-            throws IOException, InvalidFormatException {
+    /**
+     * 数据驱动模型训练
+     * @param modelTrainInput
+     * @param param
+     * @return
+     * @throws IOException
+     * @throws InvalidFormatException
+     */
+    public List<TemporaryXlsx> modelTrain(Object[][] modelTrainInput, ForcastInputParam param) throws IOException, InvalidFormatException
+    {
         List<TemporaryXlsx> result = new ArrayList();
         ParamsSetVO pvo = pvoSet(modelTrainInput, param);//设置输入
 
@@ -89,7 +97,7 @@ public class MachineModel {
              *  分解后模型训练
              */
             LongForecast longForecast = new LongForecast();
-            ModelSaveEntity results = longForecast.LongTermForecast(pvo, false, true, input, maxminOld, para);
+            ModelSaveEntity results = longForecast.longTermForecast(pvo, false, true, input, maxminOld, para);
 
             for (int i = 0; i < results.getParams().size(); i++) {
                 paramdim1.add(Double.parseDouble(results.getParams().get(i).getParamDim1()));
@@ -163,7 +171,7 @@ public class MachineModel {
         }
 
     /**
-     * 参数确定
+     * 数据驱动模型参数确定
      * @param modelTrainInput
      * @param param
      * @return
@@ -215,103 +223,6 @@ public class MachineModel {
         return pvo;
     }
 
-    /**
-     * 输入数据的处理，求与均值之间的偏差
-     * @param input
-     * @param param
-     * @return
-     */
-    public  Object[][] inputProcessing(Object[][] input,ForcastInputParam param){
-        int month = 0;
-        for (int i = 0; i < input.length; i++) {
-            if (param.getLocation().equals("3号桥")||param.getLocation().equals("楼庄子")){
-                Date date = (Date) input[i][0];
-                month = DataUtils.getSpecificDate(date).get("月");
-                switch (month){
-                    case 1:
-                        input[i][1]=(1.29-(double) input[i][1])/1.29;
-                        break;
-                    case 2:
-                        input[i][1]=(1.19-(double) input[i][1])/1.19;
-                        break;
-                    case 3:
-                        input[i][1]=(1.77-(double) input[i][1])/1.77;
-                        break;
-                    case 4:
-                        input[i][1]=(2.78-(double) input[i][1])/2.78;
-                        break;
-                    case 5:
-                        input[i][1]=(8.13-(double) input[i][1])/8.13;
-                        break;
-                    case 6:
-                        input[i][1]=(17.92-(double) input[i][1])/17.92;
-                        break;
-                    case 7:
-                        input[i][1]=(22.05-(double) input[i][1])/22.05;
-                        break;
-                    case 8:
-                        input[i][1]=(16.13-(double) input[i][1])/16.13;
-                        break;
-                    case 9:
-                        input[i][1]=(7.84-(double) input[i][1])/7.84;
-                        break;
-                    case 10:
-                        input[i][1]=(3.85-(double) input[i][1])/3.85;
-                        break;
-                    case 11:
-                        input[i][1]=(2.23-(double) input[i][1])/2.23;
-                        break;
-                    case 12:
-                        input[i][1]=(1.52-(double) input[i][1])/1.52;
-                        break;
-                }
-            }
-            else if (param.getLocation().equals("楼头区间")){
-                double proportion = 0.058;
-                Date date = (Date) input[i][0];
-                month = DataUtils.getSpecificDate(date).get("月");
-                switch (month){
-                    case 1:
-                        input[i][1]=(1.29*proportion-(double) input[i][1])/1.29*proportion;
-                        break;
-                    case 2:
-                        input[i][1]=(1.19*proportion-(double) input[i][1])/1.19*proportion;
-                        break;
-                    case 3:
-                        input[i][1]=(1.77*proportion-(double) input[i][1])/1.77*proportion;
-                        break;
-                    case 4:
-                        input[i][1]=(2.78*proportion-(double) input[i][1])/2.78*proportion;
-                        break;
-                    case 5:
-                        input[i][1]=(8.13*proportion-(double) input[i][1])/8.13*proportion;
-                        break;
-                    case 6:
-                        input[i][1]=(17.92*proportion-(double) input[i][1])/17.92*proportion;
-                        break;
-                    case 7:
-                        input[i][1]=(22.05*proportion-(double) input[i][1])/22.05*proportion;
-                        break;
-                    case 8:
-                        input[i][1]=(16.13*proportion-(double) input[i][1])/16.13*proportion;
-                        break;
-                    case 9:
-                        input[i][1]=(7.84*proportion-(double) input[i][1])/7.84*proportion;
-                        break;
-                    case 10:
-                        input[i][1]=(3.85*proportion-(double) input[i][1])/3.85*proportion;
-                        break;
-                    case 11:
-                        input[i][1]=(2.23*proportion-(double) input[i][1])/2.23*proportion;
-                        break;
-                    case 12:
-                        input[i][1]=(1.52*proportion-(double) input[i][1])/1.52*proportion;
-                        break;
-                }
-            }
-        }
-        return input;
-    }
 
     /**
      * 方便检验训练成果

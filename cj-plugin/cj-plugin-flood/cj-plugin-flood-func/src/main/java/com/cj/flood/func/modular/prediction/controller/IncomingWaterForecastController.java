@@ -1,6 +1,7 @@
 package com.cj.flood.func.modular.prediction.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.cj.common.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.cj.flood.func.modular.prediction.bean.req.IncomingWaterForecastAddReq;
 import com.cj.flood.func.modular.prediction.bean.req.IncomingWaterForecastListReq;
@@ -28,42 +29,48 @@ public class IncomingWaterForecastController {
     private IncomingWaterForecastService incomingWaterForecastService;
 
     @ApiOperationSupport(order = 1)
-    @ApiOperation("新增")
+    @ApiOperation("来水预报模块新增")
+    @CommonLog(value = "来水预报模块新增")
     @PostMapping("/add")
     public RestResponse add(@RequestBody IncomingWaterForecastAddReq req) {
         return incomingWaterForecastService.add(req);
     }
 
     @ApiOperationSupport(order = 2)
-    @ApiOperation("查询可视化界面")
+    @ApiOperation("来水预报模块查询可视化界面")
+    @CommonLog(value = "来水预报模块查询可视化界面")
     @GetMapping("/details")
     public RestResponse details(@RequestParam(value = "id") String id) {
         return incomingWaterForecastService.selectDetails(id);
     }
 
     @ApiOperationSupport(order = 3)
-    @ApiOperation("删除")
+    @ApiOperation("来水预报模块删除")
+    @CommonLog(value = "来水预报模块删除")
     @GetMapping("/delete")
     public RestResponse delete(@RequestParam(value = "ids") String ids) {
         return incomingWaterForecastService.delete(ids);
     }
 
     @ApiOperationSupport(order = 4)
-    @ApiOperation("更新")
+    @ApiOperation("来水预报模块更新")
+    @CommonLog(value = "来水预报模块更新")
     @PostMapping("/update")
     public RestResponse update(@RequestBody IncomingWaterForecast incomingWaterForecast) {
         return incomingWaterForecastService.update(incomingWaterForecast);
     }
 
     @ApiOperationSupport(order = 5)
-    @ApiOperation("查询列表")
+    @ApiOperation("来水预报模块查询列表")
+    @CommonLog(value = "来水预报模块查询列表")
     @PostMapping("/selectList")
     public RestResponse<IPage<IncomingWaterForecast>> selectList(@RequestBody IncomingWaterForecastListReq req) {
         return incomingWaterForecastService.selectList(req);
     }
 
     @ApiOperationSupport(order = 6)
-    @ApiOperation("配水时间查询列表")
+    @ApiOperation("来水预报模块配水时间查询列表")
+    @CommonLog(value = "来水预报模块配水时间查询列表")
     @PostMapping("/selectListByTime")
     public RestResponse<List<IncomingWaterForecast>> selectListByTime(@RequestBody WaterResourceAllocationTimeReq req) {
         return incomingWaterForecastService.selectListByTime(req);

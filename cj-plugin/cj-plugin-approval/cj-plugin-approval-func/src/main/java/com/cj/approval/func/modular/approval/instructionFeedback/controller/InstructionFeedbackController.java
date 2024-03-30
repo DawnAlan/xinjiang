@@ -3,6 +3,7 @@ package com.cj.approval.func.modular.approval.instructionFeedback.controller;
 import com.cj.approval.func.modular.approval.approvalManagement.entity.ApprovalManagement;
 import com.cj.approval.func.modular.approval.instructionFeedback.entity.InstructionFeedback;
 import com.cj.approval.func.modular.approval.instructionFeedback.service.InstructionFeedbackService;
+import com.cj.common.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSupport;
@@ -32,14 +33,16 @@ public class InstructionFeedbackController {
     private InstructionFeedbackService instructionFeedbackService;
 
     @ApiOperationSupport(order = 1)
-    @ApiOperation("查询详情")
+    @ApiOperation("指令反馈表查询详情")
+    @CommonLog(value = "指令反馈表查询详情")
     @GetMapping("/selectListByInstructionViewId")
     public RestResponse<List<InstructionFeedback>> selectListByInstructionViewId(@RequestParam("id") String id) {
         return instructionFeedbackService.selectListByInstructionViewId(id);
     }
 
     @ApiOperationSupport(order = 2)
-    @ApiOperation("新增")
+    @ApiOperation("指令反馈表新增")
+    @CommonLog(value = "指令反馈表新增")
     @PostMapping("/add")
     public RestResponse add(@RequestBody InstructionFeedback instructionFeedback) {
         return instructionFeedbackService.add(instructionFeedback);

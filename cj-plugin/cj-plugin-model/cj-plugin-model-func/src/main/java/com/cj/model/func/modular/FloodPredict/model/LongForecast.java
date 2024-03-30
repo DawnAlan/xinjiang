@@ -11,9 +11,21 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import static com.cj.model.func.modular.FloodPredict.utils.Tools.array2String;
+
 
 public class LongForecast {
-    public ModelSaveEntity LongTermForecast(ParamsSetVO paramsSetVO, boolean isRealTime, boolean isHistory, Object[][] input, double[][] maxminOld, Object[][] para) {
+    /**主函数
+     * 输入参数，模拟或预报，模型输入，最大最小值
+     * @param paramsSetVO
+     * @param isRealTime
+     * @param isHistory
+     * @param input
+     * @param maxminOld
+     * @param para
+     * @return
+     */
+    public ModelSaveEntity longTermForecast(ParamsSetVO paramsSetVO, boolean isRealTime, boolean isHistory, Object[][] input, double[][] maxminOld, Object[][] para) {
         //模型参数
        double[][] DNNpara = new double[para.length][para[0].length];
         if (isRealTime){
@@ -163,136 +175,8 @@ public class LongForecast {
         return result;
     }
 
-    private ModelSaveEntity real_time_Forecast(double[][] data, String clusterMethod, String trainModel, ParamsSetVO paramsSetVO, boolean isCascade, boolean isRealTime, double[][] maxminOld, double[][] DNNpara)
-    {
-        TrainResult trainResult = new TrainResult();
-        ModelSaveEntity modelSaveEntity = new ModelSaveEntity();
-        NeuralNetwork trainModels = null;
-        Params.paramSet(paramsSetVO);
-
-        List<double[][]> normalInput=predictNormalInput(data,maxminOld,paramsSetVO);
-        double[][] norm_input=normalInput.get(0);
-        double[][] norm_output=normalInput.get(1);
-        double[][] maxAndMinOfoutput=normalInput.get(2);
-        double[][] output=normalInput.get(3);
-
-        if ((trainModel.equals("深度神经网络")) && (clusterMethod.equals("adam"))) {
-            trainModels = new DNN_ADAM(Params.dnnNet, Params.rate, Params.mobp, Params.maxRate, Params.minRate,
-                    Params.batch);
-            double[][][] layer_weight = GetParams(DNNpara);//输入率定好的参数
-            trainResult = trainModels.simOutput1(norm_input, norm_output, layer_weight, Params.dnnNet);//用率定好的参数模拟
-        } else if (trainModel.equals("Elman神经网络")) {
-            trainModels = new Elman(norm_input, Params.elmanNet, Params.LEARN_RATE, Params.TRAINING_REPS,
-                    Params.epsilon);
-            double[][][] layer_weight = GetParams(DNNpara);//输入率定好的参数
-            trainResult = trainModels.simOutput1(norm_input, norm_output, layer_weight, Params.elmanNet);//用率定好的参数模拟
-        }
-        else {
-            trainResult = new TrainResult();
-            trainResult.setErrorMessage("未选择训练方式");
-            return null;
-        }
-
-        double[][] result = MathUtils.reNormal(trainResult.getSimResult(), maxAndMinOfoutput);
-        double rmse = MathUtils.RMSE(output, result);
-        double dc = MathUtils.DC(output, result);
-        double mre = MathUtils.MRE(output, result);
-        double qr = MathUtils.QualifyRate(output, result);
-
-        Date startDate = paramsSetVO.getDataSetStartTime();
-        int outputNum = result[0].length;
-        Date[][] dates;
-        if (paramsSetVO.getForecastPeriod().equals("月")) {
-            dates = TimeUtils.getMonthDateList(startDate, result.length);
-        } else if (paramsSetVO.getForecastPeriod().equals("旬")) {
-            dates = TimeUtils.getDateList(startDate, result.length, 10, 0);
-        } else if (paramsSetVO.getForecastPeriod().equals("日")) {
-            dates = TimeUtils.getDateList(startDate, result.length, 1, 0);
-        } else {
-            dates = TimeUtils.getDateList(startDate, result.length, 0, 1);
-        }
-        List<TthResultEntity> resultList = new ArrayList();
-        String inputIndex1 = DataUtils.array2String(paramsSetVO.getInputIndex());
-        //储存模型结果（评价指标等）
-        for (int i = 0; i < output.length; i++) {
-            TthResultEntity hlr = new TthResultEntity();
-            hlr.setForecastDuanmian(paramsSetVO.getForecastDuanmian());
-            hlr.setDatasetStart(paramsSetVO.getDataSetStartTime());
-            hlr.setDatasetEnd(paramsSetVO.getDateSetEndTime());
-            hlr.setTestDatasetStart(paramsSetVO.getTestSetStartTime());
-            hlr.setTestDatasetEnd(paramsSetVO.getTestSetEndTime());
-            hlr.setPeriod(paramsSetVO.getForecastPeriod());
-            hlr.setModelName(paramsSetVO.getNetClass() + "_实时");
-            hlr.setOutputNum(1.0);
-            hlr.setOutputIndex(0.0);
-            if (isCascade && paramsSetVO.getForecastPeriod().equals("小时")) {
-                hlr.setInputIndex("all");
-            } else {
-                hlr.setInputIndex(inputIndex1);
-            }
-            hlr.setInputIndex(inputIndex1);
-            hlr.setRealOutput(output[i][0]);
-            hlr.setSimOutput(result[i][0]);
-            hlr.setResultDate(dates[i][0]);
-            if (i == output.length - 1) {
-                if (isRealTime) {
-                    hlr.setRainfall(null);
-                } else {
-                    hlr.setRainfall(0.0);
-                }
-            } else {
-                hlr.setRainfall(0.0);
-            }
-            hlr.setUserName("hust");
-            resultList.add(hlr);
-        }
-
-        //储存模型的具体结果（每一个时段的预报值、实测值等等）
-        List<TthResultEntity> result2Save = DataUtils.getHyfTrainResult(output, result, data, dates, paramsSetVO,
-                isCascade);
-        modelSaveEntity = modelSave(trainModels, paramsSetVO, isCascade, 2);
-        modelSaveEntity.getModels().get(0).setRmse(rmse);
-        modelSaveEntity.getModels().get(0).setMre(mre);
-        modelSaveEntity.getModels().get(0).setDc(dc);
-        modelSaveEntity.getModels().get(0).setQr(qr);
-        modelSaveEntity.getModels().get(0).setQMax(paramsSetVO.getQ_max());
-        modelSaveEntity.getModels().get(0).setQMin(paramsSetVO.getQ_min());
-
-        modelSaveEntity.setModels(modelSaveEntity.getModels());
-        modelSaveEntity.setResult(resultList);
-
-        return modelSaveEntity;
-    }
-
-    //处理elman、DNN参数作为实时预报、历史模拟输入
-    public double[][][] GetParams(double[][] DNNpara) {
-        double n = (double) DNNpara[DNNpara.length - 1][0];
-        n = n + 1;
-        double[][][] layer_weight = new double[(int) n][][];
-        for (int i = 0; i < n; i++) {
-            List<Double> hlp1 = new ArrayList();
-            double n1 = 0;
-            double n2 = 0;
-            for (int j = 0; j < DNNpara.length; j++) {
-                double value = DNNpara[j][0];
-                if (i == (int) value) {
-                    hlp1.add(DNNpara[j][3]);
-                    n1 = DNNpara[j][1] + 1;
-                    n2 = DNNpara[j][2] + 1;
-                }
-            }
-            layer_weight[i] = new double[(int) n1][(int) n2];
-            for (int j = 0; j < n1; j++) {
-                for (int k = 0; k < n2; k++) {
-                    layer_weight[i][j][k] = hlp1.get(k + j * (int) n2);
-                }
-            }
-        }
-        return layer_weight;
-    }
-
     /**
-     * 网络的训练
+     * 神经网络的训练
      * @param trainData     训练数据
      * @param testData      测试数据
      * @param clusterMethod 聚类方法
@@ -321,7 +205,7 @@ public class LongForecast {
         double[][] trainOutput=normInput.get(8);
         double[][] testOutput=normInput.get(9);
 
-        List<SimMaxMinEntity> maxAndMinSaveEntity = maxAndMinSave(pvo, maxAndMinOfinput, maxAndMinOfoutput, isCascade);
+        List<SimMaxMinEntity> maxAndMinSaveEntity = maxAndMinSave(pvo, maxAndMinOfinput, maxAndMinOfoutput);
         modelSaveEntity.setMaxmin(maxAndMinSaveEntity);
 
         if (trainModel.equals("深度神经网络")) {
@@ -344,7 +228,7 @@ public class LongForecast {
          训练集储存 */
         //训练数据
         trainModels.train(norm_input, norm_output, Params.trainNum);
-        String inputIndex = DataUtils.array2String(pvo.getInputIndex());
+        String inputIndex = array2String(pvo.getInputIndex());
         //反归一化处理
         trainResult1 = trainModels.simOutput(norm_input, norm_output);
 
@@ -418,7 +302,6 @@ public class LongForecast {
             hlr.setResultDate(date);
             hlr.setUserName("hust");
             resultList.add(hlr);
-//            System.out.println("神经网络模型训练中......");
         }
 
 
@@ -462,10 +345,9 @@ public class LongForecast {
      * @param category
      * @return
      */
-    private ModelSaveEntity modelSave(NeuralNetwork model, ParamsSetVO psvo, boolean isCascade, int category)
-    {
+    private ModelSaveEntity modelSave(NeuralNetwork model, ParamsSetVO psvo, boolean isCascade, int category) {
         ModelSaveEntity modelSaveEntity = null;
-        String inputIndex = DataUtils.array2String(psvo.getInputIndex());
+        String inputIndex = array2String(psvo.getInputIndex());
         if (model.getName() == null || model.getName().equals("")) {
             System.out.println("未发现模型");
         }
@@ -600,12 +482,10 @@ public class LongForecast {
      * @param pvo
      * @param maxAndMin_input
      * @param maxAndMin_output
-     * @param isCascade
      * @return
      */
-    private List<SimMaxMinEntity> maxAndMinSave(ParamsSetVO pvo, double[][] maxAndMin_input, double[][] maxAndMin_output, boolean isCascade)
-    {
-        String inputIndex = DataUtils.array2String(pvo.getInputIndex());
+    private List<SimMaxMinEntity> maxAndMinSave(ParamsSetVO pvo, double[][] maxAndMin_input, double[][] maxAndMin_output) {
+        String inputIndex = array2String(pvo.getInputIndex());
         List<SimMaxMinEntity> list = new ArrayList();
         int inputLen = maxAndMin_input[0].length;
         int outputLen = maxAndMin_output[0].length;
@@ -632,7 +512,156 @@ public class LongForecast {
         return list;
     }
 
-    //数据归一化
+    /**
+     * 处理elman、DNN参数作为实时预报、历史模拟输入
+     * @param DNNpara
+     * @return
+     */
+    public double[][][] getParams(double[][] DNNpara) {
+        double n = (double) DNNpara[DNNpara.length - 1][0];
+        n = n + 1;
+        double[][][] layer_weight = new double[(int) n][][];
+        for (int i = 0; i < n; i++) {
+            List<Double> hlp1 = new ArrayList();
+            double n1 = 0;
+            double n2 = 0;
+            for (int j = 0; j < DNNpara.length; j++) {
+                double value = DNNpara[j][0];
+                if (i == (int) value) {
+                    hlp1.add(DNNpara[j][3]);
+                    n1 = DNNpara[j][1] + 1;
+                    n2 = DNNpara[j][2] + 1;
+                }
+            }
+            layer_weight[i] = new double[(int) n1][(int) n2];
+            for (int j = 0; j < n1; j++) {
+                for (int k = 0; k < n2; k++) {
+                    layer_weight[i][j][k] = hlp1.get(k + j * (int) n2);
+                }
+            }
+        }
+        return layer_weight;
+    }
+
+    /**
+     * 实时预报的代码
+     * @param data
+     * @param clusterMethod
+     * @param trainModel
+     * @param paramsSetVO
+     * @param isCascade
+     * @param isRealTime
+     * @param maxminOld
+     * @param DNNpara
+     * @return
+     */
+    private ModelSaveEntity real_time_Forecast(double[][] data, String clusterMethod, String trainModel, ParamsSetVO paramsSetVO, boolean isCascade, boolean isRealTime, double[][] maxminOld, double[][] DNNpara) {
+        TrainResult trainResult = new TrainResult();
+        ModelSaveEntity modelSaveEntity = new ModelSaveEntity();
+        NeuralNetwork trainModels = null;
+        Params.paramSet(paramsSetVO);
+
+        List<double[][]> normalInput=predictNormalInput(data,maxminOld,paramsSetVO);
+        double[][] norm_input=normalInput.get(0);
+        double[][] norm_output=normalInput.get(1);
+        double[][] maxAndMinOfoutput=normalInput.get(2);
+        double[][] output=normalInput.get(3);
+
+        if ((trainModel.equals("深度神经网络")) && (clusterMethod.equals("adam"))) {
+            trainModels = new DNN_ADAM(Params.dnnNet, Params.rate, Params.mobp, Params.maxRate, Params.minRate,
+                    Params.batch);
+            double[][][] layer_weight = getParams(DNNpara);//输入率定好的参数
+            trainResult = trainModels.simOutput1(norm_input, norm_output, layer_weight, Params.dnnNet);//用率定好的参数模拟
+        } else if (trainModel.equals("Elman神经网络")) {
+            trainModels = new Elman(norm_input, Params.elmanNet, Params.LEARN_RATE, Params.TRAINING_REPS,
+                    Params.epsilon);
+            double[][][] layer_weight = getParams(DNNpara);//输入率定好的参数
+            trainResult = trainModels.simOutput1(norm_input, norm_output, layer_weight, Params.elmanNet);//用率定好的参数模拟
+        }
+        else {
+            trainResult = new TrainResult();
+            trainResult.setErrorMessage("未选择训练方式");
+            return null;
+        }
+
+        double[][] result = MathUtils.reNormal(trainResult.getSimResult(), maxAndMinOfoutput);
+        double rmse = MathUtils.RMSE(output, result);
+        double dc = MathUtils.DC(output, result);
+        double mre = MathUtils.MRE(output, result);
+        double qr = MathUtils.QualifyRate(output, result);
+
+        Date startDate = paramsSetVO.getDataSetStartTime();
+        int outputNum = result[0].length;
+        Date[][] dates;
+        if (paramsSetVO.getForecastPeriod().equals("月")) {
+            dates = TimeUtils.getMonthDateList(startDate, result.length);
+        } else if (paramsSetVO.getForecastPeriod().equals("旬")) {
+            dates = TimeUtils.getDateList(startDate, result.length, 10, 0);
+        } else if (paramsSetVO.getForecastPeriod().equals("日")) {
+            dates = TimeUtils.getDateList(startDate, result.length, 1, 0);
+        } else {
+            dates = TimeUtils.getDateList(startDate, result.length, 0, 1);
+        }
+        List<TthResultEntity> resultList = new ArrayList();
+        String inputIndex1 = array2String(paramsSetVO.getInputIndex());
+        //储存模型结果（评价指标等）
+        for (int i = 0; i < output.length; i++) {
+            TthResultEntity hlr = new TthResultEntity();
+            hlr.setForecastDuanmian(paramsSetVO.getForecastDuanmian());
+            hlr.setDatasetStart(paramsSetVO.getDataSetStartTime());
+            hlr.setDatasetEnd(paramsSetVO.getDateSetEndTime());
+            hlr.setTestDatasetStart(paramsSetVO.getTestSetStartTime());
+            hlr.setTestDatasetEnd(paramsSetVO.getTestSetEndTime());
+            hlr.setPeriod(paramsSetVO.getForecastPeriod());
+            hlr.setModelName(paramsSetVO.getNetClass() + "_实时");
+            hlr.setOutputNum(1.0);
+            hlr.setOutputIndex(0.0);
+            if (isCascade && paramsSetVO.getForecastPeriod().equals("小时")) {
+                hlr.setInputIndex("all");
+            } else {
+                hlr.setInputIndex(inputIndex1);
+            }
+            hlr.setInputIndex(inputIndex1);
+            hlr.setRealOutput(output[i][0]);
+            hlr.setSimOutput(result[i][0]);
+            hlr.setResultDate(dates[i][0]);
+            if (i == output.length - 1) {
+                if (isRealTime) {
+                    hlr.setRainfall(null);
+                } else {
+                    hlr.setRainfall(0.0);
+                }
+            } else {
+                hlr.setRainfall(0.0);
+            }
+            hlr.setUserName("hust");
+            resultList.add(hlr);
+        }
+
+        //储存模型的具体结果（每一个时段的预报值、实测值等等）
+//        List<TthResultEntity> result2Save = DataUtils.getHyfTrainResult(output, result, data, dates, paramsSetVO,
+//                isCascade);
+        modelSaveEntity = modelSave(trainModels, paramsSetVO, isCascade, 2);
+        modelSaveEntity.getModels().get(0).setRmse(rmse);
+        modelSaveEntity.getModels().get(0).setMre(mre);
+        modelSaveEntity.getModels().get(0).setDc(dc);
+        modelSaveEntity.getModels().get(0).setQr(qr);
+        modelSaveEntity.getModels().get(0).setQMax(paramsSetVO.getQ_max());
+        modelSaveEntity.getModels().get(0).setQMin(paramsSetVO.getQ_min());
+
+        modelSaveEntity.setModels(modelSaveEntity.getModels());
+        modelSaveEntity.setResult(resultList);
+
+        return modelSaveEntity;
+    }
+
+    /**
+     * 训练数据归一化
+     * @param trainData
+     * @param testData
+     * @param pvo
+     * @return
+     */
     private List<double[][]> trainNormalInput(double[][] trainData, double[][] testData, ParamsSetVO pvo){
         List<double[][]> normalInput =new ArrayList<>();
         int h = pvo.getHistory_factor();
@@ -914,7 +943,13 @@ public class LongForecast {
         return normalInput;
     }
 
-    //预报数据归一化
+    /**
+     * 预报数据归一化
+     * @param data
+     * @param maxminOld
+     * @param pvo
+     * @return
+     */
     private List<double[][]> predictNormalInput(double[][] data,double[][]maxminOld,ParamsSetVO pvo){
         List<double[][]> normalInput =new ArrayList<>();
         int h = pvo.getHistory_factor();

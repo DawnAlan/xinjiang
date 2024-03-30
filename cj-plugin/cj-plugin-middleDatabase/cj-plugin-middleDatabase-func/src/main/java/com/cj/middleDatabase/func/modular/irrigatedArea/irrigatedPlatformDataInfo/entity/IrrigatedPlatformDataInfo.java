@@ -2,9 +2,11 @@ package com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataIn
 
 import com.baomidou.mybatisplus.extension.activerecord.Model;
 //import javafx.beans.binding.DoubleExpression;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * 灌区平台时刻信息表(IrrigatedPlatformDataInfo)表实体类
@@ -37,7 +39,8 @@ public class IrrigatedPlatformDataInfo extends Model<IrrigatedPlatformDataInfo> 
     //昨日水量
     private Double yesterdayWaterDaily;
     //记录时间
-    private String monitorTime;
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date monitorTime;
     //水深
     private Double sqWaterLevel;
     //设备电压

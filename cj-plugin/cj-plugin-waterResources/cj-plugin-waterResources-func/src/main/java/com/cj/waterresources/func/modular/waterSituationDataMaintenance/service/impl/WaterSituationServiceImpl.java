@@ -137,7 +137,7 @@ public class WaterSituationServiceImpl implements WaterSituationService {
                 list.forEach(t->{
                     HydrographRes res = new HydrographRes();
                     res.setName(t.getMonitorName());
-                    res.setTime(t.getMonitorTime());
+                    res.setTime(sdf.format(t.getMonitorTime()));
                     res.setFlow(t.getSqMonitorFlow());
                     res.setWaterLevel(t.getSqWaterLevel());
                     hydrographResList.add(res);
@@ -229,7 +229,7 @@ public class WaterSituationServiceImpl implements WaterSituationService {
                 listTth.stream().filter(t->t.getSqMonitorFlow()!=null).collect(Collectors.toList()).forEach(t->{
                     HydrographRes res = new HydrographRes();
                     res.setName(t.getMonitorName());
-                    res.setTime(t.getMonitorTime());
+                    res.setTime(sdf.format(t.getMonitorTime()));
                     res.setFlow(t.getSqMonitorFlow());
                     res.setWaterLevel(t.getSqWaterLevel());
                     resList.add(res);

@@ -1,6 +1,7 @@
 package com.cj.fourPredictions.func.modular.flood.weather.controller;
 
 import com.alibaba.fastjson.JSONObject;
+import com.cj.common.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.RestTemplateUtil;
 import com.cj.fourPredictions.func.modular.flood.weather.bean.vo.ForecastVO;
@@ -32,7 +33,8 @@ public class ForecastController {
     @Resource
     private ForecastService forecastService;
 
-    @ApiOperation(value = "获取天气预报二十四小时", notes = "获取天气预报二十四小时")
+    @ApiOperation(value = "天气预报获取天气预报二十四小时", notes = "获取天气预报二十四小时")
+    @CommonLog(value = "天气预报获取天气预报二十四小时")
     @GetMapping(value = "/getForecast")
     public RestResponse<List<ForecastVO>> getForecast() {
         try {

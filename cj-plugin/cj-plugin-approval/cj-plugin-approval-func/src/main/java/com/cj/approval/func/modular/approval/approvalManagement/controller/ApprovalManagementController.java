@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.cj.approval.func.modular.approval.approvalManagement.bean.req.SelectListReq;
 import com.cj.approval.func.modular.approval.approvalManagement.entity.ApprovalManagement;
 import com.cj.approval.func.modular.approval.approvalManagement.service.ApprovalManagementService;
+import com.cj.common.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSupport;
@@ -36,97 +37,111 @@ public class ApprovalManagementController{
     private ApprovalManagementService approvalManagementService;
 
     @ApiOperationSupport(order = 1)
-    @ApiOperation("新增")
+    @ApiOperation("审批管理表新增")
+    @CommonLog(value = "审批管理表新增")
     @PostMapping("/add")
     public RestResponse add(@RequestBody ApprovalManagement approvalManagement) {
         return approvalManagementService.add(approvalManagement);
     }
 
     @ApiOperationSupport(order = 2)
-    @ApiOperation("删除")
+    @ApiOperation("审批管理表删除")
+    @CommonLog(value = "审批管理表删除")
     @GetMapping("/delete")
     public RestResponse delete(@RequestParam("id") String id) {
         return approvalManagementService.delete(id);
     }
 
     @ApiOperationSupport(order = 3)
-    @ApiOperation("修改")
+    @ApiOperation("审批管理表修改")
+    @CommonLog(value = "审批管理表修改")
     @PostMapping("/update")
     public RestResponse update(@RequestBody ApprovalManagement approvalManagement) {
         return approvalManagementService.update(approvalManagement);
     }
 
     @ApiOperationSupport(order = 4)
-    @ApiOperation("指令审批")
+    @ApiOperation("审批管理表指令审批")
+    @CommonLog(value = "审批管理表指令审批")
     @PostMapping("/select")
     public RestResponse<IPage<ApprovalManagement>> select(@RequestBody SelectListReq req) {
         return approvalManagementService.selectList(req);
     }
 
     @ApiOperationSupport(order = 5)
-    @ApiOperation("指令反馈")
+    @ApiOperation("审批管理表指令反馈")
+    @CommonLog(value = "审批管理表指令反馈")
     @PostMapping("/selectFinishList")
     public RestResponse<IPage<ApprovalManagement>> selectFinishList(@RequestBody SelectListReq req) {
         return approvalManagementService.selectFinishList(req);
     }
 
     @ApiOperationSupport(order = 6)
-    @ApiOperation("查询详情")
+    @ApiOperation("审批管理表查询详情")
+    @CommonLog(value = "审批管理表查询详情")
     @GetMapping("/selectByIds")
     public RestResponse<List<ApprovalManagement>> selectByIds(@RequestParam("ids") String ids) {
         return approvalManagementService.selectByIds(ids);
     }
 
     @ApiOperationSupport(order = 7)
-    @ApiOperation("获取组织")
+    @ApiOperation("审批管理表获取组织")
+    @CommonLog(value = "审批管理表获取组织")
     @GetMapping("/getOrgList")
     public RestResponse getOrgList() {
         return approvalManagementService.getOrgList();
     }
 
     @ApiOperationSupport(order = 8)
-    @ApiOperation("预览调度指令单")
+    @ApiOperation("审批管理表预览调度指令单")
+    @CommonLog(value = "审批管理表预览调度指令单")
     @GetMapping("/thymeleafExport")
     public void thymeleafExport(HttpServletResponse response,HttpServletRequest request,@RequestParam("id") String id) {
          approvalManagementService.thymeleafExport(response,id,request);
     }
 
     @ApiOperationSupport(order = 9)
-    @ApiOperation("下载调度指令单")
+    @ApiOperation("审批管理表下载调度指令单")
+    @CommonLog(value = "审批管理表下载调度指令单")
     @GetMapping("/downFile")
     public void downFile(HttpServletResponse response,@RequestParam("id") String id) {
         approvalManagementService.downFile(response,id);
     }
     @ApiOperationSupport(order = 10)
-    @ApiOperation("测试预览")
+    @ApiOperation("审批管理表测试预览")
+    @CommonLog(value = "审批管理表测试预览")
     @GetMapping("/testView")
     public void testView(HttpServletResponse response) {
         approvalManagementService.testView(response);
     }
 
     @ApiOperationSupport(order = 11)
-    @ApiOperation("获取用户信息")
+    @ApiOperation("审批管理表获取用户信息")
+    @CommonLog(value = "审批管理表获取用户信息")
     @GetMapping("/getUserInfo")
     public RestResponse getUserInfo() {
         return approvalManagementService.getUserInfo();
     }
 
     @ApiOperationSupport(order = 12)
-    @ApiOperation("更换审批人")
+    @ApiOperation("审批管理表更换审批人")
+    @CommonLog(value = "审批管理表更换审批人")
     @PostMapping("/replacePerson")
     public RestResponse replacePerson(@RequestBody ApprovalManagement approvalManagement) {
         return approvalManagementService.replacePerson(approvalManagement);
     }
 
     @ApiOperationSupport(order = 13)
-    @ApiOperation("撤销指令")
+    @ApiOperation("审批管理表撤销指令")
+    @CommonLog(value = "审批管理表撤销指令")
     @GetMapping("/revoke")
     public RestResponse revoke(@RequestParam("id") String id) {
         return approvalManagementService.revoke(id);
     }
 
     @ApiOperationSupport(order = 14)
-    @ApiOperation("下载图片")
+    @ApiOperation("审批管理表下载图片")
+    @CommonLog(value = "审批管理表下载图片")
     @GetMapping("/download")
     public void download(@RequestParam("path") String path, HttpServletResponse response) {
         approvalManagementService.download(path,response);

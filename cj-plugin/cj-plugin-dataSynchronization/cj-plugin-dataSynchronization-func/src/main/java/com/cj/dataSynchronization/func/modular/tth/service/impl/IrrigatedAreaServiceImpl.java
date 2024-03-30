@@ -1,6 +1,7 @@
 package com.cj.dataSynchronization.func.modular.tth.service.impl;
 
 
+import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.ExcelUtils;
@@ -57,6 +58,8 @@ public class IrrigatedAreaServiceImpl implements IrrigatedAreaService {
     private WaterResourceApi waterResourceApi;
 
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+
+    private SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     @Override
     public RestResponse getAllTree() {
@@ -229,7 +232,7 @@ public class IrrigatedAreaServiceImpl implements IrrigatedAreaService {
                     info.setSqMonitorFlowRate(dto.getSQ_MONITOR_FLOW_RATE());
                     info.setBeginTime(dto.getBEGIN_TIME());
                     info.setYesterdayWaterDaily(dto.getYESTERDAY_WATER_DAILY());
-                    info.setMonitorTime(dto.getMONITOR_TIME());
+                    info.setMonitorTime(DateUtil.parse(dto.getMONITOR_TIME(),"yyyy-MM-dd HH:mm"));
                     info.setSqWaterLevel(dto.getSQ_WATER_LEVEL());
                     info.setVoltage(dto.getVOLTAGE());
                     info.setAvgFlow(dto.getAVG_FLOW());
@@ -254,17 +257,17 @@ public class IrrigatedAreaServiceImpl implements IrrigatedAreaService {
                         redisUtil.set("irrigatedPlatform:sq:date:id:"+info.getMonitorTime()+":"+overallSituationUnitMgrDto.getId(),info.getSqMonitorFlow());
                     }
                     if(info.getMonitorName().equals("头屯河水库水位")){
-                        redisUtil.set("irrigatedPlatform:sq:tth:waterLevel:"+sdf.format(sdf.parse(info.getMonitorTime())),info.getSqWaterLevel());
-                        redisUtil.set("irrigatedPlatform:sq:tth:capacity:"+sdf.format(sdf.parse(info.getMonitorTime())),info.getSqCapacity());
+                        redisUtil.set("irrigatedPlatform:sq:tth:waterLevel:"+sdf.format(info.getMonitorTime()),info.getSqWaterLevel());
+                        redisUtil.set("irrigatedPlatform:sq:tth:capacity:"+sdf.format(info.getMonitorTime()),info.getSqCapacity());
                     }
                     if(info.getMonitorName().equals("出库流量")){
-                        redisUtil.set("irrigatedPlatform:sq:tth:out:"+sdf.format(sdf.parse(info.getMonitorTime())),info.getSqMonitorFlow());
+                        redisUtil.set("irrigatedPlatform:sq:tth:out:"+sdf.format(info.getMonitorTime()),info.getSqMonitorFlow());
                     }
                     if(info.getMonitorName().equals("入库流量")){
-                        redisUtil.set("irrigatedPlatform:sq:tth:input:"+sdf.format(sdf.parse(info.getMonitorTime())),info.getSqMonitorFlow());
+                        redisUtil.set("irrigatedPlatform:sq:tth:input:"+sdf.format(info.getMonitorTime()),info.getSqMonitorFlow());
                     }
                     if(info.getMonitorName().equals("八钢工业取水口")){
-                        redisUtil.set("irrigatedPlatform:sq:tth:aq:"+sdf.format(sdf.parse(info.getMonitorTime())),info.getSqMonitorFlow());
+                        redisUtil.set("irrigatedPlatform:sq:tth:aq:"+sdf.format(info.getMonitorTime()),info.getSqMonitorFlow());
                     }
                 }
             }
@@ -303,7 +306,7 @@ public class IrrigatedAreaServiceImpl implements IrrigatedAreaService {
                     IrrigatedPlatformTree tree = irrigatedPlatformTrees.get(0);
                     info.setMonitorId(dto.getMonitorId());
                     info.setMonitorName(tree.getName());
-                    info.setMonitorTime(dto.getMonitorTime());
+                    info.setMonitorTime(sdf.parse(dto.getMonitorTime()));
                     info.setId(info.getMonitorName() + "-" + sdf.parse(dto.getMonitorTime()).getTime());
                     info.setSqMonitorFlowRate(dto.getSqMonitorFlowRate() == null ? null : Double.valueOf(df2.format(dto.getSqMonitorFlowRate())));
                     //info.setSqMonitorFlow(dto.getSqMonitorFlow()==null?dto.getSqMonitorFlow1()==null?null:Double.valueOf(df2.format(dto.getSqMonitorFlow1())):Double.valueOf(df2.format(dto.getSqMonitorFlow())));

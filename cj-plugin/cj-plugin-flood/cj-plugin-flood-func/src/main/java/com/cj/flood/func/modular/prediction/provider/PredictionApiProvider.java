@@ -300,7 +300,7 @@ public class PredictionApiProvider implements PredictionApi {
             if(null != irrigatedPlatformDataInfos && irrigatedPlatformDataInfos.size()>0){
                 for(IrrigatedPlatformDataInfo info:irrigatedPlatformDataInfos){
                     RainfallStationsHistoricalDataRes res = new RainfallStationsHistoricalDataRes();
-                    res.setTime(info.getMonitorTime());
+                    res.setTime(sdf.format(info.getMonitorTime()));
                     res.setRainfall(info.getYqRainFallOne());
                     result.add(res);
                 }
@@ -329,7 +329,7 @@ public class PredictionApiProvider implements PredictionApi {
             if(null != irrigatedPlatformDataInfos && irrigatedPlatformDataInfos.size()>0){
                 for(IrrigatedPlatformDataInfo info:irrigatedPlatformDataInfos){
                     ReservoirLevelRes res = new ReservoirLevelRes();
-                    res.setTime(info.getMonitorTime());
+                    res.setTime(sdf.format(info.getMonitorTime()));
                     res.setWaterLevel(info.getSqWaterLevel());
                     result.add(res);
                 }
@@ -359,7 +359,7 @@ public class PredictionApiProvider implements PredictionApi {
             if(null != irrigatedPlatformDataInfos && irrigatedPlatformDataInfos.size()>0){
                 for(IrrigatedPlatformDataInfo info:irrigatedPlatformDataInfos){
                     WaterLevelDataRes res = new WaterLevelDataRes();
-                    res.setTime(info.getMonitorTime());
+                    res.setTime(sdf.format(info.getMonitorTime()));
                     res.setFlow(info.getSqMonitorFlow());
                     res.setWaterLevel(info.getSqWaterLevel());
                     result.add(res);

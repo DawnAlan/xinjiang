@@ -1,6 +1,7 @@
 package com.cj.flood.func.modular.homePage.controller;
 
 
+import com.cj.common.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.cj.flood.func.modular.homePage.bean.res.OverviewRes;
 import com.cj.flood.func.modular.homePage.bean.res.WaterRainRes;
@@ -27,21 +28,24 @@ public class FloodHomePageController {
     private final FloodHomePageService floodHomePageService;
 
     @ApiOperationSupport(order = 1)
-    @ApiOperation("今日概览")
+    @ApiOperation("防洪首页今日概览")
+    @CommonLog(value = "防洪首页今日概览")
     @GetMapping("/overview")
     public RestResponse<OverviewRes> overview(@RequestParam("dateTime") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date dateTime) {
         return floodHomePageService.overview(dateTime);
     }
 
     @ApiOperationSupport(order = 2)
-    @ApiOperation("今日雨量")
+    @ApiOperation("防洪首页今日雨量")
+    @CommonLog(value = "防洪首页今日雨量")
     @PostMapping("/rainfall")
     public RestResponse<List<WaterRainRes>> rainfall(@RequestParam("dateTime") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date dateTime) {
         return floodHomePageService.rainfall(dateTime);
     }
 
     @ApiOperationSupport(order = 3)
-    @ApiOperation("今日水情")
+    @ApiOperation("防洪首页今日水情")
+    @CommonLog(value = "防洪首页今日水情")
     @PostMapping("/waterSituation")
     public RestResponse<List<WaterRainRes>> waterSituation(@RequestParam("dateTime") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date dateTime,
                                                            @RequestParam("unitId") String unitId) {
@@ -49,7 +53,8 @@ public class FloodHomePageController {
     }
 
     @ApiOperationSupport(order = 4)
-    @ApiOperation("水库概览")
+    @ApiOperation("防洪首页水库概览")
+    @CommonLog(value = "防洪首页水库概览")
     @GetMapping("/waterStorageOverview")
     public RestResponse<List<WaterStorageOverviewRes>> waterStorageOverview(@RequestParam("dateTime") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date dateTime) {
         return RestResponse.ok(floodHomePageService.waterStorageOverview(dateTime));

@@ -1,5 +1,6 @@
 package com.cj.model.func.modular.FloodPredict.entity;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.util.Date;
@@ -27,5 +28,11 @@ public class ForcastInputParamNew {
     private IrrigatedHydrologyParam irrigatedHydrologyParam;
     //预报雨量
     private List<RainFallDto> rainFallDtos;
+
+    private Double preFlow;
+
+    private Double preRainFall;
+
+    private Boolean isSimulation;
 
 }

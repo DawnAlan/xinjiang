@@ -3,6 +3,7 @@ package com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req.A3StatisticsReq;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.res.A3StatisticsRes;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hd.entity.DayWaterSituationStatisticsTableHd;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.entity.DayWaterSituationStatisticsTableLzz;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.entity.DayWaterSituationStatisticsTableQs;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.entity.DayWaterSituationStatisticsTableQsLh;
@@ -43,5 +44,8 @@ public interface DayWaterSituationStatisticsTableQsMapper extends BaseMapper<Day
 
     @Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_QS WHERE TIME = #{time} and  TO_CHAR(RECORD_TIME,'YYYY-MM-DD') = #{recordTime}")
     List<DayWaterSituationStatisticsTableQs> selectListHave(@Param("time")String time, @Param("recordTime")String recordTime);
+
+    @Select("select table_head_id,v,END_TABLE_LIST from DAY_WATER_SITUATION_STATISTICS_TABLE_QS WHERE RECORD_TIME = #{date} and TIME != '今日均' and TIME != '昨日均' limit #{num} order by time desc ")
+    List<DayWaterSituationStatisticsTableQs> selectListForTodayWaterSituation(@Param("date")String date, @Param("num") Integer num);
 }
 

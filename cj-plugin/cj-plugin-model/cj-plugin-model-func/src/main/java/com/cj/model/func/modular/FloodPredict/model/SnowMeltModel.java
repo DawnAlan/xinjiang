@@ -14,14 +14,21 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import static com.cj.model.func.modular.FloodPredict.model.MachineForcast.setFloodXlsx;
-import static com.cj.model.func.modular.FloodPredict.utils.DataUtils.getSpecificDate;
-import static com.cj.model.func.modular.FloodPredict.utils.DataUtils.setintervaFlow;
+import static com.cj.model.func.modular.FloodPredict.model.MachineForecast.setLongFloodxlsx;
+import static com.cj.model.func.modular.FloodPredict.utils.TimeUtils.getSpecificDate;
 
 
 public class SnowMeltModel {
-    //模型训练
-    public List<TemporaryXlsx> SnowTrain(Object[][] snowInput, ForcastInputParam param) throws IOException, InvalidFormatException {
+
+    /**
+     * 融雪模型训练
+     * @param snowInput
+     * @param param
+     * @return
+     * @throws IOException
+     * @throws InvalidFormatException
+     */
+    public List<TemporaryXlsx> snowTrain(Object[][] snowInput, ForcastInputParam param) throws IOException, InvalidFormatException {
         List<TemporaryXlsx> result = new ArrayList();
         ParamsSetVO pvo = pvoSet(snowInput, param);//设置输入
 
@@ -65,7 +72,7 @@ public class SnowMeltModel {
          *  模型训练
          */
         LongForecast longForecast = new LongForecast();
-        ModelSaveEntity results = longForecast.LongTermForecast(pvo, false, true, snowInput, maxminOld, para);
+        ModelSaveEntity results = longForecast.longTermForecast(pvo, false, true, snowInput, maxminOld, para);
 
         for (int i = 0; i < results.getParams().size(); i++) {
             paramdim1.add(Double.parseDouble(results.getParams().get(i).getParamDim1())) ;
@@ -178,7 +185,15 @@ public class SnowMeltModel {
 //        ExcelTool.writeObjectExcel("D:\\204\\2.头屯河\\径流预报数据文件\\"+"融雪模型"+pvo.getNetClass()+"-RESULT.xlsx", Option, longResult);
         return result;
     }
-    public Object[][] Forcast(Object[][] inputTemp, ForcastInputParam param) throws IOException{
+
+    /**
+     * 融雪模型预报
+     * @param inputTemp
+     * @param param
+     * @return
+     * @throws IOException
+     */
+    public Object[][] snowForecast(Object[][] inputTemp, ForcastInputParam param) throws IOException{
 
         ParamsSetVO pvo = pvoSet(inputTemp, param);//设置输入
         int preNumber = 0;
@@ -221,22 +236,26 @@ public class SnowMeltModel {
         }
 
         //径流预报
-        snowFlood = RealTimeForcast(inputTemp, pvo, maxminOld, para);
-//        System.out.println("\n时间\t预报值");
-//        System.out.println("-------------------------");
-//        for(int i = 0; i < preNumber; i++){
-//            System.out.printf("Formatted Date: %s%n %-10.2f\n", snowFlood[i][0], snowFlood[i][1]);
-//        }
+        snowFlood = realTimeForecast(inputTemp, pvo, maxminOld, para);
 
         if (inputTemp[0].length>3) {//短期预报
             if (param.getLocation().equals("楼头区间")){
-                snowFlood = intervalResult(snowFlood);
+                snowFlood = magnification(snowFlood);
             }
-            snowFlood = setFloodXlsx(snowFlood,pvo);
+            snowFlood = setLongFloodxlsx(snowFlood,pvo);
         }
         return snowFlood;
     }
-    public  Object[][] RealTimeForcast(Object[][] input, ParamsSetVO pvo, double[][] maxminOld, Object[][] paraTemp)  {
+
+    /**
+     * 实现实时预报
+     * @param input
+     * @param pvo
+     * @param maxminOld
+     * @param paraTemp
+     * @return
+     */
+    public Object[][] realTimeForecast(Object[][] input, ParamsSetVO pvo, double[][] maxminOld, Object[][] paraTemp)  {
         LongForecast longForecast = new LongForecast();
         boolean isRealtime=true;
         boolean isHistory=false;
@@ -275,19 +294,26 @@ public class SnowMeltModel {
                     pre_input[input.length + a][3] = pre_input[input.length-1][3];
                 }
             }
-            ModelSaveEntity pre_results = longForecast.LongTermForecast(pvo, isRealtime, isHistory, pre_input, maxminOld, paraTemp);
+            ModelSaveEntity pre_results = longForecast.longTermForecast(pvo, isRealtime, isHistory, pre_input, maxminOld, paraTemp);
             predict[A - 1][1] = pre_results.getResult().get(input.length - pvo.getHistory_day() - 1 + A).getSimOutput();
             predict[A][1] = input[0][1];
         }
 
-        Object[][] predict1 = new Object[preNumber][2];//把前面predict的最后一行去掉
+        Object[][] result = new Object[preNumber][2];//把前面predict的最后一行去掉
         for (int i = 0; i < preNumber; i++) {
             for (int j = 0; j < 2; j++) {
-                predict1[i][j]=predict[i][j];
+                result[i][j]=predict[i][j];
             }
         }
-        return predict1;
+        return result;
     }
+
+    /**
+     * 融雪模型参数设置
+     * @param snowInput
+     * @param param
+     * @return
+     */
     public ParamsSetVO pvoSet (Object[][] snowInput, ForcastInputParam param) {
         ParamsSetVO pvo = new ParamsSetVO();
         int[] inputIndex;
@@ -337,12 +363,79 @@ public class SnowMeltModel {
         return pvo;
     }
 
-    public Object[][] intervalResult(Object[][] data){
+    /**
+     * 区间倍率
+     * @param data
+     * @return
+     */
+    public Object[][] magnification(Object[][] data){
         int l;
         for (int i = 0; i < data.length; i++) {
             l = getSpecificDate((Date) data[i][0]).get("月");
-            data[i][1] = setintervaFlow(l);
+            data[i][1] = setQjMagnification(l);
         }
         return data;
     }
+
+
+    /**
+     * 根据月份来提供区间的倍率
+     * @param month
+     * @return
+     */
+    public static Double setQjMagnification(int month){
+        Double result = 0.0;
+        switch (month){
+            case 1:{
+                result = 0.178571429;
+                break;
+            }
+            case 2:{
+                result = 0.167701863;
+                break;
+            }
+            case 3:{
+                result = 0.359649123;
+                break;
+            }
+            case 4:{
+                result = 0.251428571;
+                break;
+            }
+            case 5:{
+                result = 0.112087912;
+                break;
+            }
+            case 6:{
+                result = 0.1458333;
+                break;
+            }
+            case 7:{
+                result = 0.139564124;
+                break;
+            }
+            case 8:{
+                result = 0.168034766;
+                break;
+            }
+            case 9:{
+                result = 0.13950613;
+                break;
+            }
+            case 10:{
+                result = 0.174358974;
+                break;
+            }
+            case 11:{
+                result = 0.248;
+                break;
+            }
+            case 12:{
+                result = 0.172043011;
+                break;
+            }
+        }
+        return result;
+    }
+
 }

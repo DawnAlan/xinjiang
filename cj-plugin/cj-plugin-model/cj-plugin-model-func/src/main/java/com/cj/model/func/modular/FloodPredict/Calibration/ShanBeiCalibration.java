@@ -6,6 +6,7 @@ import com.cj.model.func.modular.FloodPredict.entity.ForcastInputParamNew;
 import com.cj.model.func.modular.FloodPredict.entity.PredictInputData;
 import com.cj.model.func.modular.FloodPredict.entity.calibrationParam;
 import com.cj.model.func.modular.FloodPredict.entity.shanbeiParam;
+import com.cj.model.func.modular.FloodPredict.utils.ExcelTool;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 
 import java.io.IOException;
@@ -14,8 +15,8 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static com.cj.model.func.modular.FloodPredict.Calibration.ParameterValidation.NashSutcliffeEfficiency;
-import static com.cj.model.func.modular.FloodPredict.model.PhysicalForcast.temToEva;
 import static com.cj.model.func.modular.FloodPredict.utils.DataUtils.*;
+import static com.cj.model.func.modular.FloodPredict.utils.TimeUtils.*;
 
 
 public class ShanBeiCalibration {
@@ -35,30 +36,32 @@ public class ShanBeiCalibration {
     static Object[][] historyRData;
     //参与率定的真实径流
     static Object[][] historyFData;
+    //预报的时间
+    static int duration;
 
     static ShanBeiModel shanbeiModel = new ShanBeiModel();
 
     /**
-     * 1.断面的陕北模型参数，2.真实径流和率定后的预报径流序列，3.未率定时的预报径流序列
      * @param inputData
-     * @return
-     * @throws ParseException
-     * @throws IOException
-     * @throws InvalidFormatException
+     * 从数据库中捞取预报开始时间前20天到预报结束时间的数据
+     * @return 1.断面的陕北模型参数，2.真实径流和率定后的预报径流序列，3.未率定时的预报径流序列
      */
     public static Map<String,List<Object[][]>> calibration(calibrationParam inputData)
             throws ParseException, IOException, InvalidFormatException {
         Map<String,List<Object[][]>> result= new HashMap<>();
         ForcastInputParamNew forcastInputParamNew = new ForcastInputParamNew();
         forcastInputParamNew.setPredictionTime(inputData.getStartTime());
+        duration = duration(inputData.getStartTime(),inputData.getEndTime(),"小时");
+        forcastInputParamNew.setPeriodTimeNum(duration);
+        forcastInputParamNew.setPeriodTimeStep(1);
         forcastInputParamNew.setIrrigatedHydrologyParam(inputData.getIrrigatedHydrologyParam());
         forcastInputParamNew.setLzzHydrologyParam(inputData.getLzzHydrologyParam());
         forcastInputParamNew.setModelType(3);
         Map<String,Object[][]> imitateFlow = inputData.getImitateFlow();
         List<Object[][]> threeData = onestationDatainput("3号桥",forcastInputParamNew);
         List<Object[][]> lzzData = onestationDatainput("楼庄子",forcastInputParamNew);
-        List<Object[][]> qjData = onestationDatainput("区间",forcastInputParamNew);
-        if (!inputData.getModelType()){
+        List<Object[][]> qjData = onestationDatainput("楼头区间",forcastInputParamNew);
+        if (inputData.getModelType()){
             List<Object[][]> threeResult = oneStationCalibration(threeData);
             threeResult.add(imitateFlow.get("3号桥"));
             result.put("3号桥",threeResult);
@@ -69,15 +72,15 @@ public class ShanBeiCalibration {
             qjResult.add(imitateFlow.get("楼头区间"));
             result.put("楼头区间",qjResult);
         }else {
-            shanbeiParam three = inputData.getParam().get("3号桥");
+            shanbeiParam three = inputData.getManualParam().get("3号桥");
             List<Object[][]> threeResult = oneStationHuman(three,threeData);
             threeResult.add(imitateFlow.get("3号桥"));
             result.put("3号桥",threeResult);
-            shanbeiParam lzz = inputData.getParam().get("楼庄子");
+            shanbeiParam lzz = inputData.getManualParam().get("楼庄子");
             List<Object[][]> lzzResult = oneStationHuman(lzz,lzzData);
             lzzResult.add(imitateFlow.get("楼庄子"));
             result.put("楼庄子",lzzResult);
-            shanbeiParam qj = inputData.getParam().get("楼头区间");
+            shanbeiParam qj = inputData.getManualParam().get("楼头区间");
             List<Object[][]> qjResult = oneStationHuman(qj,qjData);
             qjResult.add(imitateFlow.get("楼头区间"));
             result.put("楼头区间",qjResult);
@@ -100,8 +103,8 @@ public class ShanBeiCalibration {
         List<LzzGaugingStation> flow =new ArrayList<>();
         List<IrrigatedPlatformDataInfo> qjFlow = new ArrayList<>();
         Object[][] area = new Object[1][1];//面积
-        List<List<PredictInputData>> lzzIntegration = LzzRainIntegration(paramNew);
-        List<List<PredictInputData>> qjIntegration = IrrigateRainIntegration(paramNew);
+        List<List<PredictInputData>> lzzIntegration = lzzRainIntegration(paramNew);
+        List<List<PredictInputData>> qjIntegration = irrigateRainIntegration(paramNew);
         if (location.equals("3号桥")){
             area[0][0] = 690.0;
             hour = pointToSurface(lzzIntegration.get(0),"小时");//前10小时以及期间的降雨
@@ -112,13 +115,13 @@ public class ShanBeiCalibration {
             area[0][0] = 1174.0;
             hour = pointToSurface(lzzIntegration.get(0),"小时");//前10小时以及期间的降雨
             day = pointToSurface(lzzIntegration.get(1),"日");//前20天累积雨量
-            flow = paramNew.getLzzHydrologyParam().getThreeGaugingStation();//3号桥流量
+            flow = paramNew.getLzzHydrologyParam().getLzzInput();//流量
         }
         if (location.equals("楼头区间")){
             area[0][0] = 388.0;
             hour = pointToSurface(qjIntegration.get(0),"小时");//前10小时以及期间的降雨
             day = pointToSurface(qjIntegration.get(1),"日");//前20天累积雨量
-            qjFlow = paramNew.getIrrigatedHydrologyParam().getTthInput();//3号桥流量
+            qjFlow = paramNew.getIrrigatedHydrologyParam().getTthInput();//流量
         }
         //蒸发降雨
         Object[][] preRE = new Object[hour.size()][3];
@@ -156,7 +159,7 @@ public class ShanBeiCalibration {
             for (int i = 0; i < preRE.length; i++) {
                 Calendar calendar1 = Calendar.getInstance();
                 calendar1.setTime(dateStart);
-                for (int j = 0; j < 30; j++) {
+                for (int j = 0; j < 20; j++) {
                     Double baseFlow = 0.0;
                     int n = flow.size() -1- j;
                     if (flow.get(n).getFlow() != null){
@@ -166,7 +169,7 @@ public class ShanBeiCalibration {
                     }
                     baseAve += baseFlow;
                 }
-                baseAve = baseAve / 30;
+                baseAve = baseAve / 20;
                 for (int j = 0; j < flow.size(); j++) {
                     if (DateCompare(dateStart,flow.get(j).getGatherTime(),"小时")){
                         hisF[i][0]=flow.get(j).getGatherTime();
@@ -181,8 +184,9 @@ public class ShanBeiCalibration {
                 calendar1.add(Calendar.HOUR_OF_DAY, 1);//获得前十个小时到预报结束时间的径流
                 dateStart=calendar1.getTime();
             }
-        }else {
-            for (int j = 0; j < 30; j++) {
+        }
+        else {
+            for (int j = 0; j < 20; j++) {
                 Double baseFlow = 0.0;
                 int n = qjFlow.size() -1- j;
                 if (qjFlow.get(n).getYesterdayAvgFlow() != null){
@@ -192,13 +196,13 @@ public class ShanBeiCalibration {
                 }
                 baseAve += baseFlow;
             }
-            baseAve = baseAve / 30;
+            baseAve = baseAve / 20;
             for (int i = 0; i < preRE.length; i++) {
                 Calendar calendar1 = Calendar.getInstance();
                 calendar1.setTime(dateStart);
                 for (int j = 0; j < qjFlow.size(); j++) {
-                    if (DateCompare(dateStart,sdf.parse(qjFlow.get(j).getBeginTime()),"小时")){
-                        hisF[i][0]=sdf.parse(qjFlow.get(j).getBeginTime());
+                    if (DateCompare(dateStart,qjFlow.get(j).getMonitorTime(),"小时")){
+                        hisF[i][0]=qjFlow.get(j).getMonitorTime();
                         hisF[i][1]=qjFlow.get(j).getSqMonitorFlow();
                         break;
                     }else {
@@ -219,13 +223,14 @@ public class ShanBeiCalibration {
         result.add(baseflow);
         return result;
     }
+
     /**
      * 需要前期降水、温度和径流，返回率定的参数和率定好的径流
      * @param
      * @return
      * @throws IOException
      */
-    public static List<Object[][]>oneStationCalibration(List<Object[][]> inputData) {
+    public static List<Object[][]>oneStationCalibration(List<Object[][]> inputData) throws IOException, InvalidFormatException {
         Object[][] area = inputData.get(0);//面积
         Area= (double) area[0][0];
         preREData = inputData.get(1);//蒸发降雨
@@ -254,30 +259,32 @@ public class ShanBeiCalibration {
         PSO pso = new PSO(domain);
 
         // 运行算法并存储结果
-        PSOResult result = pso.Execute(100, 300);
+        PSOResult result = pso.Execute(100, 1000);
 
         // 输出结果
         System.out.println(result);
-        Object[][] flowData =new Object[hisData.length][2];
-        for (int i = 0; i < hisData.length; i++) {
-            flowData[i][0]=hisData[i];
-            flowData[i][1]=preData[i];
+        Object[][] flowData =new Object[hisData.length + 1][2];
+        flowData[0][0]="真实径流";
+        flowData[0][1]="修正径流";
+        for (int i = 1; i < hisData.length + 1; i++) {
+            flowData[i][0]=hisData[i-1];
+            flowData[i][1]=preData[i-1];
         }
         Double error = QualifyRate(hisData,preData);
-        Object[][] param = new Object[10][2];
-        param[0][0] = Area;
-        param[0][1] = error;
-        param[1][0] = result.Position[0];//FB
-        param[2][0] = result.Position[1];//WM
-        param[3][0] = result.Position[2];//KC
-        param[4][0] = result.Position[3];//FC
-        param[5][0] = result.Position[4];//FM
-        param[6][0] = result.Position[5];//K
-        param[7][0] = result.Position[6];//B
-        param[8][0] = result.Position[7];//CS
-        param[9][0] = result.Position[8];//L
+        Object[][] param = new Object[11][2];
+        param[0][0] = "面积";param[0][1] = Area;
+        param[1][0] = "FB";param[1][1] = result.Position[0];//FB
+        param[2][0] = "WM";param[2][1] = result.Position[1];//WM
+        param[3][0] = "KC";param[3][1] = result.Position[2];//KC
+        param[4][0] = "FC"; param[4][1] = result.Position[3];//FC
+        param[5][0] = "WM"; param[5][1] = result.Position[4];//FM
+        param[6][0] = "K";param[6][1] = result.Position[5];//K
+        param[7][0] = "B"; param[7][1] = result.Position[6];//B
+        param[8][0] = "CS"; param[8][1] = result.Position[7];//CS
+        param[9][0] = "L"; param[9][1] = result.Position[8];//L
+        param[10][0] = "合格率";param[10][1] = error;
         List<Object[][]> results = new ArrayList<>();
-
+        ExcelTool.writeObjectExcel("D:\\204\\2.头屯河\\径流预报数据文件\\参数率定结果.xlsx", String.valueOf(Area),flowData);
         results.add(param);
         results.add(flowData);
         return results;
@@ -303,12 +310,10 @@ public class ShanBeiCalibration {
                 .RunoffYieldCalculation_UnevenInfiltration()
                 .ConfluenceCalculation();
         //洪水过程对比
-        preData=new double[preREData.length-L];
-        hisData=new double[preREData.length-L];
-        for (int i = 0; i < historyFData.length-L; i++) {
+        preData=new double[duration];
+        hisData=new double[duration];
+        for (int i = 0; i < duration; i++) {
             hisData[i]= (double) historyFData[i+L][1];
-        }
-        for (int i = 0; i < shanbeiModel.Q.length-L; i++) {
             preData[i]= shanbeiModel.Q[i+L]+params[9];
         }
         return NashSutcliffeEfficiency(hisData, preData);
@@ -399,10 +404,6 @@ public class ShanBeiCalibration {
             sum += qr[i];
         }
 
-        double avgResult = 0;
-        for (int i = 0; i < real.length; i++) {
-            avgResult += qr[i] / real.length;
-        }
-        return avgResult;
+        return sum;
     }
 }

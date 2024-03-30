@@ -1,5 +1,6 @@
 package com.cj.fourPredictions.func.modular.flood.floodSituation.controller;
 
+import com.cj.common.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.cj.fourPredictions.func.modular.flood.floodSituation.bean.req.GetRealTimeRainfallReq;
 import com.cj.fourPredictions.func.modular.flood.floodSituation.bean.res.*;
@@ -26,7 +27,8 @@ public class FloodSituationController {
     @Autowired
     private FloodSituationService floodSituationService;
 
-    @ApiOperation(value="实时雨情", notes="实时雨情")
+    @ApiOperation(value="防洪兴利-防洪形式实时雨情", notes="实时雨情")
+    @CommonLog(value = "防洪兴利-防洪形式实时雨情")
     @PostMapping(value = "/getRealTimeRainfall")
     public RestResponse<List<RealTimeRainfallRes>> getRealTimeRainfall(@RequestBody GetRealTimeRainfallReq req){
         try {
@@ -37,7 +39,8 @@ public class FloodSituationController {
         }
     }
 
-    @ApiOperation(value="实时水情", notes="实时水情")
+    @ApiOperation(value="防洪兴利-防洪形式实时水情", notes="实时水情")
+    @CommonLog(value = "防洪兴利-防洪形式实时水情")
     @PostMapping(value = "/getRealTimeWaterLevelData")
     public RestResponse<List<RealTimeEngineeringSituationDataRes>>  getRealTimeWaterLevelData(@RequestBody GetRealTimeWaterLevelDataReq req){
         try {
@@ -48,7 +51,8 @@ public class FloodSituationController {
         }
     }
 
-    @ApiOperation(value="实时工情", notes="实时工情")
+    @ApiOperation(value="防洪兴利-防洪形式实时工情", notes="实时工情")
+    @CommonLog(value = "防洪兴利-防洪形式实时工情")
     @PostMapping(value = "/getRealTimeReservoirLevelData")
     public RestResponse<List<RealTimeWaterLevelDataRes>>  getRealTimeReservoirLevelData(@RequestBody GetRealTimeWaterLevelDataReq req){
         try {
@@ -59,19 +63,22 @@ public class FloodSituationController {
         }
     }
 
-    @ApiOperation(value="雨量历史数据", notes="雨量历史数据")
+    @ApiOperation(value="防洪兴利-防洪形式雨量历史数据", notes="雨量历史数据")
+    @CommonLog(value = "防洪兴利-防洪形式雨量历史数据")
     @PostMapping(value = "/getRainfallStationsHistoricalData")
     public RestResponse<List<RainfallStationsHistoricalDataRes>> getRainfallStationsHistoricalData(@RequestBody SelectHistoryReq req){
         return floodSituationService.getRainfallStationsHistoricalData(req);
     }
 
-    @ApiOperation(value="水库水位历史数据", notes="水库水位历史数据")
+    @ApiOperation(value="防洪兴利-防洪形式水库水位历史数据", notes="水库水位历史数据")
+    @CommonLog(value = "防洪兴利-防洪形式水库水位历史数据")
     @PostMapping(value = "/getReservoirLevel")
     public RestResponse<List<ReservoirLevelRes>> getReservoirLevel(@RequestBody SelectHistoryReq req){
         return floodSituationService.getReservoirLevel(req);
     }
 
-    @ApiOperation(value="水位站历史数据", notes="水位站历史数据")
+    @ApiOperation(value="防洪兴利-防洪形式水位站历史数据", notes="水位站历史数据")
+    @CommonLog(value = "防洪兴利-防洪形式水位站历史数据")
     @PostMapping(value = "/getWaterLevelData")
     public RestResponse<List<WaterLevelDataRes>> getWaterLevelData(@RequestBody SelectHistoryReq req){
         return floodSituationService.getWaterLevelData(req);

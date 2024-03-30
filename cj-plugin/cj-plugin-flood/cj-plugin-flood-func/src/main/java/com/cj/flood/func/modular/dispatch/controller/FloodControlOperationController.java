@@ -3,6 +3,7 @@ package com.cj.flood.func.modular.dispatch.controller;
 
 
 
+import com.cj.common.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.cj.flood.func.modular.dispatch.bean.req.FloodControlOperationAddReq;
 import com.cj.flood.func.modular.dispatch.bean.req.FloodControlOperationListReq;
@@ -36,35 +37,40 @@ public class FloodControlOperationController {
     private FloodControlOperationService floodControlOperationService;
 
     @ApiOperationSupport(order = 1)
-    @ApiOperation("预报断面")
+    @ApiOperation("防洪调度模块预报断面")
+    @CommonLog(value = "防洪调度模块预报断面")
     @GetMapping("/details")
     public RestResponse details(@RequestParam(value = "id") String id) {
         return floodControlOperationService.selectDetails(id);
     }
 
     @ApiOperationSupport(order = 2)
-    @ApiOperation("新增")
+    @ApiOperation("防洪调度模块新增")
+    @CommonLog(value = "防洪调度模块新增")
     @PostMapping("/add")
     public RestResponse add(@RequestBody FloodControlOperationAddReq req) {
         return floodControlOperationService.add(req);
     }
 
     @ApiOperationSupport(order = 3)
-    @ApiOperation("查询列表")
+    @ApiOperation("防洪调度模块查询列表")
+    @CommonLog(value = "防洪调度模块查询列表")
     @PostMapping("/selectList")
     public RestResponse selectList(@RequestBody FloodControlOperationListReq req) {
         return floodControlOperationService.selectList(req);
     }
 
     @ApiOperationSupport(order = 4)
-    @ApiOperation("方案对比")
+    @ApiOperation("防洪调度模块方案对比")
+    @CommonLog(value = "防洪调度模块方案对比")
     @GetMapping("/containmentCalculator")
     public RestResponse containmentCalculator(@RequestParam(value = "ids") String ids) {
         return floodControlOperationService.containmentCalculator(ids);
     }
 
     @ApiOperationSupport(order = 5)
-    @ApiOperation("删除")
+    @ApiOperation("防洪调度模块删除")
+    @CommonLog(value = "防洪调度模块删除")
     @GetMapping("/delete")
     public RestResponse delete(@RequestParam(value = "ids") String ids) {
         boolean b = floodControlOperationService.removeByIds(Arrays.stream(ids.split(",")).collect(Collectors.toList()));

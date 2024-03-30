@@ -14,6 +14,15 @@ public class IncomingWaterForecastAddReq implements Serializable {
     @ApiModelProperty(value = "模拟降雨数据")
     private List<RainFallDto> rainFallDtos;
 
+    @ApiModelProperty(value = "前期径流")
+    private Double preFlow;
+
+    @ApiModelProperty(value = "前期累计降雨")
+    private Double preRainFall;
+
+    @ApiModelProperty(value = "是否是模拟降雨")
+    private Boolean isSimulation;
+
     @ApiModelProperty(value = "来水预报字段数据")
     private IncomingWaterForecast incomingWaterForecast;
 }

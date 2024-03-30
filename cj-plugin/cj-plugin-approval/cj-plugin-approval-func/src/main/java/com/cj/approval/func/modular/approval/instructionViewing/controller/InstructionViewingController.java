@@ -2,6 +2,7 @@ package com.cj.approval.func.modular.approval.instructionViewing.controller;
 
 import com.cj.approval.func.modular.approval.instructionViewing.entity.InstructionViewing;
 import com.cj.approval.func.modular.approval.instructionViewing.service.InstructionViewingService;
+import com.cj.common.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSupport;
@@ -32,14 +33,16 @@ public class InstructionViewingController{
     private InstructionViewingService instructionViewingService;
 
     @ApiOperationSupport(order = 1)
-    @ApiOperation("通过指令id查询列表")
+    @ApiOperation("指令查看表通过指令id查询列表")
+    @CommonLog(value = "指令查看表通过指令id查询列表")
     @GetMapping("/selectListByInstructionId")
     public RestResponse<List<InstructionViewing>> selectListByInstructionId(@RequestParam("id") String id) {
         return instructionViewingService.selectListByInstructionId(id);
     }
 
     @ApiOperationSupport(order = 2)
-    @ApiOperation("修改阅读状态")
+    @ApiOperation("指令查看表修改阅读状态")
+    @CommonLog(value = "指令查看表修改阅读状态")
     @GetMapping("/updateRedsStatus")
     public RestResponse updateRedsStatus(@RequestParam("id") String id) {
         boolean update = instructionViewingService.lambdaUpdate().set(InstructionViewing::getReadTime,new Date()).

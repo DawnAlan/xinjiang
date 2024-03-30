@@ -17,7 +17,6 @@ public class calibrationParam {
     //人工率定3个站点参数
     private Map<String,shanbeiParam> manualParam;
     //当前预报径流,<断面,率定期间的时间和径流>
-
     private Map<String,Object[][]> imitateFlow;
     //楼庄子历史数据
     private LzzHydrologyParam lzzHydrologyParam;

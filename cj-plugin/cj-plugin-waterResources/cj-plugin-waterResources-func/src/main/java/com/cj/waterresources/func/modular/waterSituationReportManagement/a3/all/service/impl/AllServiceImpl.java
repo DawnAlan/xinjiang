@@ -1,6 +1,8 @@
 package com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
+import com.cj.auth.core.pojo.SaBaseLoginUser;
+import com.cj.auth.core.util.StpLoginUserUtil;
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.RedisUtil;
 import com.cj.waterresources.func.modular.trendsTable.entity.TrendsTableParam;
@@ -14,6 +16,7 @@ import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.res.A3StatisticsRes;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.res.FloodRetentionCapacityRes;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.res.SelectListForIndustrialWaterFeeRes;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.res.TodayWaterSituationRes;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.service.AllService;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.dkl.mapper.DayWaterSituationStatisticsTableDklMapper;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hd.entity.DayWaterSituationStatisticsTableHd;
@@ -558,6 +561,268 @@ public class AllServiceImpl implements AllService {
         }else {
             return RestResponse.ok(resList);
         }
+    }
+
+    @Override
+    public RestResponse selectFloodRetentionCapacityNew(String date, String ids) {
+        return null;
+    }
+
+    @Override
+    public RestResponse<Map<String,List<TodayWaterSituationRes>>> selectTodayWaterSituation(String date) {
+        SaBaseLoginUser saBaseLoginUser = StpLoginUserUtil.getLoginUser();
+        List<TodayWaterSituationRes> resList = new ArrayList<>();
+        Map<String,List<TodayWaterSituationRes>> resMap = new HashMap<>();
+        String mk = (String) redisUtil.get("trendsTableParam:list");
+        if(StringUtils.isEmpty(mk)){
+            trendsTableParamService.updateCache();
+            mk = (String) redisUtil.get("trendsTableParam:list");
+        }
+        List<TrendsTableParam> trendsTableParamList = JSONObject.parseArray(mk, TrendsTableParam.class);
+        if(saBaseLoginUser.getOrgName().equals("河东管理站")){
+            List<TrendsTableParam> hdTableParam = trendsTableParamList.stream().filter(t -> t.getUseType() == 1 && t.getUseStation().equals("河东管理站")).collect(Collectors.toList());
+            List<DayWaterSituationStatisticsTableHd> dayWaterSituationStatisticsTableHds = dayWaterSituationStatisticsTableHdMapper.selectListForTodayWaterSituation(date, hdTableParam.size());
+            if(dayWaterSituationStatisticsTableHds.isEmpty()){
+                return RestResponse.no("河东管理站今日暂无数据，请到A3水情日报表填写相关信息后再查询");
+            }
+            String endTableList = dayWaterSituationStatisticsTableHds.get(0).getEndTableList();
+            String[] split = endTableList.split(",");
+            for(String s:split){
+                TodayWaterSituationRes res = new TodayWaterSituationRes();
+                String name = (String) redisUtil.get("trendsTableParam:name:"+s);
+                if(!name.equals("合计") && StringUtils.isNotEmpty(name)){
+                    res.setName(name);
+                    res.setValue(dayWaterSituationStatisticsTableHds.stream().filter(t->t.getV()!=null && t.getTableHeadId().equals(s)).map(DayWaterSituationStatisticsTableHd::getV).reduce(Double::sum).orElse(0.00));
+                    resList.add(res);
+                }
+            }
+            if(resList.isEmpty()){
+                return RestResponse.no("今日暂无有效数据");
+            }
+            resMap.put("河东管理站",resList);
+            return RestResponse.ok(resMap);
+        }
+        if(saBaseLoginUser.getOrgName().equals("河西管理站")){
+            List<TrendsTableParam> hxTableParam = trendsTableParamList.stream().filter(t -> t.getUseType() == 1 && t.getUseStation().equals("河西管理站")).collect(Collectors.toList());
+            List<DayWaterSituationStatisticsTableHx> dayWaterSituationStatisticsTableHxs = dayWaterSituationStatisticsTableHxMapper.selectListForTodayWaterSituation(date, hxTableParam.size());
+            if(dayWaterSituationStatisticsTableHxs.isEmpty()){
+                return RestResponse.no("河西管理站今日暂无数据，请到A3水情日报表填写相关信息后再查询");
+            }
+            String endTableList = dayWaterSituationStatisticsTableHxs.get(0).getEndTableList();
+            String[] split = endTableList.split(",");
+            for(String s:split){
+                TodayWaterSituationRes res = new TodayWaterSituationRes();
+                String name = (String) redisUtil.get("trendsTableParam:name:"+s);
+                if(!name.equals("合计") && StringUtils.isNotEmpty(name)){
+                    res.setName(name);
+                    res.setValue(dayWaterSituationStatisticsTableHxs.stream().filter(t->t.getV()!=null && t.getTableHeadId().equals(s)).map(DayWaterSituationStatisticsTableHx::getV).reduce(Double::sum).orElse(0.00));
+                    resList.add(res);
+                }
+            }
+            if(resList.isEmpty()){
+                return RestResponse.no("今日暂无有效数据");
+            }
+            resMap.put("河西管理站",resList);
+            return RestResponse.ok(resMap);
+        }
+        if(saBaseLoginUser.getOrgName().equals("渠首管理站")){
+            List<TrendsTableParam> qsTableParam = trendsTableParamList.stream().filter(t -> t.getUseType() == 1 && t.getUseStation().equals("渠首管理站")).collect(Collectors.toList());
+            List<DayWaterSituationStatisticsTableQs> dayWaterSituationStatisticsTableQss = dayWaterSituationStatisticsTableQsMapper.selectListForTodayWaterSituation(date, qsTableParam.size());
+            if(dayWaterSituationStatisticsTableQss.isEmpty()){
+                return RestResponse.no("渠首管理站今日暂无数据，请到A3水情日报表填写相关信息后再查询");
+            }
+            String endTableList = dayWaterSituationStatisticsTableQss.get(0).getEndTableList();
+            String[] split = endTableList.split(",");
+            for(String s:split){
+                TodayWaterSituationRes res = new TodayWaterSituationRes();
+                String name = (String) redisUtil.get("trendsTableParam:name:"+s);
+                if(!name.equals("合计") && StringUtils.isNotEmpty(name)){
+                    res.setName(name);
+                    res.setValue(dayWaterSituationStatisticsTableQss.stream().filter(t->t.getV()!=null && t.getTableHeadId().equals(s)).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00));
+                    resList.add(res);
+                }
+            }
+            if(resList.isEmpty()){
+                return RestResponse.no("今日暂无有效数据");
+            }
+            resMap.put("渠首管理站",resList);
+            return RestResponse.ok(resMap);
+        }
+        if(saBaseLoginUser.getOrgName().equals("头屯河水库")){
+            List<TrendsTableParam> tthTableParam = trendsTableParamList.stream().filter(t -> t.getUseType() == 1 && t.getUseStation().equals("头屯河水库")).collect(Collectors.toList());
+            List<DayWaterSituationStatisticsTableTth> dayWaterSituationStatisticsTableTths = dayWaterSituationStatisticsTableTthMapper.selectListForTodayWaterSituation(date, tthTableParam.size());
+            if(dayWaterSituationStatisticsTableTths.isEmpty()){
+                return RestResponse.no("头屯河水库今日暂无数据，请到A3水情日报表填写相关信息后再查询");
+            }
+            String endTableList = dayWaterSituationStatisticsTableTths.get(0).getEndTableList();
+            String[] split = endTableList.split(",");
+            for(String s:split){
+                TodayWaterSituationRes res = new TodayWaterSituationRes();
+                String name = (String) redisUtil.get("trendsTableParam:name:"+s);
+                if(!name.equals("合计") && StringUtils.isNotEmpty(name)){
+                    res.setName(name);
+                    res.setValue(dayWaterSituationStatisticsTableTths.stream().filter(t->t.getV()!=null && t.getTableHeadId().equals(s)).map(DayWaterSituationStatisticsTableTth::getV).reduce(Double::sum).orElse(0.00));
+                    resList.add(res);
+                }
+            }
+            if(resList.isEmpty()){
+                return RestResponse.no("今日暂无有效数据");
+            }
+            resMap.put("头屯河水库",resList);
+            return RestResponse.ok(resMap);
+        }
+        if(saBaseLoginUser.getOrgName().equals("楼庄子水库")){
+            List<TrendsTableParam> lzzTableParam = trendsTableParamList.stream().filter(t -> t.getUseType() == 1 && t.getUseStation().equals("楼庄子水库")).collect(Collectors.toList());
+            List<DayWaterSituationStatisticsTableLzz> dayWaterSituationStatisticsTableLzzs = dayWaterSituationStatisticsTableLzzMapper.selectListForTodayWaterSituation(date, lzzTableParam.size());
+            if(dayWaterSituationStatisticsTableLzzs.isEmpty()){
+                return RestResponse.no("头屯河水库今日暂无数据，请到A3水情日报表填写相关信息后再查询");
+            }
+            String endTableList = dayWaterSituationStatisticsTableLzzs.get(0).getEndTableList();
+            String[] split = endTableList.split(",");
+            for(String s:split){
+                TodayWaterSituationRes res = new TodayWaterSituationRes();
+                String name = (String) redisUtil.get("trendsTableParam:name:"+s);
+                if(!name.equals("合计") && StringUtils.isNotEmpty(name)){
+                    res.setName(name);
+                    res.setValue(dayWaterSituationStatisticsTableLzzs.stream().filter(t->t.getV()!=null && t.getTableHeadId().equals(s)).map(DayWaterSituationStatisticsTableLzz::getV).reduce(Double::sum).orElse(0.00));
+                    resList.add(res);
+                }
+            }
+            if(resList.isEmpty()){
+                return RestResponse.no("今日暂无有效数据");
+            }
+            resMap.put("楼庄子水库",resList);
+            return RestResponse.ok(resMap);
+        }
+        Map<String, List<TodayWaterSituationRes>> stringListMap = allData(trendsTableParamList, date);
+        if(stringListMap !=null){
+            return RestResponse.ok(stringListMap);
+        }else {
+            return RestResponse.no("今日暂无有效数据");
+        }
+    }
+
+    private Map<String,List<TodayWaterSituationRes>> allData(List<TrendsTableParam> trendsTableParamList,String date){
+        Map<String,List<TodayWaterSituationRes>> resMap = new HashMap<>();
+        List<TodayWaterSituationRes> hdList = new ArrayList<>();
+        List<TodayWaterSituationRes> hxList = new ArrayList<>();
+        List<TodayWaterSituationRes> qsList = new ArrayList<>();
+        List<TodayWaterSituationRes> tthList = new ArrayList<>();
+        List<TodayWaterSituationRes> lzzList = new ArrayList<>();
+
+        List<TrendsTableParam> hdTableParam = trendsTableParamList.stream().filter(t -> t.getUseType() == 1 && t.getUseStation().equals("河东管理站")).collect(Collectors.toList());
+        List<DayWaterSituationStatisticsTableHd> dayWaterSituationStatisticsTableHds = dayWaterSituationStatisticsTableHdMapper.selectListForTodayWaterSituation(date, hdTableParam.size());
+        if(dayWaterSituationStatisticsTableHds.isEmpty()){
+            resMap.put("河东管理站",null);
+        }
+        String endTableListHd = dayWaterSituationStatisticsTableHds.get(0).getEndTableList();
+        String[] splitHd = endTableListHd.split(",");
+        for(String s:splitHd){
+            TodayWaterSituationRes res = new TodayWaterSituationRes();
+            String name = (String) redisUtil.get("trendsTableParam:name:"+s);
+            if(!name.equals("合计") && StringUtils.isNotEmpty(name)){
+                res.setName(name);
+                res.setValue(dayWaterSituationStatisticsTableHds.stream().filter(t->t.getV()!=null && t.getTableHeadId().equals(s)).map(DayWaterSituationStatisticsTableHd::getV).reduce(Double::sum).orElse(0.00));
+                hdList.add(res);
+            }
+        }
+        if(hdList.isEmpty()){
+            resMap.put("河东管理站",null);
+        }
+        resMap.put("河东管理站",hdList);
+
+
+        List<TrendsTableParam> hxTableParam = trendsTableParamList.stream().filter(t -> t.getUseType() == 1 && t.getUseStation().equals("河西管理站")).collect(Collectors.toList());
+        List<DayWaterSituationStatisticsTableHx> dayWaterSituationStatisticsTableHxs = dayWaterSituationStatisticsTableHxMapper.selectListForTodayWaterSituation(date, hxTableParam.size());
+        if(dayWaterSituationStatisticsTableHxs.isEmpty()){
+            resMap.put("河西管理站",null);
+        }
+        String endTableListHx = dayWaterSituationStatisticsTableHxs.get(0).getEndTableList();
+        String[] splitHx = endTableListHx.split(",");
+        for(String s:splitHx){
+            TodayWaterSituationRes res = new TodayWaterSituationRes();
+            String name = (String) redisUtil.get("trendsTableParam:name:"+s);
+            if(!name.equals("合计") && StringUtils.isNotEmpty(name)){
+                res.setName(name);
+                res.setValue(dayWaterSituationStatisticsTableHxs.stream().filter(t->t.getV()!=null && t.getTableHeadId().equals(s)).map(DayWaterSituationStatisticsTableHx::getV).reduce(Double::sum).orElse(0.00));
+                hxList.add(res);
+            }
+        }
+        if(hxList.isEmpty()){
+            resMap.put("河西管理站",null);
+        }
+        resMap.put("河西管理站",hxList);
+
+
+        List<TrendsTableParam> qsTableParam = trendsTableParamList.stream().filter(t -> t.getUseType() == 1 && t.getUseStation().equals("渠首管理站")).collect(Collectors.toList());
+        List<DayWaterSituationStatisticsTableQs> dayWaterSituationStatisticsTableQss = dayWaterSituationStatisticsTableQsMapper.selectListForTodayWaterSituation(date, qsTableParam.size());
+        if(dayWaterSituationStatisticsTableQss.isEmpty()){
+            resMap.put("渠首管理站",null);
+        }
+        String endTableListQs = dayWaterSituationStatisticsTableQss.get(0).getEndTableList();
+        String[] splitQs = endTableListQs.split(",");
+        for(String s:splitQs){
+            TodayWaterSituationRes res = new TodayWaterSituationRes();
+            String name = (String) redisUtil.get("trendsTableParam:name:"+s);
+            if(!name.equals("合计") && StringUtils.isNotEmpty(name)){
+                res.setName(name);
+                res.setValue(dayWaterSituationStatisticsTableQss.stream().filter(t->t.getV()!=null && t.getTableHeadId().equals(s)).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00));
+                qsList.add(res);
+            }
+        }
+        if(qsList.isEmpty()){
+            resMap.put("渠首管理站",null);
+        }
+        resMap.put("渠首管理站",qsList);
+
+
+        List<TrendsTableParam> tthTableParam = trendsTableParamList.stream().filter(t -> t.getUseType() == 1 && t.getUseStation().equals("头屯河水库")).collect(Collectors.toList());
+        List<DayWaterSituationStatisticsTableTth> dayWaterSituationStatisticsTableTths = dayWaterSituationStatisticsTableTthMapper.selectListForTodayWaterSituation(date, tthTableParam.size());
+        if(dayWaterSituationStatisticsTableTths.isEmpty()){
+            resMap.put("头屯河水库",null);
+        }
+        String endTableListTth = dayWaterSituationStatisticsTableTths.get(0).getEndTableList();
+        String[] splitTth = endTableListTth.split(",");
+        for(String s:splitTth){
+            TodayWaterSituationRes res = new TodayWaterSituationRes();
+            String name = (String) redisUtil.get("trendsTableParam:name:"+s);
+            if(!name.equals("合计") && StringUtils.isNotEmpty(name)){
+                res.setName(name);
+                res.setValue(dayWaterSituationStatisticsTableTths.stream().filter(t->t.getV()!=null && t.getTableHeadId().equals(s)).map(DayWaterSituationStatisticsTableTth::getV).reduce(Double::sum).orElse(0.00));
+                tthList.add(res);
+            }
+        }
+        if(tthList.isEmpty()){
+            resMap.put("头屯河水库",null);
+        }
+        resMap.put("头屯河水库",tthList);
+
+
+        List<TrendsTableParam> lzzTableParam = trendsTableParamList.stream().filter(t -> t.getUseType() == 1 && t.getUseStation().equals("楼庄子水库")).collect(Collectors.toList());
+        List<DayWaterSituationStatisticsTableLzz> dayWaterSituationStatisticsTableLzzs = dayWaterSituationStatisticsTableLzzMapper.selectListForTodayWaterSituation(date, lzzTableParam.size());
+        if(dayWaterSituationStatisticsTableLzzs.isEmpty()){
+            resMap.put("楼庄子水库",null);
+        }
+        String endTableListLzz = dayWaterSituationStatisticsTableLzzs.get(0).getEndTableList();
+        String[] splitLzz = endTableListLzz.split(",");
+        for(String s:splitLzz){
+            TodayWaterSituationRes res = new TodayWaterSituationRes();
+            String name = (String) redisUtil.get("trendsTableParam:name:"+s);
+            if(!name.equals("合计") && StringUtils.isNotEmpty(name)){
+                res.setName(name);
+                res.setValue(dayWaterSituationStatisticsTableLzzs.stream().filter(t->t.getV()!=null && t.getTableHeadId().equals(s)).map(DayWaterSituationStatisticsTableLzz::getV).reduce(Double::sum).orElse(0.00));
+                lzzList.add(res);
+            }
+        }
+        if(lzzList.isEmpty()){
+            resMap.put("楼庄子水库",null);
+        }
+        resMap.put("楼庄子水库",lzzList);
+
+        if(resMap.isEmpty()){
+            return null;
+        }
+        return resMap;
     }
 
     public Map<String, List<A3StatisticsRes>> change(Map<String, List<A3StatisticsRes>> collect){

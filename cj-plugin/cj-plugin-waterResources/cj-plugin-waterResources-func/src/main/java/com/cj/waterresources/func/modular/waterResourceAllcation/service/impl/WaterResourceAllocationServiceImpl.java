@@ -630,7 +630,7 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
                 List<RealTimeReservoirLevelRes> resList = new ArrayList<>();
                 for(IrrigatedPlatformDataInfo dataInfo:list){
                     RealTimeReservoirLevelRes res = new RealTimeReservoirLevelRes();
-                    res.setDate(dataInfo.getMonitorTime());
+                    res.setDate(sdf.format(dataInfo.getMonitorTime()));
                     res.setWaterAmount(dataInfo.getSqCapacity()-211.79);
                     res.setCapacity(dataInfo.getSqCapacity());
                     resList.add(res);

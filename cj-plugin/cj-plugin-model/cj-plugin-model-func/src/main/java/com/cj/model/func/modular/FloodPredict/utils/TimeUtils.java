@@ -1,12 +1,13 @@
 package com.cj.model.func.modular.FloodPredict.utils;
 
 import com.cj.model.func.modular.FloodPredict.entity.DateIndex;
+import com.cj.model.func.modular.FloodPredict.entity.ParamsSetVO;
+import com.cj.model.func.modular.FloodPredict.entity.PredictInputData;
 
-import java.sql.Timestamp;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
+import java.time.*;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 
 /**
  * 时间处理方法
@@ -14,214 +15,49 @@ import java.util.Date;
  *
  */
 public class TimeUtils {
-	
+	//基础方法
+	public static DateIndex getDateIndex(Date date){
+
+		DateIndex dateIndex = new DateIndex();
+		SimpleDateFormat sdf0 = new SimpleDateFormat("yyyy");
+		SimpleDateFormat sdf1 = new SimpleDateFormat("MM");
+		SimpleDateFormat sdf2= new SimpleDateFormat("dd");
+		String year = sdf0.format(date);
+		String month = sdf1.format(date);
+		String day = sdf2.format(date);
+		int y = Integer.parseInt(year);
+		int m = Integer.parseInt(month);
+		int d = Integer.parseInt(day);
+		dateIndex.setYear(y);
+		if(d<=10){
+			dateIndex.setIndex(3 * (m - 1) + 1);
+		}else if(d <= 20){
+			dateIndex.setIndex(3 * (m - 1) + 2);
+		}else{
+			dateIndex.setIndex(3 * (m - 1) + 3);
+		}
+		return dateIndex;
+	}
+	public static Date getDateByIndexTenDay(DateIndex index){
+		Calendar calendar = Calendar.getInstance();
+		int month = (index.getIndex() - 1) / 3;
+		int day = ((index.getIndex() + 2) % 3) * 10 + 1;
+		calendar.clear();
+		calendar.set(Calendar.YEAR, index.getYear());
+		calendar.set(Calendar.MONTH, month);
+		calendar.set(Calendar.DAY_OF_MONTH, day);
+		return calendar.getTime();
+
+	}
+
 	/**
-	 * 计算开始时间和结束时间之间的相隔天数
-	 * @param startTime
-	 * @param endTime
-	 * @return
-	 */
-	public static int getForePeriod(Date startTime,Date endTime) {
-		Long spi = endTime.getTime() - startTime.getTime();
-		int step = (int)(spi / (24 * 60 * 60 * 1000))+1;// 相隔天数
-		return step;
-	}
-	
-	/**以天为单位，将分段的洪水预报时间合在一起
-	 * 
-	 * @param times 字符串数组，记录每次洪水的起始时间
-	 * @param datas 任一与场次洪水相关的雨量、流量、产流量等数据
-	 * @return
-	 * @throws ParseException 率定期或检验期每一天的具体数据
-	 */
-	public static Date[] getDays(String[][] times,double[][] datas,int warmup) throws ParseException {
-		Date[][] dates = new Date[datas.length][];
-		int sum =0;
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		for (int i = 0; i < datas.length; i++) {
-			Date startTime = sdf.parse(times[i][0]);
-			Calendar cal = Calendar.getInstance();
-			cal.setTime(startTime);
-			cal.add(Calendar.DAY_OF_YEAR, warmup);
-			Date startTime1 = cal.getTime();
-			dates[i] = getDayDateList(startTime1, datas[i].length);
-			sum+=datas[i].length;
-		}
-		Date[] totaldates = new Date[sum];
-		int len =0;
-		for (int i = 0; i < dates.length; i++) {
-			for (int j = 0; j < dates[i].length; j++) {
-				totaldates[j+len] = dates[i][j];
-			}
-			len+=dates[i].length;
-		}
-		
-		return totaldates;
-	}
-	
-	/** 预报时段为天的日期出来
-	 * 
+	 * 获得预报时间序列（天、小时）
 	 * @param startDate
 	 * @param len
+	 * @param day
+	 * @param hours
 	 * @return
 	 */
-	public static Date[] getDayDateList(Date startDate,int len) {
-		Date[] dates = new Date[len];
-		for (int i = 0; i < dates.length; i++) {
-			if (i==0) {
-				dates[i]=startDate;
-			} else {
-				 Calendar cal = Calendar.getInstance();
-				 cal.setTime(dates[i-1]);
-				 cal.add(Calendar.DATE,1);
-				 dates[i]=cal.getTime();
-			}
-		}
-		return dates;
-	}
-
-	
-	/**中长期的月日期处理
-	 * 
-	 * @param startDate 开始时间（延长至基础数据）
-	 * @param len 预见期的长度
-	 * @return 从预报开始日期月初开始返回相应枯水期或者丰水期的预报时间
-	 */
-	public static Date[][] getSelectMonthDateList(Date startDate, int len) {
-		Date[][] dates = new Date[len][1];
-		int day = DataUtils.getSpecificDate(startDate).get("日");
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(startDate);
-		cal.add(Calendar.DAY_OF_MONTH,-day+1);
-		startDate=cal.getTime();
-		int month = DataUtils.getSpecificDate(startDate).get("月");
-		if (month<=9&&month>=5){
-			int judgeMonth = 0;
-			for(int i = 0; i < len; i++){
-				judgeMonth = DataUtils.getSpecificDate(startDate).get("月");
-				cal.setTime(startDate);
-				dates[i][0]=cal.getTime();
-				cal.add(Calendar.MONTH,1);
-				startDate=cal.getTime();
-				if (judgeMonth==9){
-					cal.add(Calendar.MONTH,7);//后续更改，注意丰水期的时间
-					startDate = cal.getTime();
-				}
-			}
-		}
-		if (month<=4||month>=10){
-			int judgeMonth = 0;
-			for(int i = 0; i < len; i++){
-				judgeMonth = DataUtils.getSpecificDate(startDate).get("月");
-				cal.setTime(startDate);
-				dates[i][0]=cal.getTime();
-				cal.add(Calendar.MONTH,1);
-				startDate=cal.getTime();
-				if (judgeMonth==4){
-					cal.add(Calendar.MONTH,5);//后续更改，注意枯水期的时间
-					startDate = cal.getTime();
-				}
-			}
-		}
-		return dates;
-	}
-
-	
-	public static Date[][] getSelectDateList(Date startDate, int len, int day, int hours){
-		Date[][] dates = new Date[len][1];
-		Calendar now = Calendar.getInstance();
-		now.setTime(startDate);
-		startDate = now.getTime();
-		if(day == 10){
-			int month = DataUtils.getSpecificDate(startDate).get("月");
-			DateIndex outputIndex = TimeUtils.getDateIndex(startDate);
-			if (month<=9&&month>=5){
-				int judgeIndex = 0;
-				for(int i = 0; i < len; i++){
-					dates[i][0] = TimeUtils.getDateByIndexTenDay(outputIndex);
-					int year = DataUtils.getSpecificDate(dates[i][0]).get("年");
-					outputIndex = outputIndex.getNextDateIndex(36);
-					judgeIndex =outputIndex.getIndex();
-					if (judgeIndex==28){
-						outputIndex.setYear(year+1);
-						outputIndex.setIndex(13);
-					}
-				}
-			}
-			if (month<=4||month>=10){
-				int judgeIndex = 0;
-				for(int i = 0; i < len; i++){
-					dates[i][0] = TimeUtils.getDateByIndexTenDay(outputIndex);
-					outputIndex = outputIndex.getNextDateIndex(36);
-					judgeIndex =outputIndex.getIndex();
-					if (judgeIndex==13){
-						outputIndex.setIndex(28);
-					}
-				}
-			}
-		}
-		else{
-			int month = DataUtils.getSpecificDate(startDate).get("月");
-			if (month<=9&&month>=5){
-				int judgeMonth = 0;
-				for(int i = 0; i < len; i++){
-					now.setTime(startDate);
-					dates[i][0]=now.getTime();
-					now.add(Calendar.DAY_OF_YEAR, day);
-					now.add(Calendar.HOUR_OF_DAY, hours);
-					startDate=now.getTime();
-					judgeMonth = DataUtils.getSpecificDate(startDate).get("月");
-					if (judgeMonth==10){
-						now.add(Calendar.MONTH,7);//后续更改，注意丰水期的时间
-						int dayOfMonth = DataUtils.getSpecificDate(startDate).get("日");
-						now.add(Calendar.DAY_OF_MONTH,-dayOfMonth+1);
-						startDate = now.getTime();
-					}
-				}
-			}
-			if (month<=4||month>=10){
-				int judgeMonth = 0;
-				for(int i = 0; i < len; i++){
-					now.setTime(startDate);
-					dates[i][0]=now.getTime();
-					now.add(Calendar.DAY_OF_YEAR, day);
-					now.add(Calendar.HOUR_OF_DAY, hours);
-					startDate=now.getTime();
-					judgeMonth = DataUtils.getSpecificDate(startDate).get("月");
-					if (judgeMonth==5){
-						now.add(Calendar.MONTH,5);//后续更改，注意丰水期的时间
-						int dayOfMonth = DataUtils.getSpecificDate(startDate).get("日");
-						now.add(Calendar.DAY_OF_MONTH,-dayOfMonth+1);
-						startDate = now.getTime();
-					}
-				}
-			}
-		}
-		return dates;
-	}
-	/**中长期的月日期处理
-	 *
-	 * @param startDate 开始时间（延长至基础数据）
-	 * @param len 预见期的长度
-	 * @return 除去基础数据日期的所有日期
-	 */
-	public static Date[][] getMonthDateList(Date startDate,int len) {
-		Date[][] dates = new Date[len][1];
-		int day = DataUtils.getSpecificDate(startDate).get("日");
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(startDate);
-		cal.add(Calendar.DAY_OF_MONTH,-day+1);
-		startDate=cal.getTime();
-		for(int i = 0; i < len; i++){
-			cal.setTime(startDate);
-			dates[i][0]=cal.getTime();
-			cal.add(Calendar.MONTH,1);
-			startDate = cal.getTime();
-		}
-		return dates;
-	}
-
-
 	public static Date[][] getDateList(Date startDate,int len, int day, int hours){
 		Date[][] dates = new Date[len][1];
 		Calendar now = Calendar.getInstance();
@@ -251,129 +87,408 @@ public class TimeUtils {
 		return dates;
 	}
 
-	
-	
-	public static Date timeFormat(Date date){
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-		Date newDate = null;
-		try {
-			String dateStr = sdf.format(date);
-			newDate = sdf.parse(dateStr);
-		} catch (ParseException e) {
-			// TODO 自动生成的 catch 块
-			e.printStackTrace();
+	/**
+	 * 获得融雪期预报时间序列（天、小时）
+	 * @param startDate
+	 * @param len
+	 * @param day
+	 * @param hours
+	 * @return
+	 */
+	public static Date[][] getSelectDateList(Date startDate, int len, int day, int hours){
+		Date[][] dates = new Date[len][1];
+		Calendar now = Calendar.getInstance();
+		now.setTime(startDate);
+		startDate = now.getTime();
+		if(day == 10){
+			int month = getSpecificDate(startDate).get("月");
+			DateIndex outputIndex = TimeUtils.getDateIndex(startDate);
+			if (month<=9&&month>=5){
+				int judgeIndex = 0;
+				for(int i = 0; i < len; i++){
+					dates[i][0] = TimeUtils.getDateByIndexTenDay(outputIndex);
+					int year = getSpecificDate(dates[i][0]).get("年");
+					outputIndex = outputIndex.getNextDateIndex(36);
+					judgeIndex =outputIndex.getIndex();
+					if (judgeIndex==28){
+						outputIndex.setYear(year+1);
+						outputIndex.setIndex(13);
+					}
+				}
+			}
+			if (month<=4||month>=10){
+				int judgeIndex = 0;
+				for(int i = 0; i < len; i++){
+					dates[i][0] = TimeUtils.getDateByIndexTenDay(outputIndex);
+					outputIndex = outputIndex.getNextDateIndex(36);
+					judgeIndex =outputIndex.getIndex();
+					if (judgeIndex==13){
+						outputIndex.setIndex(28);
+					}
+				}
+			}
 		}
-		
-		return newDate;
-	}
-	
-	public static int getHours(Date date){
-		SimpleDateFormat sdf = new SimpleDateFormat("HH");
-		String dateStr = sdf.format(date);
-		int time = Integer.parseInt(dateStr);
-		
-		if(time > 23 || time <= 5){
-			time = 2;
-		}else if(time > 5 && time <= 11){
-			time = 8;
-		}else if(time > 11 && time <= 17){
-			time = 14;
-		}else{
-			time = 20;
+		else{
+			int month = getSpecificDate(startDate).get("月");
+			if (month<=9&&month>=5){
+				int judgeMonth = 0;
+				for(int i = 0; i < len; i++){
+					now.setTime(startDate);
+					dates[i][0]=now.getTime();
+					now.add(Calendar.DAY_OF_YEAR, day);
+					now.add(Calendar.HOUR_OF_DAY, hours);
+					startDate=now.getTime();
+					judgeMonth = getSpecificDate(startDate).get("月");
+					if (judgeMonth==10){
+						now.add(Calendar.MONTH,7);//后续更改，注意丰水期的时间
+						int dayOfMonth = getSpecificDate(startDate).get("日");
+						now.add(Calendar.DAY_OF_MONTH,-dayOfMonth+1);
+						startDate = now.getTime();
+					}
+				}
+			}
+			if (month<=4||month>=10){
+				int judgeMonth = 0;
+				for(int i = 0; i < len; i++){
+					now.setTime(startDate);
+					dates[i][0]=now.getTime();
+					now.add(Calendar.DAY_OF_YEAR, day);
+					now.add(Calendar.HOUR_OF_DAY, hours);
+					startDate=now.getTime();
+					judgeMonth = getSpecificDate(startDate).get("月");
+					if (judgeMonth==5){
+						now.add(Calendar.MONTH,5);//后续更改，注意丰水期的时间
+						int dayOfMonth = getSpecificDate(startDate).get("日");
+						now.add(Calendar.DAY_OF_MONTH,-dayOfMonth+1);
+						startDate = now.getTime();
+					}
+				}
+			}
 		}
-		
-		return time;
+		return dates;
 	}
-	
-	public static int indexOFtheYear(Date date){
-		
-	    Calendar c = Calendar.getInstance();
-		c.setTime(date);
-		int index = c.get(Calendar.DAY_OF_YEAR);
-	
+
+	/**
+	 * 中长期的月日期处理
+	 * @param startDate 开始时间
+	 * @param len 预见期的长度
+	 * @return 除去基础数据日期的所有日期
+	 */
+	public static Date[][] getMonthDateList(Date startDate,int len) {
+		Date[][] dates = new Date[len][1];
+		int day = getSpecificDate(startDate).get("日");
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(startDate);
+		cal.add(Calendar.DAY_OF_MONTH,-day+1);
+		startDate=cal.getTime();
+		for(int i = 0; i < len; i++){
+			cal.setTime(startDate);
+			dates[i][0]=cal.getTime();
+			cal.add(Calendar.MONTH,1);
+			startDate = cal.getTime();
+		}
+		return dates;
+	}
+
+	/**
+	 * 返回日期相差的数量（分：小时，日，月）
+	 * 后面减去前面
+	 */
+	public static int duration(Date dateStart,Date dateEnd,String period){
+		int result = 0;
+		if (period.equals("年")){
+			LocalDate localDate1 = dateStart.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+			LocalDate localDate2 = dateEnd.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+			Period duration = Period.between(localDate1, localDate2);
+			int years = duration.getYears();
+			result =years;
+		}
+		if (period.equals("月")){
+			LocalDate localDate1 = dateStart.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+			LocalDate localDate2 = dateEnd.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+			long months = ChronoUnit.MONTHS.between(localDate1, localDate2);
+			result =Math.toIntExact(months);
+		}
+		if (period.equals("日")){
+			LocalDate localDate1 = dateStart.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+			LocalDate localDate2 = dateEnd.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+			// 计算相差天数并返回
+			long duration =  Duration.between(localDate1.atStartOfDay(), localDate2.atStartOfDay()).toDays();
+			result = Math.toIntExact(duration);
+		}
+		if (period.equals("小时")){
+			LocalDateTime localDateTime1 = dateStart.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+			LocalDateTime localDateTime2 = dateEnd.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+			Duration duration = Duration.between(localDateTime1, localDateTime2);
+			long hours = duration.toHours();
+			result = Math.toIntExact(hours);
+		}
+		return result;
+	}
+
+	//判断每一旬的天数
+	public static int getDays(Object[][] predict, ParamsSetVO pvo, int i) {//存在问题
+		Date date1= (Date) predict[i * pvo.getPeriodStepSize()][0];
+		LocalDate date = date1.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
+		// 获取年份、月份和天数
+		int year = date.getYear();
+		int month = date.getMonthValue();
+		int day = date.getDayOfMonth();
+		// 判断旬
+		int days;
+		if (day <= 10) {
+			days = Math.min(day, 10);
+		} else if (day <= 20) {
+			days = Math.min(day - 10, 10);
+		} else {
+			int lastDayOfMonth = YearMonth.of(year, month).lengthOfMonth();
+			days = Math.min(day - 20, (month == 2 && lastDayOfMonth == 29) ? 11 : 10);
+		}
+		return days;
+	}
+
+	/**
+	 * 返回旬相差的数量
+	 */
+	public static int xunDuration(Date dateStart,Date dateEnd){
+		int result = 0;
+		int year = duration(dateStart,dateEnd,"年");
+		int month = duration(dateStart,dateEnd,"月");
+		int day = duration(dateStart,dateEnd,"日");
+		result = year * 12 * 3 + month * 3 + day / 10 +1;
+		return result;
+	}
+
+	/**
+	 * 日期比较
+	 * @param date1
+	 * @param date2 最终返回date2=date1
+	 * @param period
+	 * @return 如果两个日期在规定尺度上相等，则返回true
+	 */
+	public static Boolean DateCompare(Date date1,Date date2,String period){
+		Boolean result = false;
+		int year = getSpecificDate(date1).get("年");
+		int month = getSpecificDate(date1).get("月");
+		int day = getSpecificDate(date1).get("日");
+		int hour = getSpecificDate(date1).get("小时");
+		int year1 = getSpecificDate(date2).get("年");
+		int month1 = getSpecificDate(date2).get("月");
+		int day1 = getSpecificDate(date2).get("日");
+		int hour1 = getSpecificDate(date2).get("小时");
+		if (period.equals("小时")){
+			if (year1==year & month1==month & day1==day & hour1==hour){
+				result=true;
+			}
+		}
+		if (period.equals("日")){
+			if (year1==year & month1==month & day1==day ){
+				result=true;
+			}
+		}
+		if (period.equals("月")){
+			if (year1==year & month1==month){
+				result=true;
+			}
+		}
+		if (period.equals("年")){
+			if (year1==year ){
+				result=true;
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * 返回的是这个时间或者他后面离他最近的值
+	 * @param timeSeries 按升序排列的时间list
+	 * @param inputTime 需要寻找的时间
+	 * @return
+	 */
+	public static int findNearestTime(List<Date> timeSeries, Date inputTime) {
+		Collections.sort(timeSeries);
+
+		int index = Collections.binarySearch(timeSeries, inputTime);
+		if (index >= 0) {
+			return index; // 输入时间点恰好存在于时间序列中
+		}
+
+		index = -index - 1; // 找到输入时间点应该插入的位置
+
+		if (index == 0) {
+			return 0; // 输入时间点比时间序列中最小的时间还小
+		}
+
+		if (index == timeSeries.size()) {
+			return timeSeries.size() - 1; // 输入时间点比时间序列中最大的时间还大
+		}
+
+		Date before = timeSeries.get(index - 1);
+		Date after = timeSeries.get(index);
+		LocalDate localDate1 = before.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+		LocalDate localDate2 = inputTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+		LocalDate localDate3 = after.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+		// 计算相差天数并返回
+		long duration =  Duration.between(localDate1.atStartOfDay(), localDate2.atStartOfDay()).toHours();
+		int n = Math.toIntExact(duration);
+//		m是后面的时间与需要寻找的时间之间的差值
+		long duration2 =  Duration.between(localDate2.atStartOfDay(), localDate3.atStartOfDay()).toHours();
+		int m = Math.toIntExact(duration2);
+//		if (m < n) {
+//			return index;
+//		} else {
+//			return index-1;
+//		}
 		return index;
-		
 	}
-	
-	public static boolean isSameDate(Date date1, Date date2) {
-        try {
-         Calendar cal1 = Calendar.getInstance();
-            cal1.setTime(date1);
 
-            Calendar cal2 = Calendar.getInstance();
-            cal2.setTime(date2);
+	/**
+	 * 根据period将日尺度数据转换为相应尺度
+	 * @param data
+	 * @param period
+	 * @return
+	 */
+	public static List<PredictInputData> ChangeDate(List<PredictInputData> data, String period){
+		List<PredictInputData>  result = new ArrayList<>();
 
-            boolean isSameYear = cal1.get(Calendar.YEAR) == cal2
-                    .get(Calendar.YEAR);
-            boolean isSameMonth = isSameYear
-                    && cal1.get(Calendar.MONTH) == cal2.get(Calendar.MONTH);
-            boolean isSameDate = isSameMonth
-                    && cal1.get(Calendar.DAY_OF_MONTH) == cal2
-                            .get(Calendar.DAY_OF_MONTH);
+		double flowSum = 0;
+		double temperatureSum = 0;
+		double rainfallSum = 0;
+		int flowNum = 0;
+		int temperatureNum = 0;
+		int rainfallNum = 0;
 
-            return isSameDate;
-     } catch (Exception e) {
-         e.printStackTrace();
-     }
-     return false;
-    }
-	
-	
-	public static DateIndex getDateIndex(Date date){
-		
-		DateIndex dateIndex = new DateIndex();
-		SimpleDateFormat sdf0 = new SimpleDateFormat("yyyy");
-		SimpleDateFormat sdf1 = new SimpleDateFormat("MM");
-		SimpleDateFormat sdf2= new SimpleDateFormat("dd");
-		String year = sdf0.format(date);
-		String month = sdf1.format(date);
-		String day = sdf2.format(date);
-		int y = Integer.parseInt(year);
-		int m = Integer.parseInt(month);
-		int d = Integer.parseInt(day);
-		dateIndex.setYear(y);
-		if(d<=10){
-			dateIndex.setIndex(3 * (m - 1) + 1);
-		}else if(d <= 20){
-			dateIndex.setIndex(3 * (m - 1) + 2);
-		}else{
-			dateIndex.setIndex(3 * (m - 1) + 3);
+		if(period.equals("旬")){
+			for (int i = 0; i < data.size(); i++) {
+				Date time = data.get(i).getDates();
+				int day = getSpecificDate(time).get("日");
+				int dayBefore = 0;
+				Date time2 = new Date();
+				if(i!=0){
+					time2 = data.get(i-1).getDates();
+					dayBefore = getSpecificDate(time2).get("日");
+				}
+				if(day==11||day==21||((day-dayBefore)<0)||i==data.size()-1){
+					if (flowNum==0){
+						flowNum=1;
+					}
+					if (temperatureNum==0){
+						temperatureNum=1;
+					}
+					if (rainfallNum==0){
+						rainfallNum=1;
+					}
+					double flowY =flowSum / flowNum;
+					double temperatureY =temperatureSum / temperatureNum;
+					double rainfallY =rainfallSum / rainfallNum;
+					PredictInputData piece = new PredictInputData();
+					piece.setDates(time2);
+					piece.setFlow(flowY);
+					piece.setTemperature(temperatureY);
+					piece.setRainfall(rainfallY);
+					result.add(piece);
+					flowSum=0;
+					temperatureSum=0;
+					rainfallSum=0;
+					flowNum=0;
+					temperatureNum=0;
+					rainfallNum=0;
+				}
+				if (data.get(i).getFlow()!=null){
+					flowSum=flowSum + data.get(i).getFlow();
+					flowNum=flowNum + 1;
+				}
+				if(data.get(i).getTemperature()!=null){
+					temperatureSum=temperatureSum + data.get(i).getTemperature();
+					temperatureNum=temperatureNum+1;
+				}
+				if (data.get(i).getRainfall()!=null){
+					rainfallSum=rainfallSum + data.get(i).getRainfall();
+					rainfallNum=rainfallNum+1;
+				}
+			}
 		}
-		return dateIndex;
-	}
-	
-	
-	public static Date timestampToDate(Timestamp timestamp){
-		SimpleDateFormat sdf0 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		String time = sdf0.format(timestamp);
-		Date date = null;
-		try {
-			date = sdf0.parse(time);
-		} catch (ParseException e) {
-			// TODO 自动生成的 catch 块
-			e.printStackTrace();
+		else if(period.equals("月")){
+			for (int i = 0; i < data.size(); i++) {
+				Date time = data.get(i).getDates();
+				int day = getSpecificDate(time).get("日");
+				int dayBefore = 0;
+				Date time2 = new Date();
+				if(i!=0){
+					time2 = data.get(i-1).getDates();
+					dayBefore = getSpecificDate(time2).get("日");
+				}
+
+				if(((day-dayBefore)<0)||i==data.size()-1){
+					if (flowNum==0){
+						flowNum=1;
+					}
+					if (temperatureNum==0){
+						temperatureNum=1;
+					}
+					if (rainfallNum==0){
+						rainfallNum=1;
+					}
+					double flowY =flowSum / flowNum;
+					double temperatureY =temperatureSum / temperatureNum;
+					double rainfallY =rainfallSum / rainfallNum;
+					PredictInputData piece = new PredictInputData();
+					piece.setDates(time2);
+					piece.setFlow(flowY);
+					piece.setTemperature(temperatureY);
+					piece.setRainfall(rainfallY);
+					result.add(piece);
+					flowSum=0;
+					temperatureSum=0;
+					rainfallSum=0;
+					flowNum=0;
+					temperatureNum=0;
+					rainfallNum=0;
+				}
+				if (data.get(i).getFlow()!=null){
+					flowSum=flowSum + data.get(i).getFlow();
+					flowNum=flowNum + 1;
+				}
+				if(data.get(i).getTemperature()!=null){
+					temperatureSum=temperatureSum + data.get(i).getTemperature();
+					temperatureNum=temperatureNum+1;
+				}
+				if (data.get(i).getRainfall()!=null){
+					rainfallSum=rainfallSum + data.get(i).getRainfall();
+					rainfallNum=rainfallNum+1;
+				}
+			}
 		}
-		return date;
+		//小时尺度和日尺度数据不做处理直接输出
+		else result = data;
+
+		return result;
 	}
-	
-	public static Date getFirstDateOfYear(int year){
-		Calendar calendar = Calendar.getInstance();
-		calendar.clear();
-		calendar.set(Calendar.YEAR, year);
-		Date startTime = calendar.getTime();
-		return startTime;
-	}
-	
-	public static Date getDateByIndexTenDay(DateIndex index){
-		Calendar calendar = Calendar.getInstance();
-		int month = (index.getIndex() - 1) / 3;
-		int day = ((index.getIndex() + 2) % 3) * 10 + 1;
-		calendar.clear();
-		calendar.set(Calendar.YEAR, index.getYear());
-		calendar.set(Calendar.MONTH, month);
-		calendar.set(Calendar.DAY_OF_MONTH, day);
-		return calendar.getTime();
-		
+
+	/**
+	 * 获得数据中的年、月、日、小时
+	 * @param date
+	 * @return
+	 */
+	public static Map<String, Integer> getSpecificDate(Date date){
+		Map<String, Integer> result = new HashMap<>();
+		int year;
+		int month;
+		int day;
+		int hour;
+		Date time = date;
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(time);
+		year = cal.get(Calendar.YEAR);
+		month = cal.get(Calendar.MONTH) + 1;
+		day = cal.get(Calendar.DAY_OF_MONTH);
+		hour = cal.get(Calendar.HOUR_OF_DAY);
+		result.put("年",year);
+		result.put("月",month);
+		result.put("日",day);
+		result.put("小时",hour);
+		return result;
 	}
 
 }

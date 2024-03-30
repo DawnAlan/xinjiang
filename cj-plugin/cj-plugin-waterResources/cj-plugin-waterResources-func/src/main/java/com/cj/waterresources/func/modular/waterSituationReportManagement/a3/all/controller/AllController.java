@@ -66,4 +66,12 @@ public class AllController {
     public RestResponse selectFloodRetentionCapacity(@RequestParam("date") String date) {
         return allService.selectFloodRetentionCapacity(date);
     }
+
+    @ApiOperationSupport(order = 6)
+    @ApiOperation("A3表查询水资源首页今日水情")
+    @CommonLog(value = "A3表查询水资源首页今日水情")
+    @GetMapping("/selectTodayWaterSituation")
+    public RestResponse selectTodayWaterSituation(@RequestParam("date") String date) {
+        return allService.selectTodayWaterSituation(date);
+    }
 }

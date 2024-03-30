@@ -1,5 +1,6 @@
 package com.cj.fourPredictions.func.modular.flood.simulationDeduction.conreoller;
 
+import com.cj.common.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.cj.fourPredictions.func.modular.flood.simulationDeduction.service.SimulationDeductionService;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
@@ -25,7 +26,8 @@ public class SimulationDeductionController {
 
 
     @ApiOperationSupport(order = 1)
-    @ApiOperation("根据洪水调度方案ids，比选方案结果")
+    @ApiOperation("防洪兴利-模拟推演根据洪水调度方案ids，比选方案结果")
+    @CommonLog(value = "防洪兴利-模拟推演根据洪水调度方案ids，比选方案结果")
     @GetMapping("/getPlansComparison")
     public RestResponse getFloodControlOperationDetails(@RequestParam(value = "ids")String ids) {
         return simulationDeductionService.getPlansComparison(ids);

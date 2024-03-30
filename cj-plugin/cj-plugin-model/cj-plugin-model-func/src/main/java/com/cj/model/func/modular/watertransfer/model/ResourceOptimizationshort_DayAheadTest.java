@@ -147,6 +147,7 @@ public class ResourceOptimizationshort_DayAheadTest
         Map<String, Object> dataDemand = new HashMap<>();
         Map<String, Object> dataMonth=new HashMap<>();
         Map<String, Object> dataYear=new HashMap<>();
+        dataYear=InputWay.setwaterdemand(waterTransferReq,date[1]-1);
         dataMonth=InputWay.setwaterdemandTendays(waterTransferReq,whichDecade,dataYear,date[1]-1);
         dataDemand= InputWay.setDay(waterTransferReq,dataMonth,xnum,(int)daynum[whichDecade],whichDecade);
 

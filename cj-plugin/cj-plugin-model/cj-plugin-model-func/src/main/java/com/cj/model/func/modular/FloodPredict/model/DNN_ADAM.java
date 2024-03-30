@@ -8,6 +8,8 @@ import com.cj.model.func.modular.FloodPredict.utils.DataUtils;
 import com.cj.model.func.modular.FloodPredict.utils.MathUtils;
 import lombok.Data;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 @Data
@@ -183,7 +185,7 @@ public class DNN_ADAM implements NeuralNetwork {
 	 * mini_batch,每批更新
 	 */
 	public void train(double[][] input, double[][] realOutput, int ITER) {	
-		MiniBatch mb = DataUtils.separateByBatch(batchNum, input, realOutput);
+		MiniBatch mb = separateByBatch(batchNum, input, realOutput);
 		for (int t = 0; t < Params.trainNum; t++) {
 			initParams();
 			double error = 0;	
@@ -396,6 +398,55 @@ public class DNN_ADAM implements NeuralNetwork {
 		}
 		trainResult.setSimResult(output);
 		return trainResult;
+	}
+
+	public static MiniBatch separateByBatch(int batchNum, double[][] inputData, double[][] outputData) {
+		List<double[][]> input = new ArrayList();
+		List<double[][]> output = new ArrayList();
+		List<double[]> inputList = new ArrayList();
+		List<double[]> outputList = new ArrayList();
+		for (int i = 0; i < inputData.length; i++) {
+			inputList.add(inputData[i]);
+			outputList.add(outputData[i]);
+		}
+
+		int totalNum = inputList.size() / batchNum;
+		if (totalNum >= 1) {
+			for (int n = 0; n < totalNum; n++) {
+				int size = inputList.size();
+				double[][] input_batch = new double[batchNum][];
+				double[][] output_batch = new double[batchNum][];
+				for (int i = 0; i < batchNum; i++) {
+					Random ran = new Random();
+					int index = ran.nextInt(size);
+					input_batch[i] = inputList.remove(index);
+					output_batch[i] = outputList.remove(index);
+					size--;
+					if (size == 0) {
+						break;
+					}
+				}
+				input.add(input_batch);
+				output.add(output_batch);
+			}
+		}
+
+		if (inputList.size() != 0) {
+			double[][] input_batch = new double[inputList.size()][];
+			double[][] output_batch = new double[inputList.size()][];
+			for (int i = 0; i < inputList.size(); i++) {
+				input_batch[i] = inputList.get(i);
+				output_batch[i] = outputList.get(i);
+			}
+			input.add(input_batch);
+			output.add(output_batch);
+		}
+
+		MiniBatch mb = new MiniBatch();
+		mb.setInput(input);
+		mb.setOutput(output);
+		mb.setNum(input.size());
+		return mb;
 	}
 
 }

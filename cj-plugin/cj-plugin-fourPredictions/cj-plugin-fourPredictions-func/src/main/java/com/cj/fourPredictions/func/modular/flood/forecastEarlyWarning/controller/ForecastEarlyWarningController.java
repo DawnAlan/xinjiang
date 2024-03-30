@@ -1,5 +1,6 @@
 package com.cj.fourPredictions.func.modular.flood.forecastEarlyWarning.controller;
 
+import com.cj.common.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.cj.fourPredictions.func.modular.flood.forecastEarlyWarning.bean.res.IncomingWaterForecast;
 import com.cj.fourPredictions.func.modular.flood.forecastEarlyWarning.bean.res.IncomingWaterForecastDetailsRes;
@@ -29,14 +30,16 @@ public class ForecastEarlyWarningController {
 
 
     @ApiOperationSupport(order = 1)
-    @ApiOperation("查询方案列表")
+    @ApiOperation("防洪兴利-预报预警查询方案列表")
+    @CommonLog(value = "防洪兴利-预报预警查询方案列表")
     @GetMapping("/getList")
     public RestResponse<List<IncomingWaterForecast>> getList() {
         return forecastEarlyWarningService.getProgrammeList();
     }
 
     @ApiOperationSupport(order = 2)
-    @ApiOperation("查询方案详情")
+    @ApiOperation("防洪兴利-预报预警查询方案详情")
+    @CommonLog(value = "防洪兴利-预报预警查询方案详情")
     @GetMapping("/getDetails")
     public RestResponse getDetails(@RequestParam(value = "id")String id) {
         return forecastEarlyWarningService.getDetails(id);

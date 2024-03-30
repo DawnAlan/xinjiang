@@ -31,14 +31,12 @@ public class TrainResult {
 	private ModelSaveEntity model2Save;
 	
 	private List<SimMaxMinEntity> maxAndMinSave;
-	
-//	private List<SimTrainResultEntity> result2Save;
+
 	private List<TthResultEntity> result2Save;
 
 	private List<TthModelEntity> result3Save;
 
 	private List<TthParaEntity> result4Save;
-
 
 	private String errorMessage;
 

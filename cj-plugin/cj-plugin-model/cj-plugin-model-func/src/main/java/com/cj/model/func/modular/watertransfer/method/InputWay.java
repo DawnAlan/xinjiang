@@ -370,6 +370,7 @@ public class InputWay {
                 if (dataYear.get("八钢")==null){
                     break;
                 }
+
                 demand_bagang[i]= datayear[monthNum]/3;
             }
         }
@@ -1116,16 +1117,16 @@ public class InputWay {
                     if (UseWaterPlan!=null&&Area!=null&&Unit!=null&&ColName!=null){
                         if (data.get(i).getUseWaterPlan().equals("day")&&data.get(i).getArea().equals(tableName)&&data.get(i).getUnit().equals(name)
                         &&data.get(i).getColName().equals("flow")&&data.get(i).getDate().equals(dateNum.get(x))) {
-                            x1 = data.get(i).getWaterDemendData() * 8.64;
-                            if (x1>=0){
-                                waterData.add(x1);
-                            }
-                            else {
-                                waterData.add(0.0);
-                            }
+                            x1 += data.get(i).getWaterDemendData() * 8.64;
                         }
                     }
                 }
+            if (x1>=0){
+                waterData.add(x1);
+            }
+            else {
+                waterData.add(0.0);
+            }
         }
         update.add(day);
         update.add(waterData);
