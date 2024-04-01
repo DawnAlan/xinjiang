@@ -705,8 +705,10 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
             List<Double> proportions = new ArrayList<>();
             List<Double> waterLacks = new ArrayList<>();
             for (int i = 0; i < excel2Datas.size(); i++) {
-                proportions.add(excel2Datas.get(i).stream().filter(n -> (n.getStationType() + ":" + n.getStationName()).equals(station)).max(Comparator.comparing(Excel2::getProportion)).orElse(new Excel2()).getProportion());
-                waterLacks.add(excel2Datas.get(i).stream().filter(n -> (n.getStationType() + ":" + n.getStationName()).equals(station)).min(Comparator.comparing(Excel2::getWaterLack)).orElse(new Excel2()).getWaterLack());
+                double allWater = excel2Datas.get(i).stream().mapToDouble(Excel2::getWater).sum();
+                double waterLack = excel2Datas.get(i).stream().mapToDouble(Excel2::getWaterLack).sum();
+                proportions.add((allWater + waterLack) == 0 ? 1 : allWater / (allWater + waterLack));
+                waterLacks.add(waterLack);
             }
             waterRatioDTO.setProportion(proportions);
             waterRatioDTO.setWaterLack(waterLacks);
@@ -758,6 +760,10 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
             excel1.setWasteWater(data.getWasteWater());
             return excel1;
         }).collect(Collectors.toList());
+        appraiseReq.setLevelBeginLzz(waterResourceAllocation.getLevelBeginLzz());
+        appraiseReq.setLevelBeginTth(waterResourceAllocation.getLevelBeginTth());
+        appraiseReq.setLevelEndLzz(waterResourceAllocation.getLevelEndLzz());
+        appraiseReq.setLevelEndTth(waterResourceAllocation.getLevelEndTth());
         appraiseReq.setName(waterResourceAllocation.getSchemeName());
         appraiseReq.setPeriod(waterResourceAllocation.getBucketType().toString());
         appraiseReq.setId(waterResourceAllocation.getWaterDistributionType());

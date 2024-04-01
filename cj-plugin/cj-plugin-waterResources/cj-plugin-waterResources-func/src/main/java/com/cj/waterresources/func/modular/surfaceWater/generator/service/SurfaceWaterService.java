@@ -25,6 +25,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -196,7 +198,7 @@ public class SurfaceWaterService extends ServiceImpl<SurfaceWaterMapper, Surface
     public TypicalYearVo typicalYear(TypicalYearReq input) {
         if (input.getYear() == null) {
             String s = (String) redisUtil.get("typicalYear");
-            return JSONObject.parseObject(s,TypicalYearVo.class);
+            return JSONObject.parseObject(s, TypicalYearVo.class);
         }
         // 找到最大值所在的行
         OptionalDouble maxValue = input.getTypicalYearDetailReqList().stream()
@@ -230,15 +232,21 @@ public class SurfaceWaterService extends ServiceImpl<SurfaceWaterMapper, Surface
         Double bbb = input.getPredictionYear().doubleValue();
 
         TypicalYearDetailReq typicalDataPoint = input.getTypicalYearDetailReqList().stream()
-                .min((dp1, dp2) -> Double.compare(Math.abs(dp1.getSumWater() - bbb), Math.abs(dp2.getSumWater() - bbb)))
+                .min((dp1, dp2) -> Double.compare(Math.abs(dp1.getAvgWater() - bbb), Math.abs(dp2.getAvgWater() - bbb)))
                 .orElse(null);
 
+        TypicalYearDetailReq ty = input.getTypicalYearDetailReqList().stream().filter(r -> r.getYear() == (input.getYear() - 1)).findFirst().get();
+        //比去年
+        Double comparedToLastYear = input.getPredictionYear().doubleValue() - ty.getAvgWater().doubleValue() / ty.getAvgWater().doubleValue();
+
         TypicalYearVo typicalYearVo = new TypicalYearVo();
-        typicalYearVo.setPredictionYear(input.getYear());
+        typicalYearVo.setPredictionYear(input.getPredictionYear());
         typicalYearVo.setPrediction3(input.getPrediction3());
         typicalYearVo.setPrediction4(input.getPrediction4());
         typicalYearVo.setPrediction5(input.getPrediction5());
         typicalYearVo.setYear(input.getYear());
+        typicalYearVo.setFrequency(input.getFrequency());
+        typicalYearVo.setComparedToLastYear(new BigDecimal(comparedToLastYear).setScale(2, RoundingMode.DOWN));
 
         typicalYearVo.setTypicalYear(typicalDataPoint.getYear());
         typicalYearVo.setTypicalFlow(typicalDataPoint.getAvgFlow());

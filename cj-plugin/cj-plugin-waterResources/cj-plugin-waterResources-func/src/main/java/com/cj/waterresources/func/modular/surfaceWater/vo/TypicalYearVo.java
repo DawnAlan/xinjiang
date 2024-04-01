@@ -10,7 +10,7 @@ public class TypicalYearVo {
     @ApiModelProperty(value = "年")
     private Integer Year;
     @ApiModelProperty(value = "年预报")
-    private Integer predictionYear;
+    private BigDecimal predictionYear;
     @ApiModelProperty(value = "3月预报")
     private BigDecimal prediction3;
     @ApiModelProperty(value = "4月预报")
