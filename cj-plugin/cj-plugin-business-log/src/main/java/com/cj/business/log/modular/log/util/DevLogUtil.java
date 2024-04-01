@@ -12,7 +12,7 @@ import com.cj.business.log.modular.log.enums.DevLogCategoryEnum;
 import com.cj.business.log.modular.log.enums.DevLogExeStatusEnum;
 import com.cj.business.log.modular.log.service.DevLogService;
 import org.aspectj.lang.JoinPoint;
-import com.cj.common.annotation.CommonLog;
+import com.cj.business.log.modular.log.annotation.CommonLog;
 import com.cj.common.util.*;
 
 import javax.servlet.http.HttpServletRequest;

@@ -1,6 +1,6 @@
 package com.cj.fourPredictions.func.modular.flood.floodSituation.controller;
 
-import com.cj.common.annotation.CommonLog;
+import com.cj.business.log.modular.log.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.cj.fourPredictions.func.modular.flood.floodSituation.bean.req.GetRealTimeRainfallReq;
 import com.cj.fourPredictions.func.modular.flood.floodSituation.bean.res.*;

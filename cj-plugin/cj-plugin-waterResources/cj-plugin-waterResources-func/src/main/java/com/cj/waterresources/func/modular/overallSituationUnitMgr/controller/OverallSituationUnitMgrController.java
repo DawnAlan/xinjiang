@@ -1,6 +1,6 @@
 package com.cj.waterresources.func.modular.overallSituationUnitMgr.controller;
 
-import com.cj.common.annotation.CommonLog;
+import com.cj.business.log.modular.log.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.cj.waterresources.func.modular.overallSituationUnitMgr.bean.res.OverallSituationUnitMgrTreeRes;
 import com.cj.waterresources.func.modular.overallSituationUnitMgr.entity.OverallSituationUnitMgr;
