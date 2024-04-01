@@ -60,15 +60,23 @@ public class WaterResourceAssessment {
         }
 
         double bestUtilizationRate=(inflowWater[0]-wasteWater[0])/inflowWater[0];
+
         double n=0;
         for (int i=0;i<reqList.size();i++){
            double utilizationRate= (inflowWater[i]-wasteWater[i])/inflowWater[i];
-           waterRate[i]=Double.parseDouble(da.format(utilizationRate));
-           if (utilizationRate>=bestUtilizationRate)
+            waterRate[i]=Double.parseDouble(da.format(utilizationRate));
+           if (utilizationRate>bestUtilizationRate)
            {
                bestUtilizationRate=utilizationRate;
                n=i;
            }
+           else if (utilizationRate==bestUtilizationRate)
+           {
+               if (waterLack[i]<waterLack[(int)n]){
+                    n=i;
+               }
+           }
+
         }
 
         Map<String, Object>  appraise11= new HashMap<>();
@@ -84,8 +92,8 @@ public class WaterResourceAssessment {
         appraise11.put("可用水量利用率",waterRate);
 
         for (int i=0;i<reqList.size();i++){
-             appraise+= schemeName[i]+"：在调度区间内来水预报总水量为"+inflowWater[i]+"万m³,"+"生态需水量为"+ecologyWater[i]+"万m³,"+"各单位需水总量为"+
-            waterDemand[i]+"万m³,"+"在楼庄子的蓄水量为"+dischargeLzz[i]+"万m³,头屯河蓄水量为"+dischargeTth[i]+"万m³,总蓄水量为"+storgeAll[i]+
+             appraise+= schemeName[i]+"：在调度区间内来水预报总水量为"+inflowWater[i]+"万m³,"+"生态水量为"+ecologyWater[i]+"万m³,"+"各单位需水总量为"+
+            waterDemand[i]+"万m³,"+"各单位供水缺额总量为"+ waterLack[i]+"万m³,"+"在楼庄子的蓄水量为"+dischargeLzz[i]+"万m³,头屯河蓄水量为"+dischargeTth[i]+"万m³,总蓄水量为"+storgeAll[i]+
                      "万m³,可供水量浪费量为"+wasteWater[i]+"万m³,可供水量利用率为"+waterRate[i]+";";
         }
         schemeOptimization="推荐方案："+schemeName[(int)n]+",可供水量利用率较高;";
@@ -166,70 +174,85 @@ public class WaterResourceAssessment {
         List<Double> outflow = new ArrayList<>();
         List<Double> outflow_level = new ArrayList<>();
 
-
-        for (int i = 0; i < data.size(); i++) {
-            if (data.get(i).getId() == 100) {
-                capacity.add(data.get(i).getValue());
-                level.add(data.get(i).getLevel());
+        if (data!=null){
+            for (int i = 0; i < data.size(); i++) {
+                if (data.get(i).getId() == 100) {
+                    capacity.add(data.get(i).getValue());
+                    level.add(data.get(i).getLevel());
+                }
+                if (data.get(i).getId() == 104) {
+                    outflow.add(data.get(i).getValue());
+                    outflow_level.add(data.get(i).getLevel());
+                }
             }
-            if (data.get(i).getId() == 104) {
-                outflow.add(data.get(i).getValue());
-                outflow_level.add(data.get(i).getLevel());
+            double[] wlc_wl = new double[level.size()];
+            double[] wlc_c = new double[capacity.size()];
+            for (int i = 0; i < wlc_wl.length; i++) {
+                wlc_wl[i] = level.get(i);
+                wlc_c[i] = capacity.get(i);
             }
-        }
-        double[] wlc_wl = new double[level.size()];
-        double[] wlc_c = new double[capacity.size()];
-        for (int i = 0; i < wlc_wl.length; i++) {
-            wlc_wl[i] = level.get(i);
-            wlc_c[i] = capacity.get(i);
-        }
 
-        double[] wlob_wl = new double[outflow_level.size()];
-        double[] wlob_ob = new double[outflow.size()];
-        for (int i = 0; i < wlob_wl.length; i++) {
-            wlob_wl[i] = outflow_level.get(i);
-            wlob_ob[i] = outflow.get(i);
-        }
-
-        this.reservoirs[0].wlc_c = wlc_c;
-        this.reservoirs[0].wlc_wl = wlc_wl;
-        this.reservoirs[0].wlob_wl = wlob_wl;
-        this.reservoirs[0].wlob_ob = wlob_ob;
-
-
-        List<Double> capacity1 = new ArrayList<>();
-        List<Double> level1 = new ArrayList<>();
-        List<Double> outflow1 = new ArrayList<>();
-        List<Double> outflow_level1 = new ArrayList<>();
-
-        for (int i = 0; i < data.size(); i++) {
-            if (data.get(i).getId() == 200) {
-                capacity1.add(data.get(i).getValue());
-                level1.add(data.get(i).getLevel());
+            double[] wlob_wl = new double[outflow_level.size()];
+            double[] wlob_ob = new double[outflow.size()];
+            for (int i = 0; i < wlob_wl.length; i++) {
+                wlob_wl[i] = outflow_level.get(i);
+                wlob_ob[i] = outflow.get(i);
             }
-            if (data.get(i).getId() == 204) {
-                outflow1.add(data.get(i).getValue());
-                outflow_level1.add(data.get(i).getLevel());
+
+            this.reservoirs[0].wlc_c = wlc_c;
+            this.reservoirs[0].wlc_wl = wlc_wl;
+            this.reservoirs[0].wlob_wl = wlob_wl;
+            this.reservoirs[0].wlob_ob = wlob_ob;
+
+
+            List<Double> capacity1 = new ArrayList<>();
+            List<Double> level1 = new ArrayList<>();
+            List<Double> outflow1 = new ArrayList<>();
+            List<Double> outflow_level1 = new ArrayList<>();
+
+            for (int i = 0; i < data.size(); i++) {
+                if (data.get(i).getId() == 200) {
+                    capacity1.add(data.get(i).getValue());
+                    level1.add(data.get(i).getLevel());
+                }
+                if (data.get(i).getId() == 204) {
+                    outflow1.add(data.get(i).getValue());
+                    outflow_level1.add(data.get(i).getLevel());
+                }
             }
-        }
-        double[] wlc_wl1 = new double[level1.size()];
-        double[] wlc_c1 = new double[capacity1.size()];
+            double[] wlc_wl1 = new double[level1.size()];
+            double[] wlc_c1 = new double[capacity1.size()];
 
-        double[] wlob_wl1 = new double[outflow_level1.size()];
-        double[] wlob_ob1 = new double[outflow1.size()];
-        for (int i = 0; i < wlob_wl1.length; i++) {
-            wlob_wl1[i] = outflow_level1.get(i);
-            wlob_ob1[i] = outflow1.get(i);
+            double[] wlob_wl1 = new double[outflow_level1.size()];
+            double[] wlob_ob1 = new double[outflow1.size()];
+            for (int i = 0; i < wlob_wl1.length; i++) {
+                wlob_wl1[i] = outflow_level1.get(i);
+                wlob_ob1[i] = outflow1.get(i);
+            }
+            for (int i = 0; i < wlc_wl1.length; i++) {
+                wlc_wl1[i] = level1.get(i);
+                wlc_c1[i] = capacity1.get(i);
+            }
+            this.reservoirs[1].wlc_c = wlc_c1;
+            this.reservoirs[1].wlc_wl = wlc_wl1;
+            this.reservoirs[1].wlob_wl = wlob_wl1;
+            this.reservoirs[1].wlob_ob = wlob_ob1;
         }
-        for (int i = 0; i < wlc_wl1.length; i++) {
-            wlc_wl1[i] = level1.get(i);
-            wlc_c1[i] = capacity1.get(i);
+        else{
+            this.reservoirs[0].wlc_wl=new double[]{1326,1330,1335,1340,1345,1350,1355,1360,1365,1370,1375,1380,1385,1390,1395,1400
+                    ,1405,1410,1415,1420};
+            this.reservoirs[0].wlc_c=new double[]{0,3,28,92,221,417,680,1022,1464,2018,2686,3468,4378,5440,6656,8021,9532,11195,13022,15028};
+            this.reservoirs[1].wlc_c=new double[]{0.03,0.28,0.81,1.59,3.31,6.78,11.84,18.36,26.52,36.29,61.6,95.28,137.82,191.56,256.88,335.89,428.83
+                    ,549.14,694.74,863.67,1063.26,1297.03,1576.8,1838.71};
+            this.reservoirs[1].wlc_wl=new double[]{955,956,957,958,959,960,961,962,963,964,966,968,970,972,974,976,978,980,982,984,986,988,990,992};
+            this.reservoirs[0].wlob_wl=new double[]{1335,1336,1340,1345,1355,1365,1370,1380,1380.5,1381,1381.5,1382,1382.5,1383,1383.5,1384,
+                    1384.5,1385,1385.5,1386,1386.5,1387,1387.5,1388,1388.5,1389,1389.5,1390,1390.5,1391,1391.5,1392,1392.5,1393,1394,1395,1396,1397};
+            this.reservoirs[0].wlob_ob=new double[]{0,15,50.55,98.52,154.94,195.72,213.21,244.46,245.92,247.37,248.81,250.24,251.66,253.08,254.49,
+                    257.19,259.89,262.58,265.27,267.94,270.61,273.27,275.92,278.57,281.21,283.85,286.47,289.1,291.71,294.33,296.92,299.52,302.11,
+                    304.69,309.84,314.98,383.44,414.95};
+            this.reservoirs[1].wlob_wl=new double[]{950,952,960,962,965,978,985,989.6,990,991,992.5,993.5};
+            this.reservoirs[1].wlob_ob=new double[]{5.1,30.8,112.3,124,136,162.8,167.7,170.6,194.6,326.4,669.4,986.5};
         }
-        this.reservoirs[1].wlc_c = wlc_c1;
-        this.reservoirs[1].wlc_wl = wlc_wl1;
-        this.reservoirs[1].wlob_wl = wlob_wl1;
-        this.reservoirs[1].wlob_ob = wlob_ob1;
-
         this.reservoirs[0].name = "楼庄子";
         this.reservoirs[0].levelFloodControl = 1394.5;
         this.reservoirs[0].levelNormal = 1394.5;
@@ -400,27 +423,32 @@ public class WaterResourceAssessment {
         double[]sum=new double[2];
         for (int i = 0; i < data1.size(); i++)
         {
-            if (data1.get(i).getStationType().equals("生活"))
+            if (data1.get(i).getStationType().equals("楼庄子生活"))
             {
                 water+= data1.get(i).getWater();
                 waterLack+= data1.get(i).getWaterLack();
             }
-            if (data1.get(i).getStationType().equals("工业"))
+            if (data1.get(i).getStationType().equals("红岩生活"))
             {
                 water+= data1.get(i).getWater();
                 waterLack+= data1.get(i).getWaterLack();
             }
-            if (data1.get(i).getStationType().equals("渠首"))
-             {
-                water+= data1.get(i).getWater();
-                waterLack+= data1.get(i).getWaterLack();
-            }
-            if (data1.get(i).getStationType().equals("西干渠"))
+            if (data1.get(i).getStationType().equals("八钢工业"))
             {
                 water+= data1.get(i).getWater();
                 waterLack+= data1.get(i).getWaterLack();
             }
-            if (data1.get(i).getStationType().equals("东干渠"))
+            if (data1.get(i).getStationType().equals("渠首工业"))
+            {
+                water+= data1.get(i).getWater();
+                waterLack+= data1.get(i).getWaterLack();
+            }
+            if (data1.get(i).getStationType().equals("总西干渠"))
+            {
+                water+= data1.get(i).getWater();
+                waterLack+= data1.get(i).getWaterLack();
+            }
+            if (data1.get(i).getStationType().equals("总东干渠"))
             {
                 water+= data1.get(i).getWater();
                 waterLack+= data1.get(i).getWaterLack();

@@ -28,4 +28,6 @@ public interface AllService {
     RestResponse selectFloodRetentionCapacity(String date);
     RestResponse selectFloodRetentionCapacityNew(String date,String ids);
     RestResponse<Map<String,List<TodayWaterSituationRes>>> selectTodayWaterSituation(String date);
+
+    RestResponse updateInfoDate();
 }

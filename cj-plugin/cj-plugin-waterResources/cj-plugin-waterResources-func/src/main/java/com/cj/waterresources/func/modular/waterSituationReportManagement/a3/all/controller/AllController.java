@@ -74,4 +74,12 @@ public class AllController {
     public RestResponse selectTodayWaterSituation(@RequestParam("date") String date) {
         return allService.selectTodayWaterSituation(date);
     }
+
+    @ApiOperationSupport(order = 7)
+    @ApiOperation("A3表更新全部昨日均")
+    @CommonLog(value = "A3表更新全部昨日均")
+    @GetMapping("/updateInfoDate")
+    public RestResponse updateInfoDate() {
+        return allService.updateInfoDate();
+    }
 }

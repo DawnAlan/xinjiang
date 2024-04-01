@@ -5,6 +5,8 @@ import com.cj.auth.core.pojo.SaBaseLoginUser;
 import com.cj.auth.core.util.StpLoginUserUtil;
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.RedisUtil;
+import com.cj.waterresources.func.modular.overallSituationUnitMgr.entity.OverallSituationUnitMgr;
+import com.cj.waterresources.func.modular.overallSituationUnitMgr.service.OverallSituationUnitMgrService;
 import com.cj.waterresources.func.modular.trendsTable.entity.TrendsTableParam;
 import com.cj.waterresources.func.modular.trendsTable.service.TrendsTableParamService;
 import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.req.SelectInfoListNewReq;
@@ -21,8 +23,10 @@ import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.dkl.mapper.DayWaterSituationStatisticsTableDklMapper;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hd.entity.DayWaterSituationStatisticsTableHd;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hd.mapper.DayWaterSituationStatisticsTableHdMapper;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hd.service.DayWaterSituationStatisticsTableHdService;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hx.entity.DayWaterSituationStatisticsTableHx;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hx.mapper.DayWaterSituationStatisticsTableHxMapper;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hx.service.DayWaterSituationStatisticsTableHxService;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.bean.res.LzzReportFormsRes;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.entity.DayWaterSituationStatisticsTableLzz;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.mapper.DayWaterSituationStatisticsTableLzzMapper;
@@ -32,6 +36,7 @@ import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.e
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.mapper.DayWaterSituationStatisticsTableQsLhMapper;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.mapper.DayWaterSituationStatisticsTableQsMapper;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.service.DayWaterSituationStatisticsTableQsLhService;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.service.DayWaterSituationStatisticsTableQsService;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.syyl.mapper.DayWaterSituationStatisticsTableSyylMapper;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tjc.mapper.DayWaterSituationStatisticsTableTjcMapper;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tth.bean.res.TthReportFormsRes;
@@ -70,6 +75,11 @@ public class AllServiceImpl implements AllService {
     private final TrendsTableParamService trendsTableParamService;
     private final DayWaterSituationStatisticsTableLzzService dayWaterSituationStatisticsTableLzzService;
     private final DayWaterSituationStatisticsTableTthService dayWaterSituationStatisticsTableTthService;
+    private final DayWaterSituationStatisticsTableHdService dayWaterSituationStatisticsTableHdService;
+    private final DayWaterSituationStatisticsTableHxService dayWaterSituationStatisticsTableHxService;
+    private final DayWaterSituationStatisticsTableQsService dayWaterSituationStatisticsTableQsService;
+    private final DayWaterSituationStatisticsTableQsLhService dayWaterSituationStatisticsTableQsLhService;
+    private final OverallSituationUnitMgrService overallSituationUnitMgrService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -565,6 +575,33 @@ public class AllServiceImpl implements AllService {
 
     @Override
     public RestResponse selectFloodRetentionCapacityNew(String date, String ids) {
+        List<OverallSituationUnitMgr> idsList = new ArrayList<>();
+        String overall = (String) redisUtil.get("overallSituationUnitMgr:list");
+        if(StringUtils.isEmpty(overall)){
+            List<OverallSituationUnitMgr> list = overallSituationUnitMgrService.list();
+            redisUtil.set("overallSituationUnitMgr:list", JSONObject.toJSONString(list));
+            overall = JSONObject.toJSONString(list);
+        }
+        List<OverallSituationUnitMgr> list = JSONObject.parseArray(overall, OverallSituationUnitMgr.class);
+        for (String id:ids.split(",")){
+            idsList.add(list.stream().filter(t -> t.getId().equals(id)).collect(Collectors.toList()).get(0));
+        }
+        for(OverallSituationUnitMgr mgr:idsList){
+            if(mgr.getPName().equals("楼庄子水库")){
+                if(StringUtils.isNotEmpty(mgr.getMonitorId())){
+
+                }else {
+
+                }
+            }
+            if(mgr.getPName().equals("头屯河水库")){
+                if(StringUtils.isNotEmpty(mgr.getMonitorId())){
+
+                }else {
+
+                }
+            }
+        }
         return null;
     }
 
@@ -699,6 +736,113 @@ public class AllServiceImpl implements AllService {
             return RestResponse.ok(stringListMap);
         }else {
             return RestResponse.no("今日暂无有效数据");
+        }
+    }
+
+    @Override
+    public RestResponse updateInfoDate() {
+        updateInfoDateHd();
+        updateInfoDateHx();
+        updateInfoDateQs();
+        updateInfoDateQsLh();
+        updateInfoDateTth();
+        updateInfoDateLzz();
+        return RestResponse.ok();
+    }
+
+    private void updateInfoDateHd(){
+        List<DayWaterSituationStatisticsTableHd> dayWaterSituationStatisticsTable = dayWaterSituationStatisticsTableHdMapper.selectAllListToday();
+        Map<Date, List<DayWaterSituationStatisticsTableHd>> collect = dayWaterSituationStatisticsTable.stream().collect(Collectors.groupingBy(DayWaterSituationStatisticsTableHd::getRecordTime));
+        Set<Date> dates = collect.keySet();
+        for(Date date: dates){
+            List<DayWaterSituationStatisticsTableHd> list = collect.get(date);
+            List<DayWaterSituationStatisticsTableHd> dayWaterSituationStatisticsTableList = dayWaterSituationStatisticsTableHdMapper.selectInfoAfterDayList(getDate(date,1));
+            if(!dayWaterSituationStatisticsTableList.isEmpty()){
+                dayWaterSituationStatisticsTableList.forEach(t->{
+                    t.setV(list.stream().filter(p->p.getTableHeadId().equals(t.getTableHeadId()) && p.getV() !=null).map(DayWaterSituationStatisticsTableHd::getV).reduce(Double::sum).orElse(0.00));
+                });
+                dayWaterSituationStatisticsTableHdService.updateBatchById(dayWaterSituationStatisticsTableList);
+            }
+        }
+    }
+
+    private void updateInfoDateHx(){
+        List<DayWaterSituationStatisticsTableHx> dayWaterSituationStatisticsTable = dayWaterSituationStatisticsTableHxMapper.selectAllListToday();
+        Map<Date, List<DayWaterSituationStatisticsTableHx>> collect = dayWaterSituationStatisticsTable.stream().collect(Collectors.groupingBy(DayWaterSituationStatisticsTableHx::getRecordTime));
+        Set<Date> dates = collect.keySet();
+        for(Date date: dates){
+            List<DayWaterSituationStatisticsTableHx> list = collect.get(date);
+            List<DayWaterSituationStatisticsTableHx> dayWaterSituationStatisticsTableList = dayWaterSituationStatisticsTableHxMapper.selectInfoAfterDayList(getDate(date,1));
+            if(!dayWaterSituationStatisticsTableList.isEmpty()){
+                dayWaterSituationStatisticsTableList.forEach(t->{
+                    t.setV(list.stream().filter(p->p.getTableHeadId().equals(t.getTableHeadId()) && p.getV() !=null).map(DayWaterSituationStatisticsTableHx::getV).reduce(Double::sum).orElse(0.00));
+                });
+                dayWaterSituationStatisticsTableHxService.updateBatchById(dayWaterSituationStatisticsTableList);
+            }
+        }
+    }
+
+    private void updateInfoDateQs(){
+        List<DayWaterSituationStatisticsTableQs> dayWaterSituationStatisticsTable = dayWaterSituationStatisticsTableQsMapper.selectAllListToday();
+        Map<Date, List<DayWaterSituationStatisticsTableQs>> collect = dayWaterSituationStatisticsTable.stream().collect(Collectors.groupingBy(DayWaterSituationStatisticsTableQs::getRecordTime));
+        Set<Date> dates = collect.keySet();
+        for(Date date: dates){
+            List<DayWaterSituationStatisticsTableQs> list = collect.get(date);
+            List<DayWaterSituationStatisticsTableQs> dayWaterSituationStatisticsTableList = dayWaterSituationStatisticsTableQsMapper.selectInfoAfterDayList(getDate(date,1));
+            if(!dayWaterSituationStatisticsTableList.isEmpty()){
+                dayWaterSituationStatisticsTableList.forEach(t->{
+                    t.setV(list.stream().filter(p->p.getTableHeadId().equals(t.getTableHeadId()) && p.getV() !=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00));
+                });
+                dayWaterSituationStatisticsTableQsService.updateBatchById(dayWaterSituationStatisticsTableList);
+            }
+        }
+    }
+
+    private void updateInfoDateQsLh(){
+        List<DayWaterSituationStatisticsTableQsLh> dayWaterSituationStatisticsTable = dayWaterSituationStatisticsTableQsLhMapper.selectAllListToday();
+        Map<Date, List<DayWaterSituationStatisticsTableQsLh>> collect = dayWaterSituationStatisticsTable.stream().collect(Collectors.groupingBy(DayWaterSituationStatisticsTableQsLh::getRecordTime));
+        Set<Date> dates = collect.keySet();
+        for(Date date: dates){
+            List<DayWaterSituationStatisticsTableQsLh> list = collect.get(date);
+            List<DayWaterSituationStatisticsTableQsLh> dayWaterSituationStatisticsTableList = dayWaterSituationStatisticsTableQsLhMapper.selectInfoAfterDayList(getDate(date,1));
+            if(!dayWaterSituationStatisticsTableList.isEmpty()){
+                dayWaterSituationStatisticsTableList.forEach(t->{
+                    t.setV(list.stream().filter(p->p.getTableHeadId().equals(t.getTableHeadId()) && p.getV() !=null).map(DayWaterSituationStatisticsTableQsLh::getV).reduce(Double::sum).orElse(0.00));
+                });
+                dayWaterSituationStatisticsTableQsLhService.updateBatchById(dayWaterSituationStatisticsTableList);
+            }
+        }
+    }
+
+    private void updateInfoDateTth(){
+        List<DayWaterSituationStatisticsTableTth> dayWaterSituationStatisticsTable = dayWaterSituationStatisticsTableTthMapper.selectAllListToday();
+        Map<Date, List<DayWaterSituationStatisticsTableTth>> collect = dayWaterSituationStatisticsTable.stream().collect(Collectors.groupingBy(DayWaterSituationStatisticsTableTth::getRecordTime));
+        Set<Date> dates = collect.keySet();
+        for(Date date: dates){
+            List<DayWaterSituationStatisticsTableTth> list = collect.get(date);
+            List<DayWaterSituationStatisticsTableTth> dayWaterSituationStatisticsTableList = dayWaterSituationStatisticsTableTthMapper.selectInfoAfterDayList(getDate(date,1));
+            if(!dayWaterSituationStatisticsTableList.isEmpty()){
+                dayWaterSituationStatisticsTableList.forEach(t->{
+                    t.setV(list.stream().filter(p->p.getTableHeadId().equals(t.getTableHeadId()) && p.getV() !=null).map(DayWaterSituationStatisticsTableTth::getV).reduce(Double::sum).orElse(0.00));
+                });
+                dayWaterSituationStatisticsTableTthService.updateBatchById(dayWaterSituationStatisticsTableList);
+            }
+        }
+    }
+
+    private void updateInfoDateLzz(){
+        List<DayWaterSituationStatisticsTableLzz> dayWaterSituationStatisticsTable = dayWaterSituationStatisticsTableLzzMapper.selectAllListToday();
+        Map<Date, List<DayWaterSituationStatisticsTableLzz>> collect = dayWaterSituationStatisticsTable.stream().collect(Collectors.groupingBy(DayWaterSituationStatisticsTableLzz::getRecordTime));
+        Set<Date> dates = collect.keySet();
+        for(Date date: dates){
+            List<DayWaterSituationStatisticsTableLzz> list = collect.get(date);
+            List<DayWaterSituationStatisticsTableLzz> dayWaterSituationStatisticsTableList = dayWaterSituationStatisticsTableLzzMapper.selectInfoAfterDayList(getDate(date,1));
+            if(!dayWaterSituationStatisticsTableList.isEmpty()){
+                dayWaterSituationStatisticsTableList.forEach(t->{
+                    t.setV(list.stream().filter(p->p.getTableHeadId().equals(t.getTableHeadId()) && p.getV() !=null).map(DayWaterSituationStatisticsTableLzz::getV).reduce(Double::sum).orElse(0.00));
+                });
+                dayWaterSituationStatisticsTableLzzService.updateBatchById(dayWaterSituationStatisticsTableList);
+            }
         }
     }
 
@@ -875,5 +1019,17 @@ public class AllServiceImpl implements AllService {
         DecimalFormat df = new DecimalFormat("0.00");
         String format = df.format(value);
         return Double.parseDouble(format);
+    }
+
+    private String getDate(Date date, Integer num){
+        // 创建 Calendar 对象并设置为当前时间
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        // 将日期向前调整一天（即昨天）
+        calendar.add(Calendar.DAY_OF_MONTH, num);
+        // 格式化日期输出
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        String result = dateFormat.format(calendar.getTime());
+        return result;
     }
 }
