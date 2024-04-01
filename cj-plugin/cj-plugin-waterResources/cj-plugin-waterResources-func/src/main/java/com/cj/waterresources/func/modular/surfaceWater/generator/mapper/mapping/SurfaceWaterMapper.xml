@@ -11,20 +11,35 @@
         SELECT MONTH,
         period,
         <foreach item="item" index="index" collection="yearlist" open="" separator="," close="">
-            SUM(CASE WHEN YEAR = #{item}   THEN FLOW ELSE 0 END) AS "${item}"
+            SUM(CASE WHEN YEAR = #{item} THEN FLOW ELSE 0 END) AS "${item}"
         </foreach>
-        FROM (WITH DateRanges AS (SELECT YEAR,
+        FROM (WITH DateRanges AS (
+
+        SELECT YEAR,
+        MONTH,
+        PERIOD,
+        ROUND(AVG(FLOW), 3) AS FLOW
+        FROM (
+        SELECT YEAR,
         MONTH,
         CASE
         WHEN DAY BETWEEN 1 AND 10 THEN '1上旬'
         WHEN DAY BETWEEN 11 AND 20 THEN '2中旬'
         ELSE '3下旬'
-        END AS period,
+        END AS PERIOD,
         FLOW
         FROM "TTH"."SURFACE_WATER_FLOW_DETAIL"
         WHERE SITE_NAME = '头屯河进库'
-        AND YEAR BETWEEN 1989 AND 2023
+        AND YEAR BETWEEN 1989 AND 2023)T1
+
+        GROUP BY YEAR, MONTH,PERIOD
+
         UNION ALL
+        SELECT YEAR,
+        MONTH,
+        PERIOD,
+        ROUND(AVG(FLOW), 3) AS FLOW
+        FROM (
         SELECT YEAR,
         MONTH,
         CASE
@@ -35,7 +50,11 @@
         FLOW
         FROM "TTH"."SURFACE_WATER_FLOW_DETAIL"
         WHERE SITE_NAME = '楼庄子进库'
-        AND YEAR > 2023)
+        AND YEAR > 2023)T2
+
+        GROUP BY YEAR, MONTH,PERIOD
+
+        )
         SELECT YEAR,
         MONTH,
         period,
@@ -62,13 +81,13 @@
         UNION ALL
         SELECT NULL AS MONTH,'水量合计' AS period,
         <foreach item="item" index="index" collection="yearlist" open="" separator="," close="">
-            ROUND(SUM("${item}")*8.64*365 / 100000000,3) AS "${item}"
+            ROUND(SUM("${item}")*8.64*365/10000,3) AS "${item}"
         </foreach>
         FROM nbtable
         UNION ALL
         SELECT NULL AS MONTH,'水量平均' AS period,
         <foreach item="item" index="index" collection="yearlist" open="" separator="," close="">
-            ROUND(AVG("${item}")*8.64*365 / 10000, 3) AS "${item}"
+            ROUND(AVG("${item}")*8.64*365/10000, 3) AS "${item}"
         </foreach>
         FROM nbtable
 
