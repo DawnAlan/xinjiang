@@ -12,6 +12,8 @@ public interface PredictionApi {
     //查询实时雨量数据
     String getRealTimeRainfall(String startTime, String endTime);
 
+    String getRealTimeRainfallByDate(String date);
+
     //查询实时工情
     String getRealTimeWaterLevelData(String date);
 

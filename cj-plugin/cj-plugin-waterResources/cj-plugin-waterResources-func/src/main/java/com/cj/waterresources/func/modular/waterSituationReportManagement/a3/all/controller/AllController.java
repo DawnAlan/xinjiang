@@ -90,4 +90,12 @@ public class AllController {
     public RestResponse selectFloodRetentionCapacityNew(@RequestParam("date") String date,@RequestParam("ids") String ids) {
         return allService.selectFloodRetentionCapacityNew(date,ids);
     }
+
+    @ApiOperationSupport(order = 9)
+    @ApiOperation("防洪-查询今日水情和实时水情")
+    @CommonLog(value = "防洪-查询今日水情和实时水情")
+    @GetMapping("/selectTodayWaterSituationForFlood")
+    public RestResponse selectTodayWaterSituationForFlood(@RequestParam("date") String date,@RequestParam("ids") String ids) {
+        return allService.selectTodayWaterSituationForFlood(date,ids);
+    }
 }

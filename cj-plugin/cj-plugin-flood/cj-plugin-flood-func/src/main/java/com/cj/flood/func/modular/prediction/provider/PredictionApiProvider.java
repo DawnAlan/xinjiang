@@ -104,6 +104,12 @@ public class PredictionApiProvider implements PredictionApi {
         return null;
     }
 
+    @Override
+    public String getRealTimeRainfallByDate(String date) {
+        return null;
+    }
+
+
     @SneakyThrows
     @Override
     public String getRealTimeWaterLevelData(String date) {

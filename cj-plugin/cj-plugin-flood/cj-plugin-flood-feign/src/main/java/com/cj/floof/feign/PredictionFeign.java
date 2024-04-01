@@ -72,4 +72,8 @@ public interface PredictionFeign {
 
     @RequestMapping("/feign/provider/flood/refreshWaterStorageOverview")
     void refreshWaterStorageOverview();
+
+
+    @RequestMapping("/feign/provider/flood/getRealTimeRainfallByDate")
+    String getRealTimeRainfallByDate(String date);
 }

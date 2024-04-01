@@ -118,8 +118,15 @@ public class PredictionFeignProvider implements PredictionFeign {
         return predictionApiProvider.getWaterStorageOverview(dateTime);
     }
 
+    @RequestMapping("/feign/provider/flood/refreshWaterStorageOverview")
     @Override
     public void refreshWaterStorageOverview() {
         predictionApiProvider.refreshWaterStorageOverview();
+    }
+
+    @RequestMapping("/feign/provider/flood/getRealTimeRainfallByDate")
+    @Override
+    public String getRealTimeRainfallByDate(String date) {
+        return predictionApiProvider.getRealTimeRainfallByDate(date);
     }
 }
