@@ -75,5 +75,9 @@ public class IrrigatedPlatformDataInfo extends Model<IrrigatedPlatformDataInfo> 
     private String monitorId;
 
     private Double sqCapacity;
+
+    //记录时间1
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    private Date recordTime;
 }
 

@@ -2,6 +2,7 @@ package com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.mapper;
 
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.entity.IrrigatedPlatformDataInfo;
 import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.entity.LzzGaugingStation;
 import com.cj.middleDatabase.func.modular.lzz.lzzRainfallStation.entity.LzzRainfallStation;
 import org.apache.ibatis.annotations.Param;
@@ -41,5 +42,8 @@ public interface LzzGaugingStationMapper extends BaseMapper<LzzGaugingStation> {
             "and to_char(gather_time, 'yyyy-mm-dd') = #{dateTime}\n" +
             "group by STATION_NAME)")
     List<LzzGaugingStation> getCurrent(@Param("dateTime")String dateTime);
+
+    @Select("SELECT * FROM LZZ_GAUGING_STATION WHERE TREE_ID = #{id} AND RECORD_TIME = #{time}  order by GATHER_TIME desc limit 1")
+    LzzGaugingStation selectInfoForIndex(@Param("id") String id, @Param("time") String time);
 }
 

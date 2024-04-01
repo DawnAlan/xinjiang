@@ -82,4 +82,12 @@ public class AllController {
     public RestResponse updateInfoDate() {
         return allService.updateInfoDate();
     }
+
+    @ApiOperationSupport(order = 8)
+    @ApiOperation("A3表查询2库的拦蓄水量(new)")
+    @CommonLog(value = "A3表查询2库的拦蓄水量(new)")
+    @GetMapping("/selectFloodRetentionCapacityNew")
+    public RestResponse selectFloodRetentionCapacityNew(@RequestParam("date") String date,@RequestParam("ids") String ids) {
+        return allService.selectFloodRetentionCapacityNew(date,ids);
+    }
 }

@@ -1,5 +1,6 @@
 package com.cj.dataSynchronization.func.modular.lzz.service.impl;
 
+import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.NumberUtil;
@@ -55,6 +56,7 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
     private RedisUtil redisUtil;
 
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd");
     private SimpleDateFormat timeData = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 
 
@@ -239,6 +241,7 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
             station.setStationName("楼庄子水厂1号管道");
             station.setTreeId(dto.getSenid());
             station.setGatherTime(dto.getTime());
+            station.setRecordTime(DateUtil.parse(sdf1.format(dto.getTime()),"yyyy-MM-dd"));
             lzzGaugingStationList.add(station);
             redisUtil.set("lzz:waterworks:1:"+timeData.format(dto.getTime()),dto.getV().doubleValue());
         }
@@ -249,6 +252,7 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
             station.setStationName("楼庄子水厂2号管道");
             station.setTreeId(dto.getSenid());
             station.setGatherTime(dto.getTime());
+            station.setRecordTime(DateUtil.parse(sdf1.format(dto.getTime()),"yyyy-MM-dd"));
             lzzGaugingStationList.add(station);
             redisUtil.set("lzz:waterworks:2:"+timeData.format(dto.getTime()),dto.getV().doubleValue());
         }
@@ -278,6 +282,7 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
                         station.setStationName(userPidParam.getName());
                         station.setRainfall(paramDto.getV());
                         station.setTime(paramDto.getTime());
+                        station.setRecordTime(DateUtil.parse(sdf1.format(paramDto.getTime()),"yyyy-MM-dd"));
                         station.setYear(String.valueOf(sdf.format(paramDto.getTime()).split("-")[0]));
                         station.setId(userPidParam.getName()+":"+paramDto.getTime().getTime());
                         rainfallStationList.add(station);
@@ -346,6 +351,7 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
                     lzz.setTreeId(rainfallStationPidList.get(0).getId());
                     lzz.setId("楼庄子库水位站:" + paramDto.getTime().getTime());
                     lzz.setGatherTime(paramDto.getTime());
+                    lzz.setRecordTime(DateUtil.parse(sdf1.format(paramDto.getTime()),"yyyy-MM-dd"));
                     lzz.setStationName("楼庄子库水位站");
                     lzz.setRelativeWaterLevel(paramDto.getV().doubleValue());
                     String[] lzzSplit = paramDto.getV().toString().split("\\.");
@@ -540,6 +546,7 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
                         gaugingStation.setRelativeWaterLevel(paramDto.getV().doubleValue());
                         gaugingStation.setId(gaugingStation.getStationName()+":"+paramDto.getTime().getTime());
                         gaugingStation.setGatherTime(paramDto.getTime());
+                        gaugingStation.setRecordTime(DateUtil.parse(sdf1.format(paramDto.getTime()),"yyyy-MM-dd"));
                         gaugingStationList.add(gaugingStation);
                     }
                 }

@@ -15,10 +15,10 @@ spring:
         password: nacos
 #10.65.73.17
 irrigatedArea:
-  ip: http://10.65.73.17:9710
-  ip1: http://10.65.73.17:9700
-  #ip: http://10.1.1.82:9710
-  #ip1: http://10.1.1.82:9700
+  #ip: http://10.65.73.17:9710
+  #ip1: http://10.65.73.17:9700
+  ip: http://10.1.1.82:9710
+  ip1: http://10.1.1.82:9700
 #  ip: http://124.119.23.114:9710
 #  ip1: http://124.119.23.114:9700
   cmd: D:\tth_system\environment\js\md5.js

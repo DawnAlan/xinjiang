@@ -55,5 +55,8 @@ public interface DayWaterSituationStatisticsTableLzzMapper extends BaseMapper<Da
 
     @Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_LZZ where TIME = '今日均'")
     List<DayWaterSituationStatisticsTableLzz> selectAllListToday();
+
+    @Select("select ID,RECORD_TIME,TIME,TABLE_HEAD_ID,V from DAY_WATER_SITUATION_STATISTICS_TABLE_LZZ WHERE TABLE_HEAD_ID = #{tableHeadId} and RECORD_TIME = #{time}  and TIME != '昨日均' and TIME != '今日均' order by time desc limit 1")
+    DayWaterSituationStatisticsTableLzz selectListForIndex(@Param("time")String time, @Param("tableHeadId") String tableHeadId);
 }
 

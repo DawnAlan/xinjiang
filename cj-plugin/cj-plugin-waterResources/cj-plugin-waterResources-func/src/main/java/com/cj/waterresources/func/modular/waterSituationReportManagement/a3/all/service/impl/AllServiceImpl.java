@@ -5,6 +5,11 @@ import com.cj.auth.core.pojo.SaBaseLoginUser;
 import com.cj.auth.core.util.StpLoginUserUtil;
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.RedisUtil;
+import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.entity.IrrigatedPlatformDataInfo;
+import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.mapper.IrrigatedPlatformDataInfoMapper;
+import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.entity.LzzGaugingStation;
+import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.mapper.LzzGaugingStationMapper;
+import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.service.LzzGaugingStationService;
 import com.cj.waterresources.func.modular.overallSituationUnitMgr.entity.OverallSituationUnitMgr;
 import com.cj.waterresources.func.modular.overallSituationUnitMgr.service.OverallSituationUnitMgrService;
 import com.cj.waterresources.func.modular.trendsTable.entity.TrendsTableParam;
@@ -53,6 +58,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.text.DecimalFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -80,6 +86,9 @@ public class AllServiceImpl implements AllService {
     private final DayWaterSituationStatisticsTableQsService dayWaterSituationStatisticsTableQsService;
     private final DayWaterSituationStatisticsTableQsLhService dayWaterSituationStatisticsTableQsLhService;
     private final OverallSituationUnitMgrService overallSituationUnitMgrService;
+    private final IrrigatedPlatformDataInfoMapper irrigatedPlatformDataInfoMapper;
+    private final LzzGaugingStationMapper lzzGaugingStationMapper;
+
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -575,6 +584,14 @@ public class AllServiceImpl implements AllService {
 
     @Override
     public RestResponse selectFloodRetentionCapacityNew(String date, String ids) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        String startTime = "";
+        try {
+            startTime = getDate(sdf.parse(date), -1);
+        } catch (ParseException e) {
+            return RestResponse.no("时间格式不正确，请传年月日格式日期参数");
+        }
+        List<FloodRetentionCapacityRes> resList = new ArrayList<>();
         List<OverallSituationUnitMgr> idsList = new ArrayList<>();
         String overall = (String) redisUtil.get("overallSituationUnitMgr:list");
         if(StringUtils.isEmpty(overall)){
@@ -583,26 +600,72 @@ public class AllServiceImpl implements AllService {
             overall = JSONObject.toJSONString(list);
         }
         List<OverallSituationUnitMgr> list = JSONObject.parseArray(overall, OverallSituationUnitMgr.class);
+        String mk = (String) redisUtil.get("trendsTableParam:list");
+        if(StringUtils.isEmpty(mk)){
+            trendsTableParamService.updateCache();
+            mk = (String) redisUtil.get("trendsTableParam:list");
+        }
+        List<TrendsTableParam> trendsTableParamList = JSONObject.parseArray(mk, TrendsTableParam.class);
         for (String id:ids.split(",")){
             idsList.add(list.stream().filter(t -> t.getId().equals(id)).collect(Collectors.toList()).get(0));
         }
+        FloodRetentionCapacityRes lzz = new FloodRetentionCapacityRes();
+        List<LzzReportFormsRes> lzzReportFormsResList = dayWaterSituationStatisticsTableLzzService.selectReportForms(startTime, date).getData();
+        Double lzzDouble = formatDouble(lzzReportFormsResList.get(lzzReportFormsResList.size() - 1).getStorageCapacity() - lzzReportFormsResList.get(lzzReportFormsResList.size() - 2).getStorageCapacity());
+        lzz.setYesterdayFloodRetentionCapacity(lzzDouble>0?lzzDouble:0.00);
+        lzz.setYearFloodRetentionCapacity((Double)redisUtil.get("floodRetentionCapacity:lzz"));
+        lzz.setReservoirName("楼庄子水库");
+        FloodRetentionCapacityRes tth = new FloodRetentionCapacityRes();
+        List<TthReportFormsRes> tthReportFormsResList = dayWaterSituationStatisticsTableTthService.selectReportForms(startTime, date).getData();
+        Double tthDouble = formatDouble(tthReportFormsResList.get(tthReportFormsResList.size() - 1).getStorageCapacity() - tthReportFormsResList.get(tthReportFormsResList.size() - 2).getStorageCapacity());
+        tth.setYesterdayFloodRetentionCapacity(tthDouble>0?tthDouble:0.00);
+        tth.setYearFloodRetentionCapacity((Double)redisUtil.get("floodRetentionCapacity:tth"));
+        tth.setReservoirName("头屯河水库");
         for(OverallSituationUnitMgr mgr:idsList){
             if(mgr.getPName().equals("楼庄子水库")){
                 if(StringUtils.isNotEmpty(mgr.getMonitorId())){
-
+                    LzzGaugingStation info = lzzGaugingStationMapper.selectInfoForIndex(mgr.getMonitorId(), date);
+                    if(mgr.getUnitName().contains("进库")){
+                        tth.setInputFlow(info==null?null:info.getFlow());
+                    }
+                    if(mgr.getUnitName().contains("出库")){
+                        tth.setOutputFlow(info==null?null:info.getFlow());
+                    }
                 }else {
-
+                    TrendsTableParam param = trendsTableParamList.stream().filter(t -> t.getUseStation().equals("楼庄子水库") && t.getUseType() == 1 && t.getUnitId().equals(mgr.getId())).collect(Collectors.toList()).get(0);
+                    DayWaterSituationStatisticsTableLzz dayWaterSituationStatisticsTableLzz = dayWaterSituationStatisticsTableLzzMapper.selectListForIndex(date, param.getId());
+                    if(param.getParamName().contains("进库")){
+                        tth.setInputFlow(dayWaterSituationStatisticsTableLzz==null?null:dayWaterSituationStatisticsTableLzz.getV());
+                    }
+                    if(param.getParamName().contains("出库")){
+                        tth.setOutputFlow(dayWaterSituationStatisticsTableLzz==null?null:dayWaterSituationStatisticsTableLzz.getV());
+                    }
                 }
             }
             if(mgr.getPName().equals("头屯河水库")){
                 if(StringUtils.isNotEmpty(mgr.getMonitorId())){
-
+                    IrrigatedPlatformDataInfo info = irrigatedPlatformDataInfoMapper.selectInfoForIndex(mgr.getMonitorId(), date);
+                    if(mgr.getUnitName().contains("进库")){
+                        tth.setInputFlow(info==null?null:info.getSqMonitorFlow());
+                    }
+                    if(mgr.getUnitName().contains("出库")){
+                        tth.setOutputFlow(info==null?null:info.getSqMonitorFlow());
+                    }
                 }else {
-
+                    TrendsTableParam param = trendsTableParamList.stream().filter(t -> t.getUseStation().equals("头屯河水库") && t.getUseType() == 1 && t.getUnitId().equals(mgr.getId())).collect(Collectors.toList()).get(0);
+                    DayWaterSituationStatisticsTableLzz dayWaterSituationStatisticsTableLzz = dayWaterSituationStatisticsTableLzzMapper.selectListForIndex(date, param.getId());
+                    if(param.getParamName().contains("进库")){
+                        tth.setInputFlow(dayWaterSituationStatisticsTableLzz==null?null:dayWaterSituationStatisticsTableLzz.getV());
+                    }
+                    if(param.getParamName().contains("出库")){
+                        tth.setOutputFlow(dayWaterSituationStatisticsTableLzz==null?null:dayWaterSituationStatisticsTableLzz.getV());
+                    }
                 }
             }
         }
-        return null;
+        resList.add(lzz);
+        resList.add(tth);
+        return RestResponse.ok(resList);
     }
 
     @Override

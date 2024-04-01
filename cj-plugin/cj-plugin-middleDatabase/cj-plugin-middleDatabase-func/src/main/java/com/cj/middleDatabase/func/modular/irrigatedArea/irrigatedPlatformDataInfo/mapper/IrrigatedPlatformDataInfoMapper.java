@@ -74,5 +74,8 @@ public interface IrrigatedPlatformDataInfoMapper extends BaseMapper<IrrigatedPla
             "group by MONITOR_ID))\n" +
             "group by MONITOR_NAME")
     List<IrrigatedPlatformDataInfo> getRecentlyRainfalls(@Param("dateTime")String dateTime);
+
+    @Select("SELECT * FROM IRRIGATED_PLATFORM_DATA_INFO WHERE MONITOR_ID = #{id} AND RECORD_TIME = #{time}  order by MONITOR_TIME desc limit 1")
+    IrrigatedPlatformDataInfo selectInfoForIndex(@Param("id") String id, @Param("time") String time);
 }
 
