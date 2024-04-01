@@ -230,7 +230,7 @@ public class SurfaceWaterService extends ServiceImpl<SurfaceWaterMapper, Surface
         Double bbb = input.getPredictionYear().doubleValue();
 
         TypicalYearDetailReq typicalDataPoint = input.getTypicalYearDetailReqList().stream()
-                .min((dp1, dp2) -> Double.compare(Math.abs(dp1.getSumWater() - bbb), Math.abs(dp2.getSumWater() - bbb)))
+                .min((dp1, dp2) -> Double.compare(Math.abs(dp1.getAvgWater() - bbb), Math.abs(dp2.getAvgWater() - bbb)))
                 .orElse(null);
 
         TypicalYearVo typicalYearVo = new TypicalYearVo();
