@@ -251,12 +251,15 @@ public class SurfaceWaterService extends ServiceImpl<SurfaceWaterMapper, Surface
         typicalYearVo.setTypicalYear(typicalDataPoint.getYear());
         typicalYearVo.setTypicalFlow(typicalDataPoint.getAvgFlow());
         typicalYearVo.setTypicalWater(typicalDataPoint.getAvgWater());
+
         typicalYearVo.setAvgYear(closestToAvgDataPoint.getYear());
         typicalYearVo.setAvgFlow(closestToAvgDataPoint.getAvgFlow());
         typicalYearVo.setAvgWater(closestToAvgDataPoint.getAvgWater());
+
         typicalYearVo.setMaxYear(maxDataPoint.getYear());
         typicalYearVo.setMaxFlow(maxDataPoint.getAvgFlow());
         typicalYearVo.setMaxWater(maxDataPoint.getAvgWater());
+
         typicalYearVo.setMinYear(minDataPoint.getYear());
         typicalYearVo.setMinFlow(minDataPoint.getAvgFlow());
         typicalYearVo.setMinWater(minDataPoint.getAvgWater());
