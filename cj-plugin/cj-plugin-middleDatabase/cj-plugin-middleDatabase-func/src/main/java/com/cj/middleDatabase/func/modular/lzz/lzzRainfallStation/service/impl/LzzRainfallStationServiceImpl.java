@@ -55,6 +55,11 @@ public class LzzRainfallStationServiceImpl extends ServiceImpl<LzzRainfallStatio
     }
 
     @Override
+    public List<RealTimeRainfallRes> getRealTimeRainfallByDate(String date,Integer num) {
+        return this.baseMapper.getRealTimeRainfallByDate(date, num);
+    }
+
+    @Override
     public List<LzzRainfallStation> selectHistoryList(String name, String startTime, String endTime) {
         return this.baseMapper.selectHistoryList(name, startTime, endTime);
     }

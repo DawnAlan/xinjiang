@@ -75,5 +75,7 @@ public interface PredictionFeign {
 
 
     @RequestMapping("/feign/provider/flood/getRealTimeRainfallByDate")
-    String getRealTimeRainfallByDate(String date);
+    String getRealTimeRainfallByDate(@RequestParam(value = "date", required =true)String date,
+                                     @RequestParam(value = "lzz", required =true)Integer lzz,
+                                     @RequestParam(value = "tth", required =true)Integer tth);
 }

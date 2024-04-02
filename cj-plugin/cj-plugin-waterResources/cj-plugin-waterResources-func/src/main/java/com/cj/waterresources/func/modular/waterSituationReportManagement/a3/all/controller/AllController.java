@@ -98,4 +98,12 @@ public class AllController {
     public RestResponse selectTodayWaterSituationForFlood(@RequestParam("date") String date,@RequestParam("ids") String ids) {
         return allService.selectTodayWaterSituationForFlood(date,ids);
     }
+
+    @ApiOperationSupport(order = 9)
+    @ApiOperation("防洪-查询实时雨量")
+    @CommonLog(value = "防洪-查询实时雨量")
+    @GetMapping("/selectTodayRainfall")
+    public RestResponse selectTodayRainfall(@RequestParam("date") String date,@RequestParam("ids") Integer hour) {
+        return allService.selectTodayRainfall(date,hour);
+    }
 }

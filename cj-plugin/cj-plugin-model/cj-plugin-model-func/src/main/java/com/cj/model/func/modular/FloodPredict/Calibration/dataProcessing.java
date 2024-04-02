@@ -18,12 +18,12 @@ import static com.cj.model.func.modular.FloodPredict.utils.TimeUtils.duration;
 public class dataProcessing {
 
     public static void main(String[] args) throws IOException, ParseException, InvalidFormatException {
-        Object[][] inputObject = ExcelTool.readExcel("D:\\204\\2.头屯河\\资料\\2.小时尺度数据\\雨量站整理数据.xlsx","初始数据");
+        Object[][] inputObject = ExcelTool.readExcel("D:\\204\\2.头屯河\\资料\\3.场次数据\\楼庄子上游雨量站23年.xlsx","初始数据");
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String start = "07-01";
+        String start = "06-01";
         String end = "08-31";
-        Date startTime = sdf.parse("2022-"+start+" 00:00:00");
-        Date endTime = sdf.parse("2022-"+end+" 00:00:00");
+        Date startTime = sdf.parse("2023-"+start+" 00:00:00");
+        Date endTime = sdf.parse("2023-"+end+" 00:00:00");
         int l = duration(startTime,endTime,"小时");
 //        逐小时
         List<Object[]> BYLC = zhuduandian(inputObject,"八一林场自动雨量站",startTime,endTime).get(0);
@@ -61,7 +61,7 @@ public class dataProcessing {
             result[i][9] = ZED.get(i-1)[2];
             result[i][10] = ZCC.get(i-1)[2];
         }
-        ExcelTool.writeObjectExcel("D:\\204\\2.头屯河\\资料\\2.小时尺度数据\\雨量站整理数据.xlsx",start+"~"+end+"逐小时整理数据",result);
+        ExcelTool.writeObjectExcel("D:\\204\\2.头屯河\\资料\\3.场次数据\\楼庄子上游雨量站23年.xlsx",start+"~"+end+"逐小时整理数据",result);
         //逐日
         List<Object[]> BYLC1 = zhuduandian(inputObject,"八一林场自动雨量站",startTime,endTime).get(1);
         List<Object[]> DN1 = zhuduandian(inputObject,"东南沟自动雨量站",startTime,endTime).get(1);
@@ -90,7 +90,7 @@ public class dataProcessing {
             double zc = (Double) ZCC1.get(i-1)[1];
             result1[i][1] = by*0.454164+dn*0.205747+jp*0.194604+mk*0.039224+se*0.024912+wm*0.025386+ze*0.194604;
         }
-        ExcelTool.writeObjectExcel("D:\\204\\2.头屯河\\资料\\2.小时尺度数据\\雨量站整理数据.xlsx",start+"~"+end+"逐日整理数据",result1);
+        ExcelTool.writeObjectExcel("D:\\204\\2.头屯河\\资料\\3.场次数据\\楼庄子上游雨量站23年.xlsx",start+"~"+end+"逐日整理数据",result1);
 //        转换为面雨量
         Object[][] result2 = new Object[l+1][2];
         result2[0][0] = "时间";
@@ -109,7 +109,7 @@ public class dataProcessing {
             double zc = (Double) ZCC.get(i-1)[2];
             result2[i][1] = by*0.454164+dn*0.205747+jp*0.194604+mk*0.039224+se*0.024912+wm*0.025386+ze*0.194604;
         }
-        ExcelTool.writeObjectExcel("D:\\204\\2.头屯河\\资料\\2.小时尺度数据\\雨量站整理数据.xlsx",start+"~"+end+"面雨量整理数据",result2);
+        ExcelTool.writeObjectExcel("D:\\204\\2.头屯河\\资料\\3.场次数据\\楼庄子上游雨量站23年.xlsx",start+"~"+end+"面雨量整理数据",result2);
     }
 
     public static List<List<Object[]>> zhuduandian(Object[][] input, String location, Date startTime, Date endTime)  {

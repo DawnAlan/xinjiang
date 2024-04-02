@@ -7,6 +7,8 @@ import com.cj.auth.core.util.StpLoginUserUtil;
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.RedisUtil;
 import com.cj.common.util.RestTemplateUtil;
+import com.cj.flood.api.PredictionApi;
+import com.cj.middleDatabase.func.modular.dto.RealTimeRainfallRes;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.entity.IrrigatedPlatformDataInfo;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.mapper.IrrigatedPlatformDataInfoMapper;
 import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.entity.LzzGaugingStation;
@@ -56,6 +58,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.net.InetAddress;
 import java.text.DecimalFormat;
 import java.text.ParseException;
@@ -88,6 +91,7 @@ public class AllServiceImpl implements AllService {
     private final OverallSituationUnitMgrService overallSituationUnitMgrService;
     private final IrrigatedPlatformDataInfoMapper irrigatedPlatformDataInfoMapper;
     private final LzzGaugingStationMapper lzzGaugingStationMapper;
+    private final PredictionApi predictionApi;
 
 
     @Override
@@ -826,12 +830,6 @@ public class AllServiceImpl implements AllService {
             TodayWaterSituationForFloodRes res = new TodayWaterSituationForFloodRes();
             if(getTopUnitNameFromOverallSituationUnitMgr(mgr.getId()).equals("楼庄子水库")){
                 res.setName(mgr.getUnitName());
-                if(mgr.getUnitName().contains("进库")){
-                    res.setName("楼庄子水库进库站");
-                }
-                if(mgr.getUnitName().contains("河道")){
-                    res.setName("楼庄子水库出库站");
-                }
                 if(StringUtils.isNotEmpty(mgr.getMonitorId())){
                     LzzGaugingStation station = lzzGaugingStationMapper.selectInfoForIndex(mgr.getMonitorId(), date);
                     res.setFlow(station==null?null:station.getFlow());
@@ -849,12 +847,6 @@ public class AllServiceImpl implements AllService {
             }
             if(getTopUnitNameFromOverallSituationUnitMgr(mgr.getId()).equals("头屯河水库")){
                 res.setName(mgr.getUnitName());
-                if(mgr.getUnitName().contains("进库")){
-                    res.setName("头屯河水库进库站");
-                }
-                if(mgr.getUnitName().contains("河道")){
-                    res.setName("头屯河水库出库站");
-                }
                 if(StringUtils.isNotEmpty(mgr.getMonitorId())){
                     IrrigatedPlatformDataInfo info = irrigatedPlatformDataInfoMapper.selectInfoForIndex(mgr.getMonitorId(), date);
                     res.setFlow(info.getSqMonitorFlow());
@@ -876,9 +868,63 @@ public class AllServiceImpl implements AllService {
     }
 
     @Override
-    public RestResponse selectTodayRainfall(String date, String ids) {
-
-        return null;
+    public RestResponse selectTodayRainfall(String date,Integer hour) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH");
+        String overall = (String) redisUtil.get("overallSituationUnitMgr:list");
+        if(StringUtils.isEmpty(overall)){
+            List<OverallSituationUnitMgr> list = overallSituationUnitMgrService.list();
+            redisUtil.set("overallSituationUnitMgr:list", JSONObject.toJSONString(list));
+            overall = JSONObject.toJSONString(list);
+        }
+        List<OverallSituationUnitMgr> list = JSONObject.parseArray(overall, OverallSituationUnitMgr.class);
+        try {
+            if (null==hour){
+                List<OverallSituationUnitMgr> collect = list.stream().filter(t -> t.getPName().equals("雨量站")).collect(Collectors.toList());
+                int tth = collect.stream().filter(t -> t.getDataResource() == 1).collect(Collectors.toList()).size();
+                int lzz = collect.stream().filter(t -> t.getDataResource() == 2).collect(Collectors.toList()).size();
+                String realTimeRainfallByDate = predictionApi.getRealTimeRainfallByDate(date, lzz, tth);
+                if(StringUtils.isNotEmpty(realTimeRainfallByDate)){
+                    return RestResponse.ok(JSONObject.parseArray(realTimeRainfallByDate, RealTimeRainfallRes.class));
+                }else {
+                    return RestResponse.no("暂无数据");
+                }
+            }else {
+                Date endTime = null;
+                if (StringUtils.isEmpty(date)){
+                    endTime = new Date();
+                }else {
+                    endTime = sdf.parse(date);
+                }
+                Date startTime = calculateTime(sdf.format(endTime),-hour);
+                String realTimeRainfall = predictionApi.getRealTimeRainfall(sdf.format(startTime), sdf.format(endTime));
+                if(StringUtils.isNotEmpty(realTimeRainfall)){
+                    return RestResponse.ok(JSONObject.parseArray(realTimeRainfall, RealTimeRainfallRes.class));
+                }else {
+                    return RestResponse.no("暂无数据");
+                }
+            }
+        }catch (Exception e){
+            return RestResponse.no("select error");
+        }
+    }
+    private Date calculateTime(String date, int hour){
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH");
+        try {
+            if(StringUtils.isEmpty(date)){
+                date = sdf.format(new Date());
+            }
+            Calendar c1 = Calendar.getInstance();
+            try {
+                c1.setTime(sdf.parse(date));
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            c1.add(Calendar.HOUR,hour);
+            Date back=c1.getTime();
+            return sdf.parse(sdf.format(back));
+        }catch (Exception e) {
+            return new Date();
+        }
     }
 
     @Override

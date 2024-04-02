@@ -126,7 +126,7 @@ public class PredictionFeignProvider implements PredictionFeign {
 
     @RequestMapping("/feign/provider/flood/getRealTimeRainfallByDate")
     @Override
-    public String getRealTimeRainfallByDate(String date) {
-        return predictionApiProvider.getRealTimeRainfallByDate(date);
+    public String getRealTimeRainfallByDate(String date,Integer lzz,Integer tth) {
+        return predictionApiProvider.getRealTimeRainfallByDate(date,lzz,tth);
     }
 }

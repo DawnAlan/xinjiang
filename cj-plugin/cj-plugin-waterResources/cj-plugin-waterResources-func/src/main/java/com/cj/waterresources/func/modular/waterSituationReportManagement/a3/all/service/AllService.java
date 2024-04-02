@@ -31,6 +31,7 @@ public interface AllService {
 
     RestResponse selectTodayWaterSituationForFlood(String date,String ids);
 
+    RestResponse selectTodayRainfall(String date,Integer hour);
 
     RestResponse updateInfoDate();
 }

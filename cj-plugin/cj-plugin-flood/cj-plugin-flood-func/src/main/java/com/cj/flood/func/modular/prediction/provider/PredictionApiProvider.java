@@ -105,7 +105,15 @@ public class PredictionApiProvider implements PredictionApi {
     }
 
     @Override
-    public String getRealTimeRainfallByDate(String date) {
+    public String getRealTimeRainfallByDate(String date,Integer lzz,Integer tth) {
+        List<RealTimeRainfallRes> result = new ArrayList<>();
+        List<RealTimeRainfallRes> lzzRealTimeRainfall = lzzRainfallStationService.getRealTimeRainfallByDate(date, lzz);
+        List<RealTimeRainfallRes> irrigatedRealTimeRainfall1 = irrigatedPlatformDataInfoService.getRealTimeRainfallByDate(date, tth);
+        result.addAll(lzzRealTimeRainfall);
+        result.addAll(irrigatedRealTimeRainfall1);
+        if(result.size()>0){
+            return JSONObject.toJSONString(result);
+        }
         return null;
     }
 

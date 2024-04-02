@@ -134,6 +134,11 @@ public class IrrigatedPlatformDataInfoServiceImpl extends ServiceImpl<IrrigatedP
     }
 
     @Override
+    public List<RealTimeRainfallRes> getRealTimeRainfallByDate(String date, Integer num) {
+        return baseMapper.getRealTimeRainfallByDate(date, num);
+    }
+
+    @Override
     public List<IrrigatedPlatformDataInfo> selectInfoByTime(String time,String name) {
         return this.baseMapper.selectInfoByTime(time,name);
     }

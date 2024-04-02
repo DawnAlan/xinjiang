@@ -32,6 +32,8 @@ public interface IrrigatedPlatformDataInfoService extends IService<IrrigatedPlat
 
     List<RealTimeRainfallRes> getRealTimeRainfall(String startTime, String endTime);
 
+    List<RealTimeRainfallRes> getRealTimeRainfallByDate(String date,Integer num);
+
     List<IrrigatedPlatformDataInfo>  selectInfoByTime(String time,String name);
 
     List<IrrigatedPlatformDataInfo> selectHistoryList(String name, String startTime, String endTime);
