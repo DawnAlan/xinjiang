@@ -28,7 +28,7 @@ public class WaterResourceAllocationControlObject implements Serializable {
     private String id;
     @ApiModelProperty(value = "调配方案id")
     private String allocationId;
-    @ApiModelProperty(value = "对象类型,0-头屯河流域生态流量,1-楼庄子动态汛限水位,2-楼庄子最低调度水位,3-头屯河动态汛限水位,4-头屯河最低调度水位")
+    @ApiModelProperty(value = "对象类型,0-楼庄子生态流量,1-头屯河生态流量,2-楼庄子动态汛限水位,3-楼庄子最低调度水位,4-头屯河动态汛限水位,5-头屯河最低调度水位")
     private String objectType;
     @ApiModelProperty(value = "月份")
     private String monthNum;

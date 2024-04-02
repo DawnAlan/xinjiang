@@ -32,8 +32,10 @@ public class WaterTransferReq {
     private double[]  minWaterLevelLzz;
     //头屯河最低调度水位
     private double[]  minWaterLevelTth;
-    //生态流量
-    private double[]  ecologyFlow;
+    //楼庄子生态流量
+    private double[]  ecologyFlowLzz;
+    //头屯河生态流量
+    private double[]  ecologyFlowTth;
     //楼庄子起调水位
     private double levelBeginLzz;
     //头屯河起调水位
