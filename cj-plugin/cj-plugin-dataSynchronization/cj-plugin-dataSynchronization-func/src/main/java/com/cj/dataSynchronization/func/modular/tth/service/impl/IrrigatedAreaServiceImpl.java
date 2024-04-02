@@ -233,6 +233,7 @@ public class IrrigatedAreaServiceImpl implements IrrigatedAreaService {
                     info.setBeginTime(dto.getBEGIN_TIME());
                     info.setYesterdayWaterDaily(dto.getYESTERDAY_WATER_DAILY());
                     info.setMonitorTime(DateUtil.parse(dto.getMONITOR_TIME(),"yyyy-MM-dd HH:mm"));
+                    info.setRecordTime(DateUtil.parse(dto.getMONITOR_TIME(),"yyyy-MM-dd"));
                     info.setSqWaterLevel(dto.getSQ_WATER_LEVEL());
                     info.setVoltage(dto.getVOLTAGE());
                     info.setAvgFlow(dto.getAVG_FLOW());

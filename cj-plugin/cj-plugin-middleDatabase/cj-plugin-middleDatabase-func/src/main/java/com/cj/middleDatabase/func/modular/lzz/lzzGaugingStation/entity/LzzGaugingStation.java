@@ -2,6 +2,7 @@ package com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.entity;
 
 import java.util.Date;
 import com.baomidou.mybatisplus.extension.activerecord.Model;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -30,5 +31,8 @@ public class LzzGaugingStation extends Model<LzzGaugingStation> {
     private Double storageCapacity;
     //树结构ID
     private String treeId;
+    //记录时间1
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    private Date recordTime;
 }
 

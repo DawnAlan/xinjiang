@@ -1,6 +1,5 @@
 package com.cj.model.func.modular.FloodPredict.entity;
 
-import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.util.Date;

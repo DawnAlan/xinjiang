@@ -13,4 +13,35 @@
         AND TO_CHAR(MONITOR_TIME,'YYYY-MM-DD') = #{time} ORDER BY MONITOR_TIME DESC limit #{num}
     </select>
 
+    <select id="getRealTimeRainfall" resultType="com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.entity.IrrigatedPlatformDataInfo">
+        SELECT MONITOR_ID,MONITOR_NAME,YQ_RAIN_FALL_ONE,YQ_RAIN_FALL_THREE,YQ_RAIN_FALL_SIX,YQ_RAIN_FALL_TWELVE,YQ_RAIN_FALL_TWENTY_FOUR
+        FROM IRRIGATED_PLATFORM_DATA_INFO
+        <where>
+            and TO_CHAR(MONITOR_TIME,'YYYY-MM-DD hh24') = #{date}
+            <if test="ids!=null and ids.size()>0">
+                and MONITOR_ID in
+                <foreach item="item" collection="ids" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        limit #{num} order by MONITOR_TIME desc
+    </select>
+
+    <select id="getRealTimeRainfallByDate" resultType="com.cj.middleDatabase.func.modular.dto.RealTimeRainfallRes">
+        SELECT MONITOR_ID as ID,MONITOR_NAME as STATION_NAME, YQ_RAIN_FALL_ONE as RAINFALL
+        FROM IRRIGATED_PLATFORM_DATA_INFO
+        <where>
+            and RECORD_TIME = #{date}
+            <if test="ids!=null and ids.size()>0">
+                and MONITOR_ID in
+                <foreach item="item" collection="ids" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            and to_char(MONITOR_TIME,'mi')=00
+        </where>
+        order by MONITOR_TIME desc
+    </select>
+
 </mapper>

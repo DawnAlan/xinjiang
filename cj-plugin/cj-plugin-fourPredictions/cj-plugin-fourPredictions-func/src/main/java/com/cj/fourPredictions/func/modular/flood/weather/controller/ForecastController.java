@@ -1,7 +1,7 @@
 package com.cj.fourPredictions.func.modular.flood.weather.controller;
 
 import com.alibaba.fastjson.JSONObject;
-import com.cj.common.annotation.CommonLog;
+import com.cj.business.log.modular.log.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.RestTemplateUtil;
 import com.cj.fourPredictions.func.modular.flood.weather.bean.vo.ForecastVO;

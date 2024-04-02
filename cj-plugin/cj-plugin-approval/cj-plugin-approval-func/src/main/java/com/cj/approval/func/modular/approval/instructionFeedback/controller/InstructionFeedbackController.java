@@ -3,7 +3,7 @@ package com.cj.approval.func.modular.approval.instructionFeedback.controller;
 import com.cj.approval.func.modular.approval.approvalManagement.entity.ApprovalManagement;
 import com.cj.approval.func.modular.approval.instructionFeedback.entity.InstructionFeedback;
 import com.cj.approval.func.modular.approval.instructionFeedback.service.InstructionFeedbackService;
-import com.cj.common.annotation.CommonLog;
+import com.cj.business.log.modular.log.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSupport;

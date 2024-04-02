@@ -1,6 +1,6 @@
 package com.cj.waterresources.func.modular.quotaStatisticsManagement.dayWaterBalance.controller;
 
-import com.cj.common.annotation.CommonLog;
+import com.cj.business.log.modular.log.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.cj.waterresources.func.modular.quotaStatisticsManagement.dayWaterBalance.bean.req.DayWaterBalanceSelectListReq;
 import com.cj.waterresources.func.modular.quotaStatisticsManagement.dayWaterBalance.entity.DayWaterBalance;

@@ -1,7 +1,7 @@
 package com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.cj.common.annotation.CommonLog;
+import com.cj.business.log.modular.log.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.cj.waterresources.func.modular.waterPrice.paymentWaterFees.bean.req.PaymentWaterFeesAddReq;
 import com.cj.waterresources.func.modular.waterPrice.paymentWaterFees.bean.req.PaymentWaterFeesSelectListReq;

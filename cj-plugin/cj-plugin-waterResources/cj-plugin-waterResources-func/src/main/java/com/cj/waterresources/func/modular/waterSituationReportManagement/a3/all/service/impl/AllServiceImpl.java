@@ -1,10 +1,19 @@
 package com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.service.impl;
 
+import cn.dev33.satoken.stp.StpUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.cj.auth.core.pojo.SaBaseLoginUser;
 import com.cj.auth.core.util.StpLoginUserUtil;
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.RedisUtil;
+import com.cj.common.util.RestTemplateUtil;
+import com.cj.flood.api.PredictionApi;
+import com.cj.middleDatabase.func.modular.dto.RealTimeRainfallRes;
+import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.entity.IrrigatedPlatformDataInfo;
+import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.mapper.IrrigatedPlatformDataInfoMapper;
+import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.entity.LzzGaugingStation;
+import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.mapper.LzzGaugingStationMapper;
+import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.service.LzzGaugingStationService;
 import com.cj.waterresources.func.modular.overallSituationUnitMgr.entity.OverallSituationUnitMgr;
 import com.cj.waterresources.func.modular.overallSituationUnitMgr.service.OverallSituationUnitMgrService;
 import com.cj.waterresources.func.modular.trendsTable.entity.TrendsTableParam;
@@ -15,10 +24,7 @@ import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.res
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req.A3StatisticsReq;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req.ReportFormsReq;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req.SelectListForIndustrialWaterFeeReq;
-import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.res.A3StatisticsRes;
-import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.res.FloodRetentionCapacityRes;
-import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.res.SelectListForIndustrialWaterFeeRes;
-import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.res.TodayWaterSituationRes;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.res.*;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.service.AllService;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.dkl.mapper.DayWaterSituationStatisticsTableDklMapper;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hd.entity.DayWaterSituationStatisticsTableHd;
@@ -52,7 +58,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
+import java.net.InetAddress;
 import java.text.DecimalFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -80,6 +89,10 @@ public class AllServiceImpl implements AllService {
     private final DayWaterSituationStatisticsTableQsService dayWaterSituationStatisticsTableQsService;
     private final DayWaterSituationStatisticsTableQsLhService dayWaterSituationStatisticsTableQsLhService;
     private final OverallSituationUnitMgrService overallSituationUnitMgrService;
+    private final IrrigatedPlatformDataInfoMapper irrigatedPlatformDataInfoMapper;
+    private final LzzGaugingStationMapper lzzGaugingStationMapper;
+    private final PredictionApi predictionApi;
+
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -575,6 +588,14 @@ public class AllServiceImpl implements AllService {
 
     @Override
     public RestResponse selectFloodRetentionCapacityNew(String date, String ids) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        String startTime = "";
+        try {
+            startTime = getDate(sdf.parse(date), -1);
+        } catch (ParseException e) {
+            return RestResponse.no("时间格式不正确，请传年月日格式日期参数");
+        }
+        List<FloodRetentionCapacityRes> resList = new ArrayList<>();
         List<OverallSituationUnitMgr> idsList = new ArrayList<>();
         String overall = (String) redisUtil.get("overallSituationUnitMgr:list");
         if(StringUtils.isEmpty(overall)){
@@ -583,26 +604,72 @@ public class AllServiceImpl implements AllService {
             overall = JSONObject.toJSONString(list);
         }
         List<OverallSituationUnitMgr> list = JSONObject.parseArray(overall, OverallSituationUnitMgr.class);
+        String mk = (String) redisUtil.get("trendsTableParam:list");
+        if(StringUtils.isEmpty(mk)){
+            trendsTableParamService.updateCache();
+            mk = (String) redisUtil.get("trendsTableParam:list");
+        }
+        List<TrendsTableParam> trendsTableParamList = JSONObject.parseArray(mk, TrendsTableParam.class);
         for (String id:ids.split(",")){
             idsList.add(list.stream().filter(t -> t.getId().equals(id)).collect(Collectors.toList()).get(0));
         }
+        FloodRetentionCapacityRes lzz = new FloodRetentionCapacityRes();
+        List<LzzReportFormsRes> lzzReportFormsResList = dayWaterSituationStatisticsTableLzzService.selectReportForms(startTime, date).getData();
+        Double lzzDouble = lzzReportFormsResList.size()<2?null:formatDouble(lzzReportFormsResList.get(lzzReportFormsResList.size() - 1).getStorageCapacity() - lzzReportFormsResList.get(lzzReportFormsResList.size() - 2).getStorageCapacity());
+        lzz.setYesterdayFloodRetentionCapacity(lzzDouble==null?null:lzzDouble>0?lzzDouble:0.00);
+        lzz.setYearFloodRetentionCapacity((Double)redisUtil.get("floodRetentionCapacity:lzz"));
+        lzz.setReservoirName("楼庄子水库");
+        FloodRetentionCapacityRes tth = new FloodRetentionCapacityRes();
+        List<TthReportFormsRes> tthReportFormsResList = dayWaterSituationStatisticsTableTthService.selectReportForms(startTime, date).getData();
+        Double tthDouble = tthReportFormsResList.size()<2?null:formatDouble(tthReportFormsResList.get(tthReportFormsResList.size() - 1).getStorageCapacity() - tthReportFormsResList.get(tthReportFormsResList.size() - 2).getStorageCapacity());
+        tth.setYesterdayFloodRetentionCapacity(tthDouble==null?null:tthDouble>0?tthDouble:0.00);
+        tth.setYearFloodRetentionCapacity((Double)redisUtil.get("floodRetentionCapacity:tth"));
+        tth.setReservoirName("头屯河水库");
         for(OverallSituationUnitMgr mgr:idsList){
-            if(mgr.getPName().equals("楼庄子水库")){
+            if(getTopUnitNameFromOverallSituationUnitMgr(mgr.getId()).equals("楼庄子水库")){
                 if(StringUtils.isNotEmpty(mgr.getMonitorId())){
-
+                    LzzGaugingStation info = lzzGaugingStationMapper.selectInfoForIndex(mgr.getMonitorId(), date);
+                    if(mgr.getUnitName().contains("进库")){
+                        tth.setInputFlow(info==null?null:info.getFlow());
+                    }
+                    if(mgr.getUnitName().contains("河道")){
+                        tth.setOutputFlow(info==null?null:info.getFlow());
+                    }
                 }else {
-
+                    TrendsTableParam param = trendsTableParamList.stream().filter(t -> t.getUseStation().equals("楼庄子水库") && t.getUseType() == 1 && StringUtils.isNotEmpty(t.getUnitId())&& t.getUnitId().equals(mgr.getId())).collect(Collectors.toList()).get(0);
+                    DayWaterSituationStatisticsTableLzz dayWaterSituationStatisticsTableLzz = dayWaterSituationStatisticsTableLzzMapper.selectListForIndex(date, param.getId());
+                    if(param.getParamName().contains("进库")){
+                        tth.setInputFlow(dayWaterSituationStatisticsTableLzz==null?null:dayWaterSituationStatisticsTableLzz.getV());
+                    }
+                    if(param.getParamName().contains("河道")){
+                        tth.setOutputFlow(dayWaterSituationStatisticsTableLzz==null?null:dayWaterSituationStatisticsTableLzz.getV());
+                    }
                 }
             }
-            if(mgr.getPName().equals("头屯河水库")){
+            if(getTopUnitNameFromOverallSituationUnitMgr(mgr.getId()).equals("头屯河水库")){
                 if(StringUtils.isNotEmpty(mgr.getMonitorId())){
-
+                    IrrigatedPlatformDataInfo info = irrigatedPlatformDataInfoMapper.selectInfoForIndex(mgr.getMonitorId(), date);
+                    if(mgr.getUnitName().contains("进库")){
+                        tth.setInputFlow(info==null?null:info.getSqMonitorFlow());
+                    }
+                    if(mgr.getUnitName().contains("河道")){
+                        tth.setOutputFlow(info==null?null:info.getSqMonitorFlow());
+                    }
                 }else {
-
+                    TrendsTableParam param = trendsTableParamList.stream().filter(t -> t.getUseStation().equals("头屯河水库") && t.getUseType() == 1 && StringUtils.isNotEmpty(t.getUnitId())&& t.getUnitId().equals(mgr.getId())).collect(Collectors.toList()).get(0);
+                    DayWaterSituationStatisticsTableTth dayWaterSituationStatisticsTableTth = dayWaterSituationStatisticsTableTthMapper.selectListForIndex(date, param.getId());
+                    if(param.getParamName().contains("进库")){
+                        tth.setInputFlow(dayWaterSituationStatisticsTableTth==null?null:dayWaterSituationStatisticsTableTth.getV());
+                    }
+                    if(param.getParamName().contains("河道")){
+                        tth.setOutputFlow(dayWaterSituationStatisticsTableTth==null?null:dayWaterSituationStatisticsTableTth.getV());
+                    }
                 }
             }
         }
-        return null;
+        resList.add(lzz);
+        resList.add(tth);
+        return RestResponse.ok(resList);
     }
 
     @Override
@@ -736,6 +803,152 @@ public class AllServiceImpl implements AllService {
             return RestResponse.ok(stringListMap);
         }else {
             return RestResponse.no("今日暂无有效数据");
+        }
+    }
+
+    @Override
+    public RestResponse selectTodayWaterSituationForFlood(String date, String ids) {
+        List<TodayWaterSituationForFloodRes> resList = new ArrayList<>();
+        List<OverallSituationUnitMgr> idsList = new ArrayList<>();
+        String overall = (String) redisUtil.get("overallSituationUnitMgr:list");
+        if(StringUtils.isEmpty(overall)){
+            List<OverallSituationUnitMgr> list = overallSituationUnitMgrService.list();
+            redisUtil.set("overallSituationUnitMgr:list", JSONObject.toJSONString(list));
+            overall = JSONObject.toJSONString(list);
+        }
+        List<OverallSituationUnitMgr> list = JSONObject.parseArray(overall, OverallSituationUnitMgr.class);
+        String mk = (String) redisUtil.get("trendsTableParam:list");
+        if(StringUtils.isEmpty(mk)){
+            trendsTableParamService.updateCache();
+            mk = (String) redisUtil.get("trendsTableParam:list");
+        }
+        List<TrendsTableParam> trendsTableParamList = JSONObject.parseArray(mk, TrendsTableParam.class);
+        for (String id:ids.split(",")){
+            idsList.add(list.stream().filter(t -> t.getId().equals(id)).collect(Collectors.toList()).get(0));
+        }
+        for(OverallSituationUnitMgr mgr:idsList){
+            TodayWaterSituationForFloodRes res = new TodayWaterSituationForFloodRes();
+            res.setOverallId(mgr.getId());
+            if(getTopUnitNameFromOverallSituationUnitMgr(mgr.getId()).equals("楼庄子水库")){
+                res.setName(mgr.getUnitName());
+                if(StringUtils.isNotEmpty(mgr.getMonitorId())){
+                    LzzGaugingStation station = lzzGaugingStationMapper.selectInfoForIndex(mgr.getMonitorId(), date);
+                    res.setFlow(station==null?null:station.getFlow());
+                    if(station==null?false:station.getRelativeWaterLevel()<0){
+                        res.setWaterLevel(getWaterLevelByFlow(station.getFlow(),mgr.getId()));
+                    }else {
+                        res.setWaterLevel(station==null?null:station.getRelativeWaterLevel());
+                    }
+                }else {
+                    List<TrendsTableParam> collect = trendsTableParamList.stream().filter(t -> t.getUseStation().equals("楼庄子水库") && t.getUseType() == 1 && StringUtils.isNotEmpty(t.getUnitId()) && t.getUnitId().equals(mgr.getId())).collect(Collectors.toList());
+                    TrendsTableParam param = collect.size()>0?collect.get(0):null;
+                    if(null!=param){
+                        DayWaterSituationStatisticsTableLzz dayWaterSituationStatisticsTableLzz = dayWaterSituationStatisticsTableLzzMapper.selectListForIndex(date, param.getId());
+                        res.setFlow(dayWaterSituationStatisticsTableLzz==null?null:dayWaterSituationStatisticsTableLzz.getV());
+                        res.setWaterLevel(res.getFlow()==null?null:getWaterLevelByFlow(res.getFlow(),mgr.getId()));
+                    }
+                }
+            }
+            if(getTopUnitNameFromOverallSituationUnitMgr(mgr.getId()).equals("头屯河水库")){
+                res.setName(mgr.getUnitName());
+                if(StringUtils.isNotEmpty(mgr.getMonitorId())){
+                    IrrigatedPlatformDataInfo info = irrigatedPlatformDataInfoMapper.selectInfoForIndex(mgr.getMonitorId(), date);
+                    res.setFlow(info==null?null:info.getSqMonitorFlow());
+                    if(info==null?false:info.getSqWaterLevel()<0){
+                        res.setWaterLevel(getWaterLevelByFlow(res.getFlow(),mgr.getId()));
+                    }else {
+                        res.setWaterLevel(info==null?null:info.getSqWaterLevel());
+                    }
+                }else {
+                    TrendsTableParam param = trendsTableParamList.stream().filter(t -> t.getUseStation().equals("头屯河水库") && t.getUseType() == 1 && StringUtils.isNotEmpty(t.getUnitId())&& t.getUnitId().equals(mgr.getId())).collect(Collectors.toList()).get(0);
+                    DayWaterSituationStatisticsTableTth dayWaterSituationStatisticsTableTth = dayWaterSituationStatisticsTableTthMapper.selectListForIndex(date, param.getId());
+                    res.setFlow(dayWaterSituationStatisticsTableTth==null?null:dayWaterSituationStatisticsTableTth.getV());
+                    res.setWaterLevel(res.getFlow()==null?null:getWaterLevelByFlow(res.getFlow(),mgr.getId()));
+                }
+            }
+            resList.add(res);
+        }
+        return RestResponse.ok(resList);
+    }
+
+    @Override
+    public RestResponse selectTodayRainfall(String date,Integer hour) {
+        List<RealTimeRainfallRes> resultList = new ArrayList<>();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH");
+        String overall = (String) redisUtil.get("overallSituationUnitMgr:list");
+        if(StringUtils.isEmpty(overall)){
+            List<OverallSituationUnitMgr> list = overallSituationUnitMgrService.list();
+            redisUtil.set("overallSituationUnitMgr:list", JSONObject.toJSONString(list));
+            overall = JSONObject.toJSONString(list);
+        }
+        List<OverallSituationUnitMgr> list = JSONObject.parseArray(overall, OverallSituationUnitMgr.class);
+        try {
+            if (null==hour){
+                List<OverallSituationUnitMgr> collect = list.stream().filter(t -> t.getPName().equals("雨量站")).collect(Collectors.toList());
+                List<String> tth = collect.stream().filter(t -> t.getDataResource() != null && t.getDataResource() == 1 && StringUtils.isNotEmpty(t.getMonitorId())).map(OverallSituationUnitMgr::getMonitorId).collect(Collectors.toList());
+                List<String> lzz = collect.stream().filter(t -> t.getDataResource() != null && t.getDataResource() == 2 && StringUtils.isNotEmpty(t.getMonitorId())).map(OverallSituationUnitMgr::getMonitorId).collect(Collectors.toList());
+                String realTimeRainfallByDate = predictionApi.getRealTimeRainfallByDate(date, lzz.size(), tth.size(),lzz,tth);
+                if(StringUtils.isNotEmpty(realTimeRainfallByDate)){
+                    List<RealTimeRainfallRes> resList = JSONObject.parseArray(realTimeRainfallByDate, RealTimeRainfallRes.class);
+                    resList.forEach(t->{
+                        t.setOverallId(collect.stream().filter(c->c.getMonitorId().equals(t.getId())).map(OverallSituationUnitMgr::getId).collect(Collectors.toList()).get(0));
+                    });
+                    Map<String, List<RealTimeRainfallRes>> collect1 = resList.stream().collect(Collectors.groupingBy(RealTimeRainfallRes::getStationName));
+                    collect1.forEach((k,v)->{
+                        resultList.add(collect1.get(k).get(0));
+                    });
+                    return RestResponse.ok(resultList);
+                }else {
+                    return RestResponse.no("暂无数据");
+                }
+            }else {
+                List<OverallSituationUnitMgr> collect = list.stream().filter(t -> t.getPName().equals("雨量站")).collect(Collectors.toList());
+                List<String> tth = collect.stream().filter(t -> t.getDataResource() != null && t.getDataResource() == 1).map(OverallSituationUnitMgr::getMonitorId).collect(Collectors.toList());
+                List<String> lzz = collect.stream().filter(t -> t.getDataResource() != null && t.getDataResource() == 2).map(OverallSituationUnitMgr::getMonitorId).collect(Collectors.toList());
+                Date endTime = null;
+                if (StringUtils.isEmpty(date)){
+                    endTime = new Date();
+                }else {
+                    endTime = sdf.parse(date);
+                }
+                Date startTime = calculateTime(sdf.format(endTime),-hour);
+                String realTimeRainfall = predictionApi.getRealTimeRainfall(sdf.format(startTime), sdf.format(endTime),lzz.size(), tth.size(),lzz,tth);
+                if(StringUtils.isNotEmpty(realTimeRainfall)){
+                    List<RealTimeRainfallRes> resList = JSONObject.parseArray(realTimeRainfall, RealTimeRainfallRes.class);
+                    resList.forEach(t->{
+                        t.setOverallId(collect.stream().filter(c->c.getMonitorId().equals(t.getId())).map(OverallSituationUnitMgr::getId).collect(Collectors.toList()).get(0));
+                    });
+                    Map<String, List<RealTimeRainfallRes>> collect1 = resList.stream().collect(Collectors.groupingBy(RealTimeRainfallRes::getStationName));
+                    collect1.forEach((k,v)->{
+                        resultList.add(collect1.get(k).get(0));
+                    });
+                    return RestResponse.ok(resultList);
+                }else {
+                    return RestResponse.no("暂无数据");
+                }
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            return RestResponse.no("select error");
+        }
+    }
+    private Date calculateTime(String date, int hour){
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH");
+        try {
+            if(StringUtils.isEmpty(date)){
+                date = sdf.format(new Date());
+            }
+            Calendar c1 = Calendar.getInstance();
+            try {
+                c1.setTime(sdf.parse(date));
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            c1.add(Calendar.HOUR,hour);
+            Date back=c1.getTime();
+            return sdf.parse(sdf.format(back));
+        }catch (Exception e) {
+            return new Date();
         }
     }
 
@@ -1031,5 +1244,56 @@ public class AllServiceImpl implements AllService {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         String result = dateFormat.format(calendar.getTime());
         return result;
+    }
+
+    private String getTopUnitNameFromOverallSituationUnitMgr(String id){
+        String overall = (String) redisUtil.get("overallSituationUnitMgr:list");
+        if(StringUtils.isEmpty(overall)){
+            List<OverallSituationUnitMgr> list = overallSituationUnitMgrService.list();
+            redisUtil.set("overallSituationUnitMgr:list", JSONObject.toJSONString(list));
+            overall = JSONObject.toJSONString(list);
+        }
+        List<OverallSituationUnitMgr> list = JSONObject.parseArray(overall, OverallSituationUnitMgr.class);
+        List<OverallSituationUnitMgr> collect = list.stream().filter(t -> t.getId().equals(id)).collect(Collectors.toList());
+        if(!collect.isEmpty()){
+            OverallSituationUnitMgr overallSituationUnitMgr = collect.get(0);
+            if(overallSituationUnitMgr.getPId().equals("0")){
+                return overallSituationUnitMgr.getUnitName();
+            }
+            List<OverallSituationUnitMgr> collect1 = list.stream().filter(t -> t.getId().equals(overallSituationUnitMgr.getPId())).collect(Collectors.toList());
+            if(!collect1.isEmpty()){
+                OverallSituationUnitMgr overallSituationUnitMgr1 = collect1.get(0);
+                if(overallSituationUnitMgr1.getPId().equals("0")){
+                    return overallSituationUnitMgr1.getUnitName();
+                }
+                List<OverallSituationUnitMgr> collect2 = list.stream().filter(t -> t.getId().equals(overallSituationUnitMgr1.getPId())).collect(Collectors.toList());
+                if(!collect2.isEmpty()){
+                    OverallSituationUnitMgr overallSituationUnitMgr2 = collect2.get(0);
+                    if(overallSituationUnitMgr2.getPId().equals("0")){
+                        return overallSituationUnitMgr2.getUnitName();
+                    }
+                    List<OverallSituationUnitMgr> collect3 = list.stream().filter(t -> t.getId().equals(overallSituationUnitMgr2.getPId())).collect(Collectors.toList());
+                    if(!collect3.isEmpty()){
+                        OverallSituationUnitMgr overallSituationUnitMgr3 = collect3.get(0);
+                        if(overallSituationUnitMgr3.getPId().equals("0")){
+                            return overallSituationUnitMgr3.getUnitName();
+                        }
+                    }
+                }
+            }
+        }
+        return "";
+    }
+
+
+    @SneakyThrows
+    private Double getWaterLevelByFlow(Double flow, String id){
+        String token = StpUtil.getTokenValue();
+        InetAddress localHost = InetAddress.getLocalHost();
+        String hostAddress = "192.168.31.154";
+        String url = "http://" + hostAddress +":9003/toutunhe/wpdCurved/queryLevelFlow?ndcdId="+id+"&flowRate="+flow;
+        String s = RestTemplateUtil.getBySaToken(url,token);
+        Double value = (Double) JSONObject.parseObject(s).get("data");
+        return value;
     }
 }

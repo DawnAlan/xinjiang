@@ -5,6 +5,7 @@ import lombok.Data;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.Date;
 
 @Data
 public class RealTimeRainfallRes implements Serializable {
@@ -13,5 +14,11 @@ public class RealTimeRainfallRes implements Serializable {
     private String stationName;
 
     @ApiModelProperty("降雨量")
-    private BigDecimal rainfall;
+    private Double rainfall;
+
+    private String id;
+
+    private String overallId;
+
+    private Date dateTime;
 }

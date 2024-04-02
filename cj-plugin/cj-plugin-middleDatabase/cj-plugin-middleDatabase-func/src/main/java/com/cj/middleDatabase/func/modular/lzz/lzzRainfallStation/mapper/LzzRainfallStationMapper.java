@@ -34,8 +34,10 @@ public interface LzzRainfallStationMapper extends BaseMapper<LzzRainfallStation>
     @Select("SELECT * FROM LZZ_RAINFALL_STATION WHERE TO_CHAR(TIME,'YYYY-MM-DD') = #{time}")
     List<LzzRainfallStation> selectYesterday1(@Param("time")String time);
 
-    @Select("SELECT STATION_NAME,ROUND(SUM(RAINFALL),2) as RAINFALL FROM LZZ_RAINFALL_STATION WHERE TO_CHAR(TIME,'YYYY-MM-DD hh24') BETWEEN #{startTime} AND #{endTime} GROUP BY STATION_NAME")
-    List<RealTimeRainfallRes> getRealTimeRainfall(@Param("startTime")String startTime, @Param("endTime")String endTime);
+    @Select("SELECT TREE_ID as ID,STATION_NAME, RAINFALL FROM LZZ_RAINFALL_STATION WHERE TO_CHAR(TIME,'YYYY-MM-DD hh24') BETWEEN #{startTime} AND #{endTime} limit #{num} order by TIME desc")
+    List<RealTimeRainfallRes> getRealTimeRainfall(@Param("startTime")String startTime, @Param("endTime")String endTime,@Param("num")Integer num,@Param("ids")List<String> ids);
+
+    List<RealTimeRainfallRes> getRealTimeRainfallByDate(@Param("date")String date,@Param("ids")List<String> ids);
 
     @Select("SELECT * FROM LZZ_RAINFALL_STATION WHERE STATION_NAME like concat('%',#{name},'%')  AND TO_CHAR(TIME,'YYYY-MM-DD') BETWEEN #{startTime} AND #{endTime}")
     List<LzzRainfallStation> selectHistoryList(@Param("name")String name, @Param("startTime")String startTime, @Param("endTime")String endTime);

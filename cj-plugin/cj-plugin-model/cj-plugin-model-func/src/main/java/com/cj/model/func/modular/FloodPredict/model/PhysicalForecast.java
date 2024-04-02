@@ -54,6 +54,12 @@ public class PhysicalForecast {
             historyRData[i][0]=historyRDataList.get(i).getDates();
             historyRData[i][1]=historyRDataList.get(i).getRainfall();
         }
+        if (param.getIsSimulation()){
+            for (int i = 0; i < historyRDataList.size(); i++) {
+                historyRData[i][0]=historyRDataList.get(i).getDates();
+                historyRData[i][1]=param.getPreRainFall()/historyRDataList.size();
+            }
+        }
         shanBeiModel.InputData(path,sheetPara,preREData,historyRData);
         shanBeiModel.InitialMoistureContentCalculation();
         shanBeiModel.RunoffYieldCalculation_UnevenInfiltration();
@@ -767,7 +773,9 @@ public class PhysicalForecast {
                     break;
             }
         }
-
+        if (param.getIsSimulation()){
+            baseAve = param.getPreFlow();
+        }
         //融雪基流
         Double snowAverage = 0.0;
         Double snowSum = 0.0;

@@ -3,6 +3,7 @@ package com.cj.model.func.modular.FloodPredict.utils;
 import com.cj.model.func.modular.FloodPredict.entity.ForcastInputParam;
 import com.cj.model.func.modular.FloodPredict.entity.ForcastInputParamNew;
 import com.cj.model.func.modular.FloodPredict.entity.PredictInputData;
+import com.cj.model.func.modular.FloodPredict.entity.TemporaryXlsx;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 
 import java.io.IOException;
@@ -12,7 +13,7 @@ import java.util.*;
 import static com.cj.model.func.modular.FloodPredict.model.TouTunHe.getOneStationDataList;
 import static com.cj.model.func.modular.FloodPredict.utils.TimeUtils.*;
 
-public class inputUtils {
+public class InputUtils {
 
     /**
      * 判断需要从数据库获取哪些数据
@@ -188,4 +189,22 @@ public class inputUtils {
         return input;
     }
 
+    public static ForcastInputParam getMachineParams(ForcastInputParam param){
+        String location = param.getLocation();
+        String period = param.getPeriod();
+        if(location.equals("3号桥")){
+            location = "楼庄子";
+        }
+        List<TemporaryXlsx> xlsxList = new ArrayList<>();
+        TemporaryXlsx machineParam = new TemporaryXlsx();
+        machineParam.setPath("D:\\tth_system\\end\\file\\"+location+period+"-PARAM.xlsx");
+        machineParam.setSheetName("模型参数");
+        xlsxList.add(machineParam);
+        TemporaryXlsx maxMIn = new TemporaryXlsx();
+        maxMIn.setPath("D:\\tth_system\\end\\file\\"+location+period+"最大最小值.xlsx");
+        maxMIn.setSheetName("最大最小值");
+        xlsxList.add(maxMIn);
+        param.setXlsx(xlsxList);
+        return param;
+    }
 }

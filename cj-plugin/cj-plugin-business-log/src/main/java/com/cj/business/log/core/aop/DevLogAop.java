@@ -6,7 +6,7 @@ import cn.hutool.json.JSONUtil;
 import com.cj.auth.core.pojo.SaBaseLoginUser;
 import com.cj.auth.core.util.StpLoginUserUtil;
 import com.cj.business.log.modular.log.util.DevLogUtil;
-import com.cj.common.annotation.CommonLog;
+import com.cj.business.log.modular.log.annotation.CommonLog;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.AfterThrowing;
@@ -35,7 +35,7 @@ public class DevLogAop {
      * @author xuyuxiang
      * @date 2020/3/23 17:10
      */
-    @Pointcut("@annotation(com.cj.common.annotation.CommonLog)")
+    @Pointcut("@annotation(com.cj.business.log.modular.log.annotation.CommonLog)")
     private void getLogPointCut() {
     }
 
@@ -49,6 +49,7 @@ public class DevLogAop {
     public void doAfterReturning(JoinPoint joinPoint, Object result) {
         MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
         Method method = methodSignature.getMethod();
+        Object[] args = joinPoint.getArgs();
         CommonLog commonLog = method.getAnnotation(CommonLog.class);
         String userName = "未知";
         try {

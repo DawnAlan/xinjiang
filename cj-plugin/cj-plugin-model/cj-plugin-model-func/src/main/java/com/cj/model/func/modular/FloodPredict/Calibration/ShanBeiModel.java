@@ -464,7 +464,7 @@ public class ShanBeiModel {
                     double a = Ave_f * (1 - Math.pow(1 - (P[j] - E[j]) / fm, B + 1));
                     R2[j] = P[j] - E[j] - Ave_f * (1 - Math.pow(1 - (P[j] - E[j]) / fm, B + 1));
                 }
-                if (j>50){
+                if (j>120){
                     int a = 0;
                 }
                 if (R2[j] < 0) {

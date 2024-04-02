@@ -33,7 +33,6 @@ public class MachineModel {
         ParamsSetVO pvo = pvoSet(modelTrainInput, param);//设置输入
 
         //数值的赋值
-        param.setVmdK(6);
         int K = param.vmdK;//分解层数
         int length = modelTrainInput.length;
         int trainLength = length / 4 * 3;//训练集个数
@@ -125,8 +124,9 @@ public class MachineModel {
                 String period = pvo.getForecastPeriod();
                 String location = pvo.getForecastDuanmian();
                 String Option = location + period;
-                File tempFileParam = File.createTempFile(Option + pvo.getNetClass()+"-PARAM",".xlsx");
-                String pathParam= tempFileParam.getAbsolutePath();
+//                File tempFileParam = File.createTempFile(Option + pvo.getNetClass()+"-PARAM",".xlsx");
+//                String pathParam= tempFileParam.getAbsolutePath();
+                String pathParam = "D:\\tth_system\\end\\file\\"+location+period+"-PARAM.xlsx";
                 ExcelTool.writeList2DoubleExcel(pathParam, "模型参数", paramResult);
                 temxParam.setPath(pathParam);
                 temxParam.setSheetName("模型参数");
@@ -135,8 +135,9 @@ public class MachineModel {
                 //最大最小值写入
                 TemporaryXlsx temxMaxmin=new TemporaryXlsx();
                 List<TemporaryXlsx> maxminList=new ArrayList<>();
-                File tempFileMaxmin = File.createTempFile(Option +"最大最小值",".xlsx");
-                String pathMaxmin= tempFileMaxmin.getAbsolutePath();
+//                File tempFileMaxmin = File.createTempFile(Option +"最大最小值",".xlsx");
+//                String pathMaxmin= tempFileMaxmin.getAbsolutePath();
+                String pathMaxmin = "D:\\tth_system\\end\\file\\"+location+period+"最大最小值.xlsx";
                 ExcelTool.writeDoubleExcel(pathMaxmin, "最大最小值", maxmin);
                 temxMaxmin.setPath(pathMaxmin);
                 temxMaxmin.setSheetName("最大最小值");
@@ -185,7 +186,7 @@ public class MachineModel {
             case "月":
             case "旬":
             case "日":
-                pvo.setHistory_day(7);
+                pvo.setHistory_day(24);
                 break;
             case "小时":
                 pvo.setHistory_day(24);

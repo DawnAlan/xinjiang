@@ -27,4 +27,10 @@ public class ForcastInputParam {
     public int vmdK;//分解层数
     private List<TemporaryXlsx> xlsx;//表格路径
     public Boolean isSnowMeltModel;//是否为融雪模型
+
+    private Double preFlow;
+
+    private Double preRainFall;
+
+    private Boolean isSimulation;
 }

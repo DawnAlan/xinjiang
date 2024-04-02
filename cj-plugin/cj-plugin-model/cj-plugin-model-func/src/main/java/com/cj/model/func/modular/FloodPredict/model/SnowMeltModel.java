@@ -94,10 +94,11 @@ public class SnowMeltModel {
         List<TemporaryXlsx> paramList=new ArrayList<>();
 
         String location = pvo.getForecastDuanmian();
-        String Option = location + "融雪";
-        File tempFileParam = File.createTempFile(Option + pvo.getNetClass()+"-PARAM",".xlsx");
-        String pathParam= tempFileParam.getAbsolutePath();
+        String pathParam = "D:\\tth_system\\end\\file\\"+location+"融雪-PARAM.xlsx";
         ExcelTool.writeList2DoubleExcel(pathParam, "模型参数", paramResult);
+//        File tempFileParam = File.createTempFile(Option + pvo.getNetClass()+"-PARAM",".xlsx");
+//        String pathParam= tempFileParam.getAbsolutePath();
+//        ExcelTool.writeList2DoubleExcel(pathParam, "模型参数", paramResult);
         temxParam.setPath(pathParam);
         temxParam.setSheetName("模型参数");
         paramList.add(temxParam);
@@ -105,9 +106,11 @@ public class SnowMeltModel {
         //最大最小值写入
         TemporaryXlsx temxMaxmin=new TemporaryXlsx();
         List<TemporaryXlsx> maxminList=new ArrayList<>();
-        File tempFileMaxmin = File.createTempFile(Option +"最大最小值",".xlsx");
-        String pathMaxmin= tempFileMaxmin.getAbsolutePath();
+        String pathMaxmin = "D:\\tth_system\\end\\file\\"+location+"融雪最大最小值.xlsx";
         ExcelTool.writeDoubleExcel(pathMaxmin, "最大最小值", maxmin);
+//        File tempFileMaxmin = File.createTempFile(Option +"最大最小值",".xlsx");
+//        String pathMaxmin= tempFileMaxmin.getAbsolutePath();
+//        ExcelTool.writeDoubleExcel(pathMaxmin, "最大最小值", maxmin);
         temxMaxmin.setPath(pathMaxmin);
         temxMaxmin.setSheetName("最大最小值");
         maxminList.add(temxMaxmin);
@@ -197,8 +200,14 @@ public class SnowMeltModel {
 
         ParamsSetVO pvo = pvoSet(inputTemp, param);//设置输入
         int preNumber = 0;
-        String paraPath = param.getXlsx().get(0).getPath();
-        String maxminPath = param.getXlsx().get(1).getPath();
+        String location = param.getLocation();
+        if (location.equals("3号桥")){
+            location = "楼庄子";
+        }
+//        String paraPath = param.getXlsx().get(0).getPath();
+        String paraPath = "D:\\tth_system\\end\\file\\"+location+"融雪-PARAM.xlsx";
+//        String maxminPath = param.getXlsx().get(1).getPath();
+        String maxminPath = "D:\\tth_system\\end\\file\\"+location+"融雪最大最小值.xlsx";
         if(inputTemp.length>3){
             preNumber = param.getPeriodStepNumber()*param.getPeriodStepSize();
         }else {

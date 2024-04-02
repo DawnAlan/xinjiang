@@ -29,5 +29,9 @@ public interface AllService {
     RestResponse selectFloodRetentionCapacityNew(String date,String ids);
     RestResponse<Map<String,List<TodayWaterSituationRes>>> selectTodayWaterSituation(String date);
 
+    RestResponse selectTodayWaterSituationForFlood(String date,String ids);
+
+    RestResponse selectTodayRainfall(String date,Integer hour);
+
     RestResponse updateInfoDate();
 }

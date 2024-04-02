@@ -7,6 +7,7 @@ import lombok.Data;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 @Data
 public class WaterResourceAllocationAddReq implements Serializable {
@@ -56,12 +57,12 @@ public class WaterResourceAllocationAddReq implements Serializable {
     private String remark;
 
     //楼庄子汛限水位
-    @ApiModelProperty(value = "楼庄子汛限水位")
-    private Double  floodWaterLevelLzz;
+//    @ApiModelProperty(value = "楼庄子汛限水位")
+//    private Double  floodWaterLevelLzz;
 
     //头屯河汛限水位
-    @ApiModelProperty(value = "头屯河汛限水位")
-    private Double  floodWaterLevelTth;
+//    @ApiModelProperty(value = "头屯河汛限水位")
+//    private Double  floodWaterLevelTth;
 
     //楼庄子起调水位
     @ApiModelProperty(value = "楼庄子起调水位")
@@ -78,4 +79,22 @@ public class WaterResourceAllocationAddReq implements Serializable {
     //头屯河期末水位
     @ApiModelProperty(value = "头屯河期末水位")
     private Double levelEndTth;
+
+    @ApiModelProperty(value = "楼庄子生态流量")
+    private List<Double> ecologyFlowLzz;
+
+    @ApiModelProperty(value = "头屯河生态流量")
+    private List<Double> ecologyFlowTth;
+
+    @ApiModelProperty(value = "楼庄子动态讯限水位")
+    private List<Double> floodWaterLevelLzz;
+
+    @ApiModelProperty(value = "楼庄子最低调度水位")
+    private List<Double> minWaterLevelLzz;
+
+    @ApiModelProperty(value = "头屯河动态讯限水位")
+    private List<Double> floodWaterLevelTth;
+
+    @ApiModelProperty(value = "头屯河最低调度水位")
+    private List<Double> minWaterLevelTth;
 }

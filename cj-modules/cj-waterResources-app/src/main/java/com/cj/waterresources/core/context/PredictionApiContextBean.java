@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
+import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -33,8 +34,14 @@ public class PredictionApiContextBean implements PredictionApi {
     }
 
     @Override
-    public String getRealTimeRainfall(String startTime, String endTime) {
-        String realTimeRainfall = predictionFeign.getRealTimeRainfall(startTime, endTime);
+    public String getRealTimeRainfall(String startTime, String endTime,Integer lzz,Integer tth,List<String> lzzIdList,List<String> tthIdList) {
+        String realTimeRainfall = predictionFeign.getRealTimeRainfall(startTime, endTime,lzz,tth,lzzIdList,tthIdList);
+        return realTimeRainfall;
+    }
+
+    @Override
+    public String getRealTimeRainfallByDate(String date, Integer lzz, Integer tth, List<String> lzzIdList, List<String> tthIdList) {
+        String realTimeRainfall = predictionFeign.getRealTimeRainfallByDate(date,lzz,tth,lzzIdList,tthIdList);
         return realTimeRainfall;
     }
 

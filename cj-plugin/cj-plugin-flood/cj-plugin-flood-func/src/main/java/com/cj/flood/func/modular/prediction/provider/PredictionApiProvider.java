@@ -25,6 +25,7 @@ import com.cj.middleDatabase.func.modular.lzz.storageCapacityCurve.entity.Storag
 import com.cj.middleDatabase.func.modular.lzz.storageCapacityCurve.service.StorageCapacityCurveService;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -92,10 +93,10 @@ public class PredictionApiProvider implements PredictionApi {
     }
 
     @Override
-    public String getRealTimeRainfall(String startTime, String endTime) {
+    public String getRealTimeRainfall(String startTime, String endTime,Integer lzz,Integer tth,List<String> lzzIdList,List<String> tthIdList) {
         List<RealTimeRainfallRes> result = new ArrayList<>();
-        List<RealTimeRainfallRes> lzzRealTimeRainfall = lzzRainfallStationService.getRealTimeRainfall(startTime, endTime);
-        List<RealTimeRainfallRes> irrigatedRealTimeRainfall1 = irrigatedPlatformDataInfoService.getRealTimeRainfall(startTime, endTime);
+        List<RealTimeRainfallRes> lzzRealTimeRainfall = lzzRainfallStationService.getRealTimeRainfall(startTime, endTime,lzz,lzzIdList);
+        List<RealTimeRainfallRes> irrigatedRealTimeRainfall1 = irrigatedPlatformDataInfoService.getRealTimeRainfall(startTime, endTime,tth,tthIdList);
         result.addAll(lzzRealTimeRainfall);
         result.addAll(irrigatedRealTimeRainfall1);
         if(result.size()>0){
@@ -103,6 +104,36 @@ public class PredictionApiProvider implements PredictionApi {
         }
         return null;
     }
+
+    @Override
+    public String getRealTimeRainfallByDate(String date,Integer lzz,Integer tth,List<String> lzzIdList,List<String> tthIdList) {
+        List<RealTimeRainfallRes> result = new ArrayList<>();
+        List<RealTimeRainfallRes> lzzRealTimeRainfall = lzzRainfallStationService.getRealTimeRainfallByDate(date,lzzIdList);
+        Map<String, List<RealTimeRainfallRes>> collect = lzzRealTimeRainfall.stream().collect(Collectors.groupingBy(RealTimeRainfallRes::getId));
+        collect.forEach((k,v)->{
+            List<RealTimeRainfallRes> resList = collect.get(k);
+            RealTimeRainfallRes res = new RealTimeRainfallRes();
+            res.setId(k);
+            res.setStationName(resList.get(0).getStationName());
+            res.setRainfall(resList.stream().filter(r->r.getRainfall()!=null).map(RealTimeRainfallRes::getRainfall).reduce(Double::sum).orElse(0.00));
+            result.add(res);
+        });
+        List<RealTimeRainfallRes> irrigatedRealTimeRainfall1 = irrigatedPlatformDataInfoService.getRealTimeRainfallByDate(date,tthIdList);
+        Map<String, List<RealTimeRainfallRes>> collect1 = irrigatedRealTimeRainfall1.stream().collect(Collectors.groupingBy(RealTimeRainfallRes::getId));
+        collect1.forEach((k,v)->{
+            List<RealTimeRainfallRes> resList = collect1.get(k);
+            RealTimeRainfallRes res = new RealTimeRainfallRes();
+            res.setId(k);
+            res.setStationName(resList.get(0).getStationName());
+            res.setRainfall(resList.stream().filter(r->r.getRainfall()!=null).map(RealTimeRainfallRes::getRainfall).reduce(Double::sum).orElse(0.00));
+            result.add(res);
+        });
+        if(result.size()>0){
+            return JSONObject.toJSONString(result);
+        }
+        return null;
+    }
+
 
     @SneakyThrows
     @Override

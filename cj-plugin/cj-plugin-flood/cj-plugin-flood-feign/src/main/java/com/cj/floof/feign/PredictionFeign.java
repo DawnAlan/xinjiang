@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Date;
+import java.util.List;
 
 @FeignClient(name = FeignConstant.FLOOD_APP,contextId="predictionFeign")
 public interface PredictionFeign {
@@ -22,7 +23,11 @@ public interface PredictionFeign {
 
     @RequestMapping("/feign/provider/prediction/getRealTimeRainfall")
     String getRealTimeRainfall(@RequestParam(value = "startTime", required =true) String startTime,
-                                  @RequestParam(value = "endTime", required =true) String endTime);
+                                  @RequestParam(value = "endTime", required =true) String endTime,
+                               @RequestParam(value = "lzz", required =true)Integer lzz,
+                               @RequestParam(value = "tth", required =true)Integer tth,
+                               @RequestParam(value = "lzzIdList", required =true)List<String> lzzIdList,
+                               @RequestParam(value = "tthIdList", required =true)List<String> tthIdList);
 
     @RequestMapping("/feign/provider/prediction/getRealTimeWaterLevelData")
     String getRealTimeWaterLevelData(@RequestParam(value = "date", required =true)String date);
@@ -72,4 +77,12 @@ public interface PredictionFeign {
 
     @RequestMapping("/feign/provider/flood/refreshWaterStorageOverview")
     void refreshWaterStorageOverview();
+
+
+    @RequestMapping("/feign/provider/flood/getRealTimeRainfallByDate")
+    String getRealTimeRainfallByDate(@RequestParam(value = "date", required =true)String date,
+                                     @RequestParam(value = "lzz", required =true)Integer lzz,
+                                     @RequestParam(value = "tth", required =true)Integer tth,
+                                     @RequestParam(value = "lzzIdList", required =true)List<String> lzzIdList,
+                                     @RequestParam(value = "tthIdList", required =true)List<String> tthIdList);
 }

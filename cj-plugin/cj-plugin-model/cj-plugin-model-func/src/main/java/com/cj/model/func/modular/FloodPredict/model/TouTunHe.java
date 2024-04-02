@@ -16,11 +16,10 @@ import static com.cj.model.func.modular.FloodPredict.model.MachineForecast.judgi
 import static com.cj.model.func.modular.FloodPredict.model.PhysicalForecast.getFloodLevel;
 import static com.cj.model.func.modular.FloodPredict.model.PhysicalForecast.getFloodInformation;
 import static com.cj.model.func.modular.FloodPredict.utils.DataUtils.*;
+import static com.cj.model.func.modular.FloodPredict.utils.InputUtils.*;
 import static com.cj.model.func.modular.FloodPredict.utils.TimeUtils.*;
 import static com.cj.model.func.modular.FloodPredict.utils.Tools.AddObject;
 import static com.cj.model.func.modular.FloodPredict.utils.Tools.ObjectToXlsx;
-import static com.cj.model.func.modular.FloodPredict.utils.inputUtils.dataIntegration;
-import static com.cj.model.func.modular.FloodPredict.utils.inputUtils.intervalData;
 
 
 public class TouTunHe {
@@ -80,6 +79,9 @@ public class TouTunHe {
         param.setPeriodStepSize(l);
         int n = paramForcastInputParamNew.getPeriodTimeNum();
         param.setPeriodStepNumber(n);
+        param.setIsSimulation(paramForcastInputParamNew.getIsSimulation());
+        param.setPreFlow(paramForcastInputParamNew.getPreFlow());
+        param.setPreRainFall(paramForcastInputParamNew.getPreRainFall());
         //数据输入
         Map<String,List<List<PredictInputData>>>stationsData = getOneStationDataList(paramForcastInputParamNew);
         //楼庄子
@@ -94,8 +96,19 @@ public class TouTunHe {
         param.setPeriodStepNumber(n);
         List<List<PredictInputData>> SHQDATA;
         SHQDATA=stationsData.get("3号桥");
-        Object[][] Flood_Three;
-        Flood_Three = getOneStationFlood(SHQDATA,param,"3号桥");
+        Object[][] Flood_Three = new Object[Flood_Lzz.length][Flood_Lzz[0].length];
+        if (!param.getPeriod().equals("小时")){
+            for (int i = 0; i < Flood_Lzz.length; i++) {
+                for (int j = 0; j < Flood_Lzz[0].length; j++) {
+                    Flood_Three[i][j] =Flood_Lzz[i][j];
+                }
+            }
+            for (int i = 0; i < Flood_Lzz.length; i++) {
+                Flood_Three[i][0] = "3号桥";
+            }
+        }else {
+            Flood_Three = getOneStationFlood(SHQDATA,param,"3号桥");
+        }
         for (int i = 0; i < Flood_Three.length; i++) //超过汛限水位
         {
             Flood_Three[i][14] = Flood_Lzz[i][14];
@@ -246,23 +259,25 @@ public class TouTunHe {
             MachineForecast machineForecast = new MachineForecast();
             List<Object[][]> resultList = new ArrayList<>();
             List<Object[]> selectDate = getSelectedData(param);
-            if (param.getPeriod().equals("日")){
+//            if (param.getPeriod().equals("日")){
+//                //训练模型获得参数以及其储存路径
+//                SnowMeltModel model = new SnowMeltModel();
+//                result = model.snowTrain(machineInput, param);
+//                param.setXlsx(result);
+//                //短期预报效果
+//                Object[][] snowFlood=model.snowForecast(machineInput, param);
+//                resultList.add(snowFlood);
+//            }
+//            else {
                 //训练模型获得参数以及其储存路径
-                SnowMeltModel model = new SnowMeltModel();
-                result = model.snowTrain(machineInput, param);
-                param.setXlsx(result);
-                //短期预报效果
-                Object[][] snowFlood=model.snowForecast(machineInput, param);
-                resultList.add(snowFlood);
-            }
-            else {
-                //训练模型获得参数以及其储存路径
-                MachineModel train = new MachineModel();
-                result = train.modelTrain(machineInput, param);
-                param.setXlsx(result);
-                //中长期预报预报
-                resultList.add(machineForecast.machineForecast(machineInput, param).get(0));
-            }
+            param.setVmdK(6);
+            MachineModel train = new MachineModel();
+            result = train.modelTrain(machineInput, param);
+            param.setXlsx(result);
+            param = getMachineParams(param);
+            //中长期预报预报
+            resultList.add(machineForecast.machineForecast(machineInput, param).get(0));
+//            }
 
 //            if ((int)selectDate.get(1)[1]!=0)//有枯水期
 //            {
@@ -495,7 +510,5 @@ public class TouTunHe {
         }
         return result;
     }
-
-
 
 }

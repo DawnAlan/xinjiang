@@ -98,39 +98,45 @@ public class IrrigatedPlatformDataInfoServiceImpl extends ServiceImpl<IrrigatedP
 
     @SneakyThrows
     @Override
-    public List<RealTimeRainfallRes> getRealTimeRainfall(String startTime, String endTime) {
+    public List<RealTimeRainfallRes> getRealTimeRainfall(String startTime, String endTime,Integer num,List<String> ids) {
         List<RealTimeRainfallRes> resList = new ArrayList<>();
         Date start = sdf.parse(startTime);
         Date end = sdf.parse(endTime);
         Long mills = end.getTime()-start.getTime();
         int hour = (int)(mills/1000/3600) ;
-        List<IrrigatedPlatformDataInfo> realTimeRainfall = this.baseMapper.getRealTimeRainfall(endTime);
+        List<IrrigatedPlatformDataInfo> realTimeRainfall = this.baseMapper.getRealTimeRainfall(endTime,num,ids);
         for(IrrigatedPlatformDataInfo info:realTimeRainfall){
             RealTimeRainfallRes res = new RealTimeRainfallRes();
             switch (hour){
                 case 1:
-                    res.setRainfall(new BigDecimal(info.getYqRainFallOne()));
+                    res.setRainfall(info.getYqRainFallOne());
                     break;
                 case 3:
-                    res.setRainfall(new BigDecimal(info.getYqRainFallThree()));
+                    res.setRainfall(info.getYqRainFallThree());
                     break;
                 case 6:
-                    res.setRainfall(new BigDecimal(info.getYqRainFallSix()));
+                    res.setRainfall(info.getYqRainFallSix());
                     break;
                 case 12:
-                    res.setRainfall(new BigDecimal(info.getYqRainFallTwelve()));
+                    res.setRainfall(info.getYqRainFallTwelve());
                     break;
                 case 24:
-                    res.setRainfall(new BigDecimal(info.getYqRainFallTwentyFour()));
+                    res.setRainfall(info.getYqRainFallTwentyFour());
                     break;
                 default:
                     res.setRainfall(null);
                     break;
             }
             res.setStationName(info.getMonitorName());
+            res.setId(info.getMonitorId());
             resList.add(res);
         }
         return resList ;
+    }
+
+    @Override
+    public List<RealTimeRainfallRes> getRealTimeRainfallByDate(String date,List<String> ids) {
+        return baseMapper.getRealTimeRainfallByDate(date,ids);
     }
 
     @Override

@@ -1,6 +1,6 @@
 package com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.controller;
 
-import com.cj.common.annotation.CommonLog;
+import com.cj.business.log.modular.log.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req.A3StatisticsReq;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req.ReportFormsReq;
@@ -81,5 +81,29 @@ public class AllController {
     @GetMapping("/updateInfoDate")
     public RestResponse updateInfoDate() {
         return allService.updateInfoDate();
+    }
+
+    @ApiOperationSupport(order = 8)
+    @ApiOperation("A3表查询2库的拦蓄水量(new)")
+    @CommonLog(value = "A3表查询2库的拦蓄水量(new)")
+    @GetMapping("/selectFloodRetentionCapacityNew")
+    public RestResponse selectFloodRetentionCapacityNew(@RequestParam("date") String date,@RequestParam("ids") String ids) {
+        return allService.selectFloodRetentionCapacityNew(date,ids);
+    }
+
+    @ApiOperationSupport(order = 9)
+    @ApiOperation("防洪-查询今日水情和实时水情")
+    @CommonLog(value = "防洪-查询今日水情和实时水情")
+    @GetMapping("/selectTodayWaterSituationForFlood")
+    public RestResponse selectTodayWaterSituationForFlood(@RequestParam("date") String date,@RequestParam("ids") String ids) {
+        return allService.selectTodayWaterSituationForFlood(date,ids);
+    }
+
+    @ApiOperationSupport(order = 9)
+    @ApiOperation("防洪-查询实时雨量")
+    @CommonLog(value = "防洪-查询实时雨量")
+    @GetMapping("/selectTodayRainfall")
+    public RestResponse selectTodayRainfall(@RequestParam("date") String date,@RequestParam(value = "hour",required = false) Integer hour) {
+        return allService.selectTodayRainfall(date,hour);
     }
 }
