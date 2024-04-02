@@ -13,4 +13,6 @@ public class TodayWaterSituationRes implements Serializable {
 
     @ApiModelProperty(value = "值")
     private Double value;
+
+    private String id;
 }

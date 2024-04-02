@@ -5,6 +5,7 @@ import com.cj.common.model.RestResponse;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req.A3StatisticsReq;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req.ReportFormsReq;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req.SelectListForIndustrialWaterFeeReq;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req.SelectTodayWaterSituationSelectByIdReq;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.service.AllService;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hd.entity.DayWaterSituationStatisticsTableHd;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
@@ -105,5 +106,13 @@ public class AllController {
     @GetMapping("/selectTodayRainfall")
     public RestResponse selectTodayRainfall(@RequestParam("date") String date,@RequestParam(value = "hour",required = false) Integer hour) {
         return allService.selectTodayRainfall(date,hour);
+    }
+
+    @ApiOperationSupport(order = 10)
+    @ApiOperation("A3表查询水资源首页今日水情过程线")
+    @CommonLog(value = "A3表查询水资源首页今日水情过程线")
+    @PostMapping("/selectTodayWaterSituationSelectById")
+    public RestResponse selectTodayWaterSituationSelectById(@RequestBody SelectTodayWaterSituationSelectByIdReq req) {
+        return allService.selectTodayWaterSituationSelectById(req);
     }
 }

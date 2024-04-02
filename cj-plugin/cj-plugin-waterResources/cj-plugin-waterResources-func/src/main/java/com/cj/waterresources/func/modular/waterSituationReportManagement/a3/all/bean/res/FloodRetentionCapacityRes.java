@@ -22,4 +22,6 @@ public class FloodRetentionCapacityRes implements Serializable {
 
     @ApiModelProperty(value = "出库流量")
     private Double outputFlow;
+
+    private String overallId;
 }

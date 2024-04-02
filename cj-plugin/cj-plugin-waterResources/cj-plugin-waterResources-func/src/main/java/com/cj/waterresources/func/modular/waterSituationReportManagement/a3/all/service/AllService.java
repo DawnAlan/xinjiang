@@ -7,6 +7,7 @@ import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.res
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req.A3StatisticsReq;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req.ReportFormsReq;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req.SelectListForIndustrialWaterFeeReq;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req.SelectTodayWaterSituationSelectByIdReq;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.res.TodayWaterSituationRes;
 
 import java.util.List;
@@ -34,4 +35,6 @@ public interface AllService {
     RestResponse selectTodayRainfall(String date,Integer hour);
 
     RestResponse updateInfoDate();
+
+    RestResponse selectTodayWaterSituationSelectById(SelectTodayWaterSituationSelectByIdReq req);
 }
