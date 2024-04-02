@@ -1,6 +1,8 @@
 package com.cj.flood.api;
 
 
+import java.util.List;
+
 public interface PredictionApi {
 
     //查询来水预报列表
@@ -10,9 +12,9 @@ public interface PredictionApi {
     String getProgrammeDetails(String id);
 
     //查询实时雨量数据
-    String getRealTimeRainfall(String startTime, String endTime);
+    String getRealTimeRainfall(String startTime, String endTime,Integer lzz,Integer tth,List<String> lzzIdList,List<String> tthIdList);
 
-    String getRealTimeRainfallByDate(String date,Integer lzz,Integer tth);
+    String getRealTimeRainfallByDate(String date, Integer lzz, Integer tth, List<String> lzzIdList, List<String> tthIdList);
 
     //查询实时工情
     String getRealTimeWaterLevelData(String date);

@@ -50,13 +50,13 @@ public class LzzRainfallStationServiceImpl extends ServiceImpl<LzzRainfallStatio
     }
 
     @Override
-    public List<RealTimeRainfallRes> getRealTimeRainfall(String startTime, String endTime) {
-        return this.baseMapper.getRealTimeRainfall(startTime, endTime);
+    public List<RealTimeRainfallRes> getRealTimeRainfall(String startTime, String endTime,Integer num,List<String> ids) {
+        return this.baseMapper.getRealTimeRainfall(startTime, endTime,num,ids);
     }
 
     @Override
-    public List<RealTimeRainfallRes> getRealTimeRainfallByDate(String date,Integer num) {
-        return this.baseMapper.getRealTimeRainfallByDate(date, num);
+    public List<RealTimeRainfallRes> getRealTimeRainfallByDate(String date,List<String> ids) {
+        return this.baseMapper.getRealTimeRainfallByDate(date,ids);
     }
 
     @Override

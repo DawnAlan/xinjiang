@@ -773,7 +773,7 @@ public class PhysicalForecast {
                     break;
             }
         }
-        if (param.isSnowMeltModel){
+        if (param.getIsSimulation()){
             baseAve = param.getPreFlow();
         }
         //融雪基流

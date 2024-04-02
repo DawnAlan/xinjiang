@@ -45,14 +45,12 @@ public interface IrrigatedPlatformDataInfoMapper extends BaseMapper<IrrigatedPla
     @Select("SELECT * FROM IRRIGATED_PLATFORM_DATA_INFO WHERE MONITOR_TIME = #{time} order by MONITOR_TIME DESC")
     List<IrrigatedPlatformDataInfo> selectOneByConditionByTime( @Param("time")String time);
 
-    @Select("SELECT MONITOR_NAME,YQ_RAIN_FALL_ONE,YQ_RAIN_FALL_THREE,YQ_RAIN_FALL_SIX,YQ_RAIN_FALL_TWELVE,YQ_RAIN_FALL_TWENTY_FOUR FROM tth.IRRIGATED_PLATFORM_DATA_INFO WHERE MONITOR_NAME like CONCAT('%','雨量站') and MONITOR_TIME = #{time} order by MONITOR_TIME desc limit 3")
-    List<IrrigatedPlatformDataInfo> getRealTimeRainfall(@Param("time")String time);
+    List<IrrigatedPlatformDataInfo> getRealTimeRainfall(@Param("date")String date,@Param("num")Integer num,@Param("ids")List<String> ids);
 
     @Select("SELECT * FROM IRRIGATED_PLATFORM_DATA_INFO WHERE MONITOR_NAME = #{name} AND MONITOR_TIME = #{time} ORDER BY MONITOR_TIME DESC")
     List<IrrigatedPlatformDataInfo> selectInfoByTime(@Param("time")String time,@Param("name") String name);
 
-    @Select("SELECT STATION_NAME, RAINFALL FROM IRRIGATED_PLATFORM_DATA_INFO WHERE RECORD_TIME = #{date} limit #{num} order by MONITOR_TIME desc")
-    List<RealTimeRainfallRes> getRealTimeRainfallByDate(@Param("date")String date,@Param("num")Integer num);
+    List<RealTimeRainfallRes> getRealTimeRainfallByDate(@Param("date")String date,@Param("ids")List<String> ids);
 
     @Select("SELECT * FROM IRRIGATED_PLATFORM_DATA_INFO WHERE MONITOR_NAME like concat ('%',#{name},'%')  AND MONITOR_TIME BETWEEN #{startTime} AND #{endTime}")
     List<IrrigatedPlatformDataInfo> selectHistoryList(@Param("name")String name, @Param("startTime")String startTime, @Param("endTime")String endTime);
@@ -73,7 +71,7 @@ public interface IrrigatedPlatformDataInfoMapper extends BaseMapper<IrrigatedPla
             "(select MONITOR_ID, to_char(max_MONITOR_TIME, 'yyyy-mm-dd') from \n" +
             "(SELECT MONITOR_ID, max(MONITOR_TIME) max_MONITOR_TIME from TTH.IRRIGATED_PLATFORM_DATA_INFO where MONITOR_ID in \n" +
             "(select id from TTH.IRRIGATED_PLATFORM_TREE where name like '%雨量%')\n" +
-            "and MONITOR_TIME <= to_date(#{dateTime},'yyyy-mm-dd hh24:mi:ss')\n" +
+            "and MONITOR_TIME <=  \n" +
             "group by MONITOR_ID))\n" +
             "group by MONITOR_NAME")
     List<IrrigatedPlatformDataInfo> getRecentlyRainfalls(@Param("dateTime")String dateTime);

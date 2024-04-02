@@ -356,11 +356,11 @@ public class DataUtils {
 				}else {
 					data = assignmentNullRAndT(dateStart,input.get(0).getRainStation());
 				}
+				calendar.setTime(dateStart);
+				calendar.add(Calendar.HOUR_OF_DAY, 1);
+				dateStart = calendar.getTime();
+				result.add(data);
 			}
-			calendar.setTime(dateStart);
-			calendar.add(Calendar.HOUR_OF_DAY, 1);
-			dateStart = calendar.getTime();
-			result.add(data);
 		}
 		else {
 			//找到最贴近的时间

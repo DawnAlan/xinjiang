@@ -141,11 +141,12 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                         forcastInputParamNew.setPeriodTimeType(incomingWaterForecast.getPeriodTimeType());
                         if(!req.getIsSimulation()){
                             req.getRainFallDtos().forEach(t->t.setArea("面雨量"));
+                        }else {
+                            forcastInputParamNew.setPreFlow(req.getPreFlow());
+                            forcastInputParamNew.setPreRainFall(req.getPreRainFall());
                         }
                         forcastInputParamNew.setIsSimulation(req.getIsSimulation());
                         forcastInputParamNew.setRainFallDtos(req.getRainFallDtos());
-                        forcastInputParamNew.setPreFlow(req.getPreFlow());
-                        forcastInputParamNew.setPreRainFall(req.getPreRainFall());
                         List<Date> dates = InputUtils.judgeDate(incomingWaterForecast.getPredictionTime(),incomingWaterForecast.getPeriodTimeNum());
                         if(dates.isEmpty()){
                             LzzHydrologyParam lzzHydrologyParam = new LzzHydrologyParam();

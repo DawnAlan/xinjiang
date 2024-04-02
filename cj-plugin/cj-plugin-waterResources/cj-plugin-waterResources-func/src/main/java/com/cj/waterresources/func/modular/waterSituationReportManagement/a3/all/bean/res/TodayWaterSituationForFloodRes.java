@@ -16,4 +16,6 @@ public class TodayWaterSituationForFloodRes implements Serializable {
 
     @ApiModelProperty(value = "水位")
     private Double waterLevel;
+
+    private String overallId;
 }

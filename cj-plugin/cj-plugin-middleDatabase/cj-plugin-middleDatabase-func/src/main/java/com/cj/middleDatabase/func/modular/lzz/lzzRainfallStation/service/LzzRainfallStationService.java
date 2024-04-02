@@ -23,8 +23,8 @@ public interface LzzRainfallStationService extends IService<LzzRainfallStation> 
     List<LzzRainfallStation> selectYesterday1(String name,String time);
     List<LzzRainfallStation> selectYesterday(String time);
 
-    List<RealTimeRainfallRes> getRealTimeRainfall(String startTime, String endTime);
-    List<RealTimeRainfallRes> getRealTimeRainfallByDate(String date,Integer num);
+    List<RealTimeRainfallRes> getRealTimeRainfall(String startTime, String endTime,Integer num,List<String> ids);
+    List<RealTimeRainfallRes> getRealTimeRainfallByDate(String date,List<String> ids);
 
     List<LzzRainfallStation> selectHistoryList(String name, String startTime, String endTime);
 

@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Date;
+import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -36,8 +37,8 @@ public class PredictionFeignProvider implements PredictionFeign {
 
     @Override
     @RequestMapping("/feign/provider/prediction/getRealTimeRainfall")
-    public String getRealTimeRainfall(String startTime, String endTime) {
-        return predictionApiProvider.getRealTimeRainfall(startTime, endTime);
+    public String getRealTimeRainfall(String startTime, String endTime,Integer lzz,Integer tth,List<String> lzzIdList,List<String> tthIdList) {
+        return predictionApiProvider.getRealTimeRainfall(startTime, endTime,lzz,tth,lzzIdList,tthIdList);
     }
 
     @Override
@@ -126,7 +127,7 @@ public class PredictionFeignProvider implements PredictionFeign {
 
     @RequestMapping("/feign/provider/flood/getRealTimeRainfallByDate")
     @Override
-    public String getRealTimeRainfallByDate(String date,Integer lzz,Integer tth) {
-        return predictionApiProvider.getRealTimeRainfallByDate(date,lzz,tth);
+    public String getRealTimeRainfallByDate(String date, Integer lzz, Integer tth, List<String> lzzIdList, List<String> tthIdList) {
+        return predictionApiProvider.getRealTimeRainfallByDate(date,lzz,tth,lzzIdList,tthIdList);
     }
 }

@@ -26,7 +26,7 @@ public class FloodSituationServiceImpl implements FloodSituationService {
 
     @Override
     public RestResponse<List<RealTimeRainfallRes>> getRealTimeRainfall(String date, Integer hour) {
-        try {
+        /*try {
             Date endTime = null;
             if (StringUtils.isEmpty(date)){
                 endTime = new Date();
@@ -42,7 +42,8 @@ public class FloodSituationServiceImpl implements FloodSituationService {
             }
         }catch (Exception e){
             return RestResponse.no("select error");
-        }
+        }*/
+        return RestResponse.no("select error");
     }
 
     @Override

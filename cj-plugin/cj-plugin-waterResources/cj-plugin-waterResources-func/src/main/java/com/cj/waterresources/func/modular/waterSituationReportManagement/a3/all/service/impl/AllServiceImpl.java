@@ -828,6 +828,7 @@ public class AllServiceImpl implements AllService {
         }
         for(OverallSituationUnitMgr mgr:idsList){
             TodayWaterSituationForFloodRes res = new TodayWaterSituationForFloodRes();
+            res.setOverallId(mgr.getId());
             if(getTopUnitNameFromOverallSituationUnitMgr(mgr.getId()).equals("楼庄子水库")){
                 res.setName(mgr.getUnitName());
                 if(StringUtils.isNotEmpty(mgr.getMonitorId())){
@@ -839,21 +840,24 @@ public class AllServiceImpl implements AllService {
                         res.setWaterLevel(station==null?null:station.getRelativeWaterLevel());
                     }
                 }else {
-                    TrendsTableParam param = trendsTableParamList.stream().filter(t -> t.getUseStation().equals("楼庄子水库") && t.getUseType() == 1 && StringUtils.isNotEmpty(t.getUnitId())&& t.getUnitId().equals(mgr.getId())).collect(Collectors.toList()).get(0);
-                    DayWaterSituationStatisticsTableLzz dayWaterSituationStatisticsTableLzz = dayWaterSituationStatisticsTableLzzMapper.selectListForIndex(date, param.getId());
-                    res.setFlow(dayWaterSituationStatisticsTableLzz==null?null:dayWaterSituationStatisticsTableLzz.getV());
-                    res.setWaterLevel(res.getFlow()==null?null:getWaterLevelByFlow(res.getFlow(),mgr.getId()));
+                    List<TrendsTableParam> collect = trendsTableParamList.stream().filter(t -> t.getUseStation().equals("楼庄子水库") && t.getUseType() == 1 && StringUtils.isNotEmpty(t.getUnitId()) && t.getUnitId().equals(mgr.getId())).collect(Collectors.toList());
+                    TrendsTableParam param = collect.size()>0?collect.get(0):null;
+                    if(null!=param){
+                        DayWaterSituationStatisticsTableLzz dayWaterSituationStatisticsTableLzz = dayWaterSituationStatisticsTableLzzMapper.selectListForIndex(date, param.getId());
+                        res.setFlow(dayWaterSituationStatisticsTableLzz==null?null:dayWaterSituationStatisticsTableLzz.getV());
+                        res.setWaterLevel(res.getFlow()==null?null:getWaterLevelByFlow(res.getFlow(),mgr.getId()));
+                    }
                 }
             }
             if(getTopUnitNameFromOverallSituationUnitMgr(mgr.getId()).equals("头屯河水库")){
                 res.setName(mgr.getUnitName());
                 if(StringUtils.isNotEmpty(mgr.getMonitorId())){
                     IrrigatedPlatformDataInfo info = irrigatedPlatformDataInfoMapper.selectInfoForIndex(mgr.getMonitorId(), date);
-                    res.setFlow(info.getSqMonitorFlow());
-                    if(info.getSqWaterLevel()<0){
+                    res.setFlow(info==null?null:info.getSqMonitorFlow());
+                    if(info==null?false:info.getSqWaterLevel()<0){
                         res.setWaterLevel(getWaterLevelByFlow(res.getFlow(),mgr.getId()));
                     }else {
-                        res.setWaterLevel(info.getSqWaterLevel());
+                        res.setWaterLevel(info==null?null:info.getSqWaterLevel());
                     }
                 }else {
                     TrendsTableParam param = trendsTableParamList.stream().filter(t -> t.getUseStation().equals("头屯河水库") && t.getUseType() == 1 && StringUtils.isNotEmpty(t.getUnitId())&& t.getUnitId().equals(mgr.getId())).collect(Collectors.toList()).get(0);
@@ -869,6 +873,7 @@ public class AllServiceImpl implements AllService {
 
     @Override
     public RestResponse selectTodayRainfall(String date,Integer hour) {
+        List<RealTimeRainfallRes> resultList = new ArrayList<>();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH");
         String overall = (String) redisUtil.get("overallSituationUnitMgr:list");
         if(StringUtils.isEmpty(overall)){
@@ -880,15 +885,26 @@ public class AllServiceImpl implements AllService {
         try {
             if (null==hour){
                 List<OverallSituationUnitMgr> collect = list.stream().filter(t -> t.getPName().equals("雨量站")).collect(Collectors.toList());
-                int tth = collect.stream().filter(t -> t.getDataResource() == 1).collect(Collectors.toList()).size();
-                int lzz = collect.stream().filter(t -> t.getDataResource() == 2).collect(Collectors.toList()).size();
-                String realTimeRainfallByDate = predictionApi.getRealTimeRainfallByDate(date, lzz, tth);
+                List<String> tth = collect.stream().filter(t -> t.getDataResource() != null && t.getDataResource() == 1 && StringUtils.isNotEmpty(t.getMonitorId())).map(OverallSituationUnitMgr::getMonitorId).collect(Collectors.toList());
+                List<String> lzz = collect.stream().filter(t -> t.getDataResource() != null && t.getDataResource() == 2 && StringUtils.isNotEmpty(t.getMonitorId())).map(OverallSituationUnitMgr::getMonitorId).collect(Collectors.toList());
+                String realTimeRainfallByDate = predictionApi.getRealTimeRainfallByDate(date, lzz.size(), tth.size(),lzz,tth);
                 if(StringUtils.isNotEmpty(realTimeRainfallByDate)){
-                    return RestResponse.ok(JSONObject.parseArray(realTimeRainfallByDate, RealTimeRainfallRes.class));
+                    List<RealTimeRainfallRes> resList = JSONObject.parseArray(realTimeRainfallByDate, RealTimeRainfallRes.class);
+                    resList.forEach(t->{
+                        t.setOverallId(collect.stream().filter(c->c.getMonitorId().equals(t.getId())).map(OverallSituationUnitMgr::getId).collect(Collectors.toList()).get(0));
+                    });
+                    Map<String, List<RealTimeRainfallRes>> collect1 = resList.stream().collect(Collectors.groupingBy(RealTimeRainfallRes::getStationName));
+                    collect1.forEach((k,v)->{
+                        resultList.add(collect1.get(k).get(0));
+                    });
+                    return RestResponse.ok(resultList);
                 }else {
                     return RestResponse.no("暂无数据");
                 }
             }else {
+                List<OverallSituationUnitMgr> collect = list.stream().filter(t -> t.getPName().equals("雨量站")).collect(Collectors.toList());
+                List<String> tth = collect.stream().filter(t -> t.getDataResource() != null && t.getDataResource() == 1).map(OverallSituationUnitMgr::getMonitorId).collect(Collectors.toList());
+                List<String> lzz = collect.stream().filter(t -> t.getDataResource() != null && t.getDataResource() == 2).map(OverallSituationUnitMgr::getMonitorId).collect(Collectors.toList());
                 Date endTime = null;
                 if (StringUtils.isEmpty(date)){
                     endTime = new Date();
@@ -896,14 +912,23 @@ public class AllServiceImpl implements AllService {
                     endTime = sdf.parse(date);
                 }
                 Date startTime = calculateTime(sdf.format(endTime),-hour);
-                String realTimeRainfall = predictionApi.getRealTimeRainfall(sdf.format(startTime), sdf.format(endTime));
+                String realTimeRainfall = predictionApi.getRealTimeRainfall(sdf.format(startTime), sdf.format(endTime),lzz.size(), tth.size(),lzz,tth);
                 if(StringUtils.isNotEmpty(realTimeRainfall)){
-                    return RestResponse.ok(JSONObject.parseArray(realTimeRainfall, RealTimeRainfallRes.class));
+                    List<RealTimeRainfallRes> resList = JSONObject.parseArray(realTimeRainfall, RealTimeRainfallRes.class);
+                    resList.forEach(t->{
+                        t.setOverallId(collect.stream().filter(c->c.getMonitorId().equals(t.getId())).map(OverallSituationUnitMgr::getId).collect(Collectors.toList()).get(0));
+                    });
+                    Map<String, List<RealTimeRainfallRes>> collect1 = resList.stream().collect(Collectors.groupingBy(RealTimeRainfallRes::getStationName));
+                    collect1.forEach((k,v)->{
+                        resultList.add(collect1.get(k).get(0));
+                    });
+                    return RestResponse.ok(resultList);
                 }else {
                     return RestResponse.no("暂无数据");
                 }
             }
         }catch (Exception e){
+            e.printStackTrace();
             return RestResponse.no("select error");
         }
     }
