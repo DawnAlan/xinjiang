@@ -96,8 +96,8 @@ public class OutResult {
             option.setDeltawater(Out1.get(0).getDeltawater()[0][i]);
             option.setAllWater(Out1.get(0).getAllWater()[i]);
             option.setOutFlowWater(Out1.get(0).getOutflow_water()[0][i]);
-            option.setEcologyFlow(Out1.get(0).getEcologyFlow()[i]);
-            option.setEcologyWater(Out1.get(0).getEcologyWater()[i]);
+            option.setEcologyFlow(Out1.get(0).getEcologyFlow()[0][i]);
+            option.setEcologyWater(Out1.get(0).getEcologyWater()[0][i]);
             option.setWasteWater(Out1.get(0).getFitness()[3]);
             option1.add(option);
         }
@@ -125,8 +125,8 @@ public class OutResult {
             option.setDeltawater(Out1.get(0).getDeltawater()[1][i]);
             option.setAllWater(Out1.get(0).getAllWater()[i]);
             option.setOutFlowWater(Out1.get(0).getOutflow_water()[1][i]);
-            option.setEcologyFlow(Out1.get(0).getEcologyFlow()[i]);
-            option.setEcologyWater(Out1.get(0).getEcologyWater()[i]);
+            option.setEcologyFlow(Out1.get(0).getEcologyFlow()[1][i]);
+            option.setEcologyWater(Out1.get(0).getEcologyWater()[1][i]);
             option.setWasteWater(Out1.get(0).getFitness()[3]);
             option1.add(option);
         }
@@ -142,9 +142,9 @@ public class OutResult {
             option.setTypeName(req.getTypeName());
             option.setStationType("生态用水");
             option.setStationName("楼庄子生态用水");
-            option.setWater(Out1.get(0).getEcologyWater()[i]);
-            option.setProportion(Double.parseDouble(df.format(Out1.get(0).getEcologyWater()[i]/Out1.get(0).getEcologyWaterNeed()[i])));
-            option.setWaterLack(Double.parseDouble(df.format(Out1.get(0).getEcologyWaterNeed()[i]-Out1.get(0).getEcologyWater()[i])));
+            option.setWater(Out1.get(0).getEcologyWater()[0][i]);
+            option.setProportion(Double.parseDouble(df.format(Out1.get(0).getEcologyWater()[0][i]/Out1.get(0).getEcologyWaterNeed()[0][i])));
+            option.setWaterLack(Double.parseDouble(df.format(Out1.get(0).getEcologyWaterNeed()[0][i]-Out1.get(0).getEcologyWater()[0][i])));
             option2.add(option);
         }
         for (int i = 0; i < length; i++) {
@@ -153,9 +153,9 @@ public class OutResult {
             option.setTypeName(req.getTypeName());
             option.setStationType("生态用水");
             option.setStationName("头屯河生态用水");
-            option.setWater(Out1.get(0).getEcologyWater()[i]);
-            option.setProportion(Double.parseDouble(df.format(Out1.get(0).getEcologyWater()[i]/Out1.get(0).getEcologyWaterNeed()[i])));
-            option.setWaterLack(Double.parseDouble(df.format(Out1.get(0).getEcologyWaterNeed()[i]-Out1.get(0).getEcologyWater()[i])));
+            option.setWater(Out1.get(0).getEcologyWater()[1][i]);
+            option.setProportion(Double.parseDouble(df.format(Out1.get(0).getEcologyWater()[1][i]/Out1.get(0).getEcologyWaterNeed()[1][i])));
+            option.setWaterLack(Double.parseDouble(df.format(Out1.get(0).getEcologyWaterNeed()[1][i]-Out1.get(0).getEcologyWater()[1][i])));
             option2.add(option);
         }
 

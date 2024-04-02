@@ -169,11 +169,12 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
 
     private List<WaterResourceAllocationControlObject> getAllocationControlObject(WaterResourceAllocationAddReq req,  String allocationId) {
         List<WaterResourceAllocationControlObject> objectList = new ArrayList<>();
-        setAllocationControlObject(objectList, req.getEcologyFlow(), "0", allocationId);
-        setAllocationControlObject(objectList, req.getFloodWaterLevelLzz(), "1", allocationId);
-        setAllocationControlObject(objectList, req.getMinWaterLevelLzz(), "2", allocationId);
-        setAllocationControlObject(objectList, req.getFloodWaterLevelTth(), "3", allocationId);
-        setAllocationControlObject(objectList, req.getMinWaterLevelTth(), "4", allocationId);
+        setAllocationControlObject(objectList, req.getEcologyFlowLzz(), "0", allocationId);
+        setAllocationControlObject(objectList, req.getEcologyFlowTth(), "1", allocationId);
+        setAllocationControlObject(objectList, req.getFloodWaterLevelLzz(), "2", allocationId);
+        setAllocationControlObject(objectList, req.getMinWaterLevelLzz(), "3", allocationId);
+        setAllocationControlObject(objectList, req.getFloodWaterLevelTth(), "4", allocationId);
+        setAllocationControlObject(objectList, req.getMinWaterLevelTth(), "5", allocationId);
         return objectList;
     }
 
@@ -377,11 +378,12 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
         List<WaterResourceAllocationControlObject> objectList = waterResourceAllocationControlObjectService.lambdaQuery().eq(WaterResourceAllocationControlObject::getAllocationId, waterResourceAllocation.getId()).list();
         WaterResourceAllocationAddReq req = new WaterResourceAllocationAddReq();
         //BeanUtils.copyProperties(waterResourceAllocation, req);
-        req.setEcologyFlow(objectList.stream().filter(n -> n.getObjectType().equals("0")).sorted(Comparator.comparing(WaterResourceAllocationControlObject::getMonthNum)).map(n -> n.getMonthVal()).collect(Collectors.toList()));
-        req.setEcologyFlow(objectList.stream().filter(n -> n.getObjectType().equals("1")).sorted(Comparator.comparing(WaterResourceAllocationControlObject::getMonthNum)).map(n -> n.getMonthVal()).collect(Collectors.toList()));
-        req.setEcologyFlow(objectList.stream().filter(n -> n.getObjectType().equals("2")).sorted(Comparator.comparing(WaterResourceAllocationControlObject::getMonthNum)).map(n -> n.getMonthVal()).collect(Collectors.toList()));
-        req.setEcologyFlow(objectList.stream().filter(n -> n.getObjectType().equals("3")).sorted(Comparator.comparing(WaterResourceAllocationControlObject::getMonthNum)).map(n -> n.getMonthVal()).collect(Collectors.toList()));
-        req.setEcologyFlow(objectList.stream().filter(n -> n.getObjectType().equals("4")).sorted(Comparator.comparing(WaterResourceAllocationControlObject::getMonthNum)).map(n -> n.getMonthVal()).collect(Collectors.toList()));
+        req.setEcologyFlowLzz(objectList.stream().filter(n -> n.getObjectType().equals("0")).sorted(Comparator.comparing(WaterResourceAllocationControlObject::getMonthNum)).map(n -> n.getMonthVal()).collect(Collectors.toList()));
+        req.setEcologyFlowTth(objectList.stream().filter(n -> n.getObjectType().equals("1")).sorted(Comparator.comparing(WaterResourceAllocationControlObject::getMonthNum)).map(n -> n.getMonthVal()).collect(Collectors.toList()));
+        req.setFloodWaterLevelLzz(objectList.stream().filter(n -> n.getObjectType().equals("2")).sorted(Comparator.comparing(WaterResourceAllocationControlObject::getMonthNum)).map(n -> n.getMonthVal()).collect(Collectors.toList()));
+        req.setMinWaterLevelLzz(objectList.stream().filter(n -> n.getObjectType().equals("3")).sorted(Comparator.comparing(WaterResourceAllocationControlObject::getMonthNum)).map(n -> n.getMonthVal()).collect(Collectors.toList()));
+        req.setFloodWaterLevelTth(objectList.stream().filter(n -> n.getObjectType().equals("4")).sorted(Comparator.comparing(WaterResourceAllocationControlObject::getMonthNum)).map(n -> n.getMonthVal()).collect(Collectors.toList()));
+        req.setMinWaterLevelTth(objectList.stream().filter(n -> n.getObjectType().equals("5")).sorted(Comparator.comparing(WaterResourceAllocationControlObject::getMonthNum)).map(n -> n.getMonthVal()).collect(Collectors.toList()));
 
         doAllocation(waterResourceAllocation, now, req);
         updateById(waterResourceAllocation);
@@ -698,7 +700,8 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
         waterTransferReq.setStartTime(allocation.getWaterDistributionStartTime());
         waterTransferReq.setEndTime(allocation.getWaterDistributionEndTime());
         waterTransferReq.setName(allocation.getWaterDistributionType());
-        waterTransferReq.setEcologyFlow(toDoubleArray(req.getEcologyFlow()));
+        waterTransferReq.setEcologyFlowLzz(toDoubleArray(req.getEcologyFlowLzz()));
+        waterTransferReq.setEcologyFlowTth(toDoubleArray(req.getEcologyFlowTth()));
         waterTransferReq.setFloodWaterLevelLzz(toDoubleArray(req.getFloodWaterLevelLzz()));
         waterTransferReq.setFloodWaterLevelTth(toDoubleArray(req.getFloodWaterLevelTth()));
         waterTransferReq.setMinWaterLevelLzz(toDoubleArray(req.getMinWaterLevelLzz()));
@@ -749,8 +752,8 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
             List<Double> proportions = new ArrayList<>();
             List<Double> waterLacks = new ArrayList<>();
             for (int i = 0; i < excel2Datas.size(); i++) {
-                double allWater = excel2Datas.get(i).stream().mapToDouble(Excel2::getWater).sum();
-                double waterLack = excel2Datas.get(i).stream().mapToDouble(Excel2::getWaterLack).sum();
+                double allWater = excel2Datas.get(i).stream().filter(n -> station.equals(n.getStationType() + ":" + n.getStationName())).mapToDouble(Excel2::getWater).sum();
+                double waterLack = excel2Datas.get(i).stream().filter(n -> station.equals(n.getStationType() + ":" + n.getStationName())).mapToDouble(Excel2::getWaterLack).sum();
                 proportions.add((allWater + waterLack) == 0 ? 1 : allWater / (allWater + waterLack));
                 waterLacks.add(waterLack);
             }

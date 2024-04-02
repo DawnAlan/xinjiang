@@ -80,8 +80,11 @@ public class WaterResourceAllocationAddReq implements Serializable {
     @ApiModelProperty(value = "头屯河期末水位")
     private Double levelEndTth;
 
+    @ApiModelProperty(value = "楼庄子生态流量")
+    private List<Double> ecologyFlowLzz;
+
     @ApiModelProperty(value = "头屯河生态流量")
-    private List<Double> ecologyFlow;
+    private List<Double> ecologyFlowTth;
 
     @ApiModelProperty(value = "楼庄子动态讯限水位")
     private List<Double> floodWaterLevelLzz;
