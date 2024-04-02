@@ -47,17 +47,15 @@ import com.cj.waterresources.func.modular.waterResourceAllcation.bean.req.ViewMo
 import com.cj.waterresources.func.modular.waterResourceAllcation.bean.req.WaterResourceAllocationAddReq;
 import com.cj.waterresources.func.modular.waterResourceAllcation.bean.req.WaterResourceAllocationQueryReq;
 import com.cj.waterresources.func.modular.waterResourceAllcation.bean.res.*;
-import com.cj.waterresources.func.modular.waterResourceAllcation.entity.AllocationDisplayData;
-import com.cj.waterresources.func.modular.waterResourceAllcation.entity.DayWaterUsePlanV;
-import com.cj.waterresources.func.modular.waterResourceAllcation.entity.IncomingWaterForecast;
+import com.cj.waterresources.func.modular.waterResourceAllcation.entity.*;
 import com.cj.waterresources.func.modular.waterResourceAllcation.mapper.WaterResourceAllocationMapper;
-import com.cj.waterresources.func.modular.waterResourceAllcation.entity.WaterResourceAllocation;
 import com.cj.waterresources.func.modular.waterResourceAllcation.service.WaterResourceAllocationService;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -88,6 +86,7 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
     private final DayWaterUsePlanService dayWaterUsePlanService;
     private final LzzGaugingStationService lzzGaugingStationService;
     private final IrrigatedPlatformDataInfoService irrigatedPlatformDataInfoService;
+    private final WaterResourceAllocationControlObjectService waterResourceAllocationControlObjectService;
 
     private final static String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
@@ -139,6 +138,7 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
                         .equals(DateUtil.format(DateUtil.parse(endTime), format))).collect(Collectors.toList()));
     }
 
+    @Transactional
     @Override
     public RestResponse generativeModel(WaterResourceAllocationAddReq req) {
         WaterResourceAllocation waterResourceAllocation = new WaterResourceAllocation();
@@ -147,13 +147,15 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
         waterResourceAllocation.setId(UUIDUtils.getUUID());
         waterResourceAllocation.setDel(0);
         waterResourceAllocation.setState(1);
-        waterResourceAllocation.setCreateBy(StpLoginUserUtil.getLoginUser().getName());
+        //waterResourceAllocation.setCreateBy(StpLoginUserUtil.getLoginUser().getName());
         waterResourceAllocation.setCreateTime(now);
+        List<WaterResourceAllocationControlObject> objectList = getAllocationControlObject(req, waterResourceAllocation.getId());
         this.save(waterResourceAllocation);
+        waterResourceAllocationControlObjectService.saveBatch(objectList);
 
         new Thread(() -> {
             try {
-                doAllocation(waterResourceAllocation, now);
+                doAllocation(waterResourceAllocation, now, req);
                 waterResourceAllocation.setState(0);
             } catch (Exception e) {
                 waterResourceAllocation.setState(2);
@@ -163,6 +165,29 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
         }).start();
 
         return RestResponse.ok();
+    }
+
+    private List<WaterResourceAllocationControlObject> getAllocationControlObject(WaterResourceAllocationAddReq req,  String allocationId) {
+        List<WaterResourceAllocationControlObject> objectList = new ArrayList<>();
+        setAllocationControlObject(objectList, req.getEcologyFlow(), "0", allocationId);
+        setAllocationControlObject(objectList, req.getFloodWaterLevelLzz(), "1", allocationId);
+        setAllocationControlObject(objectList, req.getMinWaterLevelLzz(), "2", allocationId);
+        setAllocationControlObject(objectList, req.getFloodWaterLevelTth(), "3", allocationId);
+        setAllocationControlObject(objectList, req.getMinWaterLevelTth(), "4", allocationId);
+        return objectList;
+    }
+
+    private void setAllocationControlObject(List<WaterResourceAllocationControlObject> objectList, List<Double> values, String type, String allocationId) {
+        for (int i = 0; i < values.size(); i++) {
+            Integer num = i + 1;
+            WaterResourceAllocationControlObject object = new WaterResourceAllocationControlObject();
+            object.setId(allocationId + "_" + type + "_" + num);
+            object.setAllocationId(allocationId);
+            object.setObjectType(type);
+            object.setMonthNum(num.toString());
+            object.setMonthVal(values.get(i));
+            objectList.add(object);
+        }
     }
 
     @NotNull
@@ -209,10 +234,10 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
             minioUtils.deleteObjectInfo("tth", waterResourceAllocation.getAllocationDataDisplayAddress());
             minioUtils.deleteObjectInfo("tth", waterResourceAllocation.getAllocationDataCustomAddress());
             waterResourceAllocation.setDel(1);
-            // todo 登陆用户
-            waterResourceAllocation.setUpdateBy(null);
+            //waterResourceAllocation.setUpdateBy(StpLoginUserUtil.getLoginUser().getName());
             waterResourceAllocation.setUpdateTime(new Date());
             baseMapper.updateById(waterResourceAllocation);
+            waterResourceAllocationControlObjectService.removeBatchByIds(waterResourceAllocationControlObjectService.lambdaQuery().eq(WaterResourceAllocationControlObject::getAllocationId, waterResourceAllocation.getId()).list());
         }
         return RestResponse.ok();
     }
@@ -345,12 +370,20 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
     @Override
     public RestResponse updateAllocation(WaterResourceAllocation waterResourceAllocation) {
         Date now = new Date();
-        waterResourceAllocation.setUpdateBy("");
+        //waterResourceAllocation.setUpdateBy(StpLoginUserUtil.getLoginUser().getName());
         waterResourceAllocation.setUpdateTime(now);
         String customAddress = waterResourceAllocation.getAllocationDataCustomAddress();
         String displayAddress = waterResourceAllocation.getAllocationDataDisplayAddress();
+        List<WaterResourceAllocationControlObject> objectList = waterResourceAllocationControlObjectService.lambdaQuery().eq(WaterResourceAllocationControlObject::getAllocationId, waterResourceAllocation.getId()).list();
+        WaterResourceAllocationAddReq req = new WaterResourceAllocationAddReq();
+        //BeanUtils.copyProperties(waterResourceAllocation, req);
+        req.setEcologyFlow(objectList.stream().filter(n -> n.getObjectType().equals("0")).sorted(Comparator.comparing(WaterResourceAllocationControlObject::getMonthNum)).map(n -> n.getMonthVal()).collect(Collectors.toList()));
+        req.setEcologyFlow(objectList.stream().filter(n -> n.getObjectType().equals("1")).sorted(Comparator.comparing(WaterResourceAllocationControlObject::getMonthNum)).map(n -> n.getMonthVal()).collect(Collectors.toList()));
+        req.setEcologyFlow(objectList.stream().filter(n -> n.getObjectType().equals("2")).sorted(Comparator.comparing(WaterResourceAllocationControlObject::getMonthNum)).map(n -> n.getMonthVal()).collect(Collectors.toList()));
+        req.setEcologyFlow(objectList.stream().filter(n -> n.getObjectType().equals("3")).sorted(Comparator.comparing(WaterResourceAllocationControlObject::getMonthNum)).map(n -> n.getMonthVal()).collect(Collectors.toList()));
+        req.setEcologyFlow(objectList.stream().filter(n -> n.getObjectType().equals("4")).sorted(Comparator.comparing(WaterResourceAllocationControlObject::getMonthNum)).map(n -> n.getMonthVal()).collect(Collectors.toList()));
 
-        doAllocation(waterResourceAllocation, now);
+        doAllocation(waterResourceAllocation, now, req);
         updateById(waterResourceAllocation);
         minioUtils.deleteObjectInfo("tth", customAddress);
         minioUtils.deleteObjectInfo("tth", displayAddress);
@@ -643,7 +676,7 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
         return null;
     }
 
-    private WaterResourceAllocation doAllocation(WaterResourceAllocation allocation, Date dateTime) {
+    private WaterResourceAllocation doAllocation(WaterResourceAllocation allocation, Date dateTime, WaterResourceAllocationAddReq req) {
         WaterTransferReq waterTransferReq = new WaterTransferReq();
         List<Flood> floods = getListFromMinio(allocation.getInflowDataAddress(), Flood.class);
         floods = floods.stream().filter(f -> f.getTime().getTime() <= allocation.getWaterDistributionEndTime().getTime()
@@ -665,8 +698,11 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
         waterTransferReq.setStartTime(allocation.getWaterDistributionStartTime());
         waterTransferReq.setEndTime(allocation.getWaterDistributionEndTime());
         waterTransferReq.setName(allocation.getWaterDistributionType());
-        waterTransferReq.setFloodWaterLevelLzz(allocation.getFloodWaterLevelLzz());
-        waterTransferReq.setFloodWaterLevelTth(allocation.getFloodWaterLevelTth());
+        waterTransferReq.setEcologyFlow(toDoubleArray(req.getEcologyFlow()));
+        waterTransferReq.setFloodWaterLevelLzz(toDoubleArray(req.getFloodWaterLevelLzz()));
+        waterTransferReq.setFloodWaterLevelTth(toDoubleArray(req.getFloodWaterLevelTth()));
+        waterTransferReq.setMinWaterLevelLzz(toDoubleArray(req.getMinWaterLevelLzz()));
+        waterTransferReq.setMinWaterLevelTth(toDoubleArray(req.getMinWaterLevelTth()));
         waterTransferReq.setLevelBeginLzz(allocation.getLevelBeginLzz());
         waterTransferReq.setLevelBeginTth(allocation.getLevelBeginTth());
         waterTransferReq.setLevelEndLzz(allocation.getLevelEndLzz());
@@ -692,6 +728,14 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
         return allocation;
     }
 
+    private double[] toDoubleArray(List<Double> doubles) {
+        double[] array = new double[doubles.size()];
+        for (int i = 0; i < doubles.size(); i++) {
+            array[i] = doubles.get(i);
+        }
+        return array;
+    }
+
     private List<WaterAllocationComparisonSelectionRes.WaterRatioDTO> getWaterRatio(List<List<Excel2>> excel2Datas) {
         Set<String> allStations = new HashSet<>();
         for (int i = 0; i < excel2Datas.size(); i++) {
@@ -705,8 +749,8 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
             List<Double> proportions = new ArrayList<>();
             List<Double> waterLacks = new ArrayList<>();
             for (int i = 0; i < excel2Datas.size(); i++) {
-                double allWater = excel2Datas.get(i).stream().mapToDouble(Excel2::getWater).sum();
-                double waterLack = excel2Datas.get(i).stream().mapToDouble(Excel2::getWaterLack).sum();
+                double allWater = excel2Datas.get(i).stream().filter(n -> station.equals(n.getStationType() + ":" + n.getStationName())).mapToDouble(Excel2::getWater).sum();
+                double waterLack = excel2Datas.get(i).stream().filter(n -> station.equals(n.getStationType() + ":" + n.getStationName())).mapToDouble(Excel2::getWaterLack).sum();
                 proportions.add((allWater + waterLack) == 0 ? 1 : allWater / (allWater + waterLack));
                 waterLacks.add(waterLack);
             }
