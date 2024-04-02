@@ -218,11 +218,11 @@ public class SurfaceWaterFlowDetailService extends ServiceImpl<SurfaceWaterFlowD
                 flow3.setJan(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 3 ? 0 : deciles.get(2).isEmpty() ? 0 : deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum() * 86400).setScale(3, RoundingMode.DOWN));
                 flow4.setJan(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).sum() * 86400).setScale(3, RoundingMode.DOWN));
 
-                sum1.setJan(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 1 ? 0 : deciles.get(0).isEmpty() ? 0 : deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                sum1.setJan(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 1 ? 0 : deciles.get(0).isEmpty() ? 0 : deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
                 avg1.setJan(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 1 ? 0 : deciles.get(0).isEmpty() ? 0 : deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
-                sum2.setJan(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 2 ? 0 : deciles.get(1).isEmpty() ? 0 : deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                sum2.setJan(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 2 ? 0 : deciles.get(1).isEmpty() ? 0 : deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
                 avg2.setJan(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 2 ? 0 : deciles.get(1).isEmpty() ? 0 : deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
-                sum3.setJan(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 3 ? 0 : deciles.get(2).isEmpty() ? 0 : deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                sum3.setJan(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 3 ? 0 : deciles.get(2).isEmpty() ? 0 : deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
                 avg3.setJan(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 3 ? 0 : deciles.get(2).isEmpty() ? 0 : deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
                 sum4.setJan(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
                 avg4.setJan(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
@@ -237,11 +237,11 @@ public class SurfaceWaterFlowDetailService extends ServiceImpl<SurfaceWaterFlowD
                 flow3.setFeb(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 3 ? 0 : deciles.get(2).isEmpty() ? 0 : deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum() * 86400).setScale(3, RoundingMode.DOWN));
                 flow4.setFeb(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).sum() * 86400).setScale(3, RoundingMode.DOWN));
 
-                sum1.setFeb(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 1 ? 0 : deciles.get(0).isEmpty() ? 0 : deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                sum1.setFeb(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 1 ? 0 : deciles.get(0).isEmpty() ? 0 : deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
                 avg1.setFeb(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 1 ? 0 : deciles.get(0).isEmpty() ? 0 : deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
-                sum2.setFeb(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 2 ? 0 : deciles.get(1).isEmpty() ? 0 : deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                sum2.setFeb(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 2 ? 0 : deciles.get(1).isEmpty() ? 0 : deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
                 avg2.setFeb(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 2 ? 0 : deciles.get(1).isEmpty() ? 0 : deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
-                sum3.setFeb(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 3 ? 0 : deciles.get(2).isEmpty() ? 0 : deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                sum3.setFeb(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 3 ? 0 : deciles.get(2).isEmpty() ? 0 : deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
                 avg3.setFeb(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 3 ? 0 : deciles.get(2).isEmpty() ? 0 : deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
                 sum4.setFeb(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
                 avg4.setFeb(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
@@ -256,11 +256,11 @@ public class SurfaceWaterFlowDetailService extends ServiceImpl<SurfaceWaterFlowD
                 flow3.setMar(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 3 ? 0 : deciles.get(2).isEmpty() ? 0 : deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum() * 86400).setScale(3, RoundingMode.DOWN));
                 flow4.setMar(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).sum() * 86400).setScale(3, RoundingMode.DOWN));
 
-                sum1.setMar(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 1 ? 0 : deciles.get(0).isEmpty() ? 0 : deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                sum1.setMar(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 1 ? 0 : deciles.get(0).isEmpty() ? 0 : deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
                 avg1.setMar(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 1 ? 0 : deciles.get(0).isEmpty() ? 0 : deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
-                sum2.setMar(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 2 ? 0 : deciles.get(1).isEmpty() ? 0 : deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                sum2.setMar(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 2 ? 0 : deciles.get(1).isEmpty() ? 0 : deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
                 avg2.setMar(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 2 ? 0 : deciles.get(1).isEmpty() ? 0 : deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
-                sum3.setMar(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 3 ? 0 : deciles.get(2).isEmpty() ? 0 : deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                sum3.setMar(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 3 ? 0 : deciles.get(2).isEmpty() ? 0 : deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
                 avg3.setMar(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 3 ? 0 : deciles.get(2).isEmpty() ? 0 : deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
                 sum4.setMar(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
                 avg4.setMar(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
@@ -275,11 +275,11 @@ public class SurfaceWaterFlowDetailService extends ServiceImpl<SurfaceWaterFlowD
                 flow3.setAri(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 3 ? 0 : deciles.get(2).isEmpty() ? 0 : deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum() * 86400).setScale(3, RoundingMode.DOWN));
                 flow4.setAri(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).sum() * 86400).setScale(3, RoundingMode.DOWN));
 
-                sum1.setAri(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 1 ? 0 : deciles.get(0).isEmpty() ? 0 : deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                sum1.setAri(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 1 ? 0 : deciles.get(0).isEmpty() ? 0 : deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
                 avg1.setAri(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 1 ? 0 : deciles.get(0).isEmpty() ? 0 : deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
-                sum2.setAri(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 2 ? 0 : deciles.get(1).isEmpty() ? 0 : deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                sum2.setAri(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 2 ? 0 : deciles.get(1).isEmpty() ? 0 : deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
                 avg2.setAri(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 2 ? 0 : deciles.get(1).isEmpty() ? 0 : deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
-                sum3.setAri(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 3 ? 0 : deciles.get(2).isEmpty() ? 0 : deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                sum3.setAri(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 3 ? 0 : deciles.get(2).isEmpty() ? 0 : deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
                 avg3.setAri(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 3 ? 0 : deciles.get(2).isEmpty() ? 0 : deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
                 sum4.setAri(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
                 avg4.setAri(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
@@ -294,11 +294,11 @@ public class SurfaceWaterFlowDetailService extends ServiceImpl<SurfaceWaterFlowD
                 flow3.setMay(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 3 ? 0 : deciles.get(2).isEmpty() ? 0 : deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum() * 86400).setScale(3, RoundingMode.DOWN));
                 flow4.setMay(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).sum() * 86400).setScale(3, RoundingMode.DOWN));
 
-                sum1.setMay(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 1 ? 0 : deciles.get(0).isEmpty() ? 0 : deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                sum1.setMay(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 1 ? 0 : deciles.get(0).isEmpty() ? 0 : deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
                 avg1.setMay(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 1 ? 0 : deciles.get(0).isEmpty() ? 0 : deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
-                sum2.setMay(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 2 ? 0 : deciles.get(1).isEmpty() ? 0 : deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                sum2.setMay(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 2 ? 0 : deciles.get(1).isEmpty() ? 0 : deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
                 avg2.setMay(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 2 ? 0 : deciles.get(1).isEmpty() ? 0 : deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
-                sum3.setMay(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 3 ? 0 : deciles.get(2).isEmpty() ? 0 : deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                sum3.setMay(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 3 ? 0 : deciles.get(2).isEmpty() ? 0 : deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
                 avg3.setMay(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 3 ? 0 : deciles.get(2).isEmpty() ? 0 : deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
                 sum4.setMay(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
                 avg4.setMay(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
@@ -313,11 +313,11 @@ public class SurfaceWaterFlowDetailService extends ServiceImpl<SurfaceWaterFlowD
                 flow3.setJun(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 3 ? 0 : deciles.get(2).isEmpty() ? 0 : deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum() * 86400).setScale(3, RoundingMode.DOWN));
                 flow4.setJun(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).sum() * 86400).setScale(3, RoundingMode.DOWN));
 
-                sum1.setJun(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 1 ? 0 : deciles.get(0).isEmpty() ? 0 : deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                sum1.setJun(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 1 ? 0 : deciles.get(0).isEmpty() ? 0 : deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
                 avg1.setJun(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 1 ? 0 : deciles.get(0).isEmpty() ? 0 : deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
-                sum2.setJun(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 2 ? 0 : deciles.get(1).isEmpty() ? 0 : deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                sum2.setJun(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 2 ? 0 : deciles.get(1).isEmpty() ? 0 : deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
                 avg2.setJun(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 2 ? 0 : deciles.get(1).isEmpty() ? 0 : deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
-                sum3.setJun(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 3 ? 0 : deciles.get(2).isEmpty() ? 0 : deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                sum3.setJun(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 3 ? 0 : deciles.get(2).isEmpty() ? 0 : deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
                 avg3.setJun(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 3 ? 0 : deciles.get(2).isEmpty() ? 0 : deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
                 sum4.setJun(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
                 avg4.setJun(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(2, RoundingMode.DOWN));
@@ -332,11 +332,11 @@ public class SurfaceWaterFlowDetailService extends ServiceImpl<SurfaceWaterFlowD
                 flow3.setJul(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 3 ? 0 : deciles.get(2).isEmpty() ? 0 : deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum() * 86400).setScale(3, RoundingMode.DOWN));
                 flow4.setJul(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).sum() * 86400).setScale(3, RoundingMode.DOWN));
 
-                sum1.setJul(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 1 ? 0 : deciles.get(0).isEmpty() ? 0 : deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                sum1.setJul(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 1 ? 0 : deciles.get(0).isEmpty() ? 0 : deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
                 avg1.setJul(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 1 ? 0 : deciles.get(0).isEmpty() ? 0 : deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
-                sum2.setJul(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 2 ? 0 : deciles.get(1).isEmpty() ? 0 : deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                sum2.setJul(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 2 ? 0 : deciles.get(1).isEmpty() ? 0 : deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
                 avg2.setJul(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 2 ? 0 : deciles.get(1).isEmpty() ? 0 : deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
-                sum3.setJul(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 3 ? 0 : deciles.get(2).isEmpty() ? 0 : deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                sum3.setJul(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 3 ? 0 : deciles.get(2).isEmpty() ? 0 : deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
                 avg3.setJul(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 3 ? 0 : deciles.get(2).isEmpty() ? 0 : deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
                 sum4.setJul(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
                 avg4.setJul(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
@@ -351,11 +351,11 @@ public class SurfaceWaterFlowDetailService extends ServiceImpl<SurfaceWaterFlowD
                 flow3.setAut(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 3 ? 0 : deciles.get(2).isEmpty() ? 0 : deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum() * 86400).setScale(3, RoundingMode.DOWN));
                 flow4.setAut(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).sum() * 86400).setScale(3, RoundingMode.DOWN));
 
-                sum1.setAut(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 1 ? 0 : deciles.get(0).isEmpty() ? 0 : deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                sum1.setAut(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 1 ? 0 : deciles.get(0).isEmpty() ? 0 : deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
                 avg1.setAut(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 1 ? 0 : deciles.get(0).isEmpty() ? 0 : deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
-                sum2.setAut(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 2 ? 0 : deciles.get(1).isEmpty() ? 0 : deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                sum2.setAut(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 2 ? 0 : deciles.get(1).isEmpty() ? 0 : deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
                 avg2.setAut(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 2 ? 0 : deciles.get(1).isEmpty() ? 0 : deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
-                sum3.setAut(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 3 ? 0 : deciles.get(2).isEmpty() ? 0 : deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                sum3.setAut(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 3 ? 0 : deciles.get(2).isEmpty() ? 0 : deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
                 avg3.setAut(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 3 ? 0 : deciles.get(2).isEmpty() ? 0 : deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
                 sum4.setAut(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
                 avg4.setAut(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
@@ -370,11 +370,11 @@ public class SurfaceWaterFlowDetailService extends ServiceImpl<SurfaceWaterFlowD
                 flow3.setSep(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 3 ? 0 : deciles.get(2).isEmpty() ? 0 : deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum() * 86400).setScale(3, RoundingMode.DOWN));
                 flow4.setSep(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).sum() * 86400).setScale(3, RoundingMode.DOWN));
 
-                sum1.setSep(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 1 ? 0 : deciles.get(0).isEmpty() ? 0 : deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                sum1.setSep(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 1 ? 0 : deciles.get(0).isEmpty() ? 0 : deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
                 avg1.setSep(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 1 ? 0 : deciles.get(0).isEmpty() ? 0 : deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
-                sum2.setSep(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 2 ? 0 : deciles.get(1).isEmpty() ? 0 : deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                sum2.setSep(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 2 ? 0 : deciles.get(1).isEmpty() ? 0 : deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
                 avg2.setSep(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 2 ? 0 : deciles.get(1).isEmpty() ? 0 : deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
-                sum3.setSep(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 3 ? 0 : deciles.get(2).isEmpty() ? 0 : deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                sum3.setSep(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 3 ? 0 : deciles.get(2).isEmpty() ? 0 : deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
                 avg3.setSep(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 3 ? 0 : deciles.get(2).isEmpty() ? 0 : deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
                 sum4.setSep(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
                 avg4.setSep(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
@@ -389,11 +389,11 @@ public class SurfaceWaterFlowDetailService extends ServiceImpl<SurfaceWaterFlowD
                 flow3.setOct(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 3 ? 0 : deciles.get(2).isEmpty() ? 0 : deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum() * 86400).setScale(3, RoundingMode.DOWN));
                 flow4.setOct(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).sum() * 86400).setScale(3, RoundingMode.DOWN));
 
-                sum1.setOct(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 1 ? 0 : deciles.get(0).isEmpty() ? 0 : deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                sum1.setOct(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 1 ? 0 : deciles.get(0).isEmpty() ? 0 : deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
                 avg1.setOct(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 1 ? 0 : deciles.get(0).isEmpty() ? 0 : deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
-                sum2.setOct(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 2 ? 0 : deciles.get(1).isEmpty() ? 0 : deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                sum2.setOct(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 2 ? 0 : deciles.get(1).isEmpty() ? 0 : deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
                 avg2.setOct(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 2 ? 0 : deciles.get(1).isEmpty() ? 0 : deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
-                sum3.setOct(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 3 ? 0 : deciles.get(2).isEmpty() ? 0 : deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                sum3.setOct(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 3 ? 0 : deciles.get(2).isEmpty() ? 0 : deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
                 avg3.setOct(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 3 ? 0 : deciles.get(2).isEmpty() ? 0 : deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
                 sum4.setOct(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
                 avg4.setOct(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
@@ -408,11 +408,11 @@ public class SurfaceWaterFlowDetailService extends ServiceImpl<SurfaceWaterFlowD
                 flow3.setNov(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 3 ? 0 : deciles.get(2).isEmpty() ? 0 : deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum() * 86400).setScale(3, RoundingMode.DOWN));
                 flow4.setNov(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).sum() * 86400).setScale(3, RoundingMode.DOWN));
 
-                sum1.setNov(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 1 ? 0 : deciles.get(0).isEmpty() ? 0 : deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                sum1.setNov(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 1 ? 0 : deciles.get(0).isEmpty() ? 0 : deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
                 avg1.setNov(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 1 ? 0 : deciles.get(0).isEmpty() ? 0 : deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
-                sum2.setNov(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 2 ? 0 : deciles.get(1).isEmpty() ? 0 : deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                sum2.setNov(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 2 ? 0 : deciles.get(1).isEmpty() ? 0 : deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
                 avg2.setNov(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 2 ? 0 : deciles.get(1).isEmpty() ? 0 : deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
-                sum3.setNov(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 3 ? 0 : deciles.get(2).isEmpty() ? 0 : deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                sum3.setNov(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 3 ? 0 : deciles.get(2).isEmpty() ? 0 : deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
                 avg3.setNov(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 3 ? 0 : deciles.get(2).isEmpty() ? 0 : deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
                 sum4.setNov(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
                 avg4.setNov(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
@@ -427,11 +427,11 @@ public class SurfaceWaterFlowDetailService extends ServiceImpl<SurfaceWaterFlowD
                 flow3.setDec(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 3 ? 0 : deciles.get(2).isEmpty() ? 0 : deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum() * 86400).setScale(3, RoundingMode.DOWN));
                 flow4.setDec(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).sum() * 86400).setScale(3, RoundingMode.DOWN));
 
-                sum1.setDec(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 1 ? 0 : deciles.get(0).isEmpty() ? 0 : deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                sum1.setDec(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 1 ? 0 : deciles.get(0).isEmpty() ? 0 : deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
                 avg1.setDec(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 1 ? 0 : deciles.get(0).isEmpty() ? 0 : deciles.get(0).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
-                sum2.setDec(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 2 ? 0 : deciles.get(1).isEmpty() ? 0 : deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                sum2.setDec(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 2 ? 0 : deciles.get(1).isEmpty() ? 0 : deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
                 avg2.setDec(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 2 ? 0 : deciles.get(1).isEmpty() ? 0 : deciles.get(1).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
-                sum3.setDec(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 3 ? 0 : deciles.get(2).isEmpty() ? 0 : deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()));
+                sum3.setDec(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 3 ? 0 : deciles.get(2).isEmpty() ? 0 : deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
                 avg3.setDec(BigDecimal.valueOf(deciles.isEmpty() ? 0 : deciles.size() < 3 ? 0 : deciles.get(2).isEmpty() ? 0 : deciles.get(2).stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
                 sum4.setDec(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).sum()).setScale(3, RoundingMode.DOWN));
                 avg4.setDec(BigDecimal.valueOf(dayList.stream().mapToDouble(t -> t.getFlow().doubleValue()).average().getAsDouble()).setScale(3, RoundingMode.DOWN));
