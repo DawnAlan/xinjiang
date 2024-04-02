@@ -25,9 +25,15 @@ public class WaterTransferReq {
     //配水类型
     private int name;
     //楼庄子汛限水位
-    private double  floodWaterLevelLzz;
+    private double[]  floodWaterLevelLzz;
     //头屯河汛限水位
-    private double  floodWaterLevelTth;
+    private double[]  floodWaterLevelTth;
+    //楼庄子最低调度水位
+    private double[]  minWaterLevelLzz;
+    //头屯河最低调度水位
+    private double[]  minWaterLevelTth;
+    //生态流量
+    private double[]  ecologyFlow;
     //楼庄子起调水位
     private double levelBeginLzz;
     //头屯河起调水位

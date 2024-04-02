@@ -44,8 +44,11 @@ public class ResourceOptimizationlong_TendaysTest
         //配置水库
         daynum= new int[]{10,10,10};
         setReservoir(waterTransferReq.getCurve(),reservoirs);
-        reservoirs[0].setLevelFloodLimiting(waterTransferReq.getFloodWaterLevelLzz());
-        reservoirs[1].setLevelFloodLimiting(waterTransferReq.getFloodWaterLevelTth());
+
+        if (waterTransferReq.getEcologyFlow().length==12){
+
+            minoutflow= waterTransferReq.getEcologyFlow();
+        }
         if (waterTransferReq.getName()==1){
             waterTransferReq.setId(2);
         }
@@ -292,20 +295,24 @@ public class ResourceOptimizationlong_TendaysTest
 
         double[] levelBegin = {waterTransferReq.getLevelBeginLzz(), waterTransferReq.getLevelBeginTth()};
         double[] levelEnd =  {waterTransferReq.getLevelEndLzz(), waterTransferReq.getLevelEndTth()};
-        double[] levelLimit = {waterTransferReq.getFloodWaterLevelLzz(), waterTransferReq.getFloodWaterLevelTth()};
-
+        double[][]levelLimit=new double[2][waterTransferReq.getFloodWaterLevelLzz().length];
+        double[][]levelMin=new double[2][waterTransferReq.getFloodWaterLevelLzz().length];
+        levelLimit[0] =waterTransferReq.getFloodWaterLevelLzz();
+        levelLimit[1] =waterTransferReq.getFloodWaterLevelTth();
+        levelMin[0] =waterTransferReq.getMinWaterLevelLzz();
+        levelMin[1] =waterTransferReq.getMinWaterLevelTth();
         String []reservoirsName=new String[]{"楼庄子水库","头屯河水库"};
         for (int t=0;t<reservoirs.length;t++){
-            if (levelBegin[t]<reservoirs[t].levelDead){
+            if (levelBegin[t]<levelMin[t][date[1]-1]){
                 throw new CommonException("请检查"+reservoirsName[t]+"调度开始初水位设置是否合理，小于"+reservoirsName[t]+"调度最小水位：死水位");
             }
-            if (levelBegin[t]>levelLimit[t]){
+            if (levelBegin[t]>levelLimit[t][date[1]-1]){
                 throw new CommonException("请检查"+reservoirsName[t]+"调度开始初水位设置是否合理，大于"+reservoirsName[t]+"调度最大水位：动态汛限水位");
             }
-            if (levelEnd[t]<reservoirs[t].levelDead){
+            if (levelEnd[t]<levelMin[t][date[1]-1]){
                 throw new CommonException("请检查"+reservoirsName[t]+"调度结束末水位设置是否合理，小于"+reservoirsName[t]+"调度最小水位：死水位");
             }
-            if (levelEnd[t]>levelLimit[t]){
+            if (levelEnd[t]>levelLimit[t][date[1]-1]){
                 throw new CommonException("请检查"+reservoirsName[t]+"调度结束末水位设置是否合理，大于"+reservoirsName[t]+"调度最大水位：动态汛限水位");
             }
 
@@ -368,9 +375,9 @@ public class ResourceOptimizationlong_TendaysTest
                     for (int tt = 1; tt < period; tt++)
                     {
                         //初始  和  最终水位  不参与调整
-                        double maxLevel = reservoirs[n].levelFloodLimiting;
+                        double maxLevel = levelLimit[n][date[1]-1];
 //                double maxLevel = reservoir.levelFloodCheck;
-                        double minLevel = reservoirs[n].levelDead;
+                        double minLevel = levelMin[n][date[1]-1];
                         int wlNum = (int) ((maxLevel - minLevel) / discreteAccuracy + 1);//变量离散过程
 
                         for (int i = 0; i < wlNum; i++)//调用模拟模型计算
@@ -417,9 +424,9 @@ public class ResourceOptimizationlong_TendaysTest
 
                     for (int tt = 1; tt < period; tt++) {
                         //初始  和  最终水位  不参与调整
-                        double maxLevel = reservoirs[n].levelFloodLimiting;
+                        double maxLevel = levelLimit[n][date[1]-1];
 //                double maxLevel = reservoir.levelFloodCheck;
-                        double minLevel = reservoirs[n].levelDead;
+                        double minLevel = levelMin[n][date[1]-1];
                         int wlNum = (int) ((maxLevel - minLevel) / discreteAccuracy + 1);//变量离散过程
 
                         for (int i = 0; i < wlNum; i++)//调用模拟模型计算

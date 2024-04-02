@@ -57,9 +57,9 @@ public class WaterResourceAllocation extends Model<WaterResourceAllocation> {
     //大屏用数据
     private String AllocationDataDisplayAddress;
     //楼庄子汛限水位
-    private Double floodWaterLevelLzz;
+    //private Double floodWaterLevelLzz;
     //头屯河汛限水位
-    private Double floodWaterLevelTth;
+    //private Double floodWaterLevelTth;
     //楼庄子起调水位
     private Double levelBeginLzz;
     //头屯河起调水位

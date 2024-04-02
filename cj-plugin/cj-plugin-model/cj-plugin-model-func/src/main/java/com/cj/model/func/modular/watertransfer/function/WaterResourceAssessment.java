@@ -22,6 +22,7 @@ public class WaterResourceAssessment {
         List<Date> endTime=new ArrayList<>();
         List<String> timePeriodType=new ArrayList<>();
         String[] schemeName=new String[reqList.size()];
+        setReservoir(data, reservoirs);
         for (AppraiseReq req:reqList){
             startTime.add(req.getStartTime()) ;
             endTime.add(req.getEndTime());
@@ -49,9 +50,9 @@ public class WaterResourceAssessment {
         //获取每个方案楼庄子蓄泄、头屯河蓄泄、以及两水库总蓄泄
         for (int i=0;i<reqList.size();i++){
             schemeName[i]=reqList.get(i).getName();
-            dischargeLzz[i] =storageAndDischarge(reqList.get(i),data)[0];
-            dischargeTth[i] =storageAndDischarge(reqList.get(i),data)[1];
-            storgeAll[i]=storageAndDischarge(reqList.get(i),data)[2];
+            dischargeLzz[i] =storageAndDischarge(reqList.get(i))[0];
+            dischargeTth[i] =storageAndDischarge(reqList.get(i))[1];
+            storgeAll[i]=storageAndDischarge(reqList.get(i))[2];
             inflowWater[i]=Double.parseDouble(da.format(getInflowWater(reqList.get(i).getExcel1Data())));
             waterDemand[i]=Double.parseDouble(da.format(getWaterDemand(reqList.get(i).getExcel1Data())));
             wasteWater[i]=Double.parseDouble(da.format(getWasteWater(reqList.get(i).getExcel1Data())));
@@ -143,11 +144,10 @@ public class WaterResourceAssessment {
     /**
      * 根据水位计算两个水库的蓄泄水量，0为楼庄子，1为头屯河，2为两库总蓄泄水量
      * @param req
-     * @param data
      * @return
      */
-    public  double[] storageAndDischarge(AppraiseReq req,List<CurveParam> data) {
-        setReservoir(data, reservoirs);
+    public  double[] storageAndDischarge(AppraiseReq req) {
+
         DecimalFormat da1 = new DecimalFormat("#.00");
         double dischargeLzz = Double.parseDouble(da1.format(FindValue.FindV2ByV1(reservoirs[0].wlc_wl, reservoirs[0].wlc_c, req.getLevelEndLzz())-
                 FindValue.FindV2ByV1(reservoirs[0].wlc_wl, reservoirs[0].wlc_c, req.getLevelBeginLzz())));
