@@ -238,7 +238,11 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
             waterResourceAllocation.setUpdateBy(StpLoginUserUtil.getLoginUser().getName());
             waterResourceAllocation.setUpdateTime(new Date());
             baseMapper.updateById(waterResourceAllocation);
-            waterResourceAllocationControlObjectService.removeBatchByIds(waterResourceAllocationControlObjectService.lambdaQuery().eq(WaterResourceAllocationControlObject::getAllocationId, waterResourceAllocation.getId()).list());
+            List<WaterResourceAllocationControlObject> objectList = waterResourceAllocationControlObjectService
+                    .lambdaQuery().eq(WaterResourceAllocationControlObject::getAllocationId, waterResourceAllocation.getId()).list();
+            if (objectList != null && objectList.size() > 0) {
+                waterResourceAllocationControlObjectService.removeBatchByIds(objectList);
+            }
         }
         return RestResponse.ok();
     }
