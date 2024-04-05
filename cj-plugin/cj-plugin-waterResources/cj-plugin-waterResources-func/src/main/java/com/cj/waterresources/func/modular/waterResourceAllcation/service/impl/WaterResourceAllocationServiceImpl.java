@@ -398,6 +398,9 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
         Map<String,Object> result =new HashMap<>();
         SimpleDateFormat sdf =new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         WaterResourceAllocation waterResourceAllocation = this.getById(id);
+        if(waterResourceAllocation.getState()!=0){
+            return RestResponse.no("该方案异常，请重新选择");
+        }
         String customAddress = waterResourceAllocation.getAllocationDataCustomAddress();
         String displayAddress = waterResourceAllocation.getAllocationDataDisplayAddress();
         //业务

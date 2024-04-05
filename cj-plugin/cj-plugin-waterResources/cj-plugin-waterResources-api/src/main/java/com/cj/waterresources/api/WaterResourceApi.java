@@ -20,7 +20,7 @@ public interface WaterResourceApi {
 
     String getNeedWaterValueList(String area,Integer timeType);
 
-    String getWaterResourceAllocationList(Integer bucketType);
+    String getWaterResourceAllocationList(Integer bucketType,String inflowDataName);
 
     String getWaterResourceAllocationDetails(String id);
 

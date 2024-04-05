@@ -64,7 +64,13 @@ public class WaterResourceAssessment {
 
         double n=0;
         for (int i=0;i<reqList.size();i++){
-           double utilizationRate= (inflowWater[i]-wasteWater[i])/inflowWater[i];
+            double utilizationRate=0;
+            if  (inflowWater[i]-storgeAll[i]>0){
+                 utilizationRate= (inflowWater[i]-storgeAll[i]-wasteWater[i])/(inflowWater[i]-storgeAll[i]);
+            }
+            else {
+                 utilizationRate= 1;
+            }
             waterRate[i]=Double.parseDouble(da.format(utilizationRate));
            if (utilizationRate>bestUtilizationRate)
            {

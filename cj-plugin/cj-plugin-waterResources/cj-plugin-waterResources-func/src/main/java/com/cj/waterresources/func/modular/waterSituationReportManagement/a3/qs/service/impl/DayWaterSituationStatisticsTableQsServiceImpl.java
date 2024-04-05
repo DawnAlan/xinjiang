@@ -169,7 +169,7 @@ public class DayWaterSituationStatisticsTableQsServiceImpl extends ServiceImpl<D
         }
         //计算总干流量代码
         TrendsTableParam zg= trendsTableParamList.stream().filter(t -> t.getParamName().equals("总干") && t.getPId().equals("0")).collect(Collectors.toList()).get(0);
-        TrendsTableParam zgll = trendsTableParamList.stream().filter(t -> t.getPId().equals(zg.getId()) && t.getParamName().equals("流量")).collect(Collectors.toList()).get(0);
+        TrendsTableParam zgll = trendsTableParamList.stream().filter(t -> t.getPId().equals(zg.getId()) && t.getParamName().equals("总干流量")).collect(Collectors.toList()).get(0);
         TrendsTableParam xa= trendsTableParamList.stream().filter(t -> t.getParamName().equals("西岸") && t.getPId().equals("0")).collect(Collectors.toList()).get(0);
         TrendsTableParam zgqll = trendsTableParamList.stream().filter(t -> t.getPId().equals(xa.getId()) && t.getParamName().equals("西干渠流量")).collect(Collectors.toList()).get(0);
         TrendsTableParam da= trendsTableParamList.stream().filter(t -> t.getParamName().equals("东岸") && t.getPId().equals("0")).collect(Collectors.toList()).get(0);
@@ -299,7 +299,7 @@ public class DayWaterSituationStatisticsTableQsServiceImpl extends ServiceImpl<D
         }
         //计算总干流量代码
         TrendsTableParam zg= trendsTableParamList.stream().filter(t -> t.getParamName().equals("总干") && t.getPId().equals("0")).collect(Collectors.toList()).get(0);
-        TrendsTableParam zgll = trendsTableParamList.stream().filter(t -> t.getPId().equals(zg.getId()) && t.getParamName().equals("流量")).collect(Collectors.toList()).get(0);
+        TrendsTableParam zgll = trendsTableParamList.stream().filter(t -> t.getPId().equals(zg.getId()) && t.getParamName().equals("总干流量")).collect(Collectors.toList()).get(0);
         TrendsTableParam xa= trendsTableParamList.stream().filter(t -> t.getParamName().equals("西岸") && t.getPId().equals("0")).collect(Collectors.toList()).get(0);
         TrendsTableParam zgqll = trendsTableParamList.stream().filter(t -> t.getPId().equals(xa.getId()) && t.getParamName().equals("西干渠流量")).collect(Collectors.toList()).get(0);
         TrendsTableParam da= trendsTableParamList.stream().filter(t -> t.getParamName().equals("东岸") && t.getPId().equals("0")).collect(Collectors.toList()).get(0);
@@ -312,9 +312,9 @@ public class DayWaterSituationStatisticsTableQsServiceImpl extends ServiceImpl<D
             if(t.getTableHeadId().equals(zgll.getId())){
                 t.setV(
                         dayWaterSituationStatisticsTableQsList.stream().filter(a->a.getTableHeadId().equals(zgqll.getId()) && a.getV()!=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00)+
-                                dayWaterSituationStatisticsTableQsList.stream().filter(a->a.getTableHeadId().equals(dgqll.getId()) && a.getV()!=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00)+
-                                dayWaterSituationStatisticsTableQsList.stream().filter(a->a.getTableHeadId().equals(ld.getId()) && a.getV()!=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00)+
-                                dayWaterSituationStatisticsTableQsList.stream().filter(a->a.getTableHeadId().equals(jzd.getId()) && a.getV()!=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00)
+                        dayWaterSituationStatisticsTableQsList.stream().filter(a->a.getTableHeadId().equals(dgqll.getId()) && a.getV()!=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00)+
+                        dayWaterSituationStatisticsTableQsList.stream().filter(a->a.getTableHeadId().equals(ld.getId()) && a.getV()!=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00)+
+                        dayWaterSituationStatisticsTableQsList.stream().filter(a->a.getTableHeadId().equals(jzd.getId()) && a.getV()!=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00)
                 );
             }
         });
@@ -329,10 +329,10 @@ public class DayWaterSituationStatisticsTableQsServiceImpl extends ServiceImpl<D
             if(t.getTableHeadId().equals(qh.getId())){
                 t.setV(
                         dayWaterSituationStatisticsTableQsList.stream().filter(a->a.getTableHeadId().equals(zgll.getId()) && a.getV()!=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00)+
-                                dayWaterSituationStatisticsTableQsList.stream().filter(a->a.getTableHeadId().equals(dlqCount.getId()) && a.getV()!=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00)+
-                                dayWaterSituationStatisticsTableQsList.stream().filter(a->a.getTableHeadId().equals(st.getId()) && a.getV()!=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00)+
-                                dayWaterSituationStatisticsTableQsList.stream().filter(a->a.getTableHeadId().equals(hybx.getId()) && a.getV()!=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00)+
-                                dayWaterSituationStatisticsTableQsList.stream().filter(a->a.getTableHeadId().equals(xh.getId()) && a.getV()!=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00)
+                        dayWaterSituationStatisticsTableQsList.stream().filter(a->a.getTableHeadId().equals(dlqCount.getId()) && a.getV()!=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00)+
+                        dayWaterSituationStatisticsTableQsList.stream().filter(a->a.getTableHeadId().equals(st.getId()) && a.getV()!=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00)+
+                        dayWaterSituationStatisticsTableQsList.stream().filter(a->a.getTableHeadId().equals(hybx.getId()) && a.getV()!=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00)+
+                        dayWaterSituationStatisticsTableQsList.stream().filter(a->a.getTableHeadId().equals(xh.getId()) && a.getV()!=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00)
                 );
             }
         });
@@ -449,7 +449,7 @@ public class DayWaterSituationStatisticsTableQsServiceImpl extends ServiceImpl<D
         }
         //计算总干流量代码
         TrendsTableParam zg= trendsTableParamList.stream().filter(t -> t.getParamName().equals("总干") && t.getPId().equals("0")).collect(Collectors.toList()).get(0);
-        TrendsTableParam zgll = trendsTableParamList.stream().filter(t -> t.getPId().equals(zg.getId()) && t.getParamName().equals("流量")).collect(Collectors.toList()).get(0);
+        TrendsTableParam zgll = trendsTableParamList.stream().filter(t -> t.getPId().equals(zg.getId()) && t.getParamName().equals("总干流量")).collect(Collectors.toList()).get(0);
         TrendsTableParam xa= trendsTableParamList.stream().filter(t -> t.getParamName().equals("西岸") && t.getPId().equals("0")).collect(Collectors.toList()).get(0);
         TrendsTableParam zgqll = trendsTableParamList.stream().filter(t -> t.getPId().equals(xa.getId()) && t.getParamName().equals("西干渠流量")).collect(Collectors.toList()).get(0);
         TrendsTableParam da= trendsTableParamList.stream().filter(t -> t.getParamName().equals("东岸") && t.getPId().equals("0")).collect(Collectors.toList()).get(0);

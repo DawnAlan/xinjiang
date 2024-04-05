@@ -26,8 +26,9 @@ public class PlanOptimizationController {
     @ApiOperationSupport(order = 1)
     @ApiOperation("根据模型类型查询模型列表")
     @GetMapping("/getWaterResourceAllocationList")
-    public RestResponse getWaterResourceAllocationList(@RequestParam(value = "bucketType")Integer bucketType) {
-        return planOptimizationService.getWaterResourceAllocationList(bucketType);
+    public RestResponse getWaterResourceAllocationList(@RequestParam(value = "bucketType")Integer bucketType,
+                                                       @RequestParam(value = "inflowDataName",required = false)String inflowDataName) {
+        return planOptimizationService.getWaterResourceAllocationList(bucketType,inflowDataName);
     }
 
     @ApiOperationSupport(order = 2)

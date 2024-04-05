@@ -98,13 +98,13 @@ public class IrrigatedPlatformDataInfoServiceImpl extends ServiceImpl<IrrigatedP
 
     @SneakyThrows
     @Override
-    public List<RealTimeRainfallRes> getRealTimeRainfall(String startTime, String endTime,Integer num,List<String> ids) {
+    public List<RealTimeRainfallRes> getRealTimeRainfall(String startTime, String endTime,List<String> ids) {
         List<RealTimeRainfallRes> resList = new ArrayList<>();
         Date start = sdf.parse(startTime);
         Date end = sdf.parse(endTime);
         Long mills = end.getTime()-start.getTime();
         int hour = (int)(mills/1000/3600) ;
-        List<IrrigatedPlatformDataInfo> realTimeRainfall = this.baseMapper.getRealTimeRainfall(endTime,num,ids);
+        List<IrrigatedPlatformDataInfo> realTimeRainfall = this.baseMapper.getRealTimeRainfall(endTime,ids);
         for(IrrigatedPlatformDataInfo info:realTimeRainfall){
             RealTimeRainfallRes res = new RealTimeRainfallRes();
             switch (hour){
@@ -152,6 +152,7 @@ public class IrrigatedPlatformDataInfoServiceImpl extends ServiceImpl<IrrigatedP
     @Override
     public List<IrrigatedPlatformDataInfo> getRealTimeWaterLevel(String station) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        List<IrrigatedPlatformDataInfo> nothing = new ArrayList<>();
         IrrigatedPlatformTree one = irrigatedPlatformTreeService.lambdaQuery().eq(IrrigatedPlatformTree::getName, station).one();
         List<IrrigatedPlatformTree> list = irrigatedPlatformTreeService.lambdaQuery().eq(IrrigatedPlatformTree::getParentId, one.getId()).list();
         List<String> ids = new ArrayList<>();
@@ -159,8 +160,14 @@ public class IrrigatedPlatformDataInfoServiceImpl extends ServiceImpl<IrrigatedP
         List<IrrigatedPlatformDataInfo> realTimeWaterLevel = this.baseMapper.getRealTimeWaterLevel(sdf.format(new Date()), ids,list.size());
         if(null != realTimeWaterLevel && realTimeWaterLevel.size()>0){
             return realTimeWaterLevel;
+        }else {
+            for(IrrigatedPlatformTree tree:list){
+                IrrigatedPlatformDataInfo info = new IrrigatedPlatformDataInfo();
+                info.setMonitorName(tree.getName());
+                nothing.add(info);
+            }
+            return nothing;
         }
-        return null;
     }
 
     @Override

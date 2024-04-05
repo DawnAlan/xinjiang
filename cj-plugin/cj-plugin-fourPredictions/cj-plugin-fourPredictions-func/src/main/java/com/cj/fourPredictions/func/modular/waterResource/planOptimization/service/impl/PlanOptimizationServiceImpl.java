@@ -16,8 +16,8 @@ public class PlanOptimizationServiceImpl implements PlanOptimizationService {
     private WaterResourceApi waterResourceApi;
 
     @Override
-    public RestResponse getWaterResourceAllocationList(Integer bucketType) {
-        String data = waterResourceApi.getWaterResourceAllocationList(bucketType);
+    public RestResponse getWaterResourceAllocationList(Integer bucketType,String inflowDataName) {
+        String data = waterResourceApi.getWaterResourceAllocationList(bucketType,inflowDataName);
         if(StringUtils.isNotEmpty(data)){
             return RestResponse.ok(JSONObject.parseArray(data));
         }else {

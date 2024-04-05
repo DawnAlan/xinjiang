@@ -58,8 +58,8 @@ public class WaterResourceFeignProvider implements WaterResourceFeign {
     }
 
     @Override
-    public String getWaterResourceAllocationList(Integer bucketType) {
-        return waterResourceApiProvider.getWaterResourceAllocationList(bucketType);
+    public String getWaterResourceAllocationList(Integer bucketType,String inflowDataName) {
+        return waterResourceApiProvider.getWaterResourceAllocationList(bucketType,inflowDataName);
     }
 
     @Override

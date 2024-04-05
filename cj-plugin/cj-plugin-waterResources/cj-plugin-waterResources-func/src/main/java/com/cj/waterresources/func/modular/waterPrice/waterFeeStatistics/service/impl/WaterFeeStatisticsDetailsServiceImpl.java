@@ -44,6 +44,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -98,6 +99,8 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
 
     @Autowired
     private RedisUtil redisUtil;
+
+    private DecimalFormat df = new DecimalFormat("#0.00");
 
 
     public  Map<String,Double> getLanternCanalInfoByDate(Integer year,Integer month,String tenDays,String statisticsDate) {
@@ -1591,13 +1594,10 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                     List<String> totalColl = listTotalIdToStation.stream().filter(t->t.getName().equals("合计")).map(TotalIdToStation::getTotalId).collect(Collectors.toList());
                     for(String id:totalColl){
                         TrendsTableParam byId = JSONObject.parseObject((String)redisUtil.get("trendsTableParam:object:"+id),TrendsTableParam.class);
-                        //TrendsTableParam byId = trendsTableParamService.getById(id);
                         if(!byId.getPId().equals("0")){
                             List<TrendsTableParam> tableParams = trendsTableParamList.stream().filter(t->t.getPId().equals(byId.getPId())).filter(t->!t.getParamName().equals("合计")).collect(Collectors.toList());
-                            //List<TrendsTableParam> tableParams = trendsTableParamService.lambdaQuery().eq(TrendsTableParam::getPId, byId.getPId()).ne(TrendsTableParam::getParamName, "合计").list();
                             for(TrendsTableParam param:tableParams){
                                 List<TrendsTableParam> listed = trendsTableParamList.stream().filter(t->t.getPId().equals(param.getId())).filter(t->!t.getParamName().equals("合计")).collect(Collectors.toList());
-                                //List<TrendsTableParam> listed = trendsTableParamService.lambdaQuery().eq(TrendsTableParam::getPId, param.getId()).ne(TrendsTableParam::getParamName, "合计").list();
                                 if(listed.size()>0){
                                     for(TrendsTableParam param1:listed){
                                         for(WaterFeeStatisticsTotal total:waterFeeStatisticsTotalList){
@@ -1632,16 +1632,10 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                     List<String> totalColl = listTotalIdToStation.stream().filter(t->t.getName().equals("合计")).map(TotalIdToStation::getTotalId).collect(Collectors.toList());
                     for(String id:totalColl){
                         TrendsTableParam byId = JSONObject.parseObject((String)redisUtil.get("trendsTableParam:object:"+id),TrendsTableParam.class);
-                        //TrendsTableParam byId = trendsTableParamService.getById(id);
                         if(byId.getPId().equals("0")){
                             List<String> collect1 = trendsTableParamList.stream().filter(t->t.getPId().equals(byId.getPId())).
                                     filter(t->t.getUseStation().equals(byId.getUseStation())).
                                     filter(t->t.getUseType()==byId.getUseType()).collect(Collectors.toList()).stream().map(TrendsTableParam::getId).collect(Collectors.toList());
-                           /* List<String> collect1 = trendsTableParamService.lambdaQuery().
-                                    eq(TrendsTableParam::getPId, byId.getPId()).
-                                    eq(TrendsTableParam::getUseStation,byId.getUseStation()).
-                                    eq(TrendsTableParam::getUseType,byId.getUseType()).
-                                    list().stream().map(TrendsTableParam::getId).collect(Collectors.toList());*/
                             List<PaymentWaterFees> paymentWaterFees = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
                                     eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
                                     in(PaymentWaterFees::getWaterUserId, collect1).eq(PaymentWaterFees::getType,"水资源费").list();
@@ -1659,7 +1653,6 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                         }
                                     }
                                 }
-                                //List<String> collect2 = trendsTableParamService.lambdaQuery().in(TrendsTableParam::getPId, collect1).list().stream().map(TrendsTableParam::getId).collect(Collectors.toList());
                                 if(null != collect2 && collect2.size()>0){
                                     List<PaymentWaterFees> paymentWaterFees2 = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
                                             eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
@@ -1679,7 +1672,6 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                             }
                                         }
                                     }
-                                    //List<String> collect3 = trendsTableParamService.lambdaQuery().in(TrendsTableParam::getPId, collect2).list().stream().map(TrendsTableParam::getId).collect(Collectors.toList());
                                     if(null != collect3 && collect3.size()>0){
                                         List<PaymentWaterFees> paymentWaterFees3= paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
                                                 eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
@@ -1695,7 +1687,6 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                         }
                         if(!byId.getPId().equals("0")){
                             List<String> collect1 = trendsTableParamList.stream().filter(t->t.getPId().equals(byId.getPId())).map(TrendsTableParam::getId).collect(Collectors.toList());
-                            //List<String> collect1 = trendsTableParamService.lambdaQuery().eq(TrendsTableParam::getPId, byId.getPId()).list().stream().map(TrendsTableParam::getId).collect(Collectors.toList());
                             List<String> collect1Son = new ArrayList<>();
                             for(TrendsTableParam param :trendsTableParamList){
                                 for(String s:collect1){
@@ -1704,7 +1695,6 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                     }
                                 }
                             }
-                            //List<String> collect1Son = trendsTableParamService.lambdaQuery().in(TrendsTableParam::getPId, collect1).list().stream().map(TrendsTableParam::getId).collect(Collectors.toList());
                             List<PaymentWaterFees> paymentWaterFees = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
                                     eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
                                     in(PaymentWaterFees::getWaterUserId, collect1).eq(PaymentWaterFees::getType,"水资源费").list();
@@ -1946,21 +1936,27 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
             if(null != listTotalIdToStation && listTotalIdToStation.size()>0){
                 Double payableWaterFeeAllCount = 0.0;
                 Double unpaidWaterFeesAllCount = 0.0;
+                Double payableWaterResource = 0.0;
+                Double waterResourceSurplus = 0.0;
                 List<String> totalColl = listTotalIdToStation.stream().filter(t->t.getName().equals("合计")).map(TotalIdToStation::getTotalId).collect(Collectors.toList());
                 for(String id:totalColl){
                     TrendsTableParam byId = JSONObject.parseObject((String)redisUtil.get("trendsTableParam:object:"+id),TrendsTableParam.class);
-                    //TrendsTableParam byId = trendsTableParamService.getById(id);
                     if(byId.getPId().equals("0")){
                         for(WaterFeeStatisticsTotal total:waterFeeStatisticsTotalList){
                             if(!totalColl.contains(total.getTableHeadId())){
                                 payableWaterFeeAllCount += total.getPayableWaterFee();
                                 unpaidWaterFeesAllCount += total.getUnpaidWaterFees();
+                                payableWaterResource += total.getPayableWaterResource()==null?0.0:total.getPayableWaterResource();
+                                waterResourceSurplus += total.getWaterResourceSurplus()==null?0.0:total.getWaterResourceSurplus();
                             }
                         }
                         for(WaterFeeStatisticsTotal total:waterFeeStatisticsTotalList){
                             if(id.equals(total.getTableHeadId())){
                                 total.setPayableWaterFee(payableWaterFeeAllCount);
                                 total.setUnpaidWaterFees(unpaidWaterFeesAllCount);
+                                total.setPayableWaterResource(payableWaterResource);
+                                total.setWaterResourceSurplus(waterResourceSurplus);
+                                total.setWaterResourceTotal(total.getUnpaidWaterFees()+total.getWaterResourceSurplus());
                             }
                         }
                     }
@@ -3364,6 +3360,7 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
             req.setStationList(Arrays.asList("楼庄子水厂"));
             List<UseWaterTypeStatisticsRes> statistics = industrialWaterFeeService.statistics(req);
             if(null != statistics){
+                statistics.forEach(t->t.setV(Double.valueOf(df.format(t.getV()))));
                 Map<String, List<UseWaterTypeStatisticsRes>> result = new HashMap<>();
                 if(StringUtils.isNotEmpty(req.getUseType())){
                     result = statistics.stream().collect(Collectors.groupingBy(UseWaterTypeStatisticsRes::getParamName));
@@ -3390,7 +3387,7 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                         bgTemp.forEach(t->{
                             UseWaterTypeStatisticsRes res = new UseWaterTypeStatisticsRes();
                             BeanUtils.copyProperties(t,res);
-                            res.setV((t.getV()==null?0.00:t.getV())*0.7);
+                            res.setV((t.getV()==null?0.00:Double.valueOf(df.format(t.getV()*0.7))));
                             bg.add(res);
                         });
                         List<UseWaterTypeStatisticsRes> collect = bg.stream().sorted(Comparator.comparing(UseWaterTypeStatisticsRes::getRecordTime, Comparator.nullsFirst(Comparator.naturalOrder()))).collect(Collectors.toList());
@@ -3409,7 +3406,7 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                         bgTemp.forEach(t->{
                             UseWaterTypeStatisticsRes res = new UseWaterTypeStatisticsRes();
                             BeanUtils.copyProperties(t,res);
-                            res.setV((t.getV()==null?0.00:t.getV())*0.3);
+                            res.setV((t.getV()==null?0.00:Double.valueOf(df.format(t.getV()*0.3))));
                             bg.add(res);
                         });
                         List<UseWaterTypeStatisticsRes> collect = bg.stream().sorted(Comparator.comparing(UseWaterTypeStatisticsRes::getRecordTime, Comparator.nullsFirst(Comparator.naturalOrder()))).collect(Collectors.toList());
@@ -3426,9 +3423,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                         Double aDouble = 0.0;
                         for(UseWaterTypeStatisticsRes temp : collect.get(date)){
                             if(temp.getParamName().equals("八钢")){
-                                aDouble += (temp.getV()==null?0.00:temp.getV())*0.7;
+                                aDouble += (temp.getV()==null?0.00:Double.valueOf(df.format(temp.getV()*0.7)));
                             }else {
-                                aDouble += temp.getV()==null?0.00:temp.getV();
+                                aDouble += temp.getV()==null?0.00:Double.valueOf(df.format(temp.getV()));
                             }
                         }
                         res.setV(aDouble);
@@ -3443,7 +3440,7 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                         Double aDouble = 0.0;
                         for(UseWaterTypeStatisticsRes temp : collect.get(date)){
                             if(temp.getParamName().equals("八钢")) {
-                                aDouble += (temp.getV()==null?0.00:temp.getV()) * 0.3;
+                                aDouble += (temp.getV()==null?0.00:Double.valueOf(df.format(temp.getV()*0.3)));
                             }
                         }
                         res.setV(aDouble);

@@ -332,7 +332,16 @@ public class ResourceOptimizationshort_DayTest
         if (inflow[0].length!=waterDemand[0].length){
             throw new CommonException("请检查来水预报时段与需水计划是否对应，两者时段不相符");
         }
-
+        double inflowWater=0;
+        for (int r = 0; r < 2; r++) {
+            for (int t = 0; t < period; t++) {
+                inflowWater+= inflow[r][t]  * delatT / 1e4;
+            }
+        }
+        double storage=storageAndDischarge(levelBegin,levelEnd);
+        if (storage>inflowWater){
+            throw new CommonException("请降低水库蓄水目标，来水总水量小于蓄水目标");
+        }
 
         for (int r = 0; r < RNum; r++)
         {
@@ -1299,6 +1308,18 @@ public class ResourceOptimizationshort_DayTest
                 ,waterSupply[0],waterSupply[1],waterSupply[2],waterSupply[3],waterSupply[4],watersupply_lzz};
         return result;
 
+    }
+    public  double storageAndDischarge(double[]levelBegin,double[]levelEnd) {
+        DecimalFormat da1 = new DecimalFormat("#.00");
+        double dischargeLzz = Double.parseDouble(da1.format(FindValue.FindV2ByV1(reservoirs[0].wlc_wl, reservoirs[0].wlc_c, levelEnd[0])-
+                FindValue.FindV2ByV1(reservoirs[0].wlc_wl, reservoirs[0].wlc_c, levelBegin[0])));
+        double dischargeTth = Double.parseDouble(da1.format(FindValue.FindV2ByV1(reservoirs[1].wlc_wl, reservoirs[1].wlc_c, levelEnd[1])-
+                FindValue.FindV2ByV1(reservoirs[1].wlc_wl, reservoirs[1].wlc_c, levelBegin[1])));
+        double[]storage=new double[3];
+        storage[0]=dischargeLzz;
+        storage[1]=dischargeTth;
+        storage[2]=dischargeLzz+dischargeTth;
+        return storage[2];
     }
     /**
      * 检查需水数据是否都大于等于0；

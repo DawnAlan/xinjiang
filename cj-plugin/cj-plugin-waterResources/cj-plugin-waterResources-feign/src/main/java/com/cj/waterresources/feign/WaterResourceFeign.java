@@ -41,7 +41,8 @@ public interface WaterResourceFeign {
                            @RequestParam(value = "timeType", required =true)Integer timeType);
 
     @RequestMapping("/feign/provider/waterResource/getWaterResourceAllocationList")
-    String getWaterResourceAllocationList(@RequestParam(value = "bucketType", required =true)Integer bucketType);
+    String getWaterResourceAllocationList(@RequestParam(value = "bucketType", required =true)Integer bucketType,
+                                          @RequestParam(value = "inflowDataName", required =true)String inflowDataName);
 
     @RequestMapping("/feign/provider/waterResource/getWaterResourceAllocationDetails")
     String getWaterResourceAllocationDetails(@RequestParam(value = "id", required =true)String id);

@@ -24,8 +24,9 @@
                     #{item}
                 </foreach>
             </if>
+            and to_char(MONITOR_TIME,'mi')=00
         </where>
-        limit #{num} order by MONITOR_TIME desc
+        order by MONITOR_TIME desc
     </select>
 
     <select id="getRealTimeRainfallByDate" resultType="com.cj.middleDatabase.func.modular.dto.RealTimeRainfallRes">

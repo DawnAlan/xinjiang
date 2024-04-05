@@ -67,8 +67,8 @@ public class WaterResourceApiContextBean implements WaterResourceApi {
     }
 
     @Override
-    public String getWaterResourceAllocationList(Integer bucketType) {
-        String data = waterResourceFeign.getWaterResourceAllocationList(bucketType);
+    public String getWaterResourceAllocationList(Integer bucketType,String inflowDataName) {
+        String data = waterResourceFeign.getWaterResourceAllocationList(bucketType,inflowDataName);
         return data;
     }
 

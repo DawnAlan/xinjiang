@@ -49,11 +49,6 @@ public class DayWaterUsePlanServiceImpl extends ServiceImpl<DayWaterUsePlanMappe
         dayWaterUsePlan.setDel(0);
         boolean save = this.save(dayWaterUsePlan);
         if(save){
-            String gskOrg = sysOrgApi.getIdByName("供水科");
-            List<String> userIdListByOrgIdList = sysUserApi.getUserIdListByOrgIdList(Arrays.asList(gskOrg));
-            for(String s :userIdListByOrgIdList){
-                WebSocketServer.sendInfo(dayWaterUsePlan.getArea()+"以填报日用水计划，请查收",s);
-            }
             return RestResponse.ok("上报成功");
         }else {
             return RestResponse.no("上报失败");

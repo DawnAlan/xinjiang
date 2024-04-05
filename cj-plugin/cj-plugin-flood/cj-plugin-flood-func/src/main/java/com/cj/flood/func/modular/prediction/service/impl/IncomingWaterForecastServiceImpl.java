@@ -83,6 +83,10 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
     @Transactional(rollbackFor = Exception.class)
     public RestResponse add(IncomingWaterForecastAddReq req) {
         try {
+            List<IncomingWaterForecast> list = this.lambdaQuery().eq(IncomingWaterForecast::getProgrammeName, req.getIncomingWaterForecast().getProgrammeName()).list();
+            if(!list.isEmpty()){
+                return RestResponse.no("请勿重复新增相同方案名称");
+            }
             SaBaseLoginUser saBaseLoginUser = StpLoginUserUtil.getLoginUser();
             IncomingWaterForecast incomingWaterForecast = req.getIncomingWaterForecast();
             incomingWaterForecast.setId(UUIDUtils.getUUID());
@@ -461,6 +465,7 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                     eq(req.getPeriodTimeType() != null, IncomingWaterForecast::getPeriodTimeType, req.getPeriodTimeType()).
                     eq(StringUtils.isNotEmpty(req.getCreateBy()),IncomingWaterForecast::getCreateBy,req.getCreateBy()).
                     eq(req.getModelType() != null, IncomingWaterForecast::getModelType,req.getModelType()).
+                    eq(req.getStatus() != null, IncomingWaterForecast::getStatus,req.getStatus()).
                     like(req.getPredictionTime() != null, IncomingWaterForecast::getPredictionTime, req.getPredictionTime()==null?null:sdf1.format(req.getPredictionTime())).orderByDesc(IncomingWaterForecast::getCreateTime).
                     page(incomingWaterForecastPage);
             if(page.getSize()>0){

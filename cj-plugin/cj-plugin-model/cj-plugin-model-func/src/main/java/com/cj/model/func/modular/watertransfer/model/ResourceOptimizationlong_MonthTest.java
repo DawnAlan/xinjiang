@@ -6,6 +6,7 @@ import com.cj.model.func.modular.watertransfer.method.FindValue;
 import com.cj.model.func.modular.watertransfer.method.InputWay;
 import com.cj.model.func.modular.watertransfer.method.Reservoir;
 import com.cj.model.func.modular.watertransfer.method.WaterTransfer;
+import com.cj.model.func.modular.watertransfer.req.AppraiseReq;
 import com.cj.model.func.modular.watertransfer.req.WaterTransferReq;
 
 import java.text.DecimalFormat;
@@ -327,6 +328,16 @@ public class ResourceOptimizationlong_MonthTest {
         levelMin[0] =req.getMinWaterLevelLzz();
         levelMin[1] =req.getMinWaterLevelTth();
         String []reservoirsName=new String[]{"楼庄子水库","头屯河水库"};
+        double inflowWater=0;
+        for (int r = 0; r < 2; r++) {
+            for (int t = 0; t < period; t++) {
+                inflowWater+= inflow[r][t] * monthday[t] * delatT / 1e4;
+            }
+        }
+        double storage=storageAndDischarge(levelBegin,levelEnd);
+        if (storage>inflowWater){
+            throw new CommonException("请降低水库蓄水目标，来水总水量小于蓄水目标");
+        }
         for (int t=0;t<reservoirs.length;t++){
            if (levelBegin[t]<levelMin[t][num-1]){
                throw new CommonException("请检查"+reservoirsName[t]+"调度开始初水位设置是否合理，小于"+reservoirsName[t]+"调度最小水位：死水位");
@@ -1273,7 +1284,18 @@ public class ResourceOptimizationlong_MonthTest {
                 , waterSupply[0], waterSupply[1], waterSupply[2], waterSupply[3], waterSupply[4], watersupply_lzz};
         return result;
     }
+    public  double storageAndDischarge(double[]levelBegin,double[]levelEnd) {
 
+        double dischargeLzz = FindValue.FindV2ByV1(reservoirs[0].wlc_wl, reservoirs[0].wlc_c, levelEnd[0])-
+                FindValue.FindV2ByV1(reservoirs[0].wlc_wl, reservoirs[0].wlc_c, levelBegin[0]);
+        double dischargeTth = FindValue.FindV2ByV1(reservoirs[1].wlc_wl, reservoirs[1].wlc_c, levelEnd[1])-
+                FindValue.FindV2ByV1(reservoirs[1].wlc_wl, reservoirs[1].wlc_c, levelBegin[1]);
+        double[]storage=new double[3];
+        storage[0]=dischargeLzz;
+        storage[1]=dischargeTth;
+        storage[2]=dischargeLzz+dischargeTth;
+        return storage[2];
+    }
     /**
      * 检查需水数据是否都大于等于0；
      * @param array

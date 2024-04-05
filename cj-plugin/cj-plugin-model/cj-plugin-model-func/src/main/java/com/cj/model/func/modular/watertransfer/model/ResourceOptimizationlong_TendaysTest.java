@@ -302,6 +302,17 @@ public class ResourceOptimizationlong_TendaysTest
         levelMin[0] =waterTransferReq.getMinWaterLevelLzz();
         levelMin[1] =waterTransferReq.getMinWaterLevelTth();
         String []reservoirsName=new String[]{"楼庄子水库","头屯河水库"};
+
+        double inflowWater=0;
+        for (int r = 0; r < 2; r++) {
+            for (int t = 0; t < period; t++) {
+                inflowWater+= inflow[r][t] * daynum[t] * delatT / 1e4;
+            }
+        }
+        double storage=storageAndDischarge(levelBegin,levelEnd);
+        if (storage>inflowWater){
+            throw new CommonException("请降低水库蓄水目标，来水总水量小于蓄水目标");
+        }
         for (int t=0;t<reservoirs.length;t++){
             if (levelBegin[t]<levelMin[t][date[1]-1]){
                 throw new CommonException("请检查"+reservoirsName[t]+"调度开始初水位设置是否合理，小于"+reservoirsName[t]+"调度最小水位：死水位");
@@ -1276,7 +1287,18 @@ public class ResourceOptimizationlong_TendaysTest
                 ,waterSupply[0],waterSupply[1],waterSupply[2],waterSupply[3],waterSupply[4],watersupply_lzz};
         return result;
     }
-
+    public  double storageAndDischarge(double[]levelBegin,double[]levelEnd) {
+        DecimalFormat da1 = new DecimalFormat("#.00");
+        double dischargeLzz = Double.parseDouble(da1.format(FindValue.FindV2ByV1(reservoirs[0].wlc_wl, reservoirs[0].wlc_c, levelEnd[0])-
+                FindValue.FindV2ByV1(reservoirs[0].wlc_wl, reservoirs[0].wlc_c, levelBegin[0])));
+        double dischargeTth = Double.parseDouble(da1.format(FindValue.FindV2ByV1(reservoirs[1].wlc_wl, reservoirs[1].wlc_c, levelEnd[1])-
+                FindValue.FindV2ByV1(reservoirs[1].wlc_wl, reservoirs[1].wlc_c, levelBegin[1])));
+        double[]storage=new double[3];
+        storage[0]=dischargeLzz;
+        storage[1]=dischargeTth;
+        storage[2]=dischargeLzz+dischargeTth;
+        return storage[2];
+    }
     /**
      * 检查需水数据是否都大于等于0；
      * @param array

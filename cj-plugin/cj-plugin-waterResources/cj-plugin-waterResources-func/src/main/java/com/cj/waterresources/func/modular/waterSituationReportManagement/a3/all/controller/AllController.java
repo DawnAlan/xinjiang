@@ -2,10 +2,7 @@ package com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all
 
 import com.cj.business.log.modular.log.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
-import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req.A3StatisticsReq;
-import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req.ReportFormsReq;
-import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req.SelectListForIndustrialWaterFeeReq;
-import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req.SelectTodayWaterSituationSelectByIdReq;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req.*;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.service.AllService;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hd.entity.DayWaterSituationStatisticsTableHd;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
@@ -114,5 +111,13 @@ public class AllController {
     @PostMapping("/selectTodayWaterSituationSelectById")
     public RestResponse selectTodayWaterSituationSelectById(@RequestBody SelectTodayWaterSituationSelectByIdReq req) {
         return allService.selectTodayWaterSituationSelectById(req);
+    }
+
+    @ApiOperationSupport(order = 10)
+    @ApiOperation("A3表查询查询2库水位和库容曲线")
+    @CommonLog(value = "A3表查询查询2库水位和库容曲线")
+    @PostMapping("/selectReservoirHistoryList")
+    public RestResponse selectReservoirHistoryList(@RequestBody SelectReservoirHistoryListReq req) {
+        return allService.selectReservoirHistoryList(req);
     }
 }
