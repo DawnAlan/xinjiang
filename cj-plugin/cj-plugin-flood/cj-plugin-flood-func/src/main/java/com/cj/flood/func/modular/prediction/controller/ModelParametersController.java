@@ -1,7 +1,11 @@
 package com.cj.flood.func.modular.prediction.controller;
+
 import com.cj.common.model.RestResponse;
+import com.cj.flood.func.modular.prediction.bean.req.ModelParametersReq;
 import com.cj.flood.func.modular.prediction.entity.ModelParameters;
 import com.cj.flood.func.modular.prediction.service.ModelParametersService;
+import com.cj.model.func.modular.FloodPredict.Calibration.entity.CalibrationParam;
+import com.cj.model.func.modular.FloodPredict.entity.calibrationParam;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,24 +23,23 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("modelParameters")
-public class ModelParametersController{
+public class ModelParametersController {
 
     @Autowired
     private ModelParametersService modelParametersService;
 
     @ApiOperationSupport(order = 1)
     @ApiOperation("模型率定数据查询")
-    @GetMapping("/queryList")
-    public RestResponse queryList() {
-        return RestResponse.ok(modelParametersService.queryList());
+    @PostMapping("/queryList")
+    public RestResponse queryList(@RequestBody ModelParametersReq input) {
+        return RestResponse.ok(modelParametersService.queryList(input));
     }
 
     @ApiOperationSupport(order = 2)
     @ApiOperation("模型率定")
-    @GetMapping("/calibrate")
-    public RestResponse calibrate() {
-//        return RestResponse.ok(modelParametersService.queryList());
-        return null;
+    @PostMapping("/calibrate")
+    public RestResponse calibrate(@RequestBody CalibrationParam input) {
+        return RestResponse.ok(modelParametersService.calibrate(input));
     }
 
 }

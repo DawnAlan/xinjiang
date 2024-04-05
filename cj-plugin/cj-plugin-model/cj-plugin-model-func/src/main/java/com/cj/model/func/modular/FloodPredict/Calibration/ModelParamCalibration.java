@@ -38,21 +38,21 @@ public class ModelParamCalibration {
     public static void main(String[] args) throws IOException, InvalidFormatException {
 
         Double area = 1174.0;
-        Double beforeFlow = 18.5;
-        String sheetName = "08-12~08-17";
+        Double preFlow = 6.5;
+        String sheetName = "07-30~08-05";
 //        Object[][]Flood= ShanBeiCalibration(area,sheetName);
-//        ExcelTool.writeObjectExcel("D:\\204\\2.头屯河\\径流预报数据文件\\自动率定结果.xlsx",sheetName+"楼庄子", Flood);
+//        ExcelTool.writeObjectExcel("D:\\204\\2.头屯河\\径流预报数据文件\\率定结果.xlsx",sheetName+"三号桥", Flood);
         double[] shanbeiParams=new double[12];
         shanbeiParams[0]=area;//Area
-        shanbeiParams[1]=0.008;//FB
-        shanbeiParams[2]=70;//WM张力水蓄水容量，或最大蓄水量 60-80mm
+        shanbeiParams[1]=0.01;//FB
+        shanbeiParams[2]=62.5;//WM张力水蓄水容量，或最大蓄水量 60-80mm
         shanbeiParams[3]=1;//蒸散发折减系数 KC
-        shanbeiParams[4]=28;//fc流域土壤稳定下渗率 0.3-0.5 mm/min
-        shanbeiParams[5]=80;//fm流域土壤最大下渗率 1-2 mm/min
-        shanbeiParams[6]=0.021;//K霍尔顿下渗曲线方程
+        shanbeiParams[4]=20;//fc流域土壤稳定下渗率 0.3-0.5 mm/min
+        shanbeiParams[5]=60;//fm流域土壤最大下渗率 1-2 mm/min
+        shanbeiParams[6]=0.02;//K霍尔顿下渗曲线方程
         shanbeiParams[7]=0.3;//B反映下渗能力在透水面积上的分布特性
         shanbeiParams[8]=0.966;//CS 为地面径流消退系数
-        shanbeiParams[9]=7;//L汇流滞时（时段数）
+        shanbeiParams[9]=5;//L汇流滞时（时段数）
         shanbeiParams[10]=20;//计算初始土壤含水量时，用到的前期天数
         shanbeiParams[11]=1;
         int L = (int) shanbeiParams[9];
@@ -70,7 +70,7 @@ public class ModelParamCalibration {
         preData=new double[preREData.length-L];
         hisData=new double[preREData.length-L];
         for (int i = 0; i < preData.length; i++) {
-            preData[i]=shanbeiModel.Q[i+L]+beforeFlow;
+            preData[i]=shanbeiModel.Q[i+L]+preFlow;
         }
         for (int i = 0; i < preData.length; i++) {
             hisData[i]=(double) historyFData[i+L][1];
@@ -92,17 +92,17 @@ public class ModelParamCalibration {
 
         // 定义模型各参数的有效范围
         Interval[] regionIntervals = new Interval[]{
-                new Interval(0.008, 0.008),//FB
-                new Interval(90, 90),//WM
-                new Interval(1, 1),//KC
-                new Interval(20, 35.0),//FC
-                new Interval(80, 100),//FM
-                new Interval(0.02, 0.02),//K
+                new Interval(0, 0.3),//FB
+                new Interval(60, 80),//WM
+                new Interval(0.68, 1),//KC
+                new Interval(10, 30),//FC
+                new Interval(60, 120),//FM
+                new Interval(0, 10),//K
                 new Interval(0.3, 0.3),//B
-                new Interval(0.95, 0.97),//CS
-                new Interval(5, 5),//L
+                new Interval(0.8, 0.995),//CS
+                new Interval(1, 5),//L
                 //前期径流
-                new Interval(6, 6),
+                new Interval(10, 10),
         };
 
         // 创建PSO算法的问题域
@@ -112,7 +112,7 @@ public class ModelParamCalibration {
         PSO pso = new PSO(domain);
 
         // 运行算法并存储结果
-        PSOResult result = pso.Execute(500, 100);
+        PSOResult result = pso.Execute(100, 1000);
 
         // 输出结果
         System.out.println(result);

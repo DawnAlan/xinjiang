@@ -28,10 +28,8 @@ public class SelectPaymentReq {
     @NotNull
     @ApiModelProperty("水资源征收标准")
     private Double waterResourceTaxes;
-    @NotNull
     @ApiModelProperty("农业水量")
-    private Integer agriculturalProportion;
-    @NotNull
+    private Integer agriculturalProportion = 30;
     @ApiModelProperty("工业水量")
-    private Integer industrialProportion;
+    private Integer industrialProportion = 70;
 }
