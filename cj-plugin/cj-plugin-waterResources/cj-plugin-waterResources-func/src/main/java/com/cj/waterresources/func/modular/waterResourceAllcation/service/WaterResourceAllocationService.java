@@ -37,6 +37,7 @@ public interface WaterResourceAllocationService extends IService<WaterResourceAl
     RestResponse getWaterResourceAllocationDetails(String id);
 
     RestResponse contrast(String idA,String idB);
+    RestResponse contrastNew(List<String> ids);
 
     RestResponse waterQuantityCalculation(String id);
 

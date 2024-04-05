@@ -24,14 +24,13 @@ import com.cj.model.func.core.util.MinioUtils;
 import com.cj.model.func.core.util.MultipartFileUtil;
 import com.cj.model.func.modular.curve.service.CurveService;
 import com.cj.model.func.modular.entity.Flood;
-import com.cj.model.func.modular.watertransfer.entity.DataInflowPrevent;
-import com.cj.model.func.modular.watertransfer.entity.Excel1;
-import com.cj.model.func.modular.watertransfer.entity.Excel2;
-import com.cj.model.func.modular.watertransfer.entity.Waterdemand;
+import com.cj.model.func.modular.watertransfer.entity.*;
+import com.cj.model.func.modular.watertransfer.function.Demo;
 import com.cj.model.func.modular.watertransfer.function.OutResult;
 import com.cj.model.func.modular.watertransfer.function.WaterResourceAssessment;
 import com.cj.model.func.modular.watertransfer.req.AppraiseReq;
 import com.cj.model.func.modular.watertransfer.req.WaterTransferReq;
+import com.cj.model.func.modular.watertransfer.req.DemoReq;
 import com.cj.model.func.modular.watertransfer.res.ResOption;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.dayWaterUsePlan.entity.DayWaterUsePlan;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.dayWaterUsePlan.service.DayWaterUsePlanService;
@@ -605,6 +604,29 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
             result.put("方案优选",null);
         }
         return RestResponse.ok(result);
+    }
+
+    @SneakyThrows
+    @Override
+    public RestResponse contrastNew(List<String> ids) {
+        List<AppraiseReq> toCompareList = new ArrayList<>();
+        List<DemoReq> reqList = new ArrayList<>();
+        List<WaterResourceAllocation> waterResourceAllocations = new ArrayList<>();
+        for (int i = 0; i < ids.size(); i++) {
+            if(org.apache.commons.lang3.StringUtils.isEmpty(ids.get(i))){
+                continue;
+            }
+            WaterResourceAllocation waterResourceAllocation = baseMapper.selectById(ids.get(i));
+            waterResourceAllocations.add(waterResourceAllocation);
+            toCompareList.add(getCompareAppraise(waterResourceAllocation));
+            DemoReq req2 = new DemoReq();
+            List listFromMinio1 = getListFromMinio(waterResourceAllocation.getAllocationDataDisplayAddress(), ExcelDemo.class);
+            req2.setName(waterResourceAllocation.getSchemeName());
+            req2.setExcelDemoData(listFromMinio1);
+            reqList.add(req2);
+        }
+        Map<String, Object> appraiseMap = new Demo().demo(reqList,toCompareList, curveService.selectList());
+        return RestResponse.ok(appraiseMap);
     }
 
     @Override

@@ -393,6 +393,15 @@ public class WaterResourceApiProvider implements WaterResourceApi {
     }
 
     @Override
+    public String contrastNew(List<String> ids) {
+        RestResponse contrast = waterResourceAllocationService.contrastNew(ids);
+        if(contrast.getCode()==200){
+            return JSONObject.toJSONString(contrast.getData());
+        }
+        return null;
+    }
+
+    @Override
     public String waterQuantityCalculation(String id) {
         RestResponse restResponse = waterResourceAllocationService.waterQuantityCalculation(id);
         if(restResponse.getCode()==200){

@@ -598,8 +598,8 @@ public class ResourceOptimizationlong_TendaysTest
             waterSupply_all[n1]=waterSupply[0][n1]+waterSupply[1][n1]+waterSupply[2][n1]+waterSupply[3][n1]+waterSupply[4][n1];
             ReservoirWaterdemand[0][n1]=waterDemand[0][n1];
             ReservoirWaterdemand[1][n1]= waterdemand_all[n1]-waterDemand[0][n1];
-            ReservoirWatersupply[0][n1]=Double.parseDouble(da.format(watersupply_lzz[n1]));
-            ReservoirWatersupply[1][n1]=Double.parseDouble(da.format(waterSupply_all[n1]-waterSupply[0][n1]));
+            ReservoirWatersupply[0][n1]=Double.parseDouble(da.format(watersupply_lzz[n1]+ecologyWater[0][n1]));
+            ReservoirWatersupply[1][n1]=Double.parseDouble(da.format(waterSupply_all[n1]-waterSupply[0][n1]+ecologyWater[1][n1]));
         }
 
 

@@ -42,15 +42,9 @@ public class WaterTransfer {
     private double [][]waterSupply3;
     private double [][]waterSupply4;
 
-
     private Map<String, Object> dataDemand;
-
     //适应度计算
     private double []fitness;
-
-
-
-
 
     private double []allWater;
     //供水比例
@@ -76,14 +70,10 @@ public class WaterTransfer {
     private double [][]waterSupplyIndustry;
     //绿化配水
     private double [][]waterDemandGreenEast;
-
     //生态流量
     private double[][]ecologyFlow;
     private double[][]ecologyWater;
-
-
     private double[][]ecologyWaterNeed;
-
 
     private String [] nameAgricultureQushou;
     private String [] nameAgricultureEast;
@@ -94,22 +84,18 @@ public class WaterTransfer {
     private double [][]waterDemandIndustry;
     private double [][]waterDemand3;
     private double [][]waterDemand4;
-
-
     //绿化配水比例
     private double [][]proportionGreenEast;
     private double [][]proportionGreenWest;
     private double [][]proportionGreenQushou;
     //工业配水比例
     private double [][]proportionIndustry;
-
     private double[][] proportion3;
     private double[][] proportion4;
     //绿化地名
     private String []nameQushou;
     //东干绿化地名
     private String []nameGreenQushou;
-
     //西干绿化地名
     private String []nameGreenEast;
     private String []nameGreenWest;

@@ -24,20 +24,5 @@ public class ModelParametersController{
     @Autowired
     private ModelParametersService modelParametersService;
 
-    @ApiOperationSupport(order = 1)
-    @ApiOperation("模型率定数据查询")
-    @GetMapping("/queryList")
-    public RestResponse queryList() {
-        return RestResponse.ok(modelParametersService.queryList());
-    }
-
-    @ApiOperationSupport(order = 2)
-    @ApiOperation("模型率定")
-    @GetMapping("/calibrate")
-    public RestResponse calibrate() {
-//        return RestResponse.ok(modelParametersService.queryList());
-        return null;
-    }
-
 }
 

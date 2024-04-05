@@ -633,8 +633,8 @@ public class ResourceOptimizationshort_DayAheadTest
             waterSupply_all[n1]=waterSupply[0][n1]+waterSupply[1][n1]+waterSupply[2][n1]+waterSupply[3][n1]+waterSupply[4][n1];
             ReservoirWaterdemand[0][n1]=waterDemand[0][n1];
             ReservoirWaterdemand[1][n1]= waterdemand_all[n1]-waterDemand[0][n1];
-            ReservoirWatersupply[0][n1]=Double.parseDouble(da.format(watersupply_lzz[n1]));
-            ReservoirWatersupply[1][n1]=Double.parseDouble(da.format(waterSupply_all[n1]-waterSupply[0][n1]));
+            ReservoirWatersupply[0][n1]=Double.parseDouble(da.format(watersupply_lzz[n1]+ecologyWater[0][n1]));
+            ReservoirWatersupply[1][n1]=Double.parseDouble(da.format(waterSupply_all[n1]-waterSupply[0][n1]+ecologyWater[1][n1]));
         }
 
 
@@ -828,7 +828,7 @@ public class ResourceOptimizationshort_DayAheadTest
         if (waterdemand3[0][0]!=0){
             westGreen=waterSupply3[0][0]/waterdemand3[0][0];
         }
-        if (waterDemand[3][0]-waterdemand4[0][0]!=0){
+        if (waterDemand[3][0]-waterdemand3[0][0]!=0){
             westAgriculture=(waterSupply[3][0]-waterSupply3[0][0]) / (waterDemand[3][0]-waterdemand3[0][0]);
         }
         if (waterDemand[4][0]-waterdemand4[0][0]-waterdemand4[1][0]!=0){

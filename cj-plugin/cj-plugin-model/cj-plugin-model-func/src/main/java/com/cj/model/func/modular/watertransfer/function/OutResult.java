@@ -146,7 +146,7 @@ public class OutResult {
             if (Out1.get(0).getEcologyWaterNeed()[0][i]==0){
                 option.setProportion(p);
             }
-            else {
+            else{
                 option.setProportion(Double.parseDouble(df.format(Out1.get(0).getEcologyWater()[0][i]/Out1.get(0).getEcologyWaterNeed()[0][i])));
             }
             option.setWaterLack(Double.parseDouble(df.format(Out1.get(0).getEcologyWaterNeed()[0][i]-Out1.get(0).getEcologyWater()[0][i])));
@@ -163,7 +163,7 @@ public class OutResult {
                 option.setProportion(p);
             }
             else {
-                option.setProportion(Double.parseDouble(df.format(Out1.get(0).getEcologyWater()[1][i]/Out1.get(0).getEcologyWaterNeed()[1][i])));
+                option.setProportion(Double.parseDouble(df.format(Out1.get(0).getEcologyWater()[1][i] / Out1.get(0).getEcologyWaterNeed()[1][i])));
             }
             option.setWaterLack(Double.parseDouble(df.format(Out1.get(0).getEcologyWaterNeed()[1][i]-Out1.get(0).getEcologyWater()[1][i])));
             option2.add(option);

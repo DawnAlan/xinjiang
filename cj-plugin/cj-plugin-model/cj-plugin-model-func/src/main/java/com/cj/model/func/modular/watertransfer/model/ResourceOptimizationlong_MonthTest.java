@@ -612,8 +612,9 @@ public class ResourceOptimizationlong_MonthTest {
             waterSupply_all[n1] = waterSupply[0][n1] + waterSupply[1][n1] + waterSupply[2][n1] + waterSupply[3][n1] + waterSupply[4][n1];
             ReservoirWaterdemand[0][n1] = waterDemand[0][n1];
             ReservoirWaterdemand[1][n1] = waterdemand_all[n1] - waterDemand[0][n1];
-            ReservoirWatersupply[0][n1] = Double.parseDouble(da.format(watersupply_lzz[n1]));
-            ReservoirWatersupply[1][n1] = Double.parseDouble(da.format(waterSupply_all[n1] - waterSupply[0][n1]));
+            //供水加生态
+            ReservoirWatersupply[0][n1] = Double.parseDouble(da.format(watersupply_lzz[n1]+ecologyWater[0][n1]));
+            ReservoirWatersupply[1][n1] = Double.parseDouble(da.format(waterSupply_all[n1] - waterSupply[0][n1]+ecologyWater[1][n1]));
 
         }
 
@@ -905,6 +906,7 @@ public class ResourceOptimizationlong_MonthTest {
                     deltawater[r][t] = Double.parseDouble(da1.format((inflow[r][t] - outflow_term[r][t]) * monthday[t] * delatT / 1e4));
                     preSupplyWater[r][t] = Double.parseDouble(da1.format(inflow_water[r][t] + FindValue.FindV2ByV1(reservoirs[r].wlc_wl, reservoirs[r].wlc_c, wl_term[r][t]) -
                             FindValue.FindV2ByV1(reservoirs[r].wlc_wl, reservoirs[r].wlc_c, 1353.3)));
+                    //水量平衡，来水-供水
                     inflowWater_supply[r][t] = Double.parseDouble(da1.format(inflow_water[r][t] - ReservoirWatersupply[r][t]));
                 } else {
                     inflow_water[r][t] = Double.parseDouble(da1.format(inflow[r][t] * monthday[t] * delatT / 1e4));

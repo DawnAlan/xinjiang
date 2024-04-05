@@ -1,6 +1,7 @@
 package com.cj.model.func.modular.watertransfer.entity;
 
 import cn.afterturn.easypoi.excel.annotation.Excel;
+import com.alibaba.excel.annotation.ExcelProperty;
 import lombok.Data;
 
 import java.util.Date;
