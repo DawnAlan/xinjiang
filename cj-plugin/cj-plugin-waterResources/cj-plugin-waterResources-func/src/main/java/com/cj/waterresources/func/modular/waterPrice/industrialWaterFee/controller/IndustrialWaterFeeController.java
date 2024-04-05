@@ -3,7 +3,9 @@ package com.cj.waterresources.func.modular.waterPrice.industrialWaterFee.control
 import com.cj.business.log.modular.log.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.UUIDUtils;
+import com.cj.waterresources.func.modular.waterPrice.industrialWaterFee.bean.req.SelectPaymentReq;
 import com.cj.waterresources.func.modular.waterPrice.industrialWaterFee.entity.IndustrialWaterFee;
+import com.cj.waterresources.func.modular.waterPrice.industrialWaterFee.entity.WaterManagementUrbanIndustry;
 import com.cj.waterresources.func.modular.waterPrice.industrialWaterFee.service.IndustrialWaterFeeService;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSupport;
@@ -89,6 +91,13 @@ public class IndustrialWaterFeeController {
             return RestResponse.no("暂无数据");
         }
     }
-
+    //selectPayment
+    @ApiOperationSupport(order = 4)
+    @ApiOperation("工业水费缴费查询")
+    @CommonLog(value = "工业水费缴费查询")
+    @GetMapping("/selectPayment")
+    public RestResponse<WaterManagementUrbanIndustry> selectPayment(@RequestBody SelectPaymentReq input) {
+        return RestResponse.ok(industrialWaterFeeService.selectPayment(input));
+    }
 }
 

@@ -14,7 +14,7 @@ import java.util.List;
  * @since 2023-12-22 12:49:39
  */
 public interface IrrigationQuotaService extends IService<IrrigationQuota> {
-    RestResponse add(IrrigationQuota irrigationQuota);
+    RestResponse add(List<IrrigationQuota> input);
 
     RestResponse delete(String id);
 

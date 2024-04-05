@@ -43,8 +43,8 @@ public class IrrigationQuotaController {
     @ApiOperation("灌溉额度表新增")
     @CommonLog(value = "灌溉额度表新增")
     @PostMapping("/add")
-    public RestResponse add(@RequestBody IrrigationQuota irrigationQuota) {
-        return irrigationQuotaService.add(irrigationQuota);
+    public RestResponse add(@RequestBody List<IrrigationQuota> input) {
+        return irrigationQuotaService.add(input);
     }
 
     @ApiOperationSupport(order = 2)
