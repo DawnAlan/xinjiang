@@ -195,7 +195,7 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
         StringBuilder sb = new StringBuilder();
         Throwable cause = e;
         int deep = 0;
-        while (cause != null && deep < 5) {
+        while (cause != null && deep < 3) {
             sb.append(e.getMessage()+ "\n");
             StackTraceElement[] stackTrace = cause.getStackTrace();
             for (StackTraceElement stack: stackTrace) {
@@ -212,13 +212,11 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
     public RestResponse<IPage<WaterResourceAllocation>> getAllocationPage(WaterResourceAllocationQueryReq req) {
         Page<WaterResourceAllocation> page = new Page<>(req.getPageNo(), req.getPageSize());
         LambdaQueryWrapper<WaterResourceAllocation> wrapper = Wrappers.lambdaQuery();
-        wrapper.eq(WaterResourceAllocation::getDel, 0);
-        if (req.getBucketType() != null) {
-            wrapper.eq(WaterResourceAllocation::getBucketType, req.getBucketType());
-        }
-        if (StringUtils.hasText(req.getPlanName())) {
-            wrapper.like(WaterResourceAllocation::getSchemeName, req.getPlanName());
-        }
+        wrapper.eq(WaterResourceAllocation::getDel, 0)
+                .eq(req.getBucketType() != null, WaterResourceAllocation::getBucketType, req.getBucketType())
+                .eq(StringUtils.hasText(req.getInflowDataId()), WaterResourceAllocation::getInflowDataId, req.getInflowDataId())
+                .like(StringUtils.hasText(req.getPlanName()), WaterResourceAllocation::getSchemeName, req.getPlanName())
+                .like(StringUtils.hasText(req.getInflowData()), WaterResourceAllocation::getInflowDataName, req.getInflowData());
         if (req.getDateTime() != null) {
             wrapper.le(WaterResourceAllocation::getWaterDistributionStartTime, req.getDateTime())
                     .ge(WaterResourceAllocation::getWaterDistributionEndTime, req.getDateTime());

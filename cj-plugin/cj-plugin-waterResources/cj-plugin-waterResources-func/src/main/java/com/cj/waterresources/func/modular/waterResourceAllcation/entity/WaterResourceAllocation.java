@@ -29,6 +29,8 @@ public class WaterResourceAllocation extends Model<WaterResourceAllocation> {
     //配水类型(1-供水比例最大 2-供水缺额最小 3-单库调度)
     private Integer waterDistributionType;
     //来水数据地址
+    private String inflowDataId;
+    //来水数据地址
     private String inflowDataAddress;
     //来水数据名称
     private String inflowDataName;
