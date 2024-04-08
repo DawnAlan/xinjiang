@@ -4,9 +4,9 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cj.common.model.RestResponse;
-import com.cj.waterresources.func.modular.surfaceWater.generator.domain.SurfaceWater;
 import com.cj.waterresources.func.modular.waterPrice.industrialWaterFee.bean.req.SelectPaymentHistoryReq;
 import com.cj.waterresources.func.modular.waterPrice.industrialWaterFee.bean.req.SelectPaymentReq;
+import com.cj.waterresources.func.modular.waterPrice.industrialWaterFee.bean.res.SelectPaymentHistoryRes;
 import com.cj.waterresources.func.modular.waterPrice.industrialWaterFee.entity.WaterManagementUrbanIndustry;
 import com.cj.waterresources.func.modular.waterPrice.industrialWaterFee.mapper.IndustrialWaterFeeMapper;
 import com.cj.waterresources.func.modular.waterPrice.industrialWaterFee.entity.IndustrialWaterFee;
@@ -14,7 +14,6 @@ import com.cj.waterresources.func.modular.waterPrice.industrialWaterFee.service.
 import com.cj.waterresources.func.modular.waterPrice.industrialWaterFee.service.WaterManagementUrbanIndustryService;
 import com.cj.waterresources.func.modular.waterPrice.paymentWaterFees.entity.PaymentWaterFees;
 import com.cj.waterresources.func.modular.waterPrice.paymentWaterFees.service.PaymentWaterFeesService;
-import com.cj.waterresources.func.modular.waterPrice.paymentWaterFees.service.impl.PaymentWaterFeesServiceImpl;
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.bean.req.UseWaterTypeStatisticsReq;
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.bean.res.UseWaterTypeStatisticsRes;
 import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.req.SelectInfoListReq;
@@ -23,9 +22,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.validation.constraints.NotNull;
-import java.math.RoundingMode;
-import java.sql.Wrapper;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -184,11 +180,21 @@ public class IndustrialWaterFeeServiceImpl extends ServiceImpl<IndustrialWaterFe
     }
 
     @Override
-    public WaterManagementUrbanIndustry selectPaymentHistory(SelectPaymentHistoryReq input) {
-        return waterManagementUrbanIndustryService.lambdaQuery()
+    public SelectPaymentHistoryRes selectPaymentHistory(SelectPaymentHistoryReq input) {
+        WaterManagementUrbanIndustry res =
+         waterManagementUrbanIndustryService.lambdaQuery()
                 .eq(WaterManagementUrbanIndustry::getSiteCode, input.getSiteCode())
                 .orderByDesc(WaterManagementUrbanIndustry::getYear,WaterManagementUrbanIndustry::getMonth)
                 .last("limit 1").one();
+        SelectPaymentHistoryRes res1 = new SelectPaymentHistoryRes();
+        res1.setAgriculturalWaterPrice(res.getAgriculturalWaterPrice());
+        res1.setIndustrialWaterPrice(res.getIndustrialWaterPrice());
+        res1.setNotAgriculturalWaterPrice(res.getNotAgriculturalWaterPrice());
+        res1.setWaterResourceTaxes(res.getWaterResourceTaxes());
+        res1.setIndustrialProportion(res.getIndustrialProportion());
+        res1.setAgriculturalProportion(res1.getAgriculturalProportion());
+        res1.setNotAgriculturalProportion(res.getNotAgriculturalProportion());
+        return  res1;
     }
 }
 
