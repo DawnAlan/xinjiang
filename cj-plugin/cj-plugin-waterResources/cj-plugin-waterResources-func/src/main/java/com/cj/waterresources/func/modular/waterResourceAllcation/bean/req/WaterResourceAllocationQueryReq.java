@@ -15,6 +15,12 @@ public class WaterResourceAllocationQueryReq implements Serializable {
     @ApiModelProperty(value = "方案名称")
     private String planName;
 
+    @ApiModelProperty(value = "来水数据id")
+    private String inflowDataId;
+
+    @ApiModelProperty(value = "来水数据")
+    private String inflowData;
+
     @ApiModelProperty(value = "时间")
     private Date dateTime;
 
