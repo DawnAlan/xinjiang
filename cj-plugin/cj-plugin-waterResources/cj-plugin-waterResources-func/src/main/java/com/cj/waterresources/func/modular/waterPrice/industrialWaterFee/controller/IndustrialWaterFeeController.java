@@ -95,7 +95,7 @@ public class IndustrialWaterFeeController {
     @ApiOperationSupport(order = 4)
     @ApiOperation("工业水费缴费查询")
     @CommonLog(value = "工业水费缴费查询")
-    @GetMapping("/selectPayment")
+    @PostMapping ("/selectPayment")
     public RestResponse<WaterManagementUrbanIndustry> selectPayment(@RequestBody SelectPaymentReq input) {
         return RestResponse.ok(industrialWaterFeeService.selectPayment(input));
     }

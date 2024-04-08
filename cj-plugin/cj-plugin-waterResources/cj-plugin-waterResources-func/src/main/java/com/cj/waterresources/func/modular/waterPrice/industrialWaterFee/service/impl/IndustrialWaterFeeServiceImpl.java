@@ -19,6 +19,7 @@ import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.bean.res
 import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.req.SelectInfoListReq;
 import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.res.HydrographRes;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.validation.constraints.NotNull;
@@ -41,8 +42,9 @@ import static org.apache.commons.math3.util.Precision.round;
 public class IndustrialWaterFeeServiceImpl extends ServiceImpl<IndustrialWaterFeeMapper, IndustrialWaterFee> implements IndustrialWaterFeeService {
 
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
+    @Autowired
     private PaymentWaterFeesService paymentWaterFeesService;
+    @Autowired
     private WaterManagementUrbanIndustryService waterManagementUrbanIndustryService;
 
     @Override
@@ -76,12 +78,15 @@ public class IndustrialWaterFeeServiceImpl extends ServiceImpl<IndustrialWaterFe
     @Override
     public WaterManagementUrbanIndustry selectPayment(SelectPaymentReq input) {
         WaterManagementUrbanIndustry waterManagementUrbanIndustry = new WaterManagementUrbanIndustry();
-        waterManagementUrbanIndustry = waterManagementUrbanIndustryService.lambdaQuery()
+        Long count =  waterManagementUrbanIndustryService.lambdaQuery()
                 .eq(WaterManagementUrbanIndustry::getSiteCode, input.getSiteCode())
                 .eq(WaterManagementUrbanIndustry::getYear, input.getYear())
-                .eq(WaterManagementUrbanIndustry::getMonth, input.getMonth()).getEntity();
-        if (waterManagementUrbanIndustry != null){
-            return waterManagementUrbanIndustry;
+                .eq(WaterManagementUrbanIndustry::getMonth, input.getMonth()).count();
+        if (count > 0 ){
+            return waterManagementUrbanIndustryService.lambdaQuery()
+                    .eq(WaterManagementUrbanIndustry::getSiteCode, input.getSiteCode())
+                    .eq(WaterManagementUrbanIndustry::getYear, input.getYear())
+                    .eq(WaterManagementUrbanIndustry::getMonth, input.getMonth()).last("limit 1").one();
         }
 /*        LambdaQueryWrapper<IndustrialWaterFee> wrapper1 = Wrappers.lambdaQuery();
         wrapper1.eq(IndustrialWaterFee::getStation, input.getSiteName())
