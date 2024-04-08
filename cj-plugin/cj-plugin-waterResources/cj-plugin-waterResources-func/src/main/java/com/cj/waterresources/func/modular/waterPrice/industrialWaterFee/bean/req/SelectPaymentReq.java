@@ -22,6 +22,10 @@ public class SelectPaymentReq {
     @NotNull
     @ApiModelProperty("农业水费")
     private Double agriculturalWaterPrice;
+    //非农业水费
+    @NotNull
+    @ApiModelProperty("非农业水费")
+    private Double notAgriculturalWaterPrice;
     @NotNull
     @ApiModelProperty("工业水价")
     private Double industrialWaterPrice;
@@ -32,4 +36,9 @@ public class SelectPaymentReq {
     private Integer agriculturalProportion = 30;
     @ApiModelProperty("工业水量")
     private Integer industrialProportion = 70;
+    //非农业水量
+    @ApiModelProperty("非农业水量")
+    private Integer notAgriculturalProportion = 0;
+    @ApiModelProperty("备注")
+    private String remarks;
 }

@@ -1,6 +1,7 @@
 package com.cj.waterresources.func.modular.waterPrice.industrialWaterFee.entity;
 
 import com.baomidou.mybatisplus.extension.activerecord.Model;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -23,12 +24,16 @@ public class WaterManagementUrbanIndustry extends Model<WaterManagementUrbanIndu
     private Integer month;
     //农业水费
     private Double agriculturalWaterPrice;
+    //非农业水费
+    private Double notAgriculturalWaterPrice;
     //工业水价
     private Double industrialWaterPrice;
     //水资源征收标准
     private Double waterResourceTaxes;
     //农业水量
     private Integer agriculturalProportion;
+    //非农业水量
+    private Integer notAgriculturalProportion;
     //工业水量
     private Integer industrialProportion;
     //应交水费合计
@@ -43,6 +48,12 @@ public class WaterManagementUrbanIndustry extends Model<WaterManagementUrbanIndu
     private Double agriculturalPaidWaterFees;
     //盈余农业水费
     private Double agriculturalSurplusWaterFees;
+    //应交非农业水费
+    private Double notAgriculturalWaterFeesPayable;
+    //已交非农业水费
+    private Double notAgriculturalPaidWaterFees;
+    //盈余非农业水费
+    private Double notAgriculturalSurplusWaterFees;
     //应交工业水费
     private Double industrialWaterFeesPayable;
     //已交工业水费
@@ -59,6 +70,7 @@ public class WaterManagementUrbanIndustry extends Model<WaterManagementUrbanIndu
     private Double annualCumulativeWaterConsumption;
     //ID
     private String id;
-
+    //备注
+    private String remarks;
 }
 

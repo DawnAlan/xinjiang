@@ -3,6 +3,7 @@ package com.cj.waterresources.func.modular.waterPrice.industrialWaterFee.control
 import com.cj.business.log.modular.log.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.UUIDUtils;
+import com.cj.waterresources.func.modular.waterPrice.industrialWaterFee.bean.req.SelectPaymentHistoryReq;
 import com.cj.waterresources.func.modular.waterPrice.industrialWaterFee.bean.req.SelectPaymentReq;
 import com.cj.waterresources.func.modular.waterPrice.industrialWaterFee.entity.IndustrialWaterFee;
 import com.cj.waterresources.func.modular.waterPrice.industrialWaterFee.entity.WaterManagementUrbanIndustry;
@@ -98,6 +99,14 @@ public class IndustrialWaterFeeController {
     @PostMapping ("/selectPayment")
     public RestResponse<WaterManagementUrbanIndustry> selectPayment(@RequestBody SelectPaymentReq input) {
         return RestResponse.ok(industrialWaterFeeService.selectPayment(input));
+    }
+
+    @ApiOperationSupport(order = 4)
+    @ApiOperation("查询当前最新历史价格")
+    @CommonLog(value = "查询当前最新历史价格")
+    @PostMapping ("/selectPaymentHistory")
+    public RestResponse<WaterManagementUrbanIndustry> selectPaymentHistory(@RequestBody SelectPaymentHistoryReq input) {
+        return RestResponse.ok(industrialWaterFeeService.selectPaymentHistory(input));
     }
 }
 
