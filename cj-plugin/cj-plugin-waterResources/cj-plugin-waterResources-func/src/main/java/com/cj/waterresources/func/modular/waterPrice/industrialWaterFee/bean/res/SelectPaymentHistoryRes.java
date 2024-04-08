@@ -1,4 +1,4 @@
-package com.cj.waterresources.func.modular.waterPrice.industrialWaterFee.bean.req;
+package com.cj.waterresources.func.modular.waterPrice.industrialWaterFee.bean.res;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -6,30 +6,18 @@ import lombok.Data;
 import javax.validation.constraints.NotNull;
 
 @Data
-public class SelectPaymentReq {
-    @NotNull
-    @ApiModelProperty("站点编号")
-    private String siteCode;
-    @NotNull
-    @ApiModelProperty("站点名称")
-    private String siteName;
-    @NotNull
-    @ApiModelProperty("年")
-    private Integer year;
-    @NotNull
-    @ApiModelProperty("月")
-    private Integer month;
-    @NotNull
+public class SelectPaymentHistoryRes {
+
     @ApiModelProperty("农业水费")
     private Double agriculturalWaterPrice;
     //非农业水费
-    @NotNull
+
     @ApiModelProperty("非农业水费")
     private Double notAgriculturalWaterPrice;
-    @NotNull
+
     @ApiModelProperty("工业水价")
     private Double industrialWaterPrice;
-    @NotNull
+
     @ApiModelProperty("水资源征收标准")
     private Double waterResourceTaxes;
     @ApiModelProperty("农业水量")
@@ -39,6 +27,4 @@ public class SelectPaymentReq {
     //非农业水量
     @ApiModelProperty("非农业水量")
     private Integer notAgriculturalProportion = 0;
-    @ApiModelProperty("备注")
-    private String remarks;
 }

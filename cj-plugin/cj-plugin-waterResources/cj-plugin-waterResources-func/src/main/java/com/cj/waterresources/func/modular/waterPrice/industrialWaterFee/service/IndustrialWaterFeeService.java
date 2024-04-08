@@ -2,7 +2,9 @@ package com.cj.waterresources.func.modular.waterPrice.industrialWaterFee.service
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.cj.common.model.RestResponse;
+import com.cj.waterresources.func.modular.waterPrice.industrialWaterFee.bean.req.SelectPaymentHistoryReq;
 import com.cj.waterresources.func.modular.waterPrice.industrialWaterFee.bean.req.SelectPaymentReq;
+import com.cj.waterresources.func.modular.waterPrice.industrialWaterFee.bean.res.SelectPaymentHistoryRes;
 import com.cj.waterresources.func.modular.waterPrice.industrialWaterFee.entity.IndustrialWaterFee;
 import com.cj.waterresources.func.modular.waterPrice.industrialWaterFee.entity.WaterManagementUrbanIndustry;
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.bean.req.UseWaterTypeStatisticsReq;
@@ -25,5 +27,7 @@ public interface IndustrialWaterFeeService extends IService<IndustrialWaterFee> 
     RestResponse<List<HydrographRes>> selectInfoList(SelectInfoListReq req);
 
     WaterManagementUrbanIndustry selectPayment(SelectPaymentReq input);
+
+    SelectPaymentHistoryRes selectPaymentHistory(SelectPaymentHistoryReq input);
 }
 
