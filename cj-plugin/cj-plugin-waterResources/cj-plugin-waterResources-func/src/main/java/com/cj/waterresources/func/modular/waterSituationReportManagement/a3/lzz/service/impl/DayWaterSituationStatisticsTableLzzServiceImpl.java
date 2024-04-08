@@ -15,6 +15,7 @@ import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.entity.DayWaterSituationStatisticsTableLzz;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.service.DayWaterSituationStatisticsTableLzzService;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,7 +23,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 /**
@@ -32,6 +36,7 @@ import java.util.stream.Collectors;
  * @since 2023-12-23 15:59:34
  */
 @Service("dayWaterSituationStatisticsTableLzzService")
+@Slf4j
 public class DayWaterSituationStatisticsTableLzzServiceImpl extends ServiceImpl<DayWaterSituationStatisticsTableLzzMapper, DayWaterSituationStatisticsTableLzz> implements DayWaterSituationStatisticsTableLzzService {
 
     @Autowired
@@ -45,6 +50,9 @@ public class DayWaterSituationStatisticsTableLzzServiceImpl extends ServiceImpl<
 
     @Autowired
     private PredictionApi predictionApi;
+
+    @Autowired
+    private DayWaterSituationStatisticsTableLzzService dayWaterSituationStatisticsTableLzzService;
 
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
     @Override
@@ -189,6 +197,15 @@ public class DayWaterSituationStatisticsTableLzzServiceImpl extends ServiceImpl<
         result.addAll(dayWaterSituationStatisticsTableLzzList);
         boolean b = this.saveBatch(result);
         if (b) {
+            if(dayWaterSituationStatisticsTableLzzList.get(0).getTime().equals("08:00")){
+                ExecutorService pool = Executors.newSingleThreadExecutor();
+                pool.submit(new Runnable() {
+                    @Override
+                    public void run() {
+                        floodRetentionCapacityLzz();
+                    }
+                });
+            }
             refreshWaterStorageOverview();
             return RestResponse.ok();
         }else {
@@ -281,6 +298,15 @@ public class DayWaterSituationStatisticsTableLzzServiceImpl extends ServiceImpl<
         }
         boolean b = this.updateBatchById(dayWaterSituationStatisticsTableLzzList);
         if (b) {
+            if(dayWaterSituationStatisticsTableLzzList.get(0).getTime().equals("08:00")){
+                ExecutorService pool = Executors.newSingleThreadExecutor();
+                pool.submit(new Runnable() {
+                    @Override
+                    public void run() {
+                        floodRetentionCapacityLzz();
+                    }
+                });
+            }
             if(dayWaterSituationStatisticsTableLzzList.get(0).getTime().equals("今日均")) {
                 updateYesterdayData(dayWaterSituationStatisticsTableLzzList.get(0).getRecordTime(), dayWaterSituationStatisticsTableLzzList);
             }
@@ -500,6 +526,22 @@ public class DayWaterSituationStatisticsTableLzzServiceImpl extends ServiceImpl<
         String format = df.format(value);
         double v = Double.parseDouble(format);
         return v;
+    }
+
+    public void floodRetentionCapacityLzz(){
+        log.info("-----------------------------floodRetentionCapacityLzz-----------------------------");
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        String startTime = LocalDateTime.now().getYear()+"-01-01";
+        String endTime = sdf.format(new Date());
+        List<LzzReportFormsRes> lzzReportFormsResList = dayWaterSituationStatisticsTableLzzService.selectReportForms(startTime, endTime).getData();
+        Double lzzYearFloodRetentionCapacity = 0.0;
+        for(int i=lzzReportFormsResList.size()-1;i>=1;i--){
+            Double tempValue = lzzReportFormsResList.get(i).getStorageCapacity()-lzzReportFormsResList.get(i-1).getStorageCapacity();
+            if(tempValue>0){
+                lzzYearFloodRetentionCapacity+=tempValue;
+            }
+        }
+        redisUtil.set("floodRetentionCapacity:lzz",lzzYearFloodRetentionCapacity);
     }
 }
 

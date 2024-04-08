@@ -4,7 +4,7 @@ import com.cj.common.model.RestResponse;
 import com.cj.flood.func.modular.prediction.bean.req.ModelParametersReq;
 import com.cj.flood.func.modular.prediction.entity.ModelParameters;
 import com.cj.flood.func.modular.prediction.service.ModelParametersService;
-import com.cj.model.func.modular.FloodPredict.Calibration.entity.CalibrationParam;
+/*import com.cj.model.func.modular.FloodPredict.Calibration.entity.CalibrationParam;*/
 import com.cj.model.func.modular.FloodPredict.entity.calibrationParam;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import io.swagger.annotations.ApiOperation;
@@ -28,7 +28,7 @@ public class ModelParametersController {
     @Autowired
     private ModelParametersService modelParametersService;
 
-    @ApiOperationSupport(order = 1)
+/*    @ApiOperationSupport(order = 1)
     @ApiOperation("模型率定数据查询")
     @PostMapping("/queryList")
     public RestResponse queryList(@RequestBody ModelParametersReq input) {
@@ -40,7 +40,7 @@ public class ModelParametersController {
     @PostMapping("/calibrate")
     public RestResponse calibrate(@RequestBody CalibrationParam input) {
         return RestResponse.ok(modelParametersService.calibrate(input));
-    }
+    }*/
 
 }
 

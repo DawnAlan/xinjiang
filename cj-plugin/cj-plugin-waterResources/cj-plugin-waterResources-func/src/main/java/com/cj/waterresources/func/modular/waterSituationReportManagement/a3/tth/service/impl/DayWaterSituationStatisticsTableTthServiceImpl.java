@@ -5,29 +5,26 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.RedisUtil;
 import com.cj.common.util.UUIDUtils;
-import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.entity.IrrigatedPlatformDataInfo;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.service.IrrigatedPlatformDataInfoService;
-import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.entity.LzzGaugingStation;
 import com.cj.waterresources.func.modular.trendsTable.entity.TrendsTableParam;
 import com.cj.waterresources.func.modular.trendsTable.service.TrendsTableParamService;
 import com.cj.waterresources.func.modular.waterPrice.totalIdToStation.entity.TotalIdToStation;
 import com.cj.waterresources.func.modular.waterPrice.totalIdToStation.service.TotalIdToStationService;
-import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.dkl.entity.DayWaterSituationStatisticsTableDkl;
-import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hd.entity.DayWaterSituationStatisticsTableHd;
-import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.bean.res.LzzReportFormsRes;
-import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.entity.DayWaterSituationStatisticsTableLzz;
-import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.entity.DayWaterSituationStatisticsTableQs;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tth.bean.res.TthReportFormsRes;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tth.mapper.DayWaterSituationStatisticsTableTthMapper;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tth.entity.DayWaterSituationStatisticsTableTth;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tth.service.DayWaterSituationStatisticsTableTthService;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 /**
@@ -37,6 +34,7 @@ import java.util.stream.Collectors;
  * @since 2023-12-23 16:01:12
  */
 @Service("dayWaterSituationStatisticsTableTthService")
+@Slf4j
 public class DayWaterSituationStatisticsTableTthServiceImpl extends ServiceImpl<DayWaterSituationStatisticsTableTthMapper, DayWaterSituationStatisticsTableTth> implements DayWaterSituationStatisticsTableTthService {
 
     @Autowired
@@ -47,6 +45,9 @@ public class DayWaterSituationStatisticsTableTthServiceImpl extends ServiceImpl<
 
     @Autowired
     private IrrigatedPlatformDataInfoService irrigatedPlatformDataInfoService;
+
+    @Autowired
+    private DayWaterSituationStatisticsTableTthService dayWaterSituationStatisticsTableTthService;
 
     @Autowired
     private RedisUtil redisUtil;
@@ -189,6 +190,15 @@ public class DayWaterSituationStatisticsTableTthServiceImpl extends ServiceImpl<
         result.addAll(dayWaterSituationStatisticsTableTthList);
         boolean b = this.saveBatch(result);
         if (b) {
+            if(dayWaterSituationStatisticsTableTthList.get(0).getTime().equals("08:00")){
+                ExecutorService pool = Executors.newSingleThreadExecutor();
+                pool.submit(new Runnable() {
+                    @Override
+                    public void run() {
+                        floodRetentionCapacityTth();
+                    }
+                });
+            }
             return RestResponse.ok();
         }else {
             return RestResponse.no("error");
@@ -273,6 +283,15 @@ public class DayWaterSituationStatisticsTableTthServiceImpl extends ServiceImpl<
         }
         boolean b = this.updateBatchById(dayWaterSituationStatisticsTableTthList);
         if (b) {
+            if(dayWaterSituationStatisticsTableTthList.get(0).getTime().equals("08:00")){
+                ExecutorService pool = Executors.newSingleThreadExecutor();
+                pool.submit(new Runnable() {
+                    @Override
+                    public void run() {
+                        floodRetentionCapacityTth();
+                    }
+                });
+            }
             if(dayWaterSituationStatisticsTableTthList.get(0).getTime().equals("今日均")){
                 updateYesterdayData(dayWaterSituationStatisticsTableTthList.get(0).getRecordTime(),dayWaterSituationStatisticsTableTthList);
             }else {
@@ -493,6 +512,22 @@ public class DayWaterSituationStatisticsTableTthServiceImpl extends ServiceImpl<
         String format = dateFormat.format(date);
         Date formatDate = dateFormat.parse(format);
         return formatDate;
+    }
+
+    public void floodRetentionCapacityTth(){
+        log.info("-----------------------------floodRetentionCapacityTth-----------------------------");
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        String startTime = LocalDateTime.now().getYear()+"-01-01";
+        String endTime = sdf.format(new Date());
+        List<TthReportFormsRes> tthReportFormsResList = dayWaterSituationStatisticsTableTthService.selectReportForms(startTime, endTime).getData();
+        Double tthYearFloodRetentionCapacity = 0.0;
+        for(int i=tthReportFormsResList.size()-1;i>=1;i--){
+            Double tempValue = tthReportFormsResList.get(i).getStorageCapacity()-tthReportFormsResList.get(i-1).getStorageCapacity();
+            if(tempValue>0){
+                tthYearFloodRetentionCapacity+=tempValue;
+            }
+        }
+        redisUtil.set("floodRetentionCapacity:tth",tthYearFloodRetentionCapacity);
     }
 }
 

@@ -50,7 +50,7 @@ public class UseWaterManagementServiceImpl extends ServiceImpl<UseWaterManagemen
 
             UseWaterManagement useWaterManagement  = new UseWaterManagement();
             BeanUtils.copyProperties(req, useWaterManagement);
-            useWaterManagement.setId(StringUtils.isEmpty(req.getId())?UUIDUtils.getUUID():req.getId());
+            useWaterManagement.setId(UUIDUtils.getUUID());
             useWaterManagement.setDel(0);
             useWaterManagement.setCreateTime(new Date());
             boolean save = this.save(useWaterManagement);
@@ -65,7 +65,6 @@ public class UseWaterManagementServiceImpl extends ServiceImpl<UseWaterManagemen
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return RestResponse.no("添加失败");
         }
-
     }
 
     @Override

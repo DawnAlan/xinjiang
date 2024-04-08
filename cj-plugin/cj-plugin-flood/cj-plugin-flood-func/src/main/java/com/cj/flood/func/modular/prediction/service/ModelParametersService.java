@@ -4,8 +4,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.cj.common.model.RestResponse;
 import com.cj.flood.func.modular.prediction.bean.req.ModelParametersReq;
 import com.cj.flood.func.modular.prediction.entity.ModelParameters;
-import com.cj.model.func.modular.FloodPredict.Calibration.entity.CalibrationOutput;
-import com.cj.model.func.modular.FloodPredict.Calibration.entity.CalibrationParam;
+/*import com.cj.model.func.modular.FloodPredict.Calibration.entity.CalibrationOutput;
+import com.cj.model.func.modular.FloodPredict.Calibration.entity.CalibrationParam;*/
 import com.cj.model.func.modular.FloodPredict.entity.calibrationParam;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 
@@ -22,9 +22,9 @@ import java.util.Map;
  */
 public interface ModelParametersService extends IService<ModelParameters> {
 
-    List<ModelParameters> queryList(ModelParametersReq input);
+/*    List<ModelParameters> queryList(ModelParametersReq input);*/
 
-    CalibrationOutput calibrate(CalibrationParam input);
+    /*CalibrationOutput calibrate(CalibrationParam input);*/
 
 
 }

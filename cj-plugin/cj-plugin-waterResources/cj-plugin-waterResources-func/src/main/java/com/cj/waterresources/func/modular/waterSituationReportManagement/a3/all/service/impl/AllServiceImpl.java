@@ -615,13 +615,13 @@ public class AllServiceImpl implements AllService {
         List<LzzReportFormsRes> lzzReportFormsResList = dayWaterSituationStatisticsTableLzzService.selectReportForms(startTime, date).getData();
         Double lzzDouble = lzzReportFormsResList.size()<2?null:formatDouble(lzzReportFormsResList.get(lzzReportFormsResList.size() - 1).getStorageCapacity() - lzzReportFormsResList.get(lzzReportFormsResList.size() - 2).getStorageCapacity());
         lzz.setYesterdayFloodRetentionCapacity(lzzDouble==null?null:lzzDouble>0?lzzDouble:0.00);
-        lzz.setYearFloodRetentionCapacity((Double)redisUtil.get("floodRetentionCapacity:lzz"));
+        lzz.setYearFloodRetentionCapacity(formatDouble((Double)redisUtil.get("floodRetentionCapacity:lzz")));
         lzz.setReservoirName("楼庄子水库");
         FloodRetentionCapacityRes tth = new FloodRetentionCapacityRes();
         List<TthReportFormsRes> tthReportFormsResList = dayWaterSituationStatisticsTableTthService.selectReportForms(startTime, date).getData();
         Double tthDouble = tthReportFormsResList.size()<2?null:formatDouble(tthReportFormsResList.get(tthReportFormsResList.size() - 1).getStorageCapacity() - tthReportFormsResList.get(tthReportFormsResList.size() - 2).getStorageCapacity());
         tth.setYesterdayFloodRetentionCapacity(tthDouble==null?null:tthDouble>0?tthDouble:0.00);
-        tth.setYearFloodRetentionCapacity((Double)redisUtil.get("floodRetentionCapacity:tth"));
+        tth.setYearFloodRetentionCapacity(formatDouble((Double)redisUtil.get("floodRetentionCapacity:tth")));
         tth.setReservoirName("头屯河水库");
         for(OverallSituationUnitMgr mgr:idsList){
             if(getTopUnitNameFromOverallSituationUnitMgr(mgr.getId()).equals("楼庄子水库")){

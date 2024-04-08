@@ -11,9 +11,9 @@ import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.entity.LzzGaugin
 import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.service.LzzGaugingStationService;
 import com.cj.middleDatabase.func.modular.lzz.lzzRainfallStation.entity.LzzRainfallStation;
 import com.cj.middleDatabase.func.modular.lzz.lzzRainfallStation.service.LzzRainfallStationService;
-import com.cj.model.func.modular.FloodPredict.Calibration.ShanBeiCalibration;
+/*import com.cj.model.func.modular.FloodPredict.Calibration.ShanBeiCalibration;
 import com.cj.model.func.modular.FloodPredict.Calibration.entity.CalibrationOutput;
-import com.cj.model.func.modular.FloodPredict.Calibration.entity.CalibrationParam;
+import com.cj.model.func.modular.FloodPredict.Calibration.entity.CalibrationParam;*/
 import com.cj.model.func.modular.FloodPredict.entity.IrrigatedHydrologyParam;
 import com.cj.model.func.modular.FloodPredict.entity.LzzHydrologyParam;
 import com.cj.model.func.modular.FloodPredict.entity.calibrationParam;
@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMapper, ModelParameters> implements ModelParametersService {
 
-    private ShanBeiCalibration shanBeiCalibration;
+   /* private ShanBeiCalibration shanBeiCalibration;
     @Autowired
     private LzzGaugingStationService lzzGaugingStationService;
     @Autowired
@@ -98,6 +98,6 @@ public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMappe
         }
 
         return shanBeiCalibration.calibration(input);
-    }
+    }*/
 }
 
