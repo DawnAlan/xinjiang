@@ -12,10 +12,10 @@ public class Containment {
      * 计算不同方案的拦蓄洪量、剩余库容、削减洪峰
      */
     public static Map<String,Object> ContainmentCalculator(Map<String, List<Option>> options){
-        Map<String,Object> FinalResult = new HashMap<>();
+        Map<String,Object> FinalResult = new LinkedHashMap<>();
 
         Map<String,Map<String,Map<String,Double>>> View = new LinkedHashMap<>();
-        Map<String,String> Opinion = new HashMap<>();
+        Map<String,String> Opinion = new LinkedHashMap<>();
 
         Map<String,Map<String,Double>> lzz = new LinkedHashMap<>();
         Map<String,Map<String,Double>> tth = new LinkedHashMap<>();
@@ -44,6 +44,8 @@ public class Containment {
             List<Double> H_tth = new ArrayList<>();
             List<Double> V_lzz = new ArrayList<>();
             List<Double> V_tth = new ArrayList<>();
+            List<Double> Retain_lzz = new ArrayList<>();
+            List<Double> Retain_tth = new ArrayList<>();
 
 
 
@@ -54,34 +56,27 @@ public class Containment {
                     Qout_lzz.add(option.get(i).getQOut());
                     V_lzz.add(option.get(i).getV());
                     H_lzz.add(option.get(i).getH2());
+                    Retain_lzz.add(option.get(i).getRetain());
                 }
                 else if(name.equals("头屯河")){
                     Qin_tth.add(option.get(i).getQIn());
                     Qout_tth.add(option.get(i).getQOut());
                     V_tth.add(option.get(i).getV());
                     H_tth.add(option.get(i).getH2());
+                    Retain_tth.add(option.get(i).getRetain());
                 }
                 else{
                     throw new RuntimeException("方案有误");
                 }
             }
-            int t = (int) (option.get(1).getTime().getTime()-option.get(1).getTime().getTime());
-
-            double in_lzz=Qin_lzz.get(0);
-            double out_lzz=Qout_lzz.get(0);
-            double in_tth=Qin_tth.get(0);
-            double out_tth=Qout_tth.get(0);
-            double V1_lzz=V_lzz.get(0);
-            double V1_tth=V_tth.get(0);
-            double V0_lzz=V1_lzz-t*(in_lzz-out_lzz)/10000;
-            double V0_tth=V1_tth-t*(in_tth-out_tth)/10000;
 
 
-            double a_lzz = BigDecimal.valueOf(FindMax(V_lzz)-V0_lzz).setScale(2, RoundingMode.HALF_UP).doubleValue();
+
+            double a_lzz = BigDecimal.valueOf(FindMax(Retain_lzz)).setScale(2, RoundingMode.HALF_UP).doubleValue();
             double b_lzz = BigDecimal.valueOf(7259.33-FindMax(V_lzz)).setScale(2, RoundingMode.HALF_UP).doubleValue();
             double c_lzz = BigDecimal.valueOf(FindMax(Qin_lzz)-FindMax(Qout_lzz)).setScale(2, RoundingMode.HALF_UP).doubleValue();
 
-            double a_tth = BigDecimal.valueOf(FindMax(V_tth)-V0_tth).setScale(2, RoundingMode.HALF_UP).doubleValue();
+            double a_tth = BigDecimal.valueOf(FindMax(Retain_tth)).setScale(2, RoundingMode.HALF_UP).doubleValue();
             double b_tth = BigDecimal.valueOf(1297.03-FindMax(V_tth)).setScale(2, RoundingMode.HALF_UP).doubleValue();
             double c_tth = BigDecimal.valueOf(FindMax(Qin_tth)-FindMax(Qout_tth)).setScale(2, RoundingMode.HALF_UP).doubleValue();
 
@@ -108,12 +103,13 @@ public class Containment {
             HAQ.add(new Double[]{maxH_lzz, maxQ_lzz,maxH_tth,maxQ_tth});
         }
 
-        lzz.put("拦蓄洪量",retain_lzz);
-        lzz.put("剩余库容",remain_lzz);
         lzz.put("削减洪峰",peakShave_lzz);
-        tth.put("拦蓄洪量",retain_tth);
-        tth.put("剩余库容",remain_tth);
+        lzz.put("剩余库容",remain_lzz);
+        lzz.put("拦蓄洪量",retain_lzz);
+
         tth.put("削减洪峰",peakShave_tth);
+        tth.put("剩余库容",remain_tth);
+        tth.put("拦蓄洪量",retain_tth);
 
         View.put("楼庄子",lzz);
         View.put("头屯河",tth);

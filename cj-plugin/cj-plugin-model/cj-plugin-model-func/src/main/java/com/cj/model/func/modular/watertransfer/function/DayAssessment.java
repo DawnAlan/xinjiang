@@ -1,9 +1,7 @@
 package com.cj.model.func.modular.watertransfer.function;
 import com.cj.common.exception.CommonException;
-import com.cj.model.func.modular.FloodPrevent.entity.CurveParam;
 import com.cj.model.func.modular.watertransfer.entity.Excel1;
 import com.cj.model.func.modular.watertransfer.entity.Excel2;
-import com.cj.model.func.modular.watertransfer.method.FindValue;
 import com.cj.model.func.modular.watertransfer.method.Reservoir;
 import com.cj.model.func.modular.watertransfer.req.AppraiseReq;
 
@@ -13,7 +11,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class dayAssessment {
+public class DayAssessment {
     private Reservoir[] reservoirs;
     public Map<String, Object> dayAssessment(List<AppraiseReq> reqList) throws Exception {
         String appraise=new String();

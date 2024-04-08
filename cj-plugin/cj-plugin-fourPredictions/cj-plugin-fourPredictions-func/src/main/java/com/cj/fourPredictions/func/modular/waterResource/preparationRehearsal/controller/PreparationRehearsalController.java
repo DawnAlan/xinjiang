@@ -26,8 +26,9 @@ public class PreparationRehearsalController {
     @ApiOperationSupport(order = 1)
     @ApiOperation("根据模型类型查询模型列表")
     @GetMapping("/getWaterResourceAllocationList")
-    public RestResponse getWaterResourceAllocationList(@RequestParam(value = "waterDistributionType")Integer waterDistributionType) {
-        return preparationRehearsalService.getWaterResourceAllocationList(waterDistributionType);
+    public RestResponse getWaterResourceAllocationList(@RequestParam(value = "waterDistributionType")Integer waterDistributionType,
+                                                       @RequestParam(value = "inflowDataName")String inflowDataName) {
+        return preparationRehearsalService.getWaterResourceAllocationList(waterDistributionType,inflowDataName);
     }
 
 

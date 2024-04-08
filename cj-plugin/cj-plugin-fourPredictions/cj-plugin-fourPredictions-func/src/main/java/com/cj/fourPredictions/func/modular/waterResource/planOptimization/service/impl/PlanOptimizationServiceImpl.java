@@ -8,6 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 @Service
 public class PlanOptimizationServiceImpl implements PlanOptimizationService {
@@ -16,8 +17,8 @@ public class PlanOptimizationServiceImpl implements PlanOptimizationService {
     private WaterResourceApi waterResourceApi;
 
     @Override
-    public RestResponse getWaterResourceAllocationList(Integer bucketType) {
-        String data = waterResourceApi.getWaterResourceAllocationList(bucketType);
+    public RestResponse getWaterResourceAllocationList(Integer bucketType,String inflowDataName) {
+        String data = waterResourceApi.getWaterResourceAllocationList(bucketType,inflowDataName);
         if(StringUtils.isNotEmpty(data)){
             return RestResponse.ok(JSONObject.parseArray(data));
         }else {
@@ -28,6 +29,16 @@ public class PlanOptimizationServiceImpl implements PlanOptimizationService {
     @Override
     public RestResponse contrast(String idA, String idB) {
         String data = waterResourceApi.contrast(idA, idB);
+        if(StringUtils.isNotEmpty(data)){
+            return RestResponse.ok(JSONObject.parseObject(data));
+        }else {
+            return RestResponse.no("blank");
+        }
+    }
+
+    @Override
+    public RestResponse contrastNew(List<String> ids) {
+        String data = waterResourceApi.contrastNew(ids);
         if(StringUtils.isNotEmpty(data)){
             return RestResponse.ok(JSONObject.parseObject(data));
         }else {

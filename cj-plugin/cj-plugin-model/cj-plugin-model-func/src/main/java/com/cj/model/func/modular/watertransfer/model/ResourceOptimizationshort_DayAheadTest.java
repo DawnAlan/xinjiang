@@ -346,7 +346,16 @@ public class ResourceOptimizationshort_DayAheadTest
         if (inflow[0].length!=waterDemand[0].length){
             throw new CommonException("请检查来水预报时段与需水计划是否对应，两者时段不相符");
         }
-
+        double inflowWater=0;
+        for (int r = 0; r < 2; r++) {
+            for (int t = 0; t < period; t++) {
+                inflowWater+= inflow[r][t]  * delatT / 1e4;
+            }
+        }
+        double storage=storageAndDischarge(levelBegin,levelEnd);
+        if (storage>inflowWater){
+            throw new CommonException("请降低水库蓄水目标，来水总水量小于蓄水目标");
+        }
 
         for (int r = 0; r < RNum; r++)
         {
@@ -624,8 +633,8 @@ public class ResourceOptimizationshort_DayAheadTest
             waterSupply_all[n1]=waterSupply[0][n1]+waterSupply[1][n1]+waterSupply[2][n1]+waterSupply[3][n1]+waterSupply[4][n1];
             ReservoirWaterdemand[0][n1]=waterDemand[0][n1];
             ReservoirWaterdemand[1][n1]= waterdemand_all[n1]-waterDemand[0][n1];
-            ReservoirWatersupply[0][n1]=Double.parseDouble(da.format(watersupply_lzz[n1]));
-            ReservoirWatersupply[1][n1]=Double.parseDouble(da.format(waterSupply_all[n1]-waterSupply[0][n1]));
+            ReservoirWatersupply[0][n1]=Double.parseDouble(da.format(watersupply_lzz[n1]+ecologyWater[0][n1]));
+            ReservoirWatersupply[1][n1]=Double.parseDouble(da.format(waterSupply_all[n1]-waterSupply[0][n1]+ecologyWater[1][n1]));
         }
 
 
@@ -819,7 +828,7 @@ public class ResourceOptimizationshort_DayAheadTest
         if (waterdemand3[0][0]!=0){
             westGreen=waterSupply3[0][0]/waterdemand3[0][0];
         }
-        if (waterDemand[3][0]-waterdemand4[0][0]!=0){
+        if (waterDemand[3][0]-waterdemand3[0][0]!=0){
             westAgriculture=(waterSupply[3][0]-waterSupply3[0][0]) / (waterDemand[3][0]-waterdemand3[0][0]);
         }
         if (waterDemand[4][0]-waterdemand4[0][0]-waterdemand4[1][0]!=0){
@@ -1370,6 +1379,18 @@ public class ResourceOptimizationshort_DayAheadTest
                 ,waterSupply[0],waterSupply[1],waterSupply[2],waterSupply[3],waterSupply[4],watersupply_lzz};
         return result;
 
+    }
+    public  double storageAndDischarge(double[]levelBegin,double[]levelEnd) {
+        DecimalFormat da1 = new DecimalFormat("#.00");
+        double dischargeLzz = Double.parseDouble(da1.format(FindValue.FindV2ByV1(reservoirs[0].wlc_wl, reservoirs[0].wlc_c, levelEnd[0])-
+                FindValue.FindV2ByV1(reservoirs[0].wlc_wl, reservoirs[0].wlc_c, levelBegin[0])));
+        double dischargeTth = Double.parseDouble(da1.format(FindValue.FindV2ByV1(reservoirs[1].wlc_wl, reservoirs[1].wlc_c, levelEnd[1])-
+                FindValue.FindV2ByV1(reservoirs[1].wlc_wl, reservoirs[1].wlc_c, levelBegin[1])));
+        double[]storage=new double[3];
+        storage[0]=dischargeLzz;
+        storage[1]=dischargeTth;
+        storage[2]=dischargeLzz+dischargeTth;
+        return storage[2];
     }
     /**
      * 检查需水数据是否都大于等于0；

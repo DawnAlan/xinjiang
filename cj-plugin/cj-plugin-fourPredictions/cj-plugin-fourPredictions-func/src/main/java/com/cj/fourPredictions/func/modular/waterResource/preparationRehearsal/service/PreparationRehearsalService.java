@@ -4,7 +4,7 @@ import com.cj.common.model.RestResponse;
 
 public interface PreparationRehearsalService {
 
-    RestResponse getWaterResourceAllocationList(Integer waterDistributionType);
+    RestResponse getWaterResourceAllocationList(Integer waterDistributionType,String inflowDataName);
 
     RestResponse getWaterResourceAllocationDetails(String id);
 }

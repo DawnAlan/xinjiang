@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @Slf4j
 @RequiredArgsConstructor
 @RestController
@@ -58,8 +60,8 @@ public class WaterResourceFeignProvider implements WaterResourceFeign {
     }
 
     @Override
-    public String getWaterResourceAllocationList(Integer bucketType) {
-        return waterResourceApiProvider.getWaterResourceAllocationList(bucketType);
+    public String getWaterResourceAllocationList(Integer bucketType,String inflowDataName) {
+        return waterResourceApiProvider.getWaterResourceAllocationList(bucketType,inflowDataName);
     }
 
     @Override
@@ -70,6 +72,11 @@ public class WaterResourceFeignProvider implements WaterResourceFeign {
     @Override
     public String contrast(String idA, String idB) {
         return waterResourceApiProvider.contrast(idA,idB);
+    }
+
+    @Override
+    public String contrastNew(List<String> ids) {
+        return waterResourceApiProvider.contrastNew(ids);
     }
 
     @Override

@@ -20,6 +20,9 @@
             <if test="req.status != null">
                 AND fco.STATUS  = #{req.status}
             </if>
+            <if test="req.forecastingSchemeId != null and req.forecastingSchemeId !=''">
+                AND fco.FORECASTING_SCHEME_ID  = #{req.forecastingSchemeId}
+            </if>
         </where>
         order by fco.CREATE_TIME desc
     </select>

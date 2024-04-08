@@ -35,6 +35,8 @@ public interface WaterFeeStatisticsDetailsService extends IService<WaterFeeStati
 
     RestResponse deleteRedisData(WaterFeeStatisticsDetailsSelectListReq req);
 
+    RestResponse selectTotalForIndex(String stationName);
+
 
 }
 

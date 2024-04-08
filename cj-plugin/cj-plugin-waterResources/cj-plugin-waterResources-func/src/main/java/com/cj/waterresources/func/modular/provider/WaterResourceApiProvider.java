@@ -53,6 +53,7 @@ import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -360,9 +361,11 @@ public class WaterResourceApiProvider implements WaterResourceApi {
     }
 
     @Override
-    public String getWaterResourceAllocationList(Integer bucketType) {
+    public String getWaterResourceAllocationList(Integer bucketType,String inflowDataName) {
         List<WaterResourceAllocation> list = waterResourceAllocationService.lambdaQuery().
                 eq(WaterResourceAllocation::getBucketType, bucketType).
+                eq(StringUtils.isNotEmpty(inflowDataName),WaterResourceAllocation::getInflowDataName, inflowDataName).
+                eq(WaterResourceAllocation::getState,0).
                 eq(WaterResourceAllocation::getDel,0).
                 list();
         if(null!= list && list.size()>0){
@@ -383,6 +386,15 @@ public class WaterResourceApiProvider implements WaterResourceApi {
     @Override
     public String contrast(String idA,String idB) {
         RestResponse contrast = waterResourceAllocationService.contrast(idA, idB);
+        if(contrast.getCode()==200){
+            return JSONObject.toJSONString(contrast.getData());
+        }
+        return null;
+    }
+
+    @Override
+    public String contrastNew(List<String> ids) {
+        RestResponse contrast = waterResourceAllocationService.contrastNew(ids);
         if(contrast.getCode()==200){
             return JSONObject.toJSONString(contrast.getData());
         }
@@ -692,28 +704,22 @@ public class WaterResourceApiProvider implements WaterResourceApi {
         Integer year = LocalDateTime.now().getYear();
         Integer month = LocalDateTime.now().getMonth().getValue();
         Integer day = LocalDateTime.now().getDayOfMonth();
-        List<TrendsTableParam> totalId = trendsTableParamListTemp.stream().filter(t->t.getPId().equals("0") && t.getUseType()==2 && t.getParamName().equals("合计")).collect(Collectors.toList());
-
+        List<TrendsTableParam> totalId = trendsTableParamListTemp.stream().filter(t->t.getPId().equals("0") && t.getUseType()==2 && t.getParamName().equals("合计") && !t.getUseStation().equals("城市工业")).collect(Collectors.toList());
         List<WaterFeeStatisticsTotal> waterFeeStatisticsTotalList = waterFeeStatisticsTotalService.lambdaQuery().
                 eq(WaterFeeStatisticsTotal::getYear, year).
                 eq(WaterFeeStatisticsTotal::getMonth,month).
                 eq(WaterFeeStatisticsTotal::getTenDays,determineTenDays(day)).list();
         if(null != waterFeeStatisticsTotalList && waterFeeStatisticsTotalList.size() > 0){
-            Map<String, List<WaterFeeStatisticsTotal>> collect = waterFeeStatisticsTotalList.stream().collect(Collectors.groupingBy(WaterFeeStatisticsTotal::getStation));
+            Map<String, List<WaterFeeStatisticsTotal>> collect = waterFeeStatisticsTotalList.stream().filter(t->!t.getStation().equals("城市工业")).collect(Collectors.groupingBy(WaterFeeStatisticsTotal::getStation));
             Set<String> strings = collect.keySet();
             for(String s:strings){
                 List<WaterFeeStatisticsTotal> waterFeeStatisticsTotalList1 = collect.get(s);
-                TrendsTableParam param = null;
-                if(s.equals("渠首管理站")){
-                    param = trendsTableParamService.lambdaQuery().eq(TrendsTableParam::getUseType, 2).eq(TrendsTableParam::getParamName, "来水").one();
-                }else {
-                    param = totalId.stream().filter(t -> t.getUseStation().equals(s)).collect(Collectors.toList()).get(0);
-                }
+                TrendsTableParam param = totalId.stream().filter(t -> t.getUseStation().equals(s)).collect(Collectors.toList()).get(0);
                 String id = param.getId();
                 List<WaterFeeStatisticsTotal> collect1 = waterFeeStatisticsTotalList1.stream().filter(t -> t.getTableHeadId().equals(id)).collect(Collectors.toList());
                 WaterFeeStatisticsRes res = new WaterFeeStatisticsRes();
-                res.setPayableWaterFee(collect1.stream().map(WaterFeeStatisticsTotal::getPayableWaterFee).reduce(Double::sum).orElse(0.00));
-                res.setAdvancePaymentWaterFee(collect1.stream().map(WaterFeeStatisticsTotal::getAdvancePaymentWaterFee).reduce(Double::sum).orElse(0.00));
+                res.setPayableWaterFee(formatDoubleForThreeDecimal(collect1.stream().map(WaterFeeStatisticsTotal::getPayableWaterFee).reduce(Double::sum).orElse(0.00)));
+                res.setAdvancePaymentWaterFee(formatDoubleForThreeDecimal(collect1.stream().map(WaterFeeStatisticsTotal::getAdvancePaymentWaterFee).reduce(Double::sum).orElse(0.00)));
                 result.put(s,res);
             }
             return JSONObject.toJSONString(result);
@@ -752,7 +758,18 @@ public class WaterResourceApiProvider implements WaterResourceApi {
 
     @Override
     public String getFormList() {
+        Boolean flag = false;
         List<WaterStorageSchedulingTotalForm> list = waterStorageSchedulingTotalFormService.list();
+        for(WaterStorageSchedulingTotalForm form:list){
+            List<WaterStorageSchedulingLzz> lzz = waterStorageSchedulingLzzService.lambdaQuery().eq(WaterStorageSchedulingLzz::getFormId, form.getId()).list();
+            List<WaterStorageSchedulingTth> tth = waterStorageSchedulingTthService.lambdaQuery().eq(WaterStorageSchedulingTth::getFormId, form.getId()).list();
+            if(!lzz.isEmpty() && !tth.isEmpty()){
+                flag = true;
+            }
+            if(!flag){
+                list.remove(form);
+            }
+        }
         if(!list.isEmpty()){
             return JSONObject.toJSONString(list);
         }
@@ -811,5 +828,12 @@ public class WaterResourceApiProvider implements WaterResourceApi {
             redisUtil.set("trendsTableParam:name:"+param.getId(), param.getParamName());
             redisUtil.set("trendsTableParam:object:"+param.getId(), JSONObject.toJSONString(param));
         }
+    }
+
+    private Double formatDoubleForThreeDecimal(Double value){
+        DecimalFormat df = new DecimalFormat("#0.00");
+        String format = df.format(value);
+        double v = Double.parseDouble(format);
+        return v;
     }
 }

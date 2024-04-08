@@ -15,7 +15,7 @@
                 </foreach>
             </if>
         </where>
-        limit #{num} order by TIME desc
+        order by TIME desc
     </select>
     <select id="getRealTimeRainfallByDate" resultType="com.cj.middleDatabase.func.modular.dto.RealTimeRainfallRes">
         SELECT TREE_ID as ID,STATION_NAME, RAINFALL

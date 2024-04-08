@@ -40,5 +40,13 @@ public class TenDaysWaterBalanceController{
     public RestResponse<List<TenDaysWaterBalance>> selectList(@RequestBody TenDaysWaterBalanceSelectListReq req) {
         return tenDaysWaterBalanceService.selectList(req);
     }
+
+    @ApiOperationSupport(order = 7)
+    @ApiOperation("四预水资源预告预警供水统计图表")
+    @CommonLog(value = "四预水资源预告预警供水统计图表")
+    @GetMapping("/selectTotalForIndexWarning")
+    public RestResponse selectTotalForIndexWarning(@RequestParam("stationName") String stationName) {
+        return tenDaysWaterBalanceService.selectTotalForIndexWarning(stationName);
+    }
 }
 

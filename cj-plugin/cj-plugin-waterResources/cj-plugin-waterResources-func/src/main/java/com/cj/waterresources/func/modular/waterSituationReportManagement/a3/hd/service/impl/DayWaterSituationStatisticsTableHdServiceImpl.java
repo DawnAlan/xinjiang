@@ -22,6 +22,7 @@ import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,6 +47,10 @@ public class DayWaterSituationStatisticsTableHdServiceImpl extends ServiceImpl<D
 
     @Autowired
     private RedisUtil redisUtil;
+
+    @Value("${dayUseWaterPlanChoseTime}")
+    private String dayUseWaterPlanChoseTime;
+
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
     @Override
@@ -171,6 +176,11 @@ public class DayWaterSituationStatisticsTableHdServiceImpl extends ServiceImpl<D
         result.addAll(dayWaterSituationStatisticsTableHdList);
         boolean b = this.saveBatch(result);
         if (b) {
+            if(result.get(0).getTime().equals(dayUseWaterPlanChoseTime+":00")){
+                dayWaterSituationStatisticsTableHdList.forEach(t->{
+                    redisUtil.set("A3:dayUseWaterPlanChoseTime:hd:"+t.getTableHeadId(),t.getV());
+                });
+            }
             return RestResponse.ok();
         }else {
             return RestResponse.no("error");
@@ -182,6 +192,7 @@ public class DayWaterSituationStatisticsTableHdServiceImpl extends ServiceImpl<D
         List<String> collect = Arrays.stream(ids.split(",")).collect(Collectors.toList());
         boolean remove = this.lambdaUpdate().in(DayWaterSituationStatisticsTableHd::getId, collect).remove();
         if (remove) {
+
             return RestResponse.ok();
         }else {
             return RestResponse.no("error");
@@ -266,6 +277,12 @@ public class DayWaterSituationStatisticsTableHdServiceImpl extends ServiceImpl<D
                     }
                 });
                 updateYesterdayData(dayWaterSituationStatisticsTableHdList.get(0).getRecordTime(),dayWaterSituationStatisticsTableHdList);
+            }
+            if(dayWaterSituationStatisticsTableHdList.get(0).getTime().equals(dayUseWaterPlanChoseTime+":00")){
+                dayWaterSituationStatisticsTableHdList.forEach(t->{
+                    redisUtil.set("A3:dayUseWaterPlanChoseTime:hd:"+t.getTableHeadId(),t.getV());
+                });
+                System.out.println(redisUtil.getAllKeys("A3:dayUseWaterPlanChoseTime:hd").size()+"---------------------------------------------------------");
             }
             return RestResponse.ok();
         }else {

@@ -33,6 +33,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -226,18 +227,19 @@ public class WaterSituationServiceImpl implements WaterSituationService {
         if(StringUtils.isNotEmpty(byId.getMonitorId())){
             List<IrrigatedPlatformDataInfo> listTth = irrigatedPlatformDataInfoService.selectInfoByCondition(byId.getMonitorId(),null,req.getStartTime(),req.getEndTime());
             if(null != listTth && listTth.size()>0) {
-                listTth.stream().filter(t->t.getSqMonitorFlow()!=null).collect(Collectors.toList()).forEach(t->{
+                listTth.stream().collect(Collectors.toList()).forEach(t->{
                     HydrographRes res = new HydrographRes();
                     res.setName(t.getMonitorName());
                     res.setTime(sdf.format(t.getMonitorTime()));
-                    res.setFlow(t.getSqMonitorFlow());
+                    res.setFlow(t.getSqMonitorFlow()==null?(t.getGdMonitorFlow()==null?null:t.getGdMonitorFlow()):t.getSqMonitorFlow());
+                    res.setRainfall(t.getYqRainFallOne()==null?BigDecimal.ZERO:new BigDecimal(t.getYqRainFallOne()));
                     res.setWaterLevel(t.getSqWaterLevel());
                     resList.add(res);
                 });
             }
             List<LzzRainfallStation> listLzzRain = lzzRainfallStationService.selectInfoByCondition(byId.getMonitorId(),null,req.getStartTime(),req.getEndTime());
             if(null != listLzzRain && listLzzRain.size()>0){
-                listLzzRain.stream().filter(t->t.getRainfall()!=null).collect(Collectors.toList()).forEach(t->{
+                listLzzRain.stream().collect(Collectors.toList()).forEach(t->{
                     HydrographRes res = new HydrographRes();
                     res.setName(t.getStationName());
                     res.setTime(sdf.format(t.getTime()));
@@ -248,7 +250,7 @@ public class WaterSituationServiceImpl implements WaterSituationService {
             }
             List<LzzGaugingStation> listLzzGaugingStation = lzzGaugingStationService.selectInfoByCondition(byId.getMonitorId(),null,req.getStartTime(),req.getEndTime());
             if(null != listLzzGaugingStation && listLzzGaugingStation.size()>0){
-                listLzzGaugingStation.stream().filter(t->t.getFlow()!=null).collect(Collectors.toList()).forEach(t->{
+                listLzzGaugingStation.stream().collect(Collectors.toList()).forEach(t->{
                     HydrographRes res = new HydrographRes();
                     res.setName(t.getStationName());
                     res.setTime(sdf.format(t.getGatherTime()));

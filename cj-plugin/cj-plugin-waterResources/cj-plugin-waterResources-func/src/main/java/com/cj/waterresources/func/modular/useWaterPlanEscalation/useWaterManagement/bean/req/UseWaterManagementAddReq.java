@@ -8,6 +8,8 @@ import java.io.Serializable;
 @Data
 public class UseWaterManagementAddReq implements Serializable {
 
+    private String id;
+
     //用水计划(1-年 2-旬 3-日)
     @ApiModelProperty(value = "用水计划")
     private String useWaterPlan;

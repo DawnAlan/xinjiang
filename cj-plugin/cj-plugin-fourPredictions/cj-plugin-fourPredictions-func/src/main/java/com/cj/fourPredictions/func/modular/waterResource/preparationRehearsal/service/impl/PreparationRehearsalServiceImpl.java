@@ -15,8 +15,8 @@ public class PreparationRehearsalServiceImpl implements PreparationRehearsalServ
     @Resource
     private WaterResourceApi waterResourceApi;
     @Override
-    public RestResponse getWaterResourceAllocationList(Integer waterDistributionType) {
-        String data = waterResourceApi.getWaterResourceAllocationList(waterDistributionType);
+    public RestResponse getWaterResourceAllocationList(Integer waterDistributionType,String inflowDataName) {
+        String data = waterResourceApi.getWaterResourceAllocationList(waterDistributionType,inflowDataName);
         if(StringUtils.isNotEmpty(data)){
             return RestResponse.ok(JSONObject.parseArray(data));
         }else {

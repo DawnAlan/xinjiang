@@ -17,6 +17,7 @@ import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hx.s
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.entity.DayWaterSituationStatisticsTableLzz;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
@@ -41,6 +42,9 @@ public class DayWaterSituationStatisticsTableHxServiceImpl extends ServiceImpl<D
     @Autowired
     private RedisUtil redisUtil;
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+
+    @Value("${dayUseWaterPlanChoseTime}")
+    private String dayUseWaterPlanChoseTime;
 
     @Override
     public RestResponse<Map<String, List<DayWaterSituationStatisticsTableHx>>> selectList(String date) {
@@ -166,6 +170,11 @@ public class DayWaterSituationStatisticsTableHxServiceImpl extends ServiceImpl<D
         result.addAll(dayWaterSituationStatisticsTableHxList);
         boolean b = this.saveBatch(result);
         if (b) {
+            if(result.get(0).getTime().equals(dayUseWaterPlanChoseTime+":00")){
+                dayWaterSituationStatisticsTableHxList.forEach(t->{
+                    redisUtil.set("A3:dayUseWaterPlanChoseTime:hx:"+t.getTableHeadId(),t.getV());
+                });
+            }
             return RestResponse.ok();
         }else {
             return RestResponse.no("error");
@@ -264,7 +273,11 @@ public class DayWaterSituationStatisticsTableHxServiceImpl extends ServiceImpl<D
                 });
                 updateYesterdayData(dayWaterSituationStatisticsTableHxList.get(0).getRecordTime(),dayWaterSituationStatisticsTableHxList);
             }
-
+            if(dayWaterSituationStatisticsTableHxList.get(0).getTime().equals(dayUseWaterPlanChoseTime+":00")){
+                dayWaterSituationStatisticsTableHxList.forEach(t->{
+                    redisUtil.set("A3:dayUseWaterPlanChoseTime:hx:"+t.getTableHeadId(),t.getV());
+                });
+            }
             return RestResponse.ok();
         }else {
             return RestResponse.no("error");

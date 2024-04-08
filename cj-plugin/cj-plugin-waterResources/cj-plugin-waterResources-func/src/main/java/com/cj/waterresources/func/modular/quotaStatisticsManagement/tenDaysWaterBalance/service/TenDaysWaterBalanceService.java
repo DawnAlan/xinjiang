@@ -22,5 +22,7 @@ public interface TenDaysWaterBalanceService extends IService<TenDaysWaterBalance
     RestResponse addFirst(List<WaterFeeStatisticsTotal> totalList);
     RestResponse add(List<WaterFeeStatisticsTotal> totalList);
 
+    RestResponse selectTotalForIndexWarning(String stationName);
+
 }
 

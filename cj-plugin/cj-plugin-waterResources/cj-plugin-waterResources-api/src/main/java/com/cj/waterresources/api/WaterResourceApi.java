@@ -1,5 +1,7 @@
 package com.cj.waterresources.api;
 
+import java.util.List;
+
 public interface WaterResourceApi {
 
     String getYearWaterPlan(String area);
@@ -20,11 +22,12 @@ public interface WaterResourceApi {
 
     String getNeedWaterValueList(String area,Integer timeType);
 
-    String getWaterResourceAllocationList(Integer bucketType);
+    String getWaterResourceAllocationList(Integer bucketType,String inflowDataName);
 
     String getWaterResourceAllocationDetails(String id);
 
     String contrast(String idA,String idB);
+    String contrastNew(List<String> ids);
 
     String waterQuantityCalculation(String id);
 

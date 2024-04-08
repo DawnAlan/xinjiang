@@ -5,6 +5,8 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.List;
+
 @FeignClient(name = FeignConstant.WATER_RESOURCES_APP,contextId="waterResourceFeign")
 public interface WaterResourceFeign {
 
@@ -41,7 +43,8 @@ public interface WaterResourceFeign {
                            @RequestParam(value = "timeType", required =true)Integer timeType);
 
     @RequestMapping("/feign/provider/waterResource/getWaterResourceAllocationList")
-    String getWaterResourceAllocationList(@RequestParam(value = "bucketType", required =true)Integer bucketType);
+    String getWaterResourceAllocationList(@RequestParam(value = "bucketType", required =true)Integer bucketType,
+                                          @RequestParam(value = "inflowDataName", required =true)String inflowDataName);
 
     @RequestMapping("/feign/provider/waterResource/getWaterResourceAllocationDetails")
     String getWaterResourceAllocationDetails(@RequestParam(value = "id", required =true)String id);
@@ -49,6 +52,9 @@ public interface WaterResourceFeign {
     @RequestMapping("/feign/provider/waterResource/contrast")
     String contrast(@RequestParam(value = "idA", required =true)String idA,
                     @RequestParam(value = "idB", required =true)String idB);
+
+    @RequestMapping("/feign/provider/waterResource/contrastNew")
+    String contrastNew(@RequestParam(value = "ids", required =true)List<String> ids);
 
     @RequestMapping("/feign/provider/waterResource/waterQuantityCalculation")
     String waterQuantityCalculation(@RequestParam(value = "id", required =true)String id);

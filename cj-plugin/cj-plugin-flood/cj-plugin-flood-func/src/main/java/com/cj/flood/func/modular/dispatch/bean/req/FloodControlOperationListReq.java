@@ -30,4 +30,7 @@ public class FloodControlOperationListReq extends PageTool implements Serializab
 
     @ApiModelProperty(value = "状态")
     private Integer status = null;
+
+    @ApiModelProperty(value = "来水id")
+    private String forecastingSchemeId;
 }

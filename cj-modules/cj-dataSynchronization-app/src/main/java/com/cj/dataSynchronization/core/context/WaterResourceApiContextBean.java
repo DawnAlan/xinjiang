@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Slf4j
 @RequiredArgsConstructor
 @Component
@@ -67,8 +69,8 @@ public class WaterResourceApiContextBean implements WaterResourceApi {
     }
 
     @Override
-    public String getWaterResourceAllocationList(Integer bucketType) {
-        String data = waterResourceFeign.getWaterResourceAllocationList(bucketType);
+    public String getWaterResourceAllocationList(Integer bucketType,String inflowDataName) {
+        String data = waterResourceFeign.getWaterResourceAllocationList(bucketType,inflowDataName);
         return data;
     }
 
@@ -81,6 +83,12 @@ public class WaterResourceApiContextBean implements WaterResourceApi {
     @Override
     public String contrast(String idA, String idB) {
         String data = waterResourceFeign.contrast(idA,idB);
+        return data;
+    }
+
+    @Override
+    public String contrastNew(List<String> ids) {
+        String data = waterResourceFeign.contrastNew(ids);
         return data;
     }
 

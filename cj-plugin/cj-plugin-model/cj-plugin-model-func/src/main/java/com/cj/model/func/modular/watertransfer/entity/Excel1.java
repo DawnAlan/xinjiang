@@ -7,6 +7,7 @@ import java.util.Date;
 @Data
 public class Excel1 {
     //时间
+
     private Date time;
     //用水类型
     private double levelBegin;

@@ -62,8 +62,11 @@ public class TrendsTableParam implements Serializable {
     @ApiModelProperty(value = "使用水库或站点")
     private String useStation;
 
-    @ApiModelProperty(value = "是否需要统计")
-    private Integer isStatistics;
+    @ApiModelProperty(value = "统计id")
+    private String statisticsId;
+
+    @ApiModelProperty(value = "是否统计")
+    private String isStatistics;
 
     @ApiModelProperty(value = "全局单位id")
     private String unitId;

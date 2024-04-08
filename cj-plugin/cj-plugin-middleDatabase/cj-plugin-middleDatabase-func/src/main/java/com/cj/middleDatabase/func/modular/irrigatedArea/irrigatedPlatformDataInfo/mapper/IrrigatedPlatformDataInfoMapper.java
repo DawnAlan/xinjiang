@@ -21,7 +21,7 @@ public interface IrrigatedPlatformDataInfoMapper extends BaseMapper<IrrigatedPla
     @Select("select YESTERDAY_AVG_FLOW,MONITOR_NAME FROM IRRIGATED_PLATFORM_DATA_INFO WHERE MONITOR_NAME = #{name} order by MONITOR_TIME desc limit 1")
     SelectInfoByIrrigationNameListRes selectInfoByIrrigationNameList(@Param("name") String name);
 
-    @Select("SELECT * FROM IRRIGATED_PLATFORM_DATA_INFO WHERE MONITOR_ID = #{id} AND MONITOR_TIME BETWEEN #{startTime} AND #{endTime} order by MONITOR_TIME ASC")
+    @Select("SELECT * FROM IRRIGATED_PLATFORM_DATA_INFO WHERE MONITOR_ID = #{id} AND RECORD_TIME BETWEEN #{startTime} AND #{endTime} order by MONITOR_TIME ASC")
     List<IrrigatedPlatformDataInfo> selectInfoByCondition1(@Param("id") String id, @Param("startTime") String startTime,@Param("endTime") String endTime);
 
     @Select("SELECT * FROM IRRIGATED_PLATFORM_DATA_INFO WHERE MONITOR_ID = #{id} AND RECORD_TIME = #{time} order by MONITOR_TIME ASC")
@@ -45,7 +45,7 @@ public interface IrrigatedPlatformDataInfoMapper extends BaseMapper<IrrigatedPla
     @Select("SELECT * FROM IRRIGATED_PLATFORM_DATA_INFO WHERE MONITOR_TIME = #{time} order by MONITOR_TIME DESC")
     List<IrrigatedPlatformDataInfo> selectOneByConditionByTime( @Param("time")String time);
 
-    List<IrrigatedPlatformDataInfo> getRealTimeRainfall(@Param("date")String date,@Param("num")Integer num,@Param("ids")List<String> ids);
+    List<IrrigatedPlatformDataInfo> getRealTimeRainfall(@Param("date")String date,@Param("ids")List<String> ids);
 
     @Select("SELECT * FROM IRRIGATED_PLATFORM_DATA_INFO WHERE MONITOR_NAME = #{name} AND MONITOR_TIME = #{time} ORDER BY MONITOR_TIME DESC")
     List<IrrigatedPlatformDataInfo> selectInfoByTime(@Param("time")String time,@Param("name") String name);
