@@ -26,7 +26,9 @@ import com.cj.waterresources.func.modular.waterPrice.waterDistributionRatio.serv
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.bean.req.UseWaterTypeStatisticsReq;
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.bean.req.WaterFeeStatisticsDetailsSelectListReq;
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.bean.res.JobRes;
+import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.bean.res.SelectTotalForIndexRes;
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.bean.res.UseWaterTypeStatisticsRes;
+import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.bean.vo.TrendsTableParamVo;
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.entity.WaterFeeStatisticsTotal;
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.mapper.WaterFeeStatisticsDetailsMapper;
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.entity.WaterFeeStatisticsDetails;
@@ -3653,6 +3655,58 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
         return RestResponse.ok();
     }
 
+    @Override
+    public RestResponse selectTotalForIndex(String stationName) {
+        List<SelectTotalForIndexRes> resList = new ArrayList<>();
+        String mk = (String) redisUtil.get("trendsTableParam:list");
+        if(StringUtils.isEmpty(mk)){
+            trendsTableParamService.updateCache();
+            mk = (String) redisUtil.get("trendsTableParam:list");
+        }
+        List<TrendsTableParam> trendsTableParamListTemp = JSONObject.parseArray(mk, TrendsTableParam.class);
+        List<TrendsTableParam> trendsTableParamList = trendsTableParamListTemp.stream().filter(t -> t.getUseType() == 2 && t.getUseStation().equals(stationName)&& t.getPId().equals("0") && !t.getParamName().equals("合计")).collect(Collectors.toList());
+        List<TrendsTableParam> trendsTableParamAllList = trendsTableParamListTemp.stream().filter(t -> t.getUseType() == 2 && t.getUseStation().equals(stationName)).collect(Collectors.toList());
+        Integer year = LocalDateTime.now().getYear();
+        Integer month = LocalDateTime.now().getMonth().getValue();
+        Integer day = LocalDateTime.now().getDayOfMonth();
+        String tenDays = determineTenDays(day);
+        List<String> paramIds = trendsTableParamList.stream().map(TrendsTableParam::getId).collect(Collectors.toList());
+        List<TrendsTableParamVo> resultParamVoList = new ArrayList<>();
+        for(String s:paramIds){
+            TrendsTableParamVo vo = new TrendsTableParamVo();
+            List<TrendsTableParam> collect = trendsTableParamAllList.stream().filter(t -> t.getPId().equals(s)).collect(Collectors.toList());
+            if(collect.size()==0){
+                String name = (String)redisUtil.get("trendsTableParam:name:"+s);
+                vo.setName(name);
+                vo.setId(s);
+            }
+            if (collect.size()==1){
+                TrendsTableParam param = collect.get(0);
+                String name = (String)redisUtil.get("trendsTableParam:name:"+param.getPId());
+                vo.setName(name);
+                vo.setId(param.getId());
+            }
+            if(collect.size()>1) {
+                TrendsTableParam param = collect.stream().filter(t -> t.getParamName().equals("合计")).collect(Collectors.toList()).get(0);
+                String name = (String)redisUtil.get("trendsTableParam:name:"+param.getPId());
+                vo.setName(name);
+                vo.setId(param.getId());
+            }
+            resultParamVoList.add(vo);
+        }
+        List<String> strings = resultParamVoList.stream().map(TrendsTableParamVo::getId).collect(Collectors.toList());
+        List<WaterFeeStatisticsTotal> waterFeeStatisticsTotalList = waterFeeStatisticsTotalService.lambdaQuery().in(WaterFeeStatisticsTotal::getTableHeadId, strings).eq(WaterFeeStatisticsTotal::getYear, year).eq(WaterFeeStatisticsTotal::getMonth, month).
+                eq(WaterFeeStatisticsTotal::getTenDays, tenDays).list();
+        for(TrendsTableParamVo vo:resultParamVoList){
+            SelectTotalForIndexRes res = new SelectTotalForIndexRes();
+            res.setName(vo.getName().replace("管理站",""));
+            Double aDouble = waterFeeStatisticsTotalList.stream().filter(t -> t.getTableHeadId().equals(vo.getId())).map(WaterFeeStatisticsTotal::getAccumulatedWaterVolume).reduce(Double::sum).orElse(0.00);
+            res.setV(formatDoubleForThreeDecimal(aDouble));
+            resList.add(res);
+        }
+        return RestResponse.ok(resList);
+    }
+
     public List<String> getTableHeadName(List<TrendsTableParam> trendsTableParamList){
         try {
             List<String> tableIds = new ArrayList<>();
@@ -3711,6 +3765,25 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
             }
         }
         return ids;
+    }
+
+    public String determineTenDays(Integer day){
+        if(day<=10){
+            return "上旬";
+        }
+        if(day<=20){
+            return "中旬";
+        }
+        if(day>20){
+            return "下旬";
+        }
+        return "";
+    }
+
+    private Double formatDoubleForThreeDecimal(Double value){
+        String format = df.format(value);
+        double v = Double.parseDouble(format);
+        return v;
     }
 }
 

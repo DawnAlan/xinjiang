@@ -50,7 +50,7 @@ public class UseWaterManagementServiceImpl extends ServiceImpl<UseWaterManagemen
 
             UseWaterManagement useWaterManagement  = new UseWaterManagement();
             BeanUtils.copyProperties(req, useWaterManagement);
-            useWaterManagement.setId(UUIDUtils.getUUID());
+            useWaterManagement.setId(StringUtils.isEmpty(req.getId())?UUIDUtils.getUUID():req.getId());
             useWaterManagement.setDel(0);
             useWaterManagement.setCreateTime(new Date());
             boolean save = this.save(useWaterManagement);
@@ -70,7 +70,15 @@ public class UseWaterManagementServiceImpl extends ServiceImpl<UseWaterManagemen
 
     @Override
     public RestResponse delete(String id,String useWaterPlan) {
-        boolean update = this.lambdaUpdate().set(UseWaterManagement::getDel, 1).eq(UseWaterManagement::getId, id).update();
+        List<UseWaterManagement> list = this.lambdaQuery().eq(UseWaterManagement::getPId, id).eq(UseWaterManagement::getDel,0).list();
+        boolean update = false;
+        if(list.isEmpty()){
+            update = this.lambdaUpdate().set(UseWaterManagement::getDel, 1).eq(UseWaterManagement::getId, id).update();
+        }else {
+            List<String> strings = list.stream().map(UseWaterManagement::getId).collect(Collectors.toList());
+            strings.add(id);
+            update = this.lambdaUpdate().set(UseWaterManagement::getDel, 1).in(UseWaterManagement::getId, strings).update();
+        }
         if(update){
             return RestResponse.ok("删除成功");
         }else {

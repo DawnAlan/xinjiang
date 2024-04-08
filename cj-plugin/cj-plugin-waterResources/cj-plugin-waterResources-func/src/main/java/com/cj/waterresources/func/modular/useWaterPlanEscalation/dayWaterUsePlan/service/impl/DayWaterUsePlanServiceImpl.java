@@ -88,7 +88,7 @@ public class DayWaterUsePlanServiceImpl extends ServiceImpl<DayWaterUsePlanMappe
         String[] split = names.split(",");
         for(String s:split){
             SelectInfoByIrrigationNameListRes res = new SelectInfoByIrrigationNameListRes();
-            Double v = (Double) redisUtil.get("A3:data:"+station+":yesterday:forPlan:"+s);
+            Double v = (Double) redisUtil.get("A3:dayUseWaterPlanChoseTime:"+station+":"+s);//A3:data:qs:dayUseWaterPlanChoseTime:
             res.setMonitorName(s);
             res.setYesterdayAvgFlow(v);
             resList.add(res);

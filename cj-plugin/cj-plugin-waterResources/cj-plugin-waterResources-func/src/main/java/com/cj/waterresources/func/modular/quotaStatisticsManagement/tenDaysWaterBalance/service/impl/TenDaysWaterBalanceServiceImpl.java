@@ -6,6 +6,7 @@ import com.cj.common.model.RestResponse;
 import com.cj.common.util.RedisUtil;
 import com.cj.common.util.UUIDUtils;
 import com.cj.waterresources.func.modular.quotaStatisticsManagement.tenDaysWaterBalance.bean.req.TenDaysWaterBalanceSelectListReq;
+import com.cj.waterresources.func.modular.quotaStatisticsManagement.tenDaysWaterBalance.bean.res.SelectTotalForIndexWarningRes;
 import com.cj.waterresources.func.modular.quotaStatisticsManagement.tenDaysWaterBalance.mapper.TenDaysWaterBalanceMapper;
 import com.cj.waterresources.func.modular.quotaStatisticsManagement.tenDaysWaterBalance.entity.TenDaysWaterBalance;
 import com.cj.waterresources.func.modular.quotaStatisticsManagement.tenDaysWaterBalance.service.TenDaysWaterBalanceService;
@@ -14,6 +15,8 @@ import com.cj.waterresources.func.modular.trendsTable.service.TrendsTableParamSe
 import com.cj.waterresources.func.modular.waterPrice.canalHeadManagementStation.entity.CanalHeadManagementStationTotal;
 import com.cj.waterresources.func.modular.waterPrice.waterDistributionRatio.entity.WaterDistributionRatio;
 import com.cj.waterresources.func.modular.waterPrice.waterDistributionRatio.service.WaterDistributionRatioService;
+import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.bean.res.SelectTotalForIndexRes;
+import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.bean.vo.TrendsTableParamVo;
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.entity.WaterFeeStatisticsTotal;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.text.DecimalFormat;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -390,6 +394,79 @@ public class TenDaysWaterBalanceServiceImpl extends ServiceImpl<TenDaysWaterBala
         }else {
             return addFirst(totalList);
         }
+    }
+
+    @Override
+    public RestResponse selectTotalForIndexWarning(String stationName) {
+        List<SelectTotalForIndexWarningRes> resList = new ArrayList<>();
+        String mk = (String) redisUtil.get("trendsTableParam:list");
+        if(StringUtils.isEmpty(mk)){
+            trendsTableParamService.updateCache();
+            mk = (String) redisUtil.get("trendsTableParam:list");
+        }
+        List<TrendsTableParam> trendsTableParamListTemp = JSONObject.parseArray(mk, TrendsTableParam.class);
+        List<TrendsTableParam> trendsTableParamList = trendsTableParamListTemp.stream().filter(t -> t.getUseType() == 2 && t.getUseStation().equals(stationName)&& t.getPId().equals("0") && !t.getParamName().equals("合计")).collect(Collectors.toList());
+        List<TrendsTableParam> trendsTableParamAllList = trendsTableParamListTemp.stream().filter(t -> t.getUseType() == 2 && t.getUseStation().equals(stationName)).collect(Collectors.toList());
+        Integer year = LocalDateTime.now().getYear();
+        Integer month = LocalDateTime.now().getMonth().getValue();
+        Integer day = LocalDateTime.now().getDayOfMonth();
+        String tenDays = determineTenDays(day);
+        List<String> paramIds = trendsTableParamList.stream().map(TrendsTableParam::getId).collect(Collectors.toList());
+        List<TrendsTableParamVo> resultParamVoList = new ArrayList<>();
+        for(String s:paramIds){
+            TrendsTableParamVo vo = new TrendsTableParamVo();
+            List<TrendsTableParam> collect = trendsTableParamAllList.stream().filter(t -> t.getPId().equals(s)).collect(Collectors.toList());
+            if(collect.size()==0){
+                String name = (String)redisUtil.get("trendsTableParam:name:"+s);
+                vo.setName(name);
+                vo.setId(s);
+            }
+            if (collect.size()==1){
+                TrendsTableParam param = collect.get(0);
+                String name = (String)redisUtil.get("trendsTableParam:name:"+param.getPId());
+                vo.setName(name);
+                vo.setId(param.getId());
+            }
+            if(collect.size()>1) {
+                TrendsTableParam param = collect.stream().filter(t -> t.getParamName().equals("合计")).collect(Collectors.toList()).get(0);
+                String name = (String)redisUtil.get("trendsTableParam:name:"+param.getPId());
+                vo.setName(name);
+                vo.setId(param.getId());
+            }
+            resultParamVoList.add(vo);
+        }
+        List<String> strings = resultParamVoList.stream().map(TrendsTableParamVo::getId).collect(Collectors.toList());
+        List<TenDaysWaterBalance> waterFeeStatisticsTotalList = this.lambdaQuery().in(TenDaysWaterBalance::getTableHeadId, strings).eq(TenDaysWaterBalance::getYear, year).eq(TenDaysWaterBalance::getMonth, month).
+                eq(TenDaysWaterBalance::getTenDays, tenDays).list();
+        for(TrendsTableParamVo vo:resultParamVoList){
+            SelectTotalForIndexWarningRes res = new SelectTotalForIndexWarningRes();
+            res.setName(vo.getName().replace("管理站",""));
+            Double proportionalWaterQuantity = waterFeeStatisticsTotalList.stream().filter(t -> t.getTableHeadId().equals(vo.getId())).map(TenDaysWaterBalance::getProportionalWaterQuantity).reduce(Double::sum).orElse(0.00);
+            Double actualWaterVolume = waterFeeStatisticsTotalList.stream().filter(t -> t.getTableHeadId().equals(vo.getId())).map(TenDaysWaterBalance::getActualWaterVolume).reduce(Double::sum).orElse(0.00);
+            res.setActualWaterVolume(formatDoubleForThreeDecimal(actualWaterVolume));
+            res.setProportionalWaterQuantity(formatDoubleForThreeDecimal(proportionalWaterQuantity));
+            resList.add(res);
+        }
+        return RestResponse.ok(resList);
+    }
+
+    public String determineTenDays(Integer day){
+        if(day<=10){
+            return "上旬";
+        }
+        if(day<=20){
+            return "中旬";
+        }
+        if(day>20){
+            return "下旬";
+        }
+        return "";
+    }
+
+    private Double formatDoubleForThreeDecimal(Double value){
+        String format = df.format(value);
+        double v = Double.parseDouble(format);
+        return v;
     }
 }
 

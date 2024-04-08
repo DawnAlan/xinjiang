@@ -20,3 +20,4 @@ minio:
   bucket: tth
 does-not-exist: 日期,合计,配水比例,实收
 waterResourcePrice: 0.25
+dayUseWaterPlanChoseTime: 14

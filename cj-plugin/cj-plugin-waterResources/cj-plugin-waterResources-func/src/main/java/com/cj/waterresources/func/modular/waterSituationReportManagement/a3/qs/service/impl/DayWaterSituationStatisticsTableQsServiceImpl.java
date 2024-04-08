@@ -18,6 +18,7 @@ import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.s
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tth.entity.DayWaterSituationStatisticsTableTth;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,6 +43,9 @@ public class DayWaterSituationStatisticsTableQsServiceImpl extends ServiceImpl<D
 
     @Autowired
     private DayWaterSituationStatisticsTableQsLhService dayWaterSituationStatisticsTableQsLhService;
+
+    @Value("${dayUseWaterPlanChoseTime}")
+    private String dayUseWaterPlanChoseTime;
 
     @Autowired
     private RedisUtil redisUtil;
@@ -209,6 +213,11 @@ public class DayWaterSituationStatisticsTableQsServiceImpl extends ServiceImpl<D
         result.addAll(dayWaterSituationStatisticsTableQsList);
         boolean b = this.saveBatch(result);
         if (b) {
+            if(result.get(0).getTime().equals(dayUseWaterPlanChoseTime+":00")){
+                dayWaterSituationStatisticsTableQsList.forEach(t->{
+                    redisUtil.set("A3:dayUseWaterPlanChoseTime:qs:"+t.getTableHeadId(),t.getV());
+                });
+            }
             return RestResponse.ok();
         }else {
             return RestResponse.no("error");
@@ -347,6 +356,11 @@ public class DayWaterSituationStatisticsTableQsServiceImpl extends ServiceImpl<D
                     }
                 });
                 updateYesterdayData(dayWaterSituationStatisticsTableQsList.get(0).getRecordTime(),dayWaterSituationStatisticsTableQsList);
+            }
+            if(dayWaterSituationStatisticsTableQsList.get(0).getTime().equals(dayUseWaterPlanChoseTime+":00")){
+                dayWaterSituationStatisticsTableQsList.forEach(t->{
+                    redisUtil.set("A3:dayUseWaterPlanChoseTime:qs:"+t.getTableHeadId(),t.getV());
+                });
             }
             return RestResponse.ok();
         }else {

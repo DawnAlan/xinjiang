@@ -53,5 +53,13 @@ public class WaterFeeStatisticsTotalController{
             return RestResponse.no("Error");
         }
     }
+    @ApiOperationSupport(order = 3)
+    @ApiOperation("四预水资源首页供水统计图表")
+    @CommonLog(value = "四预水资源首页供水统计图表")
+    @GetMapping("/selectTotalForIndex")
+    public RestResponse selectTotalForIndex() {
+        return waterFeeStatisticsTotalService.selectTotalForIndex();
+    }
+
 }
 

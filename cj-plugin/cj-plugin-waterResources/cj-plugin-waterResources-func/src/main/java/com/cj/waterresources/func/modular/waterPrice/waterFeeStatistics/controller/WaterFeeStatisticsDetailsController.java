@@ -93,5 +93,13 @@ public class WaterFeeStatisticsDetailsController {
     public RestResponse deleteRedisData(@RequestBody WaterFeeStatisticsDetailsSelectListReq req) {
         return waterFeeStatisticsDetailsService.deleteRedisData(req);
     }
+
+    @ApiOperationSupport(order = 7)
+    @ApiOperation("四预水资源首页供水统计图表")
+    @CommonLog(value = "四预水资源首页供水统计图表")
+    @GetMapping("/selectTotalForIndex")
+    public RestResponse selectTotalForIndex(@RequestParam("stationName") String stationName) {
+        return waterFeeStatisticsDetailsService.selectTotalForIndex(stationName);
+    }
 }
 

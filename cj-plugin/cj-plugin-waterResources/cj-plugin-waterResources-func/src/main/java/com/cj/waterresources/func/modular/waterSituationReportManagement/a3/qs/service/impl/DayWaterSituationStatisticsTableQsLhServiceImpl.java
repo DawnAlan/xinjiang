@@ -18,6 +18,7 @@ import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.s
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.service.DayWaterSituationStatisticsTableQsService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,6 +50,9 @@ public class DayWaterSituationStatisticsTableQsLhServiceImpl extends ServiceImpl
     @Autowired
     private RedisUtil redisUtil;
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+
+    @Value("${dayUseWaterPlanChoseTime}")
+    private String dayUseWaterPlanChoseTime;
 
     @Override
     public RestResponse<Map<String, List<DayWaterSituationStatisticsTableQsLh>>> selectList(String date) {
@@ -177,6 +181,11 @@ public class DayWaterSituationStatisticsTableQsLhServiceImpl extends ServiceImpl
             if(qdList.isEmpty()){
                 return RestResponse.no("请先创建对应的渠首管理站记录！");
             }
+            if(result.get(0).getTime().equals(dayUseWaterPlanChoseTime+":00")){
+                dayWaterSituationStatisticsTableQsLhList.forEach(t->{
+                    redisUtil.set("A3:dayUseWaterPlanChoseTime:qs:"+t.getTableHeadId(),t.getV());
+                });
+            }
             List<TrendsTableParam> trendsTableParamQsList = trendsTableParamListTemp.stream().filter(t -> t.getUseType() == 1 && t.getUseStation().equals("渠首管理站")).collect(Collectors.toList());
             TrendsTableParam dlqlhTableParam = trendsTableParamQsList.stream().filter(t -> t.getParamName().equals("灯笼渠绿化")).collect(Collectors.toList()).get(0);
             TrendsTableParam hjTableParam = trendsTableParamList.stream().filter(t -> t.getParamName().equals("合计") && t.getPId().equals("0")).collect(Collectors.toList()).get(0);
@@ -292,6 +301,11 @@ public class DayWaterSituationStatisticsTableQsLhServiceImpl extends ServiceImpl
                     }
                 });
                 updateYesterdayData(dayWaterSituationStatisticsTableQsLhList.get(0).getRecordTime(),dayWaterSituationStatisticsTableQsLhList);
+            }
+            if(dayWaterSituationStatisticsTableQsLhList.get(0).getTime().equals(dayUseWaterPlanChoseTime+":00")){
+                dayWaterSituationStatisticsTableQsLhList.forEach(t->{
+                    redisUtil.set("A3:dayUseWaterPlanChoseTime:qs:"+t.getTableHeadId(),t.getV());
+                });
             }
             List<DayWaterSituationStatisticsTableQs> qdList = dayWaterSituationStatisticsTableQsMapper.selectListForLh(qsLh.getTime(),sdf.format(qsLh.getRecordTime()));
             if(qdList.isEmpty()){
