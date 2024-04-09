@@ -1305,11 +1305,18 @@ public class InputWay {
         List<String> demand = new ArrayList<>();
 
         demand = data.stream().filter(n -> n.getArea().equals(tableName)).map(Waterdemand::getUnit).distinct().collect(Collectors.toList());
-        String[] demanddata = new String[demand.size()];
-        for (int i = 0; i < demand.size(); i++) {
-            demanddata[i] = demand.get(i);
+
+        if (demand.size()==0){
+            String[] demanddata={"无数据"};
+            return demanddata;
         }
-        return demanddata;
+        else {
+            String[] demanddata = new String[demand.size()];
+            for (int i = 0; i < demand.size(); i++) {
+                demanddata[i] = demand.get(i);
+            }
+            return demanddata;
+        }
     }
 
     /**
