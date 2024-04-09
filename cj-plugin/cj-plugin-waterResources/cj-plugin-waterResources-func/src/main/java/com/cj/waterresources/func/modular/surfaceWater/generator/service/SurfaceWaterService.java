@@ -49,6 +49,14 @@ public class SurfaceWaterService extends ServiceImpl<SurfaceWaterMapper, Surface
     private final RedisUtil redisUtil;
 
     public SurfaceWater add(MultipartFile file, SurfaceWaterReq surfaceWaterReq) {
+       Long count = this.lambdaQuery().eq(SurfaceWater::getYear, surfaceWaterReq.getYear())
+                .eq(SurfaceWater::getType, surfaceWaterReq.getType())
+                .eq(SurfaceWater::getManagerName,surfaceWaterReq.getManagerName())
+                .eq(SurfaceWater::getSiteName,surfaceWaterReq.getSiteName())
+                .eq(SurfaceWater:: getUnit,surfaceWaterReq.getUnit()).count();
+       if (count>0){
+           throw new IllegalArgumentException("数据重复");
+       }
         String filePath = uploadFile(file);
         SurfaceWater surfaceWater = SurfaceWater.builder()
                 .id(UUID.randomUUID().toString())
