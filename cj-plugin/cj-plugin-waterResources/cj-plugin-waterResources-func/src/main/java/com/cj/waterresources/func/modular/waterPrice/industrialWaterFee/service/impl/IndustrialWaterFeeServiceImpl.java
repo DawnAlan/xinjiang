@@ -1,5 +1,6 @@
 package com.cj.waterresources.func.modular.waterPrice.industrialWaterFee.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -74,7 +75,7 @@ public class IndustrialWaterFeeServiceImpl extends ServiceImpl<IndustrialWaterFe
 
     @Override
     public WaterManagementUrbanIndustry selectPayment(SelectPaymentReq input) {
-        if ((input.getAgriculturalProportion()+input.getNotAgriculturalProportion()+input.getIndustrialProportion()) != 100){
+        if ((input.getAgriculturalProportion() + input.getNotAgriculturalProportion() + input.getIndustrialProportion()) != 100) {
             throw new IllegalArgumentException("水量分配错误。");
         }
         WaterManagementUrbanIndustry waterManagementUrbanIndustry = new WaterManagementUrbanIndustry();
@@ -117,13 +118,13 @@ public class IndustrialWaterFeeServiceImpl extends ServiceImpl<IndustrialWaterFe
         Double annualCumulativeWaterConsumption = sumFlow * 8.64;
         waterManagementUrbanIndustry.setAnnualCumulativeWaterConsumption(round(annualCumulativeWaterConsumption, 3));
         //应交农业水费
-        Double agriculturalWaterFeesPayable = input.getAgriculturalProportion() / 100 * sumFlow * 8.64 * input.getAgriculturalWaterPrice();
+        Double agriculturalWaterFeesPayable = annualCumulativeWaterConsumption * (input.getAgriculturalProportion() / 100.0) * input.getAgriculturalWaterPrice();
         waterManagementUrbanIndustry.setAgriculturalWaterFeesPayable(round(agriculturalWaterFeesPayable, 3));
         //应交工业水费
-        Double industrialWaterFeesPayable = input.getIndustrialProportion() / 100 * sumFlow * 8.64 * input.getIndustrialWaterPrice();
+        Double industrialWaterFeesPayable = annualCumulativeWaterConsumption * (input.getIndustrialProportion() / 100.0) * input.getIndustrialWaterPrice();
         waterManagementUrbanIndustry.setIndustrialWaterFeesPayable(round(industrialWaterFeesPayable, 3));
         //应交工业水资源费
-        Double waterResourceWaterFeesPayable = input.getIndustrialProportion() / 100 * sumFlow * 8.64 * input.getWaterResourceTaxes();
+        Double waterResourceWaterFeesPayable = annualCumulativeWaterConsumption * (input.getIndustrialProportion() / 100.0) * input.getWaterResourceTaxes();
         waterManagementUrbanIndustry.setWaterResourceWaterFeesPayable(round(waterResourceWaterFeesPayable, 3));
         //应交水费合计
         Double totalWaterFeesPayable = agriculturalWaterFeesPayable + industrialWaterFeesPayable + waterResourceWaterFeesPayable;
@@ -131,13 +132,13 @@ public class IndustrialWaterFeeServiceImpl extends ServiceImpl<IndustrialWaterFe
         //已交水费合计
         waterManagementUrbanIndustry.setTotalPaidWaterFees(totalPaidWaterFees);
         //已交农业水费 应交农业/应交水费合计*已交水费合计
-        Double agriculturalPaidWaterFees = agriculturalWaterFeesPayable / totalWaterFeesPayable * totalPaidWaterFees;
+        Double agriculturalPaidWaterFees = (totalWaterFeesPayable * totalPaidWaterFees) == 0.0 ? 0.0 : agriculturalWaterFeesPayable / totalWaterFeesPayable * totalPaidWaterFees;
         waterManagementUrbanIndustry.setAgriculturalPaidWaterFees(round(agriculturalPaidWaterFees, 3));
         //已交工业水费
-        Double industrialPaidWaterFees = industrialWaterFeesPayable / totalWaterFeesPayable * totalPaidWaterFees;
+        Double industrialPaidWaterFees = (totalWaterFeesPayable * totalPaidWaterFees) == 0.0 ? 0.0 : industrialWaterFeesPayable / totalWaterFeesPayable * totalPaidWaterFees;
         waterManagementUrbanIndustry.setIndustrialPaidWaterFees(round(industrialPaidWaterFees, 3));
         //预交工业水资源费
-        Double waterResourcePaidWaterFees = waterResourceWaterFeesPayable / totalWaterFeesPayable * totalPaidWaterFees;
+        Double waterResourcePaidWaterFees = (totalWaterFeesPayable * totalPaidWaterFees) == 0.0 ? 0.0 : waterResourceWaterFeesPayable / totalWaterFeesPayable * totalPaidWaterFees;
         waterManagementUrbanIndustry.setWaterResourcePaidWaterFees(round(waterResourcePaidWaterFees, 3));
         //盈余水费合计
         Double totalSurplusWaterFees = totalPaidWaterFees - totalWaterFeesPayable;
@@ -153,27 +154,29 @@ public class IndustrialWaterFeeServiceImpl extends ServiceImpl<IndustrialWaterFe
         waterManagementUrbanIndustry.setWaterResourceSurplusWaterFees(round(waterResourceSurplusWaterFees, 3));
 
         //应交农业水费
-        Double notAgriculturalWaterFeesPayable = input.getNotAgriculturalProportion() / 100 * sumFlow * 8.64 * input.getNotAgriculturalWaterPrice();
+        Double notAgriculturalWaterFeesPayable = annualCumulativeWaterConsumption * (input.getNotAgriculturalProportion() / 100.0) * input.getNotAgriculturalWaterPrice();
         waterManagementUrbanIndustry.setNotAgriculturalWaterFeesPayable(round(notAgriculturalWaterFeesPayable, 3));
         //已交农业水费 应交农业/应交水费合计*已交水费合计
-        Double notAgriculturalPaidWaterFees = notAgriculturalWaterFeesPayable / totalWaterFeesPayable * totalPaidWaterFees;
+        Double notAgriculturalPaidWaterFees = (totalWaterFeesPayable * totalPaidWaterFees) == 0.0 ? 0.0 : notAgriculturalWaterFeesPayable / totalWaterFeesPayable * totalPaidWaterFees;
         waterManagementUrbanIndustry.setNotAgriculturalPaidWaterFees(round(notAgriculturalPaidWaterFees, 3));
         //盈余农业水费
         Double notAgriculturalSurplusWaterFees = notAgriculturalPaidWaterFees - notAgriculturalWaterFeesPayable;
         waterManagementUrbanIndustry.setNotAgriculturalSurplusWaterFees(round(notAgriculturalSurplusWaterFees, 3));
 
-        Long count =  waterManagementUrbanIndustryService.lambdaQuery()
+        Long count = waterManagementUrbanIndustryService.lambdaQuery()
                 .eq(WaterManagementUrbanIndustry::getSiteCode, input.getSiteCode())
                 .eq(WaterManagementUrbanIndustry::getYear, input.getYear())
                 .eq(WaterManagementUrbanIndustry::getMonth, input.getMonth()).count();
-        if (count > 0 ){
+        if (count > 0) {
             String id = waterManagementUrbanIndustryService.lambdaQuery()
                     .eq(WaterManagementUrbanIndustry::getSiteCode, input.getSiteCode())
                     .eq(WaterManagementUrbanIndustry::getYear, input.getYear())
                     .eq(WaterManagementUrbanIndustry::getMonth, input.getMonth()).last("limit 1").one().getId();
             waterManagementUrbanIndustry.setId(id);
-            waterManagementUrbanIndustryService.updateById(waterManagementUrbanIndustry);
-        }else {
+            waterManagementUrbanIndustryService.lambdaUpdate()
+                    .eq(WaterManagementUrbanIndustry::getId,waterManagementUrbanIndustry.getId())
+                    .update(waterManagementUrbanIndustry);
+        } else {
             waterManagementUrbanIndustryService.save(waterManagementUrbanIndustry);
         }
         return waterManagementUrbanIndustry;
@@ -182,19 +185,19 @@ public class IndustrialWaterFeeServiceImpl extends ServiceImpl<IndustrialWaterFe
     @Override
     public SelectPaymentHistoryRes selectPaymentHistory(SelectPaymentHistoryReq input) {
         WaterManagementUrbanIndustry res =
-         waterManagementUrbanIndustryService.lambdaQuery()
-                .eq(WaterManagementUrbanIndustry::getSiteCode, input.getSiteCode())
-                .orderByDesc(WaterManagementUrbanIndustry::getYear,WaterManagementUrbanIndustry::getMonth)
-                .last("limit 1").one();
+                waterManagementUrbanIndustryService.lambdaQuery()
+                        .eq(WaterManagementUrbanIndustry::getSiteCode, input.getSiteCode())
+                        .orderByDesc(WaterManagementUrbanIndustry::getYear, WaterManagementUrbanIndustry::getMonth)
+                        .last("limit 1").one();
         SelectPaymentHistoryRes res1 = new SelectPaymentHistoryRes();
         res1.setAgriculturalWaterPrice(res.getAgriculturalWaterPrice());
         res1.setIndustrialWaterPrice(res.getIndustrialWaterPrice());
         res1.setNotAgriculturalWaterPrice(res.getNotAgriculturalWaterPrice());
         res1.setWaterResourceTaxes(res.getWaterResourceTaxes());
         res1.setIndustrialProportion(res.getIndustrialProportion());
-        res1.setAgriculturalProportion(res1.getAgriculturalProportion());
+        res1.setAgriculturalProportion(res.getAgriculturalProportion());
         res1.setNotAgriculturalProportion(res.getNotAgriculturalProportion());
-        return  res1;
+        return res1;
     }
 }
 

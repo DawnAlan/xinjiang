@@ -21,9 +21,9 @@ public class SelectPaymentHistoryRes {
     @ApiModelProperty("水资源征收标准")
     private Double waterResourceTaxes;
     @ApiModelProperty("农业水量")
-    private Integer agriculturalProportion = 30;
+    private Integer agriculturalProportion = 0;
     @ApiModelProperty("工业水量")
-    private Integer industrialProportion = 70;
+    private Integer industrialProportion = 0;
     //非农业水量
     @ApiModelProperty("非农业水量")
     private Integer notAgriculturalProportion = 0;
