@@ -15,10 +15,12 @@ import java.io.Serializable;
 public class ApprovalTrafficOverview extends Model<ApprovalTrafficOverview> {
     //主键ID
     private String id;
-    //站点
+    //站点名称
     private String stationName;
-    //父节点id
-    private String pid;
+    //站点id
+    private String stationId;
+    //站点父节点id
+    private String stationPid;
     //早8流量
     private Double eightFlow;
     //加减流量
