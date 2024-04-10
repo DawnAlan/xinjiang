@@ -212,19 +212,25 @@ public class OutResult {
             option.setTypeName(req.getTypeName());
             option.setStationType("八钢工业");
             option.setStationName("八钢工业用水");
-            option.setWater(Out1.get(0).getWaterSupplyIndustry()[0][i]);
-            option.setProportion(Out1.get(0).getProportionIndustry()[0][i]);
-            option.setWaterLack(Double.parseDouble(df.format(Out1.get(0).getWaterDemandIndustry()[0][i]-Out1.get(0).getWaterSupplyIndustry()[0][i])));
+            option.setWater(Out1.get(0).getWaterSupply()[2][i]);
+            if (Out1.get(0).getWaterdemand()[2][i]==0){
+                double n=1;
+                option.setProportion(n);
+            }
+            else{
+                option.setProportion(Out1.get(0).getWaterSupply()[2][i]/Out1.get(0).getWaterdemand()[2][i]);
+            }
+            option.setWaterLack(Double.parseDouble(df.format(Out1.get(0).getWaterdemand()[2][i]-Out1.get(0).getWaterSupply()[2][i])));
             option2.add(option);
         }
-        for(int x=1;x<Out1.get(0).getNameQushou().length;x++)
+        for(int x=0;x<Out1.get(0).getNameQushou().length;x++)
         {
             for (int i = 0; i < length; i++) {
                 Option_Water option = new Option_Water();
                 option.setTime(Out1.get(0).getTime()[i]);
                 option.setTypeName(req.getTypeName());
                 option.setStationType("渠首工业");
-                option.setStationName(Out1.get(0).getNameQushou()[x-1]);
+                option.setStationName(Out1.get(0).getNameQushou()[x]);
                 option.setWater(Out1.get(0).getWaterSupplyIndustry()[x][i]);
                 option.setProportion(Out1.get(0).getProportionIndustry()[x][i]);
                 option.setWaterLack(Double.parseDouble(df.format(Out1.get(0).getWaterDemandIndustry()[x][i]-Out1.get(0).getWaterSupplyIndustry()[x][i])));
@@ -249,7 +255,7 @@ public class OutResult {
             option.setWaterLack(Double.parseDouble(df.format(Out1.get(0).getWaterdemand()[3][i]-Out1.get(0).getWaterSupply()[3][i])));
             option2.add(option);
         }
-        for(int x=1;x<Out1.get(0).getNameWest().length;x++)
+        for(int x=2;x<Out1.get(0).getNameWest().length;x++)
         {
             for (int i = 0; i < length; i++)
             {
