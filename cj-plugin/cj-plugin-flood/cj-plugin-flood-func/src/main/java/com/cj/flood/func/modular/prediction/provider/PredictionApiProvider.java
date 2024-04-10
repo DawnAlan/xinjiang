@@ -1,10 +1,12 @@
 package com.cj.flood.func.modular.prediction.provider;
 
+import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.NumberUtil;
 import com.cj.common.util.RedisUtil;
+import com.cj.common.util.RestTemplateUtil;
 import com.cj.flood.api.PredictionApi;
 import com.cj.flood.func.modular.dispatch.entity.FloodControlOperation;
 import com.cj.flood.func.modular.dispatch.service.FloodControlOperationService;
@@ -30,6 +32,10 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -154,6 +160,8 @@ public class PredictionApiProvider implements PredictionApi {
     @SneakyThrows
     @Override
     public String getRealTimeWaterLevelData(String date) {
+        String lzzId = "f4e914b3e4f34ac18148c93eae02924f";
+        String tthId = "f00584c2a99c40278e5513e8df1589a2";
         List<RealTimeEngineeringSituationDataRes> result = new ArrayList<>();
         LzzGaugingStation lzzGaugingStation = lzzGaugingStationService.selectInfoByTime(date.split(":")[0],"楼庄子库水位站");
         RealTimeEngineeringSituationDataRes lzzData = new RealTimeEngineeringSituationDataRes();
@@ -176,7 +184,7 @@ public class PredictionApiProvider implements PredictionApi {
                 List<Date> collect = dateList.stream().sorted(Comparator.comparing(Date::getDate, Comparator.reverseOrder())).collect(Collectors.toList());
                 Double v = collect.size()>0?(Double) redisUtil.get("lzz:time:waterLevel:true:"+sdf1.format(collect.get(0))):null;
                 lzzData.setRealTimeWaterLevel(v==null?null:formatDouble(v));
-                lzzData.setUsedStorageCapacity(v==null?null:formatDouble(calculateStorageCapacity(v,"lzz")));
+                lzzData.setUsedStorageCapacity(v==null?null:formatDouble(getWaterLevelByFlow(v,lzzId)));
                 lzzData.setRemainingStorageCapacity(v==null?null:7374.0 - lzzData.getUsedStorageCapacity());
             }else {
                 lzzData.setRealTimeWaterLevel(lzzGaugingStation.getRelativeWaterLevel());
@@ -199,9 +207,9 @@ public class PredictionApiProvider implements PredictionApi {
             List<Date> collect = dateList.stream().sorted(Comparator.comparing(Date::getDate, Comparator.reverseOrder())).collect(Collectors.toList());
             Double v = collect.size()>0?(Double) redisUtil.get("lzz:time:waterLevel:true:"+sdf1.format(collect.get(0))):null;
             lzzData.setRealTimeWaterLevel(v==null?null:formatDouble(v));
-            lzzData.setReservoirName("楼庄子库水位站");
+            lzzData.setReservoirName("楼庄子水库");
             lzzData.setFloodControlLevel(1394.50);
-            lzzData.setUsedStorageCapacity(v==null?null:formatDouble(calculateStorageCapacity(v,"lzz")));
+            lzzData.setUsedStorageCapacity(v==null?null:formatDouble(getWaterLevelByFlow(v,lzzId)));
             lzzData.setRemainingStorageCapacity(v==null?null:7374-lzzData.getUsedStorageCapacity());//总库容：7374.0
         }
         result.add(lzzData);
@@ -217,7 +225,7 @@ public class PredictionApiProvider implements PredictionApi {
             tthData.setReservoirName(irrigatedPlatformDataInfo.getMonitorName());
             tthData.setFloodControlLevel(988.0);
             tthData.setRealTimeWaterLevel(irrigatedPlatformDataInfo.getSqWaterLevel());
-            tthData.setUsedStorageCapacity(irrigatedPlatformDataInfo.getSqCapacity());
+            tthData.setUsedStorageCapacity(getWaterLevelByFlow(irrigatedPlatformDataInfo.getSqWaterLevel(),tthId));
             tthData.setRemainingStorageCapacity(2030.0 - tthData.getUsedStorageCapacity());
         }else {
             Set<String> allKeysWaterLevel = redisUtil.getAllKeys("irrigatedPlatform:sq:tth:waterLevel");
@@ -240,13 +248,11 @@ public class PredictionApiProvider implements PredictionApi {
                 Date parse = sdf1.parse(dateTemp);
                 dateListCapacity.add(parse);
             }
-            List<Date> collectCapacity = dateListCapacity.stream().sorted(Comparator.comparing(Date::getDate, Comparator.reverseOrder())).collect(Collectors.toList());
-            Double capacity = (Double) redisUtil.get("irrigatedPlatform:sq:tth:capacity:"+sdf1.format(collectCapacity.get(0)));
-            tthData.setReservoirName("头屯河水库水位");
+            tthData.setReservoirName("头屯河水库");
             tthData.setFloodControlLevel(988.0);
             tthData.setRealTimeWaterLevel(waterLevel);
-            tthData.setUsedStorageCapacity(capacity);
-            tthData.setRemainingStorageCapacity(2030.0-capacity);
+            tthData.setUsedStorageCapacity(getWaterLevelByFlow(tthData.getRealTimeWaterLevel(),tthId));
+            tthData.setRemainingStorageCapacity(2030.0 - tthData.getUsedStorageCapacity());
         }
         result.add(tthData);
         return JSONObject.toJSONString(result);
@@ -692,4 +698,17 @@ public class PredictionApiProvider implements PredictionApi {
         String format = df.format(value);
         return Double.parseDouble(format);
     }
+
+    @SneakyThrows
+    private Double getWaterLevelByFlow(Double level, String id){
+        String token = StpUtil.getTokenValue();
+        InetAddress localHost = InetAddress.getLocalHost();
+        //String hostAddress = "192.168.31.154";
+        String hostAddress = localHost.getHostAddress();
+        String url = "http://" + hostAddress +":9003/toutunhe/wpdCurved/queryLevelFlow?ndcdId="+id+"&level="+level;
+        String s = RestTemplateUtil.getBySaToken(url,token);
+        BigDecimal value = (BigDecimal) JSONObject.parseObject(s).get("data");
+        return value.doubleValue();
+    }
+
 }

@@ -14,4 +14,6 @@ public class TrendsTableParamUpdateReq implements Serializable {
 
     @ApiModelProperty(value = "用水类型")
     private String useWaterType;
+
+
 }

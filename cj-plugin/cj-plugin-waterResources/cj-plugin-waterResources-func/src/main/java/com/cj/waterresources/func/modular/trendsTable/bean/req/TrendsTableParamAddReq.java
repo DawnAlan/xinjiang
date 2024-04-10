@@ -57,4 +57,10 @@ public class TrendsTableParamAddReq implements Serializable {
 
     @ApiModelProperty(value = "全局单位id")
     private String unitId;
+
+    @ApiModelProperty(value = "区域（1、昌吉 2、十二师 3、乌鲁木齐）")
+    private Integer area;
+
+    @ApiModelProperty(value = "类别（1、流量  2、水位 3、库容  4、浊度）")
+    private Integer category;
 }
