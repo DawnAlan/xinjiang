@@ -2,7 +2,9 @@ package com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQ
 
 import com.cj.business.log.modular.log.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
+import com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuota.bean.req.IrrigationQuotaContrastReq;
 import com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuota.bean.req.IrrigationQuotaListReq;
+import com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuota.bean.res.IrrigationQuotaContrastRes;
 import com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuota.entity.IrrigationQuota;
 import com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuota.service.IrrigationQuotaService;
 import com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuotaDetails.bean.req.StatisticsReq;
@@ -77,6 +79,15 @@ public class IrrigationQuotaController {
     @PostMapping("/statistics")
     public RestResponse statistics(@RequestBody StatisticsReq req) {
         return irrigationQuotaDetailsService.statistics(req);
+    }
+
+    @ApiOperationSupport(order = 6)
+    @ApiOperation("灌溉额度表对比")
+    @CommonLog(value = "灌溉额度表对比")
+    @PostMapping("/contrast")
+    public RestResponse<List<IrrigationQuotaContrastRes>> contrast(@RequestBody StatisticsReq req) {
+        List<IrrigationQuotaContrastRes> resList = irrigationQuotaDetailsService.contrast(req);
+        return RestResponse.ok(resList);
     }
 
 }

@@ -189,6 +189,9 @@ public class IndustrialWaterFeeServiceImpl extends ServiceImpl<IndustrialWaterFe
                         .eq(WaterManagementUrbanIndustry::getSiteCode, input.getSiteCode())
                         .orderByDesc(WaterManagementUrbanIndustry::getYear, WaterManagementUrbanIndustry::getMonth)
                         .last("limit 1").one();
+        if (res == null){
+            return null;
+        }
         SelectPaymentHistoryRes res1 = new SelectPaymentHistoryRes();
         res1.setAgriculturalWaterPrice(res.getAgriculturalWaterPrice());
         res1.setIndustrialWaterPrice(res.getIndustrialWaterPrice());

@@ -2,6 +2,7 @@ package com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQ
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cj.common.model.RestResponse;
+import com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuota.bean.res.IrrigationQuotaContrastRes;
 import com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuotaDetails.bean.req.StatisticsReq;
 import com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuotaDetails.mapper.IrrigationQuotaDetailsMapper;
 import com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuotaDetails.entity.IrrigationQuotaDetails;
@@ -21,7 +22,7 @@ import java.util.stream.Collectors;
  */
 @Service("irrigationQuotaDetailsService")
 public class IrrigationQuotaDetailsServiceImpl extends ServiceImpl<IrrigationQuotaDetailsMapper, IrrigationQuotaDetails> implements IrrigationQuotaDetailsService {
-
+    private IrrigationQuotaDetailsMapper irrigationQuotaDetailsMapper;
     @Override
     public RestResponse<Map<String,List<IrrigationQuotaDetails>>> statistics(StatisticsReq req) {
         List<IrrigationQuotaDetails> statistics = this.baseMapper.statistics(req);
@@ -41,6 +42,14 @@ public class IrrigationQuotaDetailsServiceImpl extends ServiceImpl<IrrigationQuo
         }else {
             return RestResponse.no("blank");
         }
+    }
+
+    @Override
+    public List<IrrigationQuotaContrastRes> contrast(StatisticsReq req) {
+
+        irrigationQuotaDetailsMapper.contrast(req);
+
+        return null;
     }
 }
 
