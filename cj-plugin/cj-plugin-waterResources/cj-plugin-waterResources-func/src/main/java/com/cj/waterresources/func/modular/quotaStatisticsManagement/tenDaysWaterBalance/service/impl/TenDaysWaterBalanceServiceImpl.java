@@ -12,7 +12,7 @@ import com.cj.waterresources.func.modular.quotaStatisticsManagement.tenDaysWater
 import com.cj.waterresources.func.modular.quotaStatisticsManagement.tenDaysWaterBalance.service.TenDaysWaterBalanceService;
 import com.cj.waterresources.func.modular.trendsTable.entity.TrendsTableParam;
 import com.cj.waterresources.func.modular.trendsTable.service.TrendsTableParamService;
-import com.cj.waterresources.func.modular.waterPrice.canalHeadManagementStation.entity.CanalHeadManagementStationTotal;
+
 import com.cj.waterresources.func.modular.waterPrice.waterDistributionRatio.entity.WaterDistributionRatio;
 import com.cj.waterresources.func.modular.waterPrice.waterDistributionRatio.service.WaterDistributionRatioService;
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.bean.res.SelectTotalForIndexRes;
