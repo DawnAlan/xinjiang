@@ -16,5 +16,7 @@ import java.util.List;
 public interface IrrigationQuotaDetailsMapper extends BaseMapper<IrrigationQuotaDetails> {
     List<IrrigationQuotaDetails> statistics(@Param("req") StatisticsReq req);
 
+
+    void contrast(StatisticsReq req);
 }
 

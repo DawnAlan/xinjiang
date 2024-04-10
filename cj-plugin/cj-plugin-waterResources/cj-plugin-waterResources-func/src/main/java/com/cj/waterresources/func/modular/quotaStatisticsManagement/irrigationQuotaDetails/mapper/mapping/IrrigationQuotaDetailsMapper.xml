@@ -22,4 +22,41 @@
             </if>
         </where>
     </select>
+
+    <select id="contrast" parameterType="com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuota.bean.req.IrrigationQuotaContrastReq" resultType="com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuota.bean.res.IrrigationQuotaContrastRes">
+        SELECT YEAR(T2.CREATE_TIME)       AS YEAR,
+               MONTH(T2.CREATE_TIME)      AS MONTH,
+               T2.TEN_DAYS,
+               T2.STATION,
+               T2.WATER_USER,
+               T2.CROP_TYPE,
+               T2.IRRIGATION_CROP,
+               T2.IRRIGATION_WATER_VOLUME AS SJ_VOLUME,
+               T1.WATER_DEMAND            AS JH_VOLUME,
+               T2.IRRIGATION_AREA         AS SJ_AREA,
+               T1.IRRIGATED_AREA          AS JH_AREA
+        FROM "TTH"."IRRIGATION_QUOTA_DETAILS" T2
+                 LEFT JOIN "TTH"."TEN_DAY_WATER_USE_PLAN" T1 ON
+                    T1.YEAR = YEAR(T2.CREATE_TIME)
+                AND T1.MONTH = MONTH(T2.CREATE_TIME)
+                AND T1.TEN_DAYS = T2.TEN_DAYS
+                AND T1.AREA = T2.STATION
+                AND T1.USE_WATER_USER = T2.WATER_USER
+                AND T1.CROP_TYPE = T2.CROP_TYPE
+                AND T1.IRRIGATED_CROP = T2.IRRIGATION_CROP
+        WHERE 1 = 1
+        <if test="req.startTime !=null and req.startTime !='' and req.endTime !=null and req.endTime !='' ">
+            AND YEAR(T2.CREATE_TIME) between YEAR(#{req.startTime}) and YEAR(#{req.endTime})
+            AND MONTH(T2.CREATE_TIME) between MONTH(#{req.startTime}) and MONTH(#{req.endTime})
+        </if>
+        <if test="req.station !=null and req.station !=''">
+            AND T2.STATION = #{req.station}
+        </if>
+        <if test="req.unit !=null and req.unit !=''">
+            AND T2.WATER_USER = #{req.unit}
+        </if>
+        <if test="req.cropType !=null and req.cropType !=''">
+            AND T2.CROP_TYPE = #{req.cropType}
+        </if>
+    </select>
 </mapper>
