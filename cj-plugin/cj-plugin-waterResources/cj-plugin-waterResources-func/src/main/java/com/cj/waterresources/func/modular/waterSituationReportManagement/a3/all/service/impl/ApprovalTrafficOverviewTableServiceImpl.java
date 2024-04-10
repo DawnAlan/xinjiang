@@ -196,7 +196,7 @@ public class ApprovalTrafficOverviewTableServiceImpl extends ServiceImpl<Approva
                 Double eightQs = qsList.stream().filter(t -> t.getTableHeadId().equals(res.getUnitId()) && t.getV() != null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00);
                 Double eightQsLh = qsLhList.stream().filter(t -> t.getTableHeadId().equals(res.getUnitId()) && t.getV() != null).map(DayWaterSituationStatisticsTableQsLh::getV).reduce(Double::sum).orElse(0.00);
                 approvalTrafficOverview.setEightFlow(eightQs+eightQsLh);
-                approvalTrafficOverview.setAddSubtractFlow();
+                approvalTrafficOverview.setAddSubtractFlow(Double.parseDouble(res.getFlow())+Double.parseDouble(res.getWaterPlan()));
                 approvalTrafficOverviewQsList.add(approvalTrafficOverview);
             }
             resultMap.put("渠首管理站",approvalTrafficOverviewQsList);
