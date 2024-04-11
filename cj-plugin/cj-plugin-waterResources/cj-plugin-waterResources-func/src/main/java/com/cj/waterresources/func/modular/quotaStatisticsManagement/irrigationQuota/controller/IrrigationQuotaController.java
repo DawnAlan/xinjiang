@@ -85,7 +85,7 @@ public class IrrigationQuotaController {
     @ApiOperation("灌溉额度表对比")
     @CommonLog(value = "灌溉额度表对比")
     @PostMapping("/contrast")
-    public RestResponse<List<IrrigationQuotaContrastRes>> contrast(@RequestBody StatisticsReq req) {
+    public RestResponse<List<IrrigationQuotaContrastRes>> contrast(@RequestBody IrrigationQuotaContrastReq req) {
         List<IrrigationQuotaContrastRes> resList = irrigationQuotaDetailsService.contrast(req);
         return RestResponse.ok(resList);
     }

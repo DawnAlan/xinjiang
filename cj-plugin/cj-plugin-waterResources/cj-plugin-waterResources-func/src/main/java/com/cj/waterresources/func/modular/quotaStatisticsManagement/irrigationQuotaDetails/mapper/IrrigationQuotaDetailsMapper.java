@@ -1,6 +1,8 @@
 package com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuotaDetails.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuota.bean.req.IrrigationQuotaContrastReq;
+import com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuota.bean.res.IrrigationQuotaContrastRes;
 import com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuotaDetails.bean.req.StatisticsReq;
 import com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuotaDetails.entity.IrrigationQuotaDetails;
 import org.apache.ibatis.annotations.Param;
@@ -17,6 +19,6 @@ public interface IrrigationQuotaDetailsMapper extends BaseMapper<IrrigationQuota
     List<IrrigationQuotaDetails> statistics(@Param("req") StatisticsReq req);
 
 
-    void contrast(StatisticsReq req);
+    List<IrrigationQuotaContrastRes> contrast(@Param("req") IrrigationQuotaContrastReq req);
 }
 
