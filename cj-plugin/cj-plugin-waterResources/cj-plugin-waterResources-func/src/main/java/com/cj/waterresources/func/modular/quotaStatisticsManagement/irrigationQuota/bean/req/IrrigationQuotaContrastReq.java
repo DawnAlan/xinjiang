@@ -1,7 +1,9 @@
 package com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuota.bean.req;
 
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 
+@Data
 public class IrrigationQuotaContrastReq {
     @ApiModelProperty(value = "开始时间")
     private String startTime;

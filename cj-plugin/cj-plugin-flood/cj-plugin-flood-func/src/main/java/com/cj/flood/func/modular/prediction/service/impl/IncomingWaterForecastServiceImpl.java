@@ -733,6 +733,7 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
     @Override
     public RestResponse<List<IncomingWaterForecast>> selectListByTime(WaterResourceAllocationTimeReq req) {
         return RestResponse.ok(this.lambdaQuery().le(IncomingWaterForecast::getPredictionTime, req.getStartTime())
+                .ge(IncomingWaterForecast::getEndTime, req.getEndTime())
                 .eq(req.getBucketType().equals(1), IncomingWaterForecast::getModelType, 1)//中长期
                 .eq(req.getBucketType().equals(1), IncomingWaterForecast::getPeriodTimeType, 1)//月
 
@@ -741,13 +742,13 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
 
                 .eq(req.getBucketType().equals(3) || req.getBucketType().equals(4), IncomingWaterForecast::getModelType, 2)//短期
 
-                .apply("case period_time_type \n" +
-                        "when 1 then ADD_MONTHS(PREDICTION_TIME, PERIOD_TIME_STEP * PERIOD_TIME_NUM)\n" +
-                        "when 2 then \n" +
-                        "ADD_DAYS(ADD_MONTHS(PREDICTION_TIME, PERIOD_TIME_STEP * PERIOD_TIME_NUM / 3), PERIOD_TIME_STEP * PERIOD_TIME_NUM % 3 * 10)\n" +
-                        "when 3 then ADD_DAYS(PREDICTION_TIME, PERIOD_TIME_STEP * PERIOD_TIME_NUM)\n" +
-                        "when 4 then DATEADD(HH, PERIOD_TIME_STEP * PERIOD_TIME_NUM, PREDICTION_TIME)\n" +
-                        "end >= to_date({0}, 'yyyy-mm-dd hh24:mi:ss')", sdf.format(req.getEndTime()))
+//                .apply("case period_time_type \n" +
+//                        "when 1 then ADD_MONTHS(PREDICTION_TIME, PERIOD_TIME_STEP * PERIOD_TIME_NUM)\n" +
+//                        "when 2 then \n" +
+//                        "ADD_DAYS(ADD_MONTHS(PREDICTION_TIME, PERIOD_TIME_STEP * PERIOD_TIME_NUM / 3), PERIOD_TIME_STEP * PERIOD_TIME_NUM % 3 * 10)\n" +
+//                        "when 3 then ADD_DAYS(PREDICTION_TIME, PERIOD_TIME_STEP * PERIOD_TIME_NUM)\n" +
+//                        "when 4 then DATEADD(HH, PERIOD_TIME_STEP * PERIOD_TIME_NUM, PREDICTION_TIME)\n" +
+//                        "end >= to_date({0}, 'yyyy-mm-dd hh24:mi:ss')", sdf.format(req.getEndTime()))
                 .list());
     }
 }

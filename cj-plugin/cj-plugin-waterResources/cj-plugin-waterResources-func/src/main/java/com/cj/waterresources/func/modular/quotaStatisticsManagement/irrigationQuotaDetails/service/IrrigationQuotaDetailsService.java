@@ -2,6 +2,7 @@ package com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQ
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.cj.common.model.RestResponse;
+import com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuota.bean.req.IrrigationQuotaContrastReq;
 import com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuota.bean.res.IrrigationQuotaContrastRes;
 import com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuotaDetails.bean.req.StatisticsReq;
 import com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuotaDetails.entity.IrrigationQuotaDetails;
@@ -19,6 +20,6 @@ public interface IrrigationQuotaDetailsService extends IService<IrrigationQuotaD
 
     RestResponse<Map<String,List<IrrigationQuotaDetails>>> statistics(StatisticsReq req);
 
-    List<IrrigationQuotaContrastRes> contrast(StatisticsReq req);
+    Map<String, List<IrrigationQuotaContrastRes>> contrast(IrrigationQuotaContrastReq req);
 }
 

@@ -19,6 +19,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -85,9 +86,8 @@ public class IrrigationQuotaController {
     @ApiOperation("灌溉额度表对比")
     @CommonLog(value = "灌溉额度表对比")
     @PostMapping("/contrast")
-    public RestResponse<List<IrrigationQuotaContrastRes>> contrast(@RequestBody StatisticsReq req) {
-        List<IrrigationQuotaContrastRes> resList = irrigationQuotaDetailsService.contrast(req);
-        return RestResponse.ok(resList);
+    public RestResponse<Map<String, List<IrrigationQuotaContrastRes>>> contrast(@RequestBody IrrigationQuotaContrastReq req) {
+        return RestResponse.ok(irrigationQuotaDetailsService.contrast(req));
     }
 
 }
