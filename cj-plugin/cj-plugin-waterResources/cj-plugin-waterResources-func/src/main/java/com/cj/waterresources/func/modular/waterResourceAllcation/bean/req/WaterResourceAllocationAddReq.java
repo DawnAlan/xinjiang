@@ -36,8 +36,11 @@ public class WaterResourceAllocationAddReq implements Serializable {
     @ApiModelProperty(value = "配水类型(1-供水比例最大 2-供水缺额最小 3-单库调度)")
     private Integer waterDistributionType;
 
+    @ApiModelProperty(value = "来水数据类型,0-来水预报方案,1-供水计划")
+    private Integer inflowDataType;
+
     //来水数据id
-    @ApiModelProperty(value = "来水数据地址")
+    @ApiModelProperty(value = "来水预报方案id,或者供水计划id")
     private String inflowDataId;
 
     //来水数据地址
