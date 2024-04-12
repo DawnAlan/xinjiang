@@ -29,8 +29,8 @@ public interface PredictionFeign {
                                @RequestParam(value = "lzzIdList", required =true)List<String> lzzIdList,
                                @RequestParam(value = "tthIdList", required =true)List<String> tthIdList);
 
-    @RequestMapping("/feign/provider/prediction/getRealTimeWaterLevelData")
-    String getRealTimeWaterLevelData(@RequestParam(value = "date", required =true)String date);
+  /*  @RequestMapping("/feign/provider/prediction/getRealTimeWaterLevelData")
+    String getRealTimeWaterLevelData(@RequestParam(value = "date", required =true)String date);*/
 
     @RequestMapping("/feign/provider/prediction/getRealTimeReservoirLevelData")
     String getRealTimeReservoirLevelData(@RequestParam(value = "date", required =true)String date);

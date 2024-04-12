@@ -11,6 +11,7 @@ import com.cj.flood.api.PredictionApi;
 import com.cj.middleDatabase.func.modular.dto.RealTimeRainfallRes;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.entity.IrrigatedPlatformDataInfo;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.mapper.IrrigatedPlatformDataInfoMapper;
+import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.service.IrrigatedPlatformDataInfoService;
 import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.entity.LzzGaugingStation;
 import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.mapper.LzzGaugingStationMapper;
 import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.service.LzzGaugingStationService;
@@ -57,6 +58,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.net.InetAddress;
 import java.text.DecimalFormat;
 import java.text.ParseException;
@@ -90,6 +92,8 @@ public class AllServiceImpl implements AllService {
     private final IrrigatedPlatformDataInfoMapper irrigatedPlatformDataInfoMapper;
     private final LzzGaugingStationMapper lzzGaugingStationMapper;
     private final PredictionApi predictionApi;
+    private final LzzGaugingStationService lzzGaugingStationService;
+    private final IrrigatedPlatformDataInfoService irrigatedPlatformDataInfoService;
 
 
     @Override
@@ -1118,6 +1122,121 @@ public class AllServiceImpl implements AllService {
         return RestResponse.no("暂无数据");
     }
 
+    @SneakyThrows
+    @Override
+    public RestResponse<List<RealTimeEngineeringSituationDataRes>> getRealTimeWaterLevelData(String date) {
+        List<RealTimeEngineeringSituationDataRes> result = new ArrayList<>();
+        SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        String lzzId = "f4e914b3e4f34ac18148c93eae02924f";
+        String tthId = "f00584c2a99c40278e5513e8df1589a2";
+
+        String mk = (String) redisUtil.get("trendsTableParam:list");
+        if(StringUtils.isEmpty(mk)){
+            trendsTableParamService.updateCache();
+            mk = (String) redisUtil.get("trendsTableParam:list");
+        }
+        List<TrendsTableParam> trendsTableParamList = JSONObject.parseArray(mk, TrendsTableParam.class);
+
+        RealTimeEngineeringSituationDataRes lzzData = new RealTimeEngineeringSituationDataRes();
+        lzzData.setReservoirName("楼庄子水库");
+        lzzData.setFloodControlLevel(1394.5);
+        Set<String> allKeys = redisUtil.getAllKeys("lzz:time:waterLevel:true:"+date);
+        if(allKeys.isEmpty()){
+            List<TrendsTableParam> collect = trendsTableParamList.stream().filter(t -> t.getUseType() == 1 && t.getUseStation().equals("楼庄子水库")).collect(Collectors.toList());
+            TrendsTableParam waterLevelParam = collect.stream().filter(t -> t.getPId().equals("0") && t.getParamName().equals("库水位")).collect(Collectors.toList()).get(0);
+            DayWaterSituationStatisticsTableLzz waterLevel = dayWaterSituationStatisticsTableLzzMapper.selectListForIndex(date,waterLevelParam.getId());
+            if(waterLevel!=null){
+                lzzData.setRealTimeWaterLevel(formatDouble(waterLevel.getV()));
+            }
+            TrendsTableParam capacityParam = collect.stream().filter(t -> t.getPId().equals("0") && t.getParamName().equals("库容")).collect(Collectors.toList()).get(0);
+            DayWaterSituationStatisticsTableLzz capacity = dayWaterSituationStatisticsTableLzzMapper.selectListForIndex(date,capacityParam.getId());
+            if(capacity!=null){
+                lzzData.setUsedStorageCapacity(formatDouble(capacity.getV()));
+            }else {
+                if(waterLevel!=null){
+                    lzzData.setUsedStorageCapacity(formatDouble(getWaterLevelByLevel(waterLevel.getV(),lzzId)));
+
+                }
+            }
+            lzzData.setRemainingStorageCapacity(lzzData.getUsedStorageCapacity()==null?null:formatDouble(7374.0 - lzzData.getUsedStorageCapacity()));
+        }else {
+            List<Date> dateList = new ArrayList<>();
+            for(String s:allKeys){
+                if(s.contains("日均")){
+                    continue;
+                }
+                String[] split1 = s.split(" ");
+                int length = split1[split1.length-1].split(":").length;
+                String[] split2 = split1[0].split(":");
+                String dateTemp =split2[split2.length-1]+" "+(length==1?split1[split1.length-1]+":00":split1[split1.length-1]);
+                Date parse = sdf1.parse(dateTemp);
+                dateList.add(parse);
+            }
+            List<Date> collect = dateList.stream().sorted(Comparator.comparing(Date::getDate, Comparator.reverseOrder())).collect(Collectors.toList());
+            Double v = collect.size()>0?(Double) redisUtil.get("lzz:time:waterLevel:true:"+sdf1.format(collect.get(0))):null;
+            lzzData.setRealTimeWaterLevel(v==null?null:formatDouble(v));
+            lzzData.setUsedStorageCapacity(v==null?null:formatDouble(getWaterLevelByLevel(v,lzzId)));
+            lzzData.setRemainingStorageCapacity(v==null?null:formatDouble(7374.0 - lzzData.getUsedStorageCapacity()));
+        }
+        result.add(lzzData);
+        //头屯河水库
+        RealTimeEngineeringSituationDataRes tthData = new RealTimeEngineeringSituationDataRes();
+        Set<String> allKeysWaterLevel = redisUtil.getAllKeys("irrigatedPlatform:sq:tth:waterLevel:"+date);
+        List<Date> dateListWaterLevel = new ArrayList<>();
+        for(String s:allKeysWaterLevel){
+            String[] split1 = s.split(" ");
+            int length = split1[split1.length-1].split(":").length;
+            String[] split2 = split1[0].split(":");
+            String dateTemp =split2[split2.length-1]+" "+(length==1?split1[split1.length-1]+":00":split1[split1.length-1]);
+            Date parse = sdf1.parse(dateTemp);
+            dateListWaterLevel.add(parse);
+        }
+        List<Date> collectWaterLevel = dateListWaterLevel.stream().sorted(Comparator.comparing(Date::getDate, Comparator.reverseOrder())).collect(Collectors.toList());
+        Double waterLevel = collectWaterLevel.size()>0?(Double) redisUtil.get("irrigatedPlatform:sq:tth:waterLevel:"+sdf1.format(collectWaterLevel.get(0))):null;
+        if(null==waterLevel){
+            List<TrendsTableParam> collect = trendsTableParamList.stream().filter(t -> t.getUseType() == 1 && t.getUseStation().equals("头屯河水库")).collect(Collectors.toList());
+            TrendsTableParam waterLevelParam = collect.stream().filter(t -> t.getPId().equals("0") && t.getParamName().equals("库水位")).collect(Collectors.toList()).get(0);
+            waterLevel = dayWaterSituationStatisticsTableTthMapper.selectListForIndex(date,waterLevelParam.getId()).getV();
+            tthData.setRealTimeWaterLevel(formatDouble(waterLevel));
+
+        }else {
+            tthData.setRealTimeWaterLevel(formatDouble(waterLevel));
+        }
+
+        Set<String> allKeysCapacity = redisUtil.getAllKeys("irrigatedPlatform:sq:tth:capacity:"+date);
+        List<Date> dateListCapacity = new ArrayList<>();
+        for(String s:allKeysCapacity){
+            String[] split1 = s.split(" ");
+            int length = split1[split1.length-1].split(":").length;
+            String[] split2 = split1[0].split(":");
+            String dateTemp =split2[split2.length-1]+" "+(length==1?split1[split1.length-1]+":00":split1[split1.length-1]);
+            Date parse = sdf1.parse(dateTemp);
+            dateListCapacity.add(parse);
+        }
+        List<Date> collectCapacity = dateListCapacity.stream().sorted(Comparator.comparing(Date::getDate, Comparator.reverseOrder())).collect(Collectors.toList());
+        Double capacity = collectCapacity.size()>0?(Double) redisUtil.get("irrigatedPlatform:sq:tth:waterLevel:"+sdf1.format(collectCapacity.get(0))):null;
+        tthData.setReservoirName("头屯河水库");
+        tthData.setFloodControlLevel(988.0);
+        if(null ==capacity){
+            List<TrendsTableParam> collect = trendsTableParamList.stream().filter(t -> t.getUseType() == 1 && t.getUseStation().equals("头屯河水库")).collect(Collectors.toList());
+            TrendsTableParam capacityParam = collect.stream().filter(t -> t.getPId().equals("0") && t.getParamName().equals("水库库容")).collect(Collectors.toList()).get(0);
+            capacity = dayWaterSituationStatisticsTableTthMapper.selectListForIndex(date,capacityParam.getId()).getV();
+            if(null ==capacity){
+                if(tthData.getRealTimeWaterLevel()!=null){
+                    tthData.setUsedStorageCapacity(formatDouble(getWaterLevelByLevel(tthData.getRealTimeWaterLevel(),tthId)));
+                }
+            }else {
+                tthData.setUsedStorageCapacity(formatDouble(capacity));
+            }
+
+        }else {
+            tthData.setUsedStorageCapacity(formatDouble(capacity));
+        }
+        tthData.setRemainingStorageCapacity(formatDouble(2030.0 - tthData.getUsedStorageCapacity()));
+        result.add(tthData);
+        return RestResponse.ok(result);
+    }
+
     private void updateInfoDateHd(){
         List<DayWaterSituationStatisticsTableHd> dayWaterSituationStatisticsTable = dayWaterSituationStatisticsTableHdMapper.selectAllListToday();
         Map<Date, List<DayWaterSituationStatisticsTableHd>> collect = dayWaterSituationStatisticsTable.stream().collect(Collectors.groupingBy(DayWaterSituationStatisticsTableHd::getRecordTime));
@@ -1443,10 +1562,21 @@ public class AllServiceImpl implements AllService {
     private Double getWaterLevelByFlow(Double flow, String id){
         String token = StpUtil.getTokenValue();
         InetAddress localHost = InetAddress.getLocalHost();
-        String hostAddress = "192.168.31.154";
-        String url = "http://" + hostAddress +":9003/toutunhe/wpdCurved/queryLevelFlow?ndcdId="+id+"&flowRate="+flow;
+        String url = "http://" + localHost.getHostAddress() +":9003/toutunhe/wpdCurved/queryLevelFlow?ndcdId="+id+"&flowRate="+flow;
         String s = RestTemplateUtil.getBySaToken(url,token);
-        Double value = (Double) JSONObject.parseObject(s).get("data");
-        return value;
+        BigDecimal value = (BigDecimal) JSONObject.parseObject(s).get("data");
+        return value.doubleValue();
+    }
+
+    @SneakyThrows
+    private Double getWaterLevelByLevel(Double level, String id){
+        String token = StpUtil.getTokenValue();
+        InetAddress localHost = InetAddress.getLocalHost();
+        //String hostAddress = "192.168.31.154";
+        String hostAddress = localHost.getHostAddress();
+        String url = "http://" + hostAddress +":9003/toutunhe/wpdCurved/queryLevelFlow?ndcdId="+id+"&level="+level;
+        String s = RestTemplateUtil.getBySaToken(url,token);
+        BigDecimal value = (BigDecimal) JSONObject.parseObject(s).get("data");
+        return value.doubleValue();
     }
 }

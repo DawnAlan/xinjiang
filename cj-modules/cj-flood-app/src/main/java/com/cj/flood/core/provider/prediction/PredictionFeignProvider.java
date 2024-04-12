@@ -41,11 +41,11 @@ public class PredictionFeignProvider implements PredictionFeign {
         return predictionApiProvider.getRealTimeRainfall(startTime, endTime,lzz,tth,lzzIdList,tthIdList);
     }
 
-    @Override
+   /* @Override
     @RequestMapping("/feign/provider/prediction/getRealTimeWaterLevelData")
     public String getRealTimeWaterLevelData(String date) {
         return predictionApiProvider.getRealTimeWaterLevelData(date);
-    }
+    }*/
 
     @Override
     @RequestMapping("/feign/provider/prediction/getRealTimeReservoirLevelData")

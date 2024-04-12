@@ -10,7 +10,7 @@ public interface FloodSituationService {
 
     RestResponse<List<RealTimeRainfallRes>> getRealTimeRainfall(String date , Integer hour);
 
-    RestResponse<List<RealTimeEngineeringSituationDataRes>>  getRealTimeWaterLevelData(String date);
+    /*RestResponse<List<RealTimeEngineeringSituationDataRes>>  getRealTimeWaterLevelData(String date);*/
 
     RestResponse<List<RealTimeWaterLevelDataRes>> getRealTimeReservoirLevelData(String date);
 

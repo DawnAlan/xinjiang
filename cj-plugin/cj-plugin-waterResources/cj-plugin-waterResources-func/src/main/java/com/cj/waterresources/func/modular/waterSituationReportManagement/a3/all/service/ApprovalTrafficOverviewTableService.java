@@ -19,7 +19,9 @@ public interface ApprovalTrafficOverviewTableService extends IService<ApprovalTr
 
     RestResponse delete(String id);
 
-    RestResponse selectList(Date time,String name);
+    RestResponse selectList(String time,String name);
+
+    RestResponse synchronizationEightData(String time);
 
 }
 

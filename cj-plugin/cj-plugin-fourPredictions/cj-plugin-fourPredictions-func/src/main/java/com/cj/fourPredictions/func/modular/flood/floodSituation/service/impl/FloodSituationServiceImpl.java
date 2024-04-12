@@ -46,7 +46,7 @@ public class FloodSituationServiceImpl implements FloodSituationService {
         return RestResponse.no("select error");
     }
 
-    @Override
+ /*   @Override
     public RestResponse<List<RealTimeEngineeringSituationDataRes>> getRealTimeWaterLevelData(String date) {
         String realTimeWaterLevelData = predictionApi.getRealTimeWaterLevelData(date);
         if(StringUtils.isNotEmpty(realTimeWaterLevelData)){
@@ -54,7 +54,7 @@ public class FloodSituationServiceImpl implements FloodSituationService {
         }else {
             return RestResponse.no("blank");
         }
-    }
+    }*/
 
     @Override
     public RestResponse<List<RealTimeWaterLevelDataRes>> getRealTimeReservoirLevelData(String date) {

@@ -39,7 +39,7 @@ public class FloodSituationController {
         }
     }
 
-    @ApiOperation(value="防洪兴利-防洪形式实时水情", notes="实时水情")
+ /*   @ApiOperation(value="防洪兴利-防洪形式实时水情", notes="实时水情")
     @CommonLog(value = "防洪兴利-防洪形式实时水情")
     @PostMapping(value = "/getRealTimeWaterLevelData")
     public RestResponse<List<RealTimeEngineeringSituationDataRes>>  getRealTimeWaterLevelData(@RequestBody GetRealTimeWaterLevelDataReq req){
@@ -49,7 +49,7 @@ public class FloodSituationController {
             e.printStackTrace();
             return RestResponse.no("错误");
         }
-    }
+    }*/
 
     @ApiOperation(value="防洪兴利-防洪形式实时工情", notes="实时工情")
     @CommonLog(value = "防洪兴利-防洪形式实时工情")
