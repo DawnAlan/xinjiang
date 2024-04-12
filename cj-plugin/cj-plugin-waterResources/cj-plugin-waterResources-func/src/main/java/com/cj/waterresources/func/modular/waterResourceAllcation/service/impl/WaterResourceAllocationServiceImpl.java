@@ -11,6 +11,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cj.auth.core.util.StpLoginUserUtil;
+import com.cj.common.exception.CommonException;
 import com.cj.common.model.RestResponse;
 import com.cj.common.pojo.CommonResult;
 import com.cj.common.util.ExcelUtils;
@@ -38,6 +39,8 @@ import com.cj.waterresources.func.modular.useWaterPlanEscalation.monthWaterUsePl
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.monthWaterUsePlan.service.MonthWaterUsePlanService;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.tenDaysWaterUsePlan.entity.TenDayWaterUsePlan;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.tenDaysWaterUsePlan.service.TenDayWaterUsePlanService;
+import com.cj.waterresources.func.modular.useWaterPlanEscalation.useWaterManagement.entity.UseWaterManagement;
+import com.cj.waterresources.func.modular.useWaterPlanEscalation.useWaterManagement.service.UseWaterManagementService;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.entity.YearWaterUsePlanTrunkCanal;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.service.YearWaterUsePlanTrunkCanalService;
 import com.cj.waterresources.func.modular.waterResourceAllcation.bean.dto.IncomingWaterForecastDto;
@@ -49,7 +52,9 @@ import com.cj.waterresources.func.modular.waterResourceAllcation.bean.res.*;
 import com.cj.waterresources.func.modular.waterResourceAllcation.entity.*;
 import com.cj.waterresources.func.modular.waterResourceAllcation.mapper.WaterResourceAllocationMapper;
 import com.cj.waterresources.func.modular.waterResourceAllcation.service.WaterResourceAllocationService;
-import lombok.AllArgsConstructor;
+import com.cj.waterresources.func.modular.waterStorageScheduling.waterStorageSchedulingLzz.entity.WaterStorageSchedulingLzz;
+import com.cj.waterresources.func.modular.waterStorageScheduling.waterStorageSchedulingLzz.service.WaterStorageSchedulingLzzService;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
@@ -73,7 +78,7 @@ import java.util.stream.Collectors;
  * @since 2023-11-14 17:34:50
  */
 @Service("waterResourceAllocationService")
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourceAllocationMapper, WaterResourceAllocation> implements WaterResourceAllocationService {
 
     private final PredictionApi predictionApi;
@@ -86,8 +91,11 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
     private final LzzGaugingStationService lzzGaugingStationService;
     private final IrrigatedPlatformDataInfoService irrigatedPlatformDataInfoService;
     private final WaterResourceAllocationControlObjectService waterResourceAllocationControlObjectService;
+    private final UseWaterManagementService useWaterManagementService;
+    private final WaterStorageSchedulingLzzService waterStorageSchedulingLzzService;
 
     private final static String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
+    private Map<String, String> useWaterManagementUnitIdMap;
 
     @Override
     public RestResponse<List<IncomingWaterForecastDto>> getIncomingWaterForecastListByTime(String startTime, String endTime, Integer bucketType) {
@@ -229,8 +237,12 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
     public RestResponse delById(List<String> ids) {
         List<WaterResourceAllocation> waterResourceAllocations = baseMapper.selectBatchIds(ids);
         for (WaterResourceAllocation waterResourceAllocation : waterResourceAllocations) {
-            minioUtils.deleteObjectInfo("tth", waterResourceAllocation.getAllocationDataDisplayAddress());
-            minioUtils.deleteObjectInfo("tth", waterResourceAllocation.getAllocationDataCustomAddress());
+            if (StringUtils.hasText(waterResourceAllocation.getAllocationDataDisplayAddress())) {
+                minioUtils.deleteObjectInfo("tth", waterResourceAllocation.getAllocationDataDisplayAddress());
+            }
+            if (StringUtils.hasText(waterResourceAllocation.getAllocationDataCustomAddress())) {
+                minioUtils.deleteObjectInfo("tth", waterResourceAllocation.getAllocationDataCustomAddress());
+            }
             waterResourceAllocation.setDel(1);
             waterResourceAllocation.setUpdateBy(StpLoginUserUtil.getLoginUser().getName());
             waterResourceAllocation.setUpdateTime(new Date());
@@ -379,18 +391,22 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
         List<WaterResourceAllocationControlObject> objectList = waterResourceAllocationControlObjectService.lambdaQuery().eq(WaterResourceAllocationControlObject::getAllocationId, waterResourceAllocation.getId()).list();
         WaterResourceAllocationAddReq req = new WaterResourceAllocationAddReq();
         //BeanUtils.copyProperties(waterResourceAllocation, req);
-        req.setEcologyFlowLzz(objectList.stream().filter(n -> n.getObjectType().equals("0")).sorted(Comparator.comparing(WaterResourceAllocationControlObject::getMonthNum)).map(n -> n.getMonthVal()).collect(Collectors.toList()));
-        req.setEcologyFlowTth(objectList.stream().filter(n -> n.getObjectType().equals("1")).sorted(Comparator.comparing(WaterResourceAllocationControlObject::getMonthNum)).map(n -> n.getMonthVal()).collect(Collectors.toList()));
-        req.setFloodWaterLevelLzz(objectList.stream().filter(n -> n.getObjectType().equals("2")).sorted(Comparator.comparing(WaterResourceAllocationControlObject::getMonthNum)).map(n -> n.getMonthVal()).collect(Collectors.toList()));
-        req.setMinWaterLevelLzz(objectList.stream().filter(n -> n.getObjectType().equals("3")).sorted(Comparator.comparing(WaterResourceAllocationControlObject::getMonthNum)).map(n -> n.getMonthVal()).collect(Collectors.toList()));
-        req.setFloodWaterLevelTth(objectList.stream().filter(n -> n.getObjectType().equals("4")).sorted(Comparator.comparing(WaterResourceAllocationControlObject::getMonthNum)).map(n -> n.getMonthVal()).collect(Collectors.toList()));
-        req.setMinWaterLevelTth(objectList.stream().filter(n -> n.getObjectType().equals("5")).sorted(Comparator.comparing(WaterResourceAllocationControlObject::getMonthNum)).map(n -> n.getMonthVal()).collect(Collectors.toList()));
+        req.setEcologyFlowLzz(getWaterLevelByObjectType(objectList, "0"));
+        req.setEcologyFlowTth(getWaterLevelByObjectType(objectList, "1"));
+        req.setFloodWaterLevelLzz(getWaterLevelByObjectType(objectList, "2"));
+        req.setMinWaterLevelLzz(getWaterLevelByObjectType(objectList, "3"));
+        req.setFloodWaterLevelTth(getWaterLevelByObjectType(objectList, "4"));
+        req.setMinWaterLevelTth(getWaterLevelByObjectType(objectList, "5"));
 
         doAllocation(waterResourceAllocation, now, req);
         updateById(waterResourceAllocation);
         minioUtils.deleteObjectInfo("tth", customAddress);
         minioUtils.deleteObjectInfo("tth", displayAddress);
         return RestResponse.ok(waterResourceAllocation);
+    }
+
+    private List<Double> getWaterLevelByObjectType(List<WaterResourceAllocationControlObject> objectList, String objectType) {
+        return objectList.stream().filter(n -> n.getObjectType().equals(objectType)).sorted(Comparator.comparing(WaterResourceAllocationControlObject::getMonthNum)).map(n -> n.getMonthVal()).collect(Collectors.toList());
     }
 
     @Override
@@ -707,23 +723,54 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
 
     private WaterResourceAllocation doAllocation(WaterResourceAllocation allocation, Date dateTime, WaterResourceAllocationAddReq req) {
         WaterTransferReq waterTransferReq = new WaterTransferReq();
-        List<Flood> floods = getListFromMinio(allocation.getInflowDataAddress(), Flood.class);
-        floods = floods.stream().filter(f -> f.getTime().getTime() <= allocation.getWaterDistributionEndTime().getTime()
-                && f.getTime().getTime() >= allocation.getWaterDistributionStartTime().getTime()).collect(Collectors.toList());
-        List<DataInflowPrevent> dataInflowPrevents = JSONObject.parseArray(JSONObject.toJSONString(floods), DataInflowPrevent.class);
-        List<DataInflowPrevent> lzzEntryStation = dataInflowPrevents.stream().filter(t -> t.getLocation().equals("楼庄子")).collect(Collectors.toList());
-        List<DataInflowPrevent> interval = dataInflowPrevents.stream().filter(t -> t.getLocation().equals("楼头区间")).collect(Collectors.toList());
-        if (CollectionUtil.isEmpty(lzzEntryStation) || CollectionUtil.isEmpty(interval)) {
+        Map<String, List<DataInflowPrevent>> data = new HashMap<>();
+        if (req.getInflowDataType().equals(0)) {
+            List<Flood> floods = getListFromMinio(allocation.getInflowDataAddress(), Flood.class);
+            floods = floods.stream().filter(f -> f.getTime().getTime() <= allocation.getWaterDistributionEndTime().getTime()
+                    && f.getTime().getTime() >= allocation.getWaterDistributionStartTime().getTime()).collect(Collectors.toList());
+            List<DataInflowPrevent> dataInflowPrevents = JSONObject.parseArray(JSONObject.toJSONString(floods), DataInflowPrevent.class);
+            List<DataInflowPrevent> lzzEntryStation = dataInflowPrevents.stream().filter(t -> t.getLocation().equals("楼庄子")).collect(Collectors.toList());
+            List<DataInflowPrevent> interval = dataInflowPrevents.stream().filter(t -> t.getLocation().equals("楼头区间")).collect(Collectors.toList());
+            if (CollectionUtil.isEmpty(lzzEntryStation) || CollectionUtil.isEmpty(interval)) {
 //            throw new CommonException(String.format("%s~%s来水预报数据异常",
 //                    DateUtil.format(allocation.getWaterDistributionStartTime(), DATE_FORMAT),
 //                    DateUtil.format(allocation.getWaterDistributionEndTime(), DATE_FORMAT)));
-            log.error(String.format("%s~%s来水预报数据异常",
-                    DateUtil.format(allocation.getWaterDistributionStartTime(), DATE_FORMAT),
-                    DateUtil.format(allocation.getWaterDistributionEndTime(), DATE_FORMAT)));
+                log.error(String.format("%s~%s来水预报数据异常",
+                        DateUtil.format(allocation.getWaterDistributionStartTime(), DATE_FORMAT),
+                        DateUtil.format(allocation.getWaterDistributionEndTime(), DATE_FORMAT)));
+            }
+
+            data.put("lzz", lzzEntryStation);
+            data.put("tth", interval);
+        } else if (req.getInflowDataType().equals(1)) {
+            List<DataInflowPrevent> lzzEntryStation = waterStorageSchedulingLzzService.lambdaQuery()
+                    .eq(WaterStorageSchedulingLzz::getFormId, req.getInflowDataId())
+                    .list().stream().map(n -> {
+                        DataInflowPrevent inFlow = new DataInflowPrevent();
+                        inFlow.setTime(DateUtil.parse(n.getYear() + "-"
+                                + org.apache.commons.lang3.StringUtils.leftPad(n.getMonth().toString(), 2, '0') + "-"
+                        + (n.getTenDays().equals("上旬") ? "01" : n.getTenDays().equals("中旬") ? "11" : "21") + " 00:00:00", DATE_FORMAT));
+                        inFlow.setLocation("楼庄子");
+                        inFlow.setScale(365);
+                        inFlow.setPreQ(n.getFineTuningReservoirInflow());
+                        return inFlow;
+                    }).filter(n -> n.getTime().getTime() <= allocation.getWaterDistributionEndTime().getTime()
+                            && n.getTime().getTime() >= allocation.getWaterDistributionStartTime().getTime())
+                    .collect(Collectors.toList());
+            List<DataInflowPrevent> tthEntryStation = lzzEntryStation.stream().map(n -> {
+                DataInflowPrevent inFlow = new DataInflowPrevent();
+                inFlow.setTime(n.getTime());
+                inFlow.setLocation("头屯河");
+                inFlow.setScale(365);
+                inFlow.setPreQ(0);
+                return inFlow;
+            }).collect(Collectors.toList());
+            data.put("lzz", lzzEntryStation);
+            data.put("tth", tthEntryStation);
+        } else {
+            throw new CommonException("inflowDataType只能输入0-来水预报或1-供水计划");
         }
-        Map<String, List<DataInflowPrevent>> data = new HashMap<>();
-        data.put("lzz", lzzEntryStation);
-        data.put("tth", interval);
+
         waterTransferReq.setStartTime(allocation.getWaterDistributionStartTime());
         waterTransferReq.setEndTime(allocation.getWaterDistributionEndTime());
         waterTransferReq.setName(allocation.getWaterDistributionType());
@@ -739,7 +786,7 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
         waterTransferReq.setLevelEndTth(allocation.getLevelEndTth());
         waterTransferReq.setTimeCalStep(allocation.getBucketType());
         waterTransferReq.setData(data);
-        waterTransferReq.setWaterDemandData(waterNeed(allocation.getWaterDistributionStartTime()));
+        waterTransferReq.setWaterDemandData(setWaterNeedUnitId(waterNeed(allocation.getWaterDistributionStartTime())));
         waterTransferReq.setCurve(curveService.selectList());
         List<ResOption> calculator;
         try {
@@ -866,6 +913,30 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
         demands.addAll(waterNeedTenDays(startTime));
         startTime = DateUtil.offsetDay(startTime, -1);
         demands.addAll(waterNeedDay(startTime, startTime));
+        return demands;
+    }
+
+    private List<Waterdemand> setWaterNeedUnitId(List<Waterdemand> demands) {
+        if (useWaterManagementUnitIdMap == null) {
+            List<UseWaterManagement> list = useWaterManagementService.list();
+            Map<String, List<UseWaterManagement>> useWaterManagementMapById = list.stream().collect(Collectors.groupingBy(UseWaterManagement::getId));
+            useWaterManagementUnitIdMap = list.stream().collect(Collectors.toMap(
+                    n -> n.getUseWaterPlan()
+                            + "-" + n.getArea()
+                            + (n.getPId().equals("0") || !useWaterManagementMapById.containsKey(n.getPId()) ? "" : "-" + useWaterManagementMapById.get(n.getPId()).get(0).getUnitName())
+                            + "-" + n.getUnitName(),
+                    n -> n.getId(),
+                    (oldValue, newValue) -> newValue));
+        }
+        demands.forEach(demand -> demand.setUnitId(useWaterManagementUnitIdMap.get(
+                (demand.getUseWaterPlan().equals("year") ? "年用水计划"
+                        : demand.getUseWaterPlan().equals("month") ? "月用水计划"
+                        : demand.getUseWaterPlan().equals("tenDays") ? "旬用水计划"
+                        : "日用水计划")
+                        + "-" + demand.getArea()
+                        + (demand.getUseWaterPlan().equals("day") ? "-" + demand.getUnit() : "")
+                        + (demand.getUseWaterPlan().equals("day") ? "-" + demand.getSubArea() : "-" + demand.getUnit())
+        )));
         return demands;
     }
 

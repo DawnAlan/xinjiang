@@ -10,7 +10,11 @@ import com.cj.model.func.modular.watertransfer.req.AppraiseReq;
 import com.cj.model.func.modular.watertransfer.req.WaterTransferReq;
 
 import java.text.DecimalFormat;
+import java.time.LocalDate;
+import java.time.Month;
+import java.time.ZoneId;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 public class ResourceOptimizationlong_MonthTest {
@@ -1425,11 +1429,12 @@ public class ResourceOptimizationlong_MonthTest {
         this.reservoirs[1].levelFloodCheck = 992.54;
     }
 
-    public Map<String, Object> SetInflow(WaterTransferReq req, Map<String, List<DataInflowPrevent>> DataInflowPrevent, int t) {
+    public Map<String, Object> SetInflow(WaterTransferReq req, Map<String, List<DataInflowPrevent>> dataInflowPreventx, int t) {
         List<Double> inflow_lzz = new ArrayList<>();
         List<Double> inflow_tth = new ArrayList<>();
 
         List<Date> Time = new ArrayList<>();
+
 
         Map<String, Object> data1 = new HashMap<>();
         List<DataInflowPrevent> data_FloodPrevent_all = req.getData().get("lzz");
@@ -1446,6 +1451,10 @@ public class ResourceOptimizationlong_MonthTest {
                 inflow_tth.add(data_FloodPrevent_all2.get(i).getPreQ());
             }
         }
+        if(inflow_lzz.size()==0||inflow_tth.size()==0){
+            Time.addAll(inflowYear(data_FloodPrevent_all,inflow_lzz));
+            inflowYear(data_FloodPrevent_all2,inflow_tth);
+        }
         double[] inflowlzz = new double[inflow_lzz.size()];
         double[] inflowtth = new double[inflow_tth.size()];
         Date[] time = new Date[inflow_tth.size()];
@@ -1460,7 +1469,50 @@ public class ResourceOptimizationlong_MonthTest {
         data1.put("头屯河流量", inflowtth);
         return data1;
     }
+    private static Date getFirstDayOfMonth(Date date) {
+        Calendar calendar = new GregorianCalendar();
+        calendar.setTime(date);
+        calendar.set(Calendar.DAY_OF_MONTH, 1);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        return calendar.getTime();
+    }
+    public static List<Date> inflowYear(List<DataInflowPrevent> data_FloodPrevent_all, List<Double> inflow_lzz) {
+        Map<Date, Double> monthlySums = data_FloodPrevent_all.stream()
+                .collect(Collectors.toMap(
+                        // 提取月份的第一天作为键
+                        dataInflowPrevent -> getFirstDayOfMonth(dataInflowPrevent.getTime()),
+                        // 提取Q值并求和
+                        DataInflowPrevent::getPreQ,
+                        // 如果同一月份有多个值，则求和
+                        Double::sum,
+                        // 使用TreeMap保持自然顺序
+//                            (oldValue, newValue) -> oldValue // 如果键相同，则保留旧值（这里实际上不会发生，因为日期是唯一的）
+                        LinkedHashMap::new
+                ));
 
+        // 从map中提取月份和Q总和到两个列表中
+        List<Date> Time = new ArrayList<>(monthlySums.keySet());
+        List<Double> monthlyQSums = new ArrayList<>(monthlySums.values());
+        List<Double> monthlyDays = new ArrayList<>();
+
+        // 遍历每个月的第一天，计算每个月的天数并添加到列表中
+        for (Date date : Time) {
+            // 将Date转换为LocalDate
+            LocalDate localDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            // 获取该月的天数
+            double daysInMonth = localDate.lengthOfMonth();
+            // 将天数添加到列表中
+            monthlyDays.add(daysInMonth);
+        }
+        for (int i = 0; i < monthlyQSums.size(); i++){
+            double q=monthlyQSums.get(i)/(monthlyDays.get(i)*8.64);
+            inflow_lzz.add(q);
+        }
+        return Time;
+    }
 
 }
 
