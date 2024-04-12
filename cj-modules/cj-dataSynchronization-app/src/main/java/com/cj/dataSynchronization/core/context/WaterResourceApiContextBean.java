@@ -15,44 +15,44 @@ public class WaterResourceApiContextBean implements WaterResourceApi {
 
     private final WaterResourceFeign waterResourceFeign;
     @Override
-    public String getYearWaterPlan(String area) {
-        String data = waterResourceFeign.getYearWaterPlan(area);
+    public String getYearWaterPlan(String area,Integer year) {
+        String data = waterResourceFeign.getYearWaterPlan(area,year);
         return data;
     }
 
     @Override
-    public String getYearWaterPlanCrop(String area, String unit) {
-        String data = waterResourceFeign.getYearWaterPlanCrop(area,unit);
+    public String getYearWaterPlanCrop(String area, String unit,Integer year) {
+        String data = waterResourceFeign.getYearWaterPlanCrop(area,unit,year);
         return data;
     }
 
     @Override
-    public String getMonthWaterPlan(String area) {
-        String data = waterResourceFeign.getMonthWaterPlan(area);
+    public String getMonthWaterPlan(String area,Integer year,Integer month) {
+        String data = waterResourceFeign.getMonthWaterPlan(area,year,month);
         return data;
     }
 
     @Override
-    public String getMonthWaterPlanCrop(String area, String unit) {
-        String data = waterResourceFeign.getMonthWaterPlanCrop(area,unit);
+    public String getMonthWaterPlanCrop(String area, String unit,Integer year,Integer month) {
+        String data = waterResourceFeign.getMonthWaterPlanCrop(area,unit,year,month);
         return data;
     }
 
     @Override
-    public String getTenDaysWaterPlan(String area) {
-        String data = waterResourceFeign.getTenDaysWaterPlan(area);
+    public String getTenDaysWaterPlan(String area,Integer year,Integer month,String tenDays) {
+        String data = waterResourceFeign.getTenDaysWaterPlan(area,year,month,tenDays);
         return data;
     }
 
     @Override
-    public String getTenDaysWaterPlanCrop(String area, String unit) {
-        String data = waterResourceFeign.getTenDaysWaterPlanCrop(area,unit);
+    public String getTenDaysWaterPlanCrop(String area, String unit,Integer year,Integer month,String tenDays) {
+        String data = waterResourceFeign.getTenDaysWaterPlanCrop(area,unit,year,month,tenDays);
         return data;
     }
 
     @Override
-    public String getDayWaterPlan(String area) {
-        String data = waterResourceFeign.getDayWaterPlan(area);
+    public String getDayWaterPlan(String area,Integer year,Integer month,Integer day) {
+        String data = waterResourceFeign.getDayWaterPlan(area,year,month,day);
         return data;
     }
 

@@ -253,22 +253,21 @@ public class IrrigatedAreaServiceImpl implements IrrigatedAreaService {
                     List<OverallSituationUnitMgrDto> collect = overallSituationUnitMgrDtoList.stream().filter(t -> t.getMonitorId().equals(dto.getID())).collect(Collectors.toList());
                     if(!collect.isEmpty()){
                         OverallSituationUnitMgrDto overallSituationUnitMgrDto = collect.get(0);
-                        redisUtil.set("irrigatedPlatform:yesterday:"+overallSituationUnitMgrDto.getId(),info.getYesterdayAvgFlow());
-                        redisUtil.set("irrigatedPlatform:today:"+overallSituationUnitMgrDto.getId(),info.getAvgFlow());
-                        redisUtil.set("irrigatedPlatform:sq:date:id:"+info.getMonitorTime()+":"+overallSituationUnitMgrDto.getId(),info.getSqMonitorFlow());
+                        redisUtil.set("irrigatedPlatform:today:"+overallSituationUnitMgrDto.getId(),info.getAvgFlow(),3600*24*2);
+                        redisUtil.set("irrigatedPlatform:sq:date:id:"+info.getMonitorTime()+":"+overallSituationUnitMgrDto.getId(),info.getSqMonitorFlow(),3600*24*2);
                     }
                     if(info.getMonitorName().equals("头屯河水库水位")){
-                        redisUtil.set("irrigatedPlatform:sq:tth:waterLevel:"+sdf.format(info.getMonitorTime()),info.getSqWaterLevel());
-                        redisUtil.set("irrigatedPlatform:sq:tth:capacity:"+sdf.format(info.getMonitorTime()),info.getSqCapacity());
+                        redisUtil.set("irrigatedPlatform:sq:tth:waterLevel:"+sdf.format(info.getMonitorTime()),info.getSqWaterLevel(),3600*24*2);
+                        redisUtil.set("irrigatedPlatform:sq:tth:capacity:"+sdf.format(info.getMonitorTime()),info.getSqCapacity(),3600*24*2);
                     }
                     if(info.getMonitorName().equals("出库流量")){
-                        redisUtil.set("irrigatedPlatform:sq:tth:out:"+sdf.format(info.getMonitorTime()),info.getSqMonitorFlow());
+                        redisUtil.set("irrigatedPlatform:sq:tth:out:"+sdf.format(info.getMonitorTime()),info.getSqMonitorFlow(),3600*24*2);
                     }
                     if(info.getMonitorName().equals("入库流量")){
-                        redisUtil.set("irrigatedPlatform:sq:tth:input:"+sdf.format(info.getMonitorTime()),info.getSqMonitorFlow());
+                        redisUtil.set("irrigatedPlatform:sq:tth:input:"+sdf.format(info.getMonitorTime()),info.getSqMonitorFlow(),3600*24*2);
                     }
                     if(info.getMonitorName().equals("八钢工业取水口")){
-                        redisUtil.set("irrigatedPlatform:sq:tth:aq:"+sdf.format(info.getMonitorTime()),info.getSqMonitorFlow());
+                        redisUtil.set("irrigatedPlatform:sq:tth:aq:"+sdf.format(info.getMonitorTime()),info.getSqMonitorFlow(),3600*24*2);
                     }
                 }
             }

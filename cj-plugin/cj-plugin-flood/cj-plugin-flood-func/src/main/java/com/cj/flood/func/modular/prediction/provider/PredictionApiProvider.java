@@ -169,15 +169,16 @@ public class PredictionApiProvider implements PredictionApi {
             lzzData.setReservoirName(lzzGaugingStation.getStationName());
             lzzData.setFloodControlLevel(1394.50);
             if(lzzGaugingStation.getRelativeWaterLevel()<0){
-                Set<String> allKeys = redisUtil.getAllKeys("lzz:time:waterLevel:true");
+                Set<String> allKeys = redisUtil.getAllKeys("lzz:time:waterLevel:true:"+date.split(":")[0]);
                 List<Date> dateList = new ArrayList<>();
                 for(String s:allKeys){
                     if(s.contains("日均")){
                         continue;
                     }
                     String[] split1 = s.split(" ");
+                    int length = split1[split1.length-1].split(":").length;
                     String[] split2 = split1[0].split(":");
-                    String dateTemp =split2[split2.length-1]+" "+split1[split1.length-1];
+                    String dateTemp =split2[split2.length-1]+" "+(length==1?split1[split1.length-1]+":00":split1[split1.length-1]);
                     Date parse = sdf1.parse(dateTemp);
                     dateList.add(parse);
                 }
@@ -192,15 +193,16 @@ public class PredictionApiProvider implements PredictionApi {
                 lzzData.setRemainingStorageCapacity(7374.0 - lzzData.getUsedStorageCapacity());
             }
         }else {
-            Set<String> allKeys = redisUtil.getAllKeys("lzz:time:waterLevel:true");
+            Set<String> allKeys = redisUtil.getAllKeys("lzz:time:waterLevel:true:"+date.split(":")[0]);
             List<Date> dateList = new ArrayList<>();
             for(String s:allKeys){
                 if(s.contains("日均")){
                     continue;
                 }
                 String[] split1 = s.split(" ");
+                int length = split1[split1.length-1].split(":").length;
                 String[] split2 = split1[0].split(":");
-                String dateTemp =split2[split2.length-1]+" "+split1[split1.length-1];
+                String dateTemp =split2[split2.length-1]+" "+(length==1?split1[split1.length-1]+":00":split1[split1.length-1]);
                 Date parse = sdf1.parse(dateTemp);
                 dateList.add(parse);
             }
@@ -222,7 +224,7 @@ public class PredictionApiProvider implements PredictionApi {
         }
         RealTimeEngineeringSituationDataRes tthData = new RealTimeEngineeringSituationDataRes();
         if(null!=irrigatedPlatformDataInfo){
-            tthData.setReservoirName(irrigatedPlatformDataInfo.getMonitorName());
+            tthData.setReservoirName("头屯河水库");
             tthData.setFloodControlLevel(988.0);
             tthData.setRealTimeWaterLevel(irrigatedPlatformDataInfo.getSqWaterLevel());
             tthData.setUsedStorageCapacity(getWaterLevelByFlow(irrigatedPlatformDataInfo.getSqWaterLevel(),tthId));
@@ -232,8 +234,9 @@ public class PredictionApiProvider implements PredictionApi {
             List<Date> dateListWaterLevel = new ArrayList<>();
             for(String s:allKeysWaterLevel){
                 String[] split1 = s.split(" ");
+                int length = split1[split1.length-1].split(":").length;
                 String[] split2 = split1[0].split(":");
-                String dateTemp =split2[split2.length-1]+" "+split1[split1.length-1];
+                String dateTemp =split2[split2.length-1]+" "+(length==1?split1[split1.length-1]+":00":split1[split1.length-1]);
                 Date parse = sdf1.parse(dateTemp);
                 dateListWaterLevel.add(parse);
             }
@@ -243,8 +246,9 @@ public class PredictionApiProvider implements PredictionApi {
             List<Date> dateListCapacity = new ArrayList<>();
             for(String s:allKeysCapacity){
                 String[] split1 = s.split(" ");
+                int length = split1[split1.length-1].split(":").length;
                 String[] split2 = split1[0].split(":");
-                String dateTemp =split2[split2.length-1]+" "+split1[split1.length-1];
+                String dateTemp =split2[split2.length-1]+" "+(length==1?split1[split1.length-1]+":00":split1[split1.length-1]);
                 Date parse = sdf1.parse(dateTemp);
                 dateListCapacity.add(parse);
             }

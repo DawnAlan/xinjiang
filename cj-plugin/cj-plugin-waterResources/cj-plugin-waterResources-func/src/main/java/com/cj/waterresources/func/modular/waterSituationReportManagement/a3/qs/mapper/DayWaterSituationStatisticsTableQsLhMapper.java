@@ -3,6 +3,7 @@ package com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req.A3StatisticsReq;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.res.A3StatisticsRes;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hx.entity.DayWaterSituationStatisticsTableHx;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.entity.DayWaterSituationStatisticsTableLzz;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.entity.DayWaterSituationStatisticsTableQs;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.entity.DayWaterSituationStatisticsTableQsLh;
@@ -46,5 +47,8 @@ public interface DayWaterSituationStatisticsTableQsLhMapper extends BaseMapper<D
 
     @Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_QS_LH where TIME = '今日均'")
     List<DayWaterSituationStatisticsTableQsLh> selectAllListToday();
+
+    @Select("select ID,RECORD_TIME,TIME,TABLE_HEAD_ID,V,END_TABLE_LIST from DAY_WATER_SITUATION_STATISTICS_TABLE_QS_LH WHERE RECORD_TIME = #{recordTime}  and TIME = '08:00'")
+    List<DayWaterSituationStatisticsTableQsLh> selectForApproval(@Param("recordTime")String recordTime);
 }
 

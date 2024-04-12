@@ -26,7 +26,7 @@ public class ApprovalTrafficOverview extends Model<ApprovalTrafficOverview> {
     //加减流量
     private Double addSubtractFlow;
     //计划流量
-    private Double planLfow;
+    private Double planFlow;
     //模型流量
     private Double modelFlow;
     //拟定流量
@@ -35,6 +35,8 @@ public class ApprovalTrafficOverview extends Model<ApprovalTrafficOverview> {
     private Double approvalFlow;
     //概览id
     private String overviewId;
+    //水库
+    private String reservoir;
 
 
 

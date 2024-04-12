@@ -48,7 +48,7 @@ public class ApprovalTrafficOverviewTableController {
     @ApiOperationSupport(order = 2)
     @ApiOperation("流量概览表新增方案列表")
     @CommonLog(value = "流量概览表新增方案列表")
-    @GetMapping("/add")
+    @PostMapping("/add")
     public RestResponse add(@RequestBody ApprovalTrafficOverviewTableAddReq req) {
         return approvalTrafficOverviewTableService.add(req);
     }

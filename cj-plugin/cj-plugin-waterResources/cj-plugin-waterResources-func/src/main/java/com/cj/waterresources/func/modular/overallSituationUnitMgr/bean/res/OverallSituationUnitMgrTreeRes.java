@@ -1,5 +1,6 @@
 package com.cj.waterresources.func.modular.overallSituationUnitMgr.bean.res;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -47,6 +48,7 @@ public class OverallSituationUnitMgrTreeRes {
 
     //创建时间
     @ApiModelProperty(value = "创建时间")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createTime;
 
     //创建人
@@ -55,6 +57,7 @@ public class OverallSituationUnitMgrTreeRes {
 
     //更新时间
     @ApiModelProperty(value = "更新时间")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date updateTime;
 
     //更新人

@@ -7,6 +7,7 @@ import java.util.Date;
 import java.math.BigDecimal;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
@@ -31,6 +32,7 @@ public class SurfaceWaterFlowDetail implements Serializable {
     @ApiModelProperty(value = "父级ID")
     private String parentId;
     @ApiModelProperty(value = "时间")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date sampleTime;
     @ApiModelProperty(value = "年")
     private Integer year;

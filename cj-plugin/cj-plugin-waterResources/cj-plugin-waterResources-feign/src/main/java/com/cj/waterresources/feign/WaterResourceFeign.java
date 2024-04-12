@@ -11,28 +11,43 @@ import java.util.List;
 public interface WaterResourceFeign {
 
     @RequestMapping("/feign/provider/waterResource/getYearWaterPlan")
-    String getYearWaterPlan(@RequestParam(value = "area", required =true)String area);
+    String getYearWaterPlan(@RequestParam(value = "area", required =true)String area,
+                            @RequestParam(value = "year", required =true)Integer year);
 
     @RequestMapping("/feign/provider/waterResource/getYearWaterPlanCrop")
     String getYearWaterPlanCrop(@RequestParam(value = "area", required =true)String area,
-                                @RequestParam(value = "unit", required =true)String unit);
+                                @RequestParam(value = "unit", required =true)String unit,
+                                @RequestParam(value = "year", required =true)Integer year);
 
     @RequestMapping("/feign/provider/waterResource/getMonthWaterPlan")
-    String getMonthWaterPlan(@RequestParam(value = "area", required =true)String area);
+    String getMonthWaterPlan(@RequestParam(value = "area", required =true)String area,
+                             @RequestParam(value = "year", required =true)Integer year,
+                             @RequestParam(value = "month", required =true)Integer month);
 
     @RequestMapping("/feign/provider/waterResource/getMonthWaterPlanCrop")
     String getMonthWaterPlanCrop(@RequestParam(value = "area", required =true)String area,
-                                 @RequestParam(value = "unit", required =true)String unit);
+                                 @RequestParam(value = "unit", required =true)String unit,
+                                 @RequestParam(value = "year", required =true)Integer year,
+                                 @RequestParam(value = "month", required =true)Integer month);
 
     @RequestMapping("/feign/provider/waterResource/getTenDaysWaterPlan")
-    String getTenDaysWaterPlan(@RequestParam(value = "area", required =true)String area);
+    String getTenDaysWaterPlan(@RequestParam(value = "area", required =true)String area,
+                               @RequestParam(value = "year", required =true)Integer year,
+                               @RequestParam(value = "month", required =true)Integer month,
+                               @RequestParam(value = "tenDays", required =true)String tenDays);
 
     @RequestMapping("/feign/provider/waterResource/getTenDaysWaterPlanCrop")
     String getTenDaysWaterPlanCrop(@RequestParam(value = "area", required =true)String area,
-                                   @RequestParam(value = "unit", required =true)String unit);
+                                   @RequestParam(value = "unit", required =true)String unit,
+                                   @RequestParam(value = "year", required =true)Integer year,
+                                   @RequestParam(value = "month", required =true)Integer month,
+                                   @RequestParam(value = "tenDays", required =true)String tenDays);
 
     @RequestMapping("/feign/provider/waterResource/getDayWaterPlan")
-    String getDayWaterPlan(@RequestParam(value = "area", required =true)String area);
+    String getDayWaterPlan(@RequestParam(value = "area", required =true)String area,
+                           @RequestParam(value = "year", required =true)Integer year,
+                           @RequestParam(value = "month", required =true)Integer month,
+                           @RequestParam(value = "day", required =true)Integer day);
 
     @RequestMapping("/feign/provider/waterResource/getUseWaterUser")
     String getUseWaterUser(@RequestParam(value = "useWaterPlan", required =true)String useWaterPlan,

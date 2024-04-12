@@ -463,7 +463,7 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
             IPage<IncomingWaterForecast> incomingWaterForecastPage = new Page<>(req.getPageNum(),req.getPageSize());
             IPage<IncomingWaterForecast> page = this.lambdaQuery().like(StringUtils.isNotEmpty(req.getProgrammeName()), IncomingWaterForecast::getProgrammeName, req.getProgrammeName()).
                     eq(req.getPeriodTimeType() != null, IncomingWaterForecast::getPeriodTimeType, req.getPeriodTimeType()).
-                    eq(StringUtils.isNotEmpty(req.getCreateBy()),IncomingWaterForecast::getCreateBy,req.getCreateBy()).
+                    like(StringUtils.isNotEmpty(req.getCreateBy()),IncomingWaterForecast::getCreateBy,req.getCreateBy()).
                     eq(req.getModelType() != null, IncomingWaterForecast::getModelType,req.getModelType()).
                     eq(req.getStatus() != null, IncomingWaterForecast::getStatus,req.getStatus()).
                     like(req.getPredictionTime() != null, IncomingWaterForecast::getPredictionTime, req.getPredictionTime()==null?null:sdf1.format(req.getPredictionTime())).orderByDesc(IncomingWaterForecast::getCreateTime).
@@ -551,32 +551,20 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
 
     @Override
     public List<IncomingWaterForecast> getPredictionListByTimeType(Integer timeType) {
-        Integer year = LocalDateTime.now().getYear();
-        Integer month = LocalDateTime.now().getMonth().getValue();
-        Integer day = LocalDateTime.now().getDayOfMonth();
         if(timeType==1){
-            List<IncomingWaterForecast> predictionListForYear = this.baseMapper.getPredictionListForYear(year.toString());
+            List<IncomingWaterForecast> predictionListForYear = this.baseMapper.getPredictionListForYear();
             return predictionListForYear;
         }
         if(timeType==2){
-            String monthTemp = month.toString().length()==2?month.toString():"0"+month;
-            List<IncomingWaterForecast> predictionListForMonth = this.baseMapper.getPredictionListForMonth(year + "-" + monthTemp);
+            List<IncomingWaterForecast> predictionListForMonth = this.baseMapper.getPredictionListForMonth();
             return predictionListForMonth;
         }
         if(timeType==3){
-            Map<String, String> tenDaysTime = getTenDaysTime(day);
-            if(tenDaysTime!=null){
-                String monthTemp = month.toString().length()==2?month.toString():"0"+month;
-                String startTime = year + "-" + monthTemp + "-"+tenDaysTime.get("start");
-                String endTime = year + "-" + monthTemp + "-"+tenDaysTime.get("end");
-                List<IncomingWaterForecast> predictionListForTenDays = this.baseMapper.getPredictionListForTenDays(startTime, endTime);
-                return predictionListForTenDays;
-            }
+            List<IncomingWaterForecast> predictionListForTenDays = this.baseMapper.getPredictionListForTenDays();
+            return predictionListForTenDays;
         }
         if(timeType==4){
-            String monthTemp = month.toString().length()==2?month.toString():"0"+month;
-            String dayTemp = day.toString().length()==2?day.toString():"0"+day;
-            List<IncomingWaterForecast> predictionListForDay = this.baseMapper.getPredictionListForDay(year + "-" + monthTemp+ "-" + dayTemp);
+            List<IncomingWaterForecast> predictionListForDay = this.baseMapper.getPredictionListForDay();
             return predictionListForDay;
         }
         return null;

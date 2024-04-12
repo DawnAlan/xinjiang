@@ -5,6 +5,7 @@ import java.util.Date;
 import com.baomidou.mybatisplus.annotation.FieldStrategy;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.extension.activerecord.Model;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -22,6 +23,7 @@ public class WaterSituationStatisticsTableYesterday extends Model<WaterSituation
 
     //记录时间
     @ApiModelProperty(value = "记录时间")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date recordTime;
 
     //制材厂-日均流量

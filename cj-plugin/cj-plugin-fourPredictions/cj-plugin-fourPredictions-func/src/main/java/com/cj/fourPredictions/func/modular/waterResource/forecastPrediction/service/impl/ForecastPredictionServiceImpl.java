@@ -51,8 +51,8 @@ public class ForecastPredictionServiceImpl implements ForecastPredictionService 
     }
 
     @Override
-    public RestResponse getYearWaterPlan(String area) {
-        String data = waterResourceApi.getYearWaterPlan(area);
+    public RestResponse getYearWaterPlan(String area,Integer year) {
+        String data = waterResourceApi.getYearWaterPlan(area,year);
         if(StringUtils.isNotEmpty(data)){
             return RestResponse.ok(JSONObject.parseArray(data));
         }else {
@@ -61,8 +61,8 @@ public class ForecastPredictionServiceImpl implements ForecastPredictionService 
     }
 
     @Override
-    public RestResponse getYearWaterPlanCrop(String area, String unit) {
-        String data = waterResourceApi.getYearWaterPlanCrop(area, unit);
+    public RestResponse getYearWaterPlanCrop(String area, String unit,Integer year) {
+        String data = waterResourceApi.getYearWaterPlanCrop(area, unit,year);
         if(StringUtils.isNotEmpty(data)){
             return RestResponse.ok(JSONObject.parseObject(data));
         }else {
@@ -71,8 +71,8 @@ public class ForecastPredictionServiceImpl implements ForecastPredictionService 
     }
 
     @Override
-    public RestResponse getMonthWaterPlan(String area) {
-        String data = waterResourceApi.getMonthWaterPlan(area);
+    public RestResponse getMonthWaterPlan(String area,Integer year,Integer month) {
+        String data = waterResourceApi.getMonthWaterPlan(area,year,month);
         if(StringUtils.isNotEmpty(data)){
             return RestResponse.ok(JSONObject.parseArray(data));
         }else {
@@ -81,8 +81,8 @@ public class ForecastPredictionServiceImpl implements ForecastPredictionService 
     }
 
     @Override
-    public RestResponse getMonthWaterPlanCrop(String area, String unit) {
-        String data = waterResourceApi.getMonthWaterPlanCrop(area,unit);
+    public RestResponse getMonthWaterPlanCrop(String area, String unit,Integer year,Integer month) {
+        String data = waterResourceApi.getMonthWaterPlanCrop(area,unit,year,month);
         if(StringUtils.isNotEmpty(data)){
             return RestResponse.ok(JSONObject.parseObject(data));
         }else {
@@ -91,8 +91,8 @@ public class ForecastPredictionServiceImpl implements ForecastPredictionService 
     }
 
     @Override
-    public RestResponse getTenDaysWaterPlan(String area) {
-        String data = waterResourceApi.getTenDaysWaterPlan(area);
+    public RestResponse getTenDaysWaterPlan(String area,Integer year,Integer month,String tenDays) {
+        String data = waterResourceApi.getTenDaysWaterPlan(area,year,month,tenDays);
         if(StringUtils.isNotEmpty(data)){
             return RestResponse.ok(JSONObject.parseArray(data));
         }else {
@@ -101,8 +101,8 @@ public class ForecastPredictionServiceImpl implements ForecastPredictionService 
     }
 
     @Override
-    public RestResponse getTenDaysWaterPlanCrop(String area, String unit) {
-        String data = waterResourceApi.getTenDaysWaterPlanCrop(area,unit);
+    public RestResponse getTenDaysWaterPlanCrop(String area, String unit,Integer year,Integer month,String tenDays) {
+        String data = waterResourceApi.getTenDaysWaterPlanCrop(area,unit,year,month,tenDays);
         if(StringUtils.isNotEmpty(data)){
             return RestResponse.ok(JSONObject.parseObject(data));
         }else {
@@ -111,8 +111,8 @@ public class ForecastPredictionServiceImpl implements ForecastPredictionService 
     }
 
     @Override
-    public RestResponse getDayWaterPlan(String area) {
-        String data = waterResourceApi.getDayWaterPlan(area);
+    public RestResponse getDayWaterPlan(String area,Integer year,Integer month,Integer day) {
+        String data = waterResourceApi.getDayWaterPlan(area,year,month,day);
         if(StringUtils.isNotEmpty(data)){
             return RestResponse.ok(JSONObject.parseArray(data));
         }else {

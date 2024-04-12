@@ -35,11 +35,9 @@ public class LzzTask {
     //@Scheduled(cron="0 */5 * * * ?")
     public  void saveAffluentLevelByOneHour(){
         try {
-            Date endTime = new Date();
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTime(endTime);
-            calendar.add(Calendar.HOUR,-2);
-            Date startTime = calendar.getTime();
+            Date time = new Date();
+            Date startTime = calculateTime(time,-1);
+            Date endTime = calculateTime(time,1);
             lzzPlatformService.insertRainfallStationInfoBetweenTime(startTime,endTime);
             lzzPlatformService.insertReservoirLevelBetweenTime(startTime,endTime);
             lzzPlatformService.insertGaugingStationBetweenTime(startTime,endTime);
@@ -48,5 +46,13 @@ public class LzzTask {
             e.printStackTrace();
             log.error(e.getLocalizedMessage());
         }
+    }
+
+    private Date calculateTime(Date time,int hour){
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(time);
+        calendar.add(Calendar.HOUR,hour);
+        Date date = calendar.getTime();
+        return date;
     }
 }

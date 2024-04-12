@@ -15,38 +15,38 @@ public class WaterResourceFeignProvider implements WaterResourceFeign {
 
     private final WaterResourceApiProvider waterResourceApiProvider;
     @Override
-    public String getYearWaterPlan(String area) {
-        return waterResourceApiProvider.getYearWaterPlan(area);
+    public String getYearWaterPlan(String area,Integer year) {
+        return waterResourceApiProvider.getYearWaterPlan(area,year);
     }
 
     @Override
-    public String getYearWaterPlanCrop(String area, String unit) {
-        return waterResourceApiProvider.getYearWaterPlanCrop(area,unit);
+    public String getYearWaterPlanCrop(String area, String unit,Integer year) {
+        return waterResourceApiProvider.getYearWaterPlanCrop(area,unit,year);
     }
 
     @Override
-    public String getMonthWaterPlan(String area) {
-        return waterResourceApiProvider.getMonthWaterPlan(area);
+    public String getMonthWaterPlan(String area,Integer year,Integer month) {
+        return waterResourceApiProvider.getMonthWaterPlan(area,year,month);
     }
 
     @Override
-    public String getMonthWaterPlanCrop(String area, String unit) {
-        return waterResourceApiProvider.getMonthWaterPlanCrop(area,unit);
+    public String getMonthWaterPlanCrop(String area, String unit,Integer year,Integer month) {
+        return waterResourceApiProvider.getMonthWaterPlanCrop(area,unit,year,month);
     }
 
     @Override
-    public String getTenDaysWaterPlan(String area) {
-        return waterResourceApiProvider.getTenDaysWaterPlan(area);
+    public String getTenDaysWaterPlan(String area,Integer year,Integer month,String tenDays) {
+        return waterResourceApiProvider.getTenDaysWaterPlan(area,year,month,tenDays);
     }
 
     @Override
-    public String getTenDaysWaterPlanCrop(String area, String unit) {
-        return waterResourceApiProvider.getTenDaysWaterPlanCrop(area,unit);
+    public String getTenDaysWaterPlanCrop(String area, String unit,Integer year,Integer month,String tenDays) {
+        return waterResourceApiProvider.getTenDaysWaterPlanCrop(area,unit,year,month,tenDays);
     }
 
     @Override
-    public String getDayWaterPlan(String area) {
-        return waterResourceApiProvider.getDayWaterPlan(area);
+    public String getDayWaterPlan(String area,Integer year,Integer month,Integer day) {
+        return waterResourceApiProvider.getDayWaterPlan(area,year,month,day);
     }
 
     @Override
