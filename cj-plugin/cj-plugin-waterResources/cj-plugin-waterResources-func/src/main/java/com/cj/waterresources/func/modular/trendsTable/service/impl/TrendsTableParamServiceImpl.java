@@ -213,6 +213,8 @@ public class TrendsTableParamServiceImpl extends ServiceImpl<TrendsTableParamMap
                 return RestResponse.no("orderNum is blank");
             }
             this.lambdaUpdate().set(TrendsTableParam::getUnitId,req.getParam().getUnitId()).
+                    set(TrendsTableParam::getCategory,req.getParam().getCategory()).
+                    set(TrendsTableParam::getArea,req.getParam().getArea()).
                     set(TrendsTableParam::getOrderNum,req.getParam().getOrderNum()).eq(TrendsTableParam::getId,req.getParam().getId()).update();
             TrendsTableParam byId = this.getById(req.getParam().getId());
             if(byId.getParamName().equals(req.getParam().getParamName())){

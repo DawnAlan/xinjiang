@@ -18,4 +18,7 @@ public class ApprovalTrafficOverviewTableAddReq implements Serializable {
     //模型id
     @ApiModelProperty(value = "模型id")
     private String modelId;
+
+    @ApiModelProperty(value = "模型名称")
+    private String modelName;
 }
