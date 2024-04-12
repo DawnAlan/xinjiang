@@ -20,6 +20,6 @@ public interface IrrigationQuotaDetailsService extends IService<IrrigationQuotaD
 
     RestResponse<Map<String,List<IrrigationQuotaDetails>>> statistics(StatisticsReq req);
 
-    List<IrrigationQuotaContrastRes> contrast(IrrigationQuotaContrastReq req);
+    Map<String, List<IrrigationQuotaContrastRes>> contrast(IrrigationQuotaContrastReq req);
 }
 

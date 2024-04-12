@@ -46,8 +46,25 @@ public class IrrigationQuotaDetailsServiceImpl extends ServiceImpl<IrrigationQuo
     }
 
     @Override
-    public List<IrrigationQuotaContrastRes> contrast(IrrigationQuotaContrastReq req) {
-        return this.baseMapper.contrast(req);
+    public Map<String, List<IrrigationQuotaContrastRes>> contrast(IrrigationQuotaContrastReq req) {
+        List<IrrigationQuotaContrastRes> resList = this.baseMapper.contrast(req);
+
+        if (null != resList && resList.size() > 0) {
+            if (StringUtils.isEmpty(req.getUnit())) {
+                Map<String, List<IrrigationQuotaContrastRes>> collect = resList.stream().collect(Collectors.groupingBy(IrrigationQuotaContrastRes::getWaterUser));
+                return collect;
+            } else {
+                if (StringUtils.isEmpty(req.getCropType())) {
+                    Map<String, List<IrrigationQuotaContrastRes>> collect = resList.stream().collect(Collectors.groupingBy(IrrigationQuotaContrastRes::getCropType));
+                    return collect;
+                } else {
+                    Map<String, List<IrrigationQuotaContrastRes>> collect = resList.stream().collect(Collectors.groupingBy(IrrigationQuotaContrastRes::getIrrigationCrop));
+                    return collect;
+                }
+            }
+        } else {
+            return null;
+        }
     }
 }
 
