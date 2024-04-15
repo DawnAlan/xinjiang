@@ -34,8 +34,8 @@ public class UseWaterManagement extends Model<UseWaterManagement> {
     private String unitName;
 
     //单位Id
-//    @ApiModelProperty(value = "单位Id")
-//    private String unitId;
+    @ApiModelProperty(value = "单位Id")
+    private String unitId;
 
     //创建时间
     @ApiModelProperty(value = "创建时间")

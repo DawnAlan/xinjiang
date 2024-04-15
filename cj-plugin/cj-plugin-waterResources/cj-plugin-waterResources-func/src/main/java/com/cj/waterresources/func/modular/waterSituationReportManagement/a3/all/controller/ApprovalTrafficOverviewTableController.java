@@ -65,8 +65,8 @@ public class ApprovalTrafficOverviewTableController {
     @ApiOperation("查询8点的流量")
     @CommonLog(value = "查询8点的流量")
     @GetMapping("/synchronizationEightData")
-    public RestResponse synchronizationEightData(@RequestParam(value = "time", required = true) String time) {
-        return approvalTrafficOverviewTableService.synchronizationEightData(time);
+    public RestResponse synchronizationEightData(@RequestParam(value = "id", required = true) String id) {
+        return approvalTrafficOverviewTableService.synchronizationEightData(id);
     }
 }
 

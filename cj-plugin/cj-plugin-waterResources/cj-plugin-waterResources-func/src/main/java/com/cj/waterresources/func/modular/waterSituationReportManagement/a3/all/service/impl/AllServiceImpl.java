@@ -1140,7 +1140,7 @@ public class AllServiceImpl implements AllService {
         RealTimeEngineeringSituationDataRes lzzData = new RealTimeEngineeringSituationDataRes();
         lzzData.setReservoirName("楼庄子水库");
         lzzData.setFloodControlLevel(1394.5);
-        Set<String> allKeys = redisUtil.getAllKeys("lzz:time:waterLevel:true:"+date);
+        Set<String> allKeys = redisUtil.getAllKeys("lzz:waterLevel:"+date);
         if(allKeys.isEmpty()){
             List<TrendsTableParam> collect = trendsTableParamList.stream().filter(t -> t.getUseType() == 1 && t.getUseStation().equals("楼庄子水库")).collect(Collectors.toList());
             TrendsTableParam waterLevelParam = collect.stream().filter(t -> t.getPId().equals("0") && t.getParamName().equals("库水位")).collect(Collectors.toList()).get(0);
@@ -1172,11 +1172,35 @@ public class AllServiceImpl implements AllService {
                 Date parse = sdf1.parse(dateTemp);
                 dateList.add(parse);
             }
-            List<Date> collect = dateList.stream().sorted(Comparator.comparing(Date::getDate, Comparator.reverseOrder())).collect(Collectors.toList());
-            Double v = collect.size()>0?(Double) redisUtil.get("lzz:time:waterLevel:true:"+sdf1.format(collect.get(0))):null;
-            lzzData.setRealTimeWaterLevel(v==null?null:formatDouble(v));
-            lzzData.setUsedStorageCapacity(v==null?null:formatDouble(getWaterLevelByLevel(v,lzzId)));
-            lzzData.setRemainingStorageCapacity(v==null?null:formatDouble(7374.0 - lzzData.getUsedStorageCapacity()));
+            Collections.sort(dateList, new Comparator<Date>() {
+                @Override
+                public int compare(Date o1, Date o2) {
+                    return o2.compareTo(o1);
+                }
+            });
+            Double v = dateList.size()>0?(Double) redisUtil.get("lzz:waterLevel:"+sdf1.format(dateList.get(0))):null;
+            if(v==null || v<0){
+                List<TrendsTableParam> collect1 = trendsTableParamList.stream().filter(t -> t.getUseType() == 1 && t.getUseStation().equals("楼庄子水库")).collect(Collectors.toList());
+                TrendsTableParam waterLevelParam = collect1.stream().filter(t -> t.getPId().equals("0") && t.getParamName().equals("库水位")).collect(Collectors.toList()).get(0);
+                DayWaterSituationStatisticsTableLzz waterLevel = dayWaterSituationStatisticsTableLzzMapper.selectListForIndex(date,waterLevelParam.getId());
+                if(waterLevel!=null){
+                    lzzData.setRealTimeWaterLevel(formatDouble(waterLevel.getV()));
+                }
+                TrendsTableParam capacityParam = collect1.stream().filter(t -> t.getPId().equals("0") && t.getParamName().equals("库容")).collect(Collectors.toList()).get(0);
+                DayWaterSituationStatisticsTableLzz capacity = dayWaterSituationStatisticsTableLzzMapper.selectListForIndex(date,capacityParam.getId());
+                if(capacity!=null){
+                    lzzData.setUsedStorageCapacity(formatDouble(capacity.getV()));
+                }else {
+                    if(waterLevel!=null){
+                        lzzData.setUsedStorageCapacity(formatDouble(getWaterLevelByLevel(waterLevel.getV(),lzzId)));
+                    }
+                }
+                lzzData.setRemainingStorageCapacity(lzzData.getUsedStorageCapacity()==null?null:formatDouble(7374.0 - lzzData.getUsedStorageCapacity()));
+            }else {
+                lzzData.setRealTimeWaterLevel(v==null?null:formatDouble(v));
+                lzzData.setUsedStorageCapacity(v==null?null:formatDouble(getWaterLevelByLevel(v,lzzId)));
+                lzzData.setRemainingStorageCapacity(v==null?null:formatDouble(7374.0 - lzzData.getUsedStorageCapacity()));
+            }
         }
         result.add(lzzData);
         //头屯河水库
@@ -1191,8 +1215,13 @@ public class AllServiceImpl implements AllService {
             Date parse = sdf1.parse(dateTemp);
             dateListWaterLevel.add(parse);
         }
-        List<Date> collectWaterLevel = dateListWaterLevel.stream().sorted(Comparator.comparing(Date::getDate, Comparator.reverseOrder())).collect(Collectors.toList());
-        Double waterLevel = collectWaterLevel.size()>0?(Double) redisUtil.get("irrigatedPlatform:sq:tth:waterLevel:"+sdf1.format(collectWaterLevel.get(0))):null;
+        Collections.sort(dateListWaterLevel, new Comparator<Date>() {
+            @Override
+            public int compare(Date o1, Date o2) {
+                return o2.compareTo(o1);
+            }
+        });
+        Double waterLevel = dateListWaterLevel.size()>0?(Double) redisUtil.get("irrigatedPlatform:sq:tth:waterLevel:"+sdf1.format(dateListWaterLevel.get(0))):null;
         if(null==waterLevel){
             List<TrendsTableParam> collect = trendsTableParamList.stream().filter(t -> t.getUseType() == 1 && t.getUseStation().equals("头屯河水库")).collect(Collectors.toList());
             TrendsTableParam waterLevelParam = collect.stream().filter(t -> t.getPId().equals("0") && t.getParamName().equals("库水位")).collect(Collectors.toList()).get(0);
@@ -1213,8 +1242,13 @@ public class AllServiceImpl implements AllService {
             Date parse = sdf1.parse(dateTemp);
             dateListCapacity.add(parse);
         }
-        List<Date> collectCapacity = dateListCapacity.stream().sorted(Comparator.comparing(Date::getDate, Comparator.reverseOrder())).collect(Collectors.toList());
-        Double capacity = collectCapacity.size()>0?(Double) redisUtil.get("irrigatedPlatform:sq:tth:waterLevel:"+sdf1.format(collectCapacity.get(0))):null;
+        Collections.sort(dateListCapacity, new Comparator<Date>() {
+            @Override
+            public int compare(Date o1, Date o2) {
+                return o2.compareTo(o1);
+            }
+        });
+        Double capacity = dateListCapacity.size()>0?(Double) redisUtil.get("irrigatedPlatform:sq:tth:capacity:"+sdf1.format(dateListCapacity.get(0))):null;
         tthData.setReservoirName("头屯河水库");
         tthData.setFloodControlLevel(988.0);
         if(null ==capacity){

@@ -21,7 +21,7 @@ public interface ApprovalTrafficOverviewTableService extends IService<ApprovalTr
 
     RestResponse selectList(String time,String name);
 
-    RestResponse synchronizationEightData(String time);
+    RestResponse synchronizationEightData(String id);
 
 }
 

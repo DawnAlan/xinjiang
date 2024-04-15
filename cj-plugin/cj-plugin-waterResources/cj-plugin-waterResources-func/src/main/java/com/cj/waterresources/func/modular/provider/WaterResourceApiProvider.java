@@ -566,7 +566,9 @@ public class WaterResourceApiProvider implements WaterResourceApi {
         if(reservoir.equals("楼庄子水库")){
             List<TrendsTableParam> lzzTableParam = trendsTableParamListTemp.stream().filter(t->t.getUseType()==1 && t.getUseStation().equals("楼庄子水库")).collect(Collectors.toList());
             TrendsTableParam lzzJkllTableParam = lzzTableParam.stream().filter(t -> t.getParamName().equals("进库流量")).collect(Collectors.toList()).get(0);
-            TrendsTableParam lzzCkllTableParam = lzzTableParam.stream().filter(t -> t.getParamName().equals("河道")).collect(Collectors.toList()).get(0);
+            TrendsTableParam lzzCkTableParam = lzzTableParam.stream().filter(t -> t.getParamName().equals("出库") && t.getPId().equals("0")).collect(Collectors.toList()).get(0);
+            TrendsTableParam lzzLlTableParam = lzzTableParam.stream().filter(t -> t.getParamName().equals("流量") && t.getPId().equals(lzzCkTableParam.getId())).collect(Collectors.toList()).get(0);
+            TrendsTableParam lzzCkllTableParam = lzzTableParam.stream().filter(t -> t.getParamName().equals("合计") && t.getPId().equals(lzzLlTableParam.getId())).collect(Collectors.toList()).get(0);
             TrendsTableParam lzzSwTableParam = lzzTableParam.stream().filter(t -> t.getParamName().equals("库水位")).collect(Collectors.toList()).get(0);
             TrendsTableParam lzzKrTableParam = lzzTableParam.stream().filter(t -> t.getParamName().equals("库容")).collect(Collectors.toList()).get(0);
             TrendsTableParam lzzJkzdTableParam = lzzTableParam.stream().filter(t -> t.getParamName().equals("进库浊度")).collect(Collectors.toList()).get(0);
@@ -603,7 +605,8 @@ public class WaterResourceApiProvider implements WaterResourceApi {
         if(reservoir.equals("头屯河水库")){
             List<TrendsTableParam> tthTableParam = trendsTableParamListTemp.stream().filter(t->t.getUseType()==1 && t.getUseStation().equals("头屯河水库")).collect(Collectors.toList());
             TrendsTableParam tthJkllTableParam = tthTableParam.stream().filter(t -> t.getParamName().equals("进库流量") && !t.getPId().equals("0")).collect(Collectors.toList()).get(0);
-            TrendsTableParam tthCkllTableParam = tthTableParam.stream().filter(t -> t.getParamName().equals("河道流量")).collect(Collectors.toList()).get(0);
+            TrendsTableParam tthCkTableParam = tthTableParam.stream().filter(t -> t.getParamName().equals("出库流量") && t.getPId().equals("0")).collect(Collectors.toList()).get(0);
+            TrendsTableParam tthCkllTableParam = tthTableParam.stream().filter(t -> t.getParamName().equals("合计") && t.getPId().equals(tthCkTableParam.getId())).collect(Collectors.toList()).get(0);
             TrendsTableParam tthSwTableParam = tthTableParam.stream().filter(t -> t.getParamName().equals("库水位")).collect(Collectors.toList()).get(0);
             TrendsTableParam tthKrTableParam = tthTableParam.stream().filter(t -> t.getParamName().equals("水库库容")).collect(Collectors.toList()).get(0);
             TrendsTableParam tthJkzdTableParam = tthTableParam.stream().filter(t -> t.getParamName().equals("进库浊度")).collect(Collectors.toList()).get(0);
