@@ -535,8 +535,8 @@ public class IrrigationQuotaServiceImpl extends ServiceImpl<IrrigationQuotaMappe
         );
         irrigationQuota.setIrrigationQuota(irrigationQuota.getTotalPlannedIrrigationArea() == null ? null : irrigationQuota.getAccumulatedTotalIrrigationAmount() / irrigationQuota.getTotalPlannedIrrigationArea());
         irrigationQuota.setAverageIrrigationAmount(irrigationQuota.getAccumulatedIrrigationArea() == 0.0 ? null : irrigationQuota.getAccumulatedTotalIrrigationAmount() / irrigationQuota.getAccumulatedIrrigationArea());
-        boolean b = this.updateById(irrigationQuota);
-        if (b) {
+        int i = this.baseMapper.updateById(irrigationQuota);
+        if (i>0) {
             List<IrrigationQuotaDetails> irrigationQuotaDetailsList = new ArrayList<>();
             IrrigationQuotaDetails AprilEarlyOctober = new IrrigationQuotaDetails();
             AprilEarlyOctober.setId(irrigationQuota.getAprilEarlyOctoberId());

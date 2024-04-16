@@ -28,6 +28,14 @@ public class SporadicWaterFee extends Model<SporadicWaterFee> {
     @ApiModelProperty(value = "单位ID")
     private String unitId;
 
+    //单位
+    @ApiModelProperty(value = "父节点名称")
+    private String pName;
+
+    //单位
+    @ApiModelProperty(value = "父节点id")
+    private String pId;
+
     //流量
     @ApiModelProperty(value = "流量")
     private Double flow;

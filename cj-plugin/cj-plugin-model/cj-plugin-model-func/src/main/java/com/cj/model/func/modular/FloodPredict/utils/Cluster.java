@@ -3,7 +3,7 @@ package com.cj.model.func.modular.FloodPredict.utils;
 
 
 
-import com.cj.model.func.modular.FloodPredict.entity.Center;
+import com.cj.model.func.modular.FloodPredict.model.entity.Center;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -19,4 +19,12 @@ public class SporadicWaterFeeSelectListReq implements Serializable {
     //月份
     @ApiModelProperty(value = "月份")
     private Integer month;
+
+    //单位
+    @ApiModelProperty(value = "单位ID")
+    private String unitId;
+
+    //单位
+    @ApiModelProperty(value = "父节点id")
+    private String pId;
 }

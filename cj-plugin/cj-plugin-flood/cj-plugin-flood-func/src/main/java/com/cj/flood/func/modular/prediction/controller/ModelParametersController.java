@@ -1,13 +1,6 @@
 package com.cj.flood.func.modular.prediction.controller;
 
-import com.cj.common.model.RestResponse;
-import com.cj.flood.func.modular.prediction.bean.req.ModelParametersReq;
-import com.cj.flood.func.modular.prediction.entity.ModelParameters;
 import com.cj.flood.func.modular.prediction.service.ModelParametersService;
-/*import com.cj.model.func.modular.FloodPredict.Calibration.entity.CalibrationParam;*/
-import com.cj.model.func.modular.FloodPredict.entity.calibrationParam;
-import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
-import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,6 +34,5 @@ public class ModelParametersController {
     public RestResponse calibrate(@RequestBody CalibrationParam input) {
         return RestResponse.ok(modelParametersService.calibrate(input));
     }*/
-
 }
 
