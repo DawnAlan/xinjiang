@@ -1,7 +1,7 @@
 package com.cj.model.func.modular.FloodPredict.utils;
 
-import com.cj.model.func.modular.FloodPredict.entity.DateIndex;
-import com.cj.model.func.modular.FloodPredict.entity.ParamsSetVO;
+import com.cj.model.func.modular.FloodPredict.model.entity.DateIndex;
+import com.cj.model.func.modular.FloodPredict.entity.ForecastInputParam;
 import com.cj.model.func.modular.FloodPredict.entity.PredictInputData;
 
 import java.text.SimpleDateFormat;
@@ -227,8 +227,8 @@ public class TimeUtils {
 	}
 
 	//判断每一旬的天数
-	public static int getDays(Object[][] predict, ParamsSetVO pvo, int i) {//存在问题
-		Date date1= (Date) predict[i * pvo.getPeriodStepSize()][0];
+	public static int getDays(Object[][] predict, ForecastInputParam param, int i) {//存在问题
+		Date date1= (Date) predict[i * param.getPeriodStepSize()][0];
 		LocalDate date = date1.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 
 		// 获取年份、月份和天数

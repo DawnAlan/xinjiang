@@ -9,8 +9,8 @@ import java.util.Date;
 public class SelectListForIndustrialWaterFeeRes {
 
     @ApiModelProperty(value = "日期")
-    private Date date;
+    private Date recordTime;
 
     @ApiModelProperty(value = "值")
-    private Double v;
+    private Double flow;
 }

@@ -13,6 +13,7 @@ import com.cj.waterresources.func.modular.waterPrice.sporadicWaterFee.entity.Spo
 import com.cj.waterresources.func.modular.waterPrice.sporadicWaterFee.service.SporadicWaterFeeService;
 import com.cj.waterresources.func.modular.waterPrice.waterPriceManagement.entity.WaterPriceManagement;
 import com.cj.waterresources.func.modular.waterPrice.waterPriceManagement.service.WaterPriceManagementService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -46,40 +47,6 @@ public class SporadicWaterFeeServiceImpl extends ServiceImpl<SporadicWaterFeeMap
         sporadicWaterFee.setId(UUIDUtils.getUUID());
         sporadicWaterFee.setCreateTime(new Date());
         sporadicWaterFee.setCreateBy(saBaseLoginUser.getName());
-        sporadicWaterFee.setWaterAmount(sporadicWaterFee.getFlow()*60*60*24);
-        WaterPriceManagement waterPrice = waterPriceManagementService.lambdaQuery().eq(WaterPriceManagement::getId, sporadicWaterFee.getUnitId()).one();
-        if(null != waterPrice){
-            if(waterPrice.getWaterPrice()==null){
-                return RestResponse.no("该用水户没有填写水价");
-            }
-            sporadicWaterFee.setWaterPrice(waterPrice.getWaterPrice());
-            sporadicWaterFee.setPayableWaterFee(waterPrice.getWaterPrice()*sporadicWaterFee.getWaterAmount());
-            List<PaymentWaterFees> paymentWaterFees = paymentWaterFeesService.lambdaQuery().
-                    eq(PaymentWaterFees::getWaterUserId, sporadicWaterFee.getUnitId()).
-                    eq(PaymentWaterFees::getType,"水费").
-                    eq(PaymentWaterFees::getYear, sporadicWaterFee.getYear()).list();
-            if(null != paymentWaterFees && paymentWaterFees.size()>0){
-                Double aDouble = paymentWaterFees.stream().map(PaymentWaterFees::getPaymentAmount).reduce(Double::sum).orElse(0.00);
-                sporadicWaterFee.setAdvancePaymentWaterFee(aDouble);
-                sporadicWaterFee.setUnpaidWaterFees(sporadicWaterFee.getAdvancePaymentWaterFee()-sporadicWaterFee.getPayableWaterFee());
-            }else {
-                sporadicWaterFee.setAdvancePaymentWaterFee(0.00);
-                sporadicWaterFee.setUnpaidWaterFees(sporadicWaterFee.getAdvancePaymentWaterFee()-sporadicWaterFee.getPayableWaterFee());
-            }
-        }
-        List<PaymentWaterFees> paymentWaterResourceFees = paymentWaterFeesService.lambdaQuery().
-                eq(PaymentWaterFees::getWaterUserId, sporadicWaterFee.getUnitId()).
-                eq(PaymentWaterFees::getType,"水资源费").
-                eq(PaymentWaterFees::getYear, sporadicWaterFee.getYear()).list();
-        sporadicWaterFee.setPayableWaterResource(Double.parseDouble(waterResourcePrice)*sporadicWaterFee.getWaterAmount());
-        if(null != paymentWaterResourceFees && paymentWaterResourceFees.size()>0){
-            Double aDouble = paymentWaterResourceFees.stream().map(PaymentWaterFees::getPaymentAmount).reduce(Double::sum).orElse(0.00);
-            sporadicWaterFee.setPaidWaterResource(aDouble);
-            sporadicWaterFee.setWaterResourceSurplus(sporadicWaterFee.getPaidWaterResource()-sporadicWaterFee.getPayableWaterResource());
-        }else {
-            sporadicWaterFee.setPaidWaterResource(0.00);
-            sporadicWaterFee.setWaterResourceSurplus(sporadicWaterFee.getPaidWaterResource()-sporadicWaterFee.getPayableWaterResource());
-        }
         boolean save = this.save(sporadicWaterFee);
         if(save){
             return RestResponse.ok("新增成功");
@@ -103,40 +70,6 @@ public class SporadicWaterFeeServiceImpl extends ServiceImpl<SporadicWaterFeeMap
         SaBaseLoginUser saBaseLoginUser = StpLoginUserUtil.getLoginUser();
         sporadicWaterFee.setUpdateBy(saBaseLoginUser.getName());
         sporadicWaterFee.setUpdateTime(new Date());
-        sporadicWaterFee.setWaterAmount(sporadicWaterFee.getFlow()*60*60*24);
-        WaterPriceManagement waterPrice = waterPriceManagementService.lambdaQuery().eq(WaterPriceManagement::getId, sporadicWaterFee.getUnitId()).one();
-        if(null != waterPrice){
-            if(waterPrice.getWaterPrice()==null){
-                return RestResponse.no("该用水户没有填写水价");
-            }
-            sporadicWaterFee.setWaterPrice(waterPrice.getWaterPrice());
-            sporadicWaterFee.setPayableWaterFee(waterPrice.getWaterPrice()*sporadicWaterFee.getWaterAmount());
-            List<PaymentWaterFees> paymentWaterFees = paymentWaterFeesService.lambdaQuery().
-                    eq(PaymentWaterFees::getWaterUserId, sporadicWaterFee.getUnitId()).
-                    eq(PaymentWaterFees::getType,"水费").
-                    eq(PaymentWaterFees::getYear, sporadicWaterFee.getYear()).list();
-            if(null != paymentWaterFees && paymentWaterFees.size()>0){
-                Double aDouble = paymentWaterFees.stream().map(PaymentWaterFees::getPaymentAmount).reduce(Double::sum).orElse(0.00);
-                sporadicWaterFee.setAdvancePaymentWaterFee(aDouble);
-                sporadicWaterFee.setUnpaidWaterFees(sporadicWaterFee.getAdvancePaymentWaterFee()-sporadicWaterFee.getPayableWaterFee());
-            }else {
-                sporadicWaterFee.setAdvancePaymentWaterFee(0.00);
-                sporadicWaterFee.setUnpaidWaterFees(sporadicWaterFee.getAdvancePaymentWaterFee()-sporadicWaterFee.getPayableWaterFee());
-            }
-        }
-        List<PaymentWaterFees> paymentWaterResourceFees = paymentWaterFeesService.lambdaQuery().
-                eq(PaymentWaterFees::getWaterUserId, sporadicWaterFee.getUnitId()).
-                eq(PaymentWaterFees::getType,"水资源费").
-                eq(PaymentWaterFees::getYear, sporadicWaterFee.getYear()).list();
-        sporadicWaterFee.setPayableWaterResource(Double.parseDouble(waterResourcePrice)*sporadicWaterFee.getWaterAmount());
-        if(null != paymentWaterResourceFees && paymentWaterResourceFees.size()>0){
-            Double aDouble = paymentWaterResourceFees.stream().map(PaymentWaterFees::getPaymentAmount).reduce(Double::sum).orElse(0.00);
-            sporadicWaterFee.setPaidWaterResource(aDouble);
-            sporadicWaterFee.setWaterResourceSurplus(sporadicWaterFee.getPaidWaterResource()-sporadicWaterFee.getPayableWaterResource());
-        }else {
-            sporadicWaterFee.setPaidWaterResource(0.00);
-            sporadicWaterFee.setWaterResourceSurplus(sporadicWaterFee.getPaidWaterResource()-sporadicWaterFee.getPayableWaterResource());
-        }
         boolean b = this.updateById(sporadicWaterFee);
         if(b){
             return RestResponse.ok();
@@ -147,7 +80,10 @@ public class SporadicWaterFeeServiceImpl extends ServiceImpl<SporadicWaterFeeMap
 
     @Override
     public RestResponse<List<SporadicWaterFee>> selectList(SporadicWaterFeeSelectListReq req) {
-        List<SporadicWaterFee> list = this.lambdaQuery().eq(req.getWaterFeeType() != null, SporadicWaterFee::getWaterFeeType, req.getWaterFeeType()).
+        List<SporadicWaterFee> list = this.lambdaQuery().
+                eq(StringUtils.isNotEmpty(req.getPId()), SporadicWaterFee::getPId, req.getPId()).
+                eq(StringUtils.isNotEmpty(req.getUnitId()), SporadicWaterFee::getUnitId, req.getUnitId()).
+                eq(req.getWaterFeeType() != null, SporadicWaterFee::getWaterFeeType, req.getWaterFeeType()).
                 eq(req.getYear() != null, SporadicWaterFee::getYear, req.getYear()).
                 eq(req.getMonth() != null, SporadicWaterFee::getMonth, req.getMonth()).orderByDesc(SporadicWaterFee::getCreateTime).list();
         if(null != list && list.size()>0){

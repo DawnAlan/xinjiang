@@ -1,4 +1,8 @@
-package com.cj.model.func.modular.FloodPredict.Calibration;
+package com.cj.model.func.modular.FloodPredict.model.function;
+
+import com.cj.model.func.modular.FloodPredict.utils.ExcelTool;
+
+import java.io.IOException;
 
 public class ShanBeiModel {
 
@@ -17,8 +21,8 @@ public class ShanBeiModel {
     /// 蒸散发折减系数 KC 为流域蒸散发能力与实测水面蒸发器实测值之比, 由于干旱地区资料等方面的原因，在实际模拟计算中 KC 值往往变化很大，最后须经调试后确定，必要时可分月份优选
     double KC;
 
-//     流域土壤初始下渗率,相当于土壤干燥时的下渗率 1-2 mm/min,60-120 mm/h
-    double f0;
+    /// 流域土壤初始下渗率,相当于土壤干燥时的下渗率 1-2 mm/min,60-120 mm/h
+    //double f0;
 
     /// 流域土壤稳定下渗率 0.3-0.5 mm/min,18-30 mm/h
     double fc;
@@ -26,7 +30,7 @@ public class ShanBeiModel {
     /// 流域土壤最大单点下渗率 1-2 mm/min,60-120 mm/h
     double fm;
 
-    /// 霍尔顿下渗曲线方程中的系数  0.04~0.05/min， 可取0.05/min, 3/h。
+    /// 霍尔顿下渗曲线方程中的土质系数  0.04~0.05/min， 可取0.05/min, 3/h。
     double K;
 
     /// 参数 B反映下渗能力在透水面积上的分布特性。 B值取决于流域的土壤结构。
@@ -71,35 +75,34 @@ public class ShanBeiModel {
 
     /// 总的产流量,mm
     double[] R;
-    /// 为入流过程(m3/s) 汇流计算中用到
-    double[] I1;
-    /// 为入流过程(m3/s) 汇流计算中用到
-    double[] I2;
 
     /// 为入流过程(m3/s) 汇流计算中用到
     double[] I;
 
     /// 为出流过程(m3/s) 汇流计算中用到
-    public double[] Q;
+    double[] Q;
 
     /// 计算初始土壤含水量时，用到的日雨量 mm
     double[] PreImpact_P;
 
-    public ShanBeiModel InputData(double[] param, Object[][] input,Object[][] predata)  {
-        Area = param[0];
-        FB = param[1]; //不透水面积的比例，透水面积比例为1-FB
-        WM = param[2]; //张力水蓄水容量，或最大蓄水量 60-80mm
-        KC = param[3]; //蒸散发折减系数 KC
-        fc = param[4]; //流域土壤稳定下渗率 0.3-0.5 mm/min
-        fm = param[5]; //流域土壤最大下渗率 1-2 mm/min
-        K = param[6]; //霍尔顿下渗曲线方程中的土质系数 0.04~0.05/min
-        B = param[7];  //B反映下渗能力在透水面积上的分布特性
-        CS = param[8]; //CS 为地面径流消退系数
-        L = (int)param[9]; //L为汇流滞时（时段数）
-        PreImpactdays = (int)param[10]; //计算初始土壤含水量时，用到的前期天数 >20d
-        W0 = param[10];
-        PeriodLength = 1;//1h
+    public void InputData(String path, String sheetPara,Object[][] input,Object[][] predata) throws IOException {
 
+        Object[][] paras = ExcelTool.readExcel(path, sheetPara);
+
+        Area = Double.parseDouble(paras[0][0].toString());
+        FB = Double.parseDouble(paras[0][1].toString()); //不透水面积的比例，透水面积比例为1-FB
+        WM = Double.parseDouble(paras[0][2].toString()); //张力水蓄水容量，或最大蓄水量 60-80mm
+        KC = Double.parseDouble(paras[0][3].toString()); //蒸散发折减系数 KC 为流
+        fc = Double.parseDouble(paras[0][4].toString()); //流域土壤稳定下渗率 0.3-0.5 mm/min
+        fm = Double.parseDouble(paras[0][5].toString()); //流域土壤最大下渗率 1-2 mm/min
+        K = Double.parseDouble(paras[0][6].toString()); //霍尔顿下渗曲线方程中的土质系数 0.04~0.05/min
+        B = Double.parseDouble(paras[0][7].toString());  //B反映下渗能力在透水面积上的分布特性
+        CS = Double.parseDouble(paras[0][8].toString()); //CS 为地面径流消退系数
+        L = (int) Double.parseDouble(paras[0][9].toString()); //L为汇流滞时（时段数）
+        PreImpactdays = (int) Double.parseDouble(paras[0][10].toString()); //计算初始土壤含水量时，用到的前期天数 >20d
+//        PreImpactdays = 20 ;
+
+        PeriodLength = 1;
         NumPeriod = input.length;
 
         E = new double[NumPeriod]; // 输入数据
@@ -111,8 +114,6 @@ public class ShanBeiModel {
         R2 = new double[NumPeriod]; // 中间结果，输出数据
         R = new double[NumPeriod]; // 中间结果，输出数据
         I = new double[NumPeriod]; // 中间结果，输入数据
-        I1 = new double[NumPeriod]; // 中间结果，输入数据
-        I2 = new double[NumPeriod]; // 中间结果，输入数据
         Q = new double[NumPeriod]; // 计算结果、输出数据
         PreImpact_P = new double[PreImpactdays]; // 输入数据
 
@@ -125,19 +126,20 @@ public class ShanBeiModel {
             Q[i] = 0;
         }
 
-//        for (int i = 0; i < PreImpactdays; i++) {
-//            PreImpact_P[i] = Double.parseDouble(predata[i][1].toString());
-//        }
-        return this;
+        for (int i = 0; i < PreImpactdays; i++) {
+            PreImpact_P[i] = Double.parseDouble(predata[i][1].toString());
+        }
+
+
     }
 
     /// 土壤初始含水量计算
-    public ShanBeiModel InitialMoistureContentCalculation() {
+    public void InitialMoistureContentCalculation() {
         // 计算初始含水量W0
 
         double Wt_1 = 0; // 前一天的土壤含水量,最开始的时候（20天前）假定其为0；
         double Wt = 0;// 当前天的土壤含水量
-        KC = 1.0;
+
         for (int j = 0; j < PreImpactdays; j++) {
             Wt = PreImpact_P[j] + KC * Wt_1;
             if (Wt > WM) {
@@ -149,11 +151,10 @@ public class ShanBeiModel {
         W0 = Wt;
 
 //        W0 = 10;//这里是直接定义的初始含水量
-        return this;
     }
 
     /// 基于陕北模型的长流计算 假定流域各点下渗能力一致
-    public ShanBeiModel RunoffYieldCalculation_UniformInfiltration() {
+    public void RunoffYieldCalculation_UniformInfiltration() {
         // 初始假设W，来推求下渗过程和蓄水过程
 
         // 已知初始含水量W0,推求其在霍尔顿下渗曲线方程中的对应点（W[0], f[0], Time[0]）
@@ -211,6 +212,7 @@ public class ShanBeiModel {
             if (P[j] <= Ave_f) {
                 R2[j] = 0;
                 W[j + 1] = W[j] + P[j] * PeriodLength - E[j] * PeriodLength;
+
                 if (W[j + 1] > WM)// 蓄水达到上限
                 {
                     R2[j] = R2[j] + W[j + 1] - WM;
@@ -231,7 +233,7 @@ public class ShanBeiModel {
 
                 //再次计算
 
-//                f[j + 1] = fm - K * (TempW2 - fc * Time[j + 1]);//用这个算f越算越大
+                //f[j + 1] = fm - K * (TempW2 - fc * Time[j + 1]);//用这个算f越算越大
                 f[j + 1] = fc + (fm - fc) * Math.exp(-K * Time[j + 1]);
 
                 if (f[j + 1] > fm) {
@@ -271,13 +273,14 @@ public class ShanBeiModel {
         //流域总产流量计算
         for (int j = 0; j < NumPeriod; j++) {
             R[j] = R1[j] * FB + R2[j] * (1 - FB);// 单位mm/h
+
             I[j] = R1[j] / 1000 / 3600 * FB * Area * 1000000 + R2[j] / 1000 / 3600 * (1 - FB) * Area * 1000000;//  Area单位是km2
         }
-        return this;
+
     }
 
     /// 基于陕北模型的长流计算 假定流域各点下渗能力一致
-    public ShanBeiModel RunoffYieldCalculation_UniformInfiltration2() {
+    public void RunoffYieldCalculation_UniformInfiltration2() {
         // 初始假设f，来推求下渗过程和蓄水过程
         // 已知初始含水量W0,推求其在霍尔顿下渗曲线方程中的对应点（W[0], f[0], Time[0]）
         double TempW = 0;
@@ -395,14 +398,14 @@ public class ShanBeiModel {
             I[j] = R1[j] / 1000 / 3600 * FB * Area * 1000000 + R2[j] / 1000 / 3600 * (1 - FB) * Area * 1000000;//  Area单位是km2
         }
 
-        return this;
+
     }
 
     // 前一种不考虑流域下渗能力分布不均时，由于流域面积很大，降雨与下渗前度的大小关系对结果的影响很大，有时候没径流，有时候产生很大径流
     // 还有就是下渗曲线对结果的影响很大，几个参数稍微调整都会对结果产生较大的影响。尤其是K
     // 初始假设W，来推求下渗过程和蓄水过程  并考虑流域不同点下渗能力的不同
     // 已知初始含水量W0,推求其在霍尔顿下渗曲线方程中的对应点（W[0], f[0], Time[0]）
-    public ShanBeiModel RunoffYieldCalculation_UnevenInfiltration() {
+    public void RunoffYieldCalculation_UnevenInfiltration() {
         double TempW = 0;
         double Tempf = 0;
         double BeginTime = 0;
@@ -449,33 +452,27 @@ public class ShanBeiModel {
             double TempW2 = TempW; // 假定一个时段末的土壤含水量
 
             //一次计算
-//            f[j + 1] = fm - K * (TempW2 - fc * Time[j + 1]);//用这个算f越算越大
+            //f[j + 1] = fm - K * (TempW2 - fc * Time[j + 1]);//用这个算f越算越大
             f[j + 1] = fc + (fm - fc) * Math.exp(-K * Time[j + 1]);
             if (f[j + 1] > fm) {
                 f[j + 1] = fm;
             }
 
-            Ave_f = (f[j] + f[j + 1]) / 2;// 时段平均下渗量
-//            Ave_f = fm / (1 + B);// 流域的平均下渗量
+            //Ave_f = (f[j] + f[j + 1]) / 2;// 时段平均下渗量
+            Ave_f = fm / (1 + B);// 流域的平均下渗量
             if (P[j] - E[j] < fm)// 部分流域上产流
             {
                 if (P[j] - E[j] < 0) {
                     R2[j] = P[j] - E[j] - Ave_f * (1 - Math.pow(1 - (0) / fm, B + 1));
                 } else {
-                    double a = Ave_f * (1 - Math.pow(1 - (P[j] - E[j]) / fm, B + 1));
                     R2[j] = P[j] - E[j] - Ave_f * (1 - Math.pow(1 - (P[j] - E[j]) / fm, B + 1));
                 }
-                if (j>90){
-                    int a = 0;
-                }
+
                 if (R2[j] < 0) {
                     R2[j] = 0;
                 }
-//                if ((j+1)%24==0){
-//                    W[j] = W[j] * KC;
-//                }
                 W[j + 1] = W[j] + P[j] * PeriodLength - E[j] * PeriodLength - R2[j] * PeriodLength;
-                if (W[j + 1] >= WM)// 蓄水达到上限
+                if (W[j + 1] > WM)// 蓄水达到上限
                 {
                     R2[j] = R2[j] + W[j + 1] - WM;
                     W[j + 1] = WM;
@@ -486,9 +483,8 @@ public class ShanBeiModel {
                 if (R2[j] < 0) {
                     R2[j] = 0;
                 }
-
                 W[j + 1] = W[j] + P[j] * PeriodLength - E[j] * PeriodLength - R2[j] * PeriodLength;
-                if (W[j + 1] >= WM)// 蓄水达到上限
+                if (W[j + 1] > WM)// 蓄水达到上限
                 {
                     R2[j] = R2[j] + W[j + 1] - WM;
                     W[j + 1] = WM;
@@ -501,14 +497,14 @@ public class ShanBeiModel {
                 TempW2 = TempW2 - (TempW2 - W[j + 1]) / 10;
 
                 //再次计算
-//                f[j + 1] = fm - K * (TempW2 - fc * Time[j + 1]);//用这个算f越算越大
+                //f[j + 1] = fm - K * (TempW2 - fc * Time[j + 1]);//用这个算f越算越大
                 f[j + 1] = fc + (fm - fc) * Math.exp(-K * Time[j + 1]);
                 if (f[j + 1] > fm) {
                     f[j + 1] = fm;
                 }
 
-                Ave_f = (f[j] + f[j + 1]) / 2;// 时段平均下渗量
-//                Ave_f = fm / (1 + B);// 流域的平均下渗量
+                //Ave_f = (f[j] + f[j + 1]) / 2;// 时段平均下渗量
+                Ave_f = fm / (1 + B);// 流域的平均下渗量
 
                 if (P[j] - E[j] < fm)// 部分流域上产流
                 {
@@ -521,11 +517,8 @@ public class ShanBeiModel {
                     if (R2[j] < 0) {
                         R2[j] = 0;
                     }
-//                    if ((j+1)%24==0){
-//                        W[j] = W[j] * KC;
-//                    }
                     W[j + 1] = W[j] + P[j] * PeriodLength - E[j] * PeriodLength - R2[j] * PeriodLength;
-                    if (W[j + 1] >= WM)// 蓄水达到上限
+                    if (W[j + 1] > WM)// 蓄水达到上限
                     {
                         R2[j] = R2[j] + W[j + 1] - WM;
                         W[j + 1] = WM;
@@ -536,11 +529,8 @@ public class ShanBeiModel {
                     if (R2[j] < 0) {
                         R2[j] = 0;
                     }
-//                    if ((j+1)%24==0){
-//                        W[j] = W[j] * KC;
-//                    }
                     W[j + 1] = W[j] + P[j] * PeriodLength - E[j] * PeriodLength - R2[j] * PeriodLength;
-                    if (W[j + 1] >= WM)// 蓄水达到上限
+                    if (W[j + 1] > WM)// 蓄水达到上限
                     {
                         R2[j] = R2[j] + W[j + 1] - WM;
                         W[j + 1] = WM;
@@ -559,16 +549,14 @@ public class ShanBeiModel {
 
         for (int j = 0; j < NumPeriod; j++) {
             R[j] = R1[j] * FB + R2[j] * (1 - FB);// 单位mm/h
-            I1[j] = R1[j] / 1000 / 3600 * FB * Area * 1000000;
-            I2[j] = R2[j] / 1000 / 3600 * (1 - FB) * Area * 1000000;
+
             I[j] = R1[j] / 1000 / 3600 * FB * Area * 1000000 + R2[j] / 1000 / 3600 * (1 - FB) * Area * 1000000;//  Area单位是km2
         }
-        return this;
+
     }
 
-
     // 汇流计算
-    public ShanBeiModel ConfluenceCalculation() {
+    public void ConfluenceCalculation() {
         for (int j = 0; j < NumPeriod; j++) {
 
             if (j < L) {
@@ -580,21 +568,11 @@ public class ShanBeiModel {
 
             } else {
                 Q[j] = CS * Q[j - 1] + (1 - CS) * I[j - L];
-//                Q[j] = CS * Q[j - 1] + (1 - CS) * I2[j - L];
-            }
-
-        }
-        for (int j = 0; j < NumPeriod; j++) {
-            if (j==0){
-                Q[j] = 0;
-            }else {
-                Q[j] = Q[j];
-//                Q[j] = Q[j] + I1[j-1];
             }
             Object[]Q_shanbei=new Object[NumPeriod];
             Q_shanbei[j]=Q[j];
         }
-        return this;
+
     }
 
 }

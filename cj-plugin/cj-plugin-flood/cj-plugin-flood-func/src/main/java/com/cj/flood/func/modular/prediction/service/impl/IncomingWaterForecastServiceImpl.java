@@ -28,7 +28,7 @@ import com.cj.flood.func.modular.prediction.bean.res.IncomingWaterForecastDetail
 import com.cj.flood.func.modular.prediction.entity.IncomingWaterForecast;
 import com.cj.flood.func.modular.prediction.service.IncomingWaterForecastService;
 import com.cj.flood.func.modular.prediction.mapper.IncomingWaterForecastMapper;
-import com.cj.model.func.modular.FloodPredict.entity.ForcastInputParamNew;
+import com.cj.model.func.modular.FloodPredict.entity.ForecastInputParamNew;
 import com.cj.model.func.modular.FloodPredict.entity.IrrigatedHydrologyParam;
 import com.cj.model.func.modular.FloodPredict.entity.LzzHydrologyParam;
 import com.cj.model.func.modular.FloodPredict.entity.TemporaryXlsx;
@@ -137,7 +137,7 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                 @Override
                 public void run() {
                     try {
-                        ForcastInputParamNew forcastInputParamNew = new ForcastInputParamNew();
+                        ForecastInputParamNew forcastInputParamNew = new ForecastInputParamNew();
                         forcastInputParamNew.setPredictionTime(incomingWaterForecast.getPredictionTime());
                         forcastInputParamNew.setModelType(incomingWaterForecast.getModelType());
                         forcastInputParamNew.setPeriodTimeNum(incomingWaterForecast.getPeriodTimeNum());
@@ -399,7 +399,7 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                 public void run() {
                     try {
                         //调用模型方法生成模型结果，更新到数据库
-                        ForcastInputParamNew forcastInputParamNew = new ForcastInputParamNew();
+                        ForecastInputParamNew forcastInputParamNew = new ForecastInputParamNew();
                         forcastInputParamNew.setPredictionTime(incomingWaterForecast.getPredictionTime());
                         forcastInputParamNew.setModelType(incomingWaterForecast.getModelType());
                         forcastInputParamNew.setPeriodTimeNum(incomingWaterForecast.getPeriodTimeNum());

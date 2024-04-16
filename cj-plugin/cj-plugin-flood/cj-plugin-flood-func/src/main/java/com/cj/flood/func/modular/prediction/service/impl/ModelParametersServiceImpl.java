@@ -5,29 +5,10 @@ import com.cj.flood.func.modular.prediction.bean.req.ModelParametersReq;
 import com.cj.flood.func.modular.prediction.mapper.ModelParametersMapper;
 import com.cj.flood.func.modular.prediction.entity.ModelParameters;
 import com.cj.flood.func.modular.prediction.service.ModelParametersService;
-import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.entity.IrrigatedPlatformDataInfo;
-import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.service.IrrigatedPlatformDataInfoService;
-import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.entity.LzzGaugingStation;
-import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.service.LzzGaugingStationService;
-import com.cj.middleDatabase.func.modular.lzz.lzzRainfallStation.entity.LzzRainfallStation;
-import com.cj.middleDatabase.func.modular.lzz.lzzRainfallStation.service.LzzRainfallStationService;
-/*import com.cj.model.func.modular.FloodPredict.Calibration.ShanBeiCalibration;
-import com.cj.model.func.modular.FloodPredict.Calibration.entity.CalibrationOutput;
-import com.cj.model.func.modular.FloodPredict.Calibration.entity.CalibrationParam;*/
-import com.cj.model.func.modular.FloodPredict.entity.IrrigatedHydrologyParam;
-import com.cj.model.func.modular.FloodPredict.entity.LzzHydrologyParam;
-import com.cj.model.func.modular.FloodPredict.entity.calibrationParam;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+
 
 /**
  * 陕北模型参数(ModelParameters)表服务实现类

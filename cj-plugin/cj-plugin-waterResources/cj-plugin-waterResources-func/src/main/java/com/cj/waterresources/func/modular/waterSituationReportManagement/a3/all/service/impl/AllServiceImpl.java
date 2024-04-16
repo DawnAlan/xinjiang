@@ -63,6 +63,9 @@ import java.net.InetAddress;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -432,8 +435,10 @@ public class AllServiceImpl implements AllService {
         return hydrographResList;
     }
 
+    @SneakyThrows
     @Override
     public RestResponse selectListForIndustrialWaterFee(SelectListForIndustrialWaterFeeReq req) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         String mk = (String) redisUtil.get("trendsTableParam:list");
         if(StringUtils.isEmpty(mk)){
             trendsTableParamService.updateCache();
@@ -456,8 +461,8 @@ public class AllServiceImpl implements AllService {
             Set<Date> dates = collect1.keySet();
             for(Date date:dates){
                 SelectListForIndustrialWaterFeeRes res = new SelectListForIndustrialWaterFeeRes();
-                res.setDate(date);
-                res.setV(collect1.get(date).stream().map(DayWaterSituationStatisticsTableLzz::getV).reduce(Double::sum).orElse(0.00));
+                res.setRecordTime(date);
+                res.setFlow(formatDoubleThree(collect1.get(date).stream().filter(t->t.getV()!=null).map(DayWaterSituationStatisticsTableLzz::getV).reduce(Double::sum).orElse(0.00)));
                 resList.add(res);
             }
         }
@@ -469,8 +474,8 @@ public class AllServiceImpl implements AllService {
             List<DayWaterSituationStatisticsTableTth> dayWaterSituationStatisticsTableTths = dayWaterSituationStatisticsTableTthMapper.selectListForIndustrialWaterFee(req);
             for(DayWaterSituationStatisticsTableTth tth:dayWaterSituationStatisticsTableTths){
                 SelectListForIndustrialWaterFeeRes res = new SelectListForIndustrialWaterFeeRes();
-                res.setDate(tth.getRecordTime());
-                res.setV(res.getV());
+                res.setRecordTime(tth.getRecordTime());
+                res.setFlow(formatDoubleThree(tth.getV()));
                 resList.add(res);
             }
         }
@@ -481,14 +486,43 @@ public class AllServiceImpl implements AllService {
             List<DayWaterSituationStatisticsTableTth> dayWaterSituationStatisticsTableTths = dayWaterSituationStatisticsTableTthMapper.selectListForIndustrialWaterFee(req);
             for(DayWaterSituationStatisticsTableTth tth:dayWaterSituationStatisticsTableTths){
                 SelectListForIndustrialWaterFeeRes res = new SelectListForIndustrialWaterFeeRes();
-                res.setDate(tth.getRecordTime());
-                res.setV(res.getV());
+                res.setRecordTime(tth.getRecordTime());
+                res.setFlow(formatDoubleThree(tth.getV()));
                 resList.add(res);
             }
         }
         if(resList.isEmpty()){
             return RestResponse.no("暂无流量数据");
         }else {
+            List<String> tempList = new ArrayList<>();
+            String[] split = req.getStartTime().split("-");
+            Integer yearMonth = YearMonth.of(Integer.valueOf(split[0]), Integer.parseInt(split[1])).lengthOfMonth();
+            LocalDate startDate = LocalDate.of(Integer.valueOf(split[0]), Integer.valueOf(split[1]), Integer.valueOf(split[2]));
+            LocalDate endDate = LocalDate.of(Integer.valueOf(split[0]), Integer.parseInt(split[1]),yearMonth);
+            for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
+                String dateTemp = date.toString();
+                List<SelectListForIndustrialWaterFeeRes> collect = resList.stream().filter(t -> {
+                    try {
+                        return t.getRecordTime().compareTo(sdf.parse(dateTemp)) == 0;
+                    } catch (ParseException e) {
+                        throw new RuntimeException(e);
+                    }
+                }).collect(Collectors.toList());
+                if(collect.size()==0){
+                    tempList.add(dateTemp);
+                }
+            }
+            for(String s:tempList){
+                SelectListForIndustrialWaterFeeRes res = new SelectListForIndustrialWaterFeeRes();
+                res.setRecordTime(sdf.parse(s));
+                res.setFlow(null);
+                resList.add(res);
+            }
+            Collections.sort(resList,new Comparator<SelectListForIndustrialWaterFeeRes>(){
+                public int compare(SelectListForIndustrialWaterFeeRes u1,SelectListForIndustrialWaterFeeRes u2){
+                    return u1.getRecordTime().compareTo(u2.getRecordTime());
+                }
+            });
             return RestResponse.ok(resList);
         }
     }
@@ -629,6 +663,7 @@ public class AllServiceImpl implements AllService {
         tth.setReservoirName("头屯河水库");
         for(OverallSituationUnitMgr mgr:idsList){
             if(getTopUnitNameFromOverallSituationUnitMgr(mgr.getId()).equals("楼庄子水库")){
+                Double outputFlow = 0.00;
                 lzz.setOverallId(mgr.getId());
                 if(StringUtils.isNotEmpty(mgr.getMonitorId())){
                     LzzGaugingStation info = lzzGaugingStationMapper.selectInfoForIndex(mgr.getMonitorId(), date);
@@ -636,7 +671,13 @@ public class AllServiceImpl implements AllService {
                         lzz.setInputFlow(info==null?null:info.getFlow());
                     }
                     if(mgr.getUnitName().contains("河道")){
-                        lzz.setOutputFlow(info==null?null:info.getFlow());
+                        outputFlow+=info==null?0.00:info.getFlow()==null?0.00:info.getFlow();
+                    }
+                    if(mgr.getUnitName().contains("楼庄子水厂管道1")){
+                        outputFlow+=info==null?0.00:info.getFlow()==null?0.00:info.getFlow();
+                    }
+                    if(mgr.getUnitName().contains("楼庄子水厂管道2")){
+                        outputFlow+=info==null?0.00:info.getFlow()==null?0.00:info.getFlow();
                     }
                 }else {
                     TrendsTableParam param = trendsTableParamList.stream().filter(t -> t.getUseStation().equals("楼庄子水库") && t.getUseType() == 1 && StringUtils.isNotEmpty(t.getUnitId())&& t.getUnitId().equals(mgr.getId())).collect(Collectors.toList()).get(0);
@@ -645,9 +686,16 @@ public class AllServiceImpl implements AllService {
                         lzz.setInputFlow(dayWaterSituationStatisticsTableLzz==null?null:dayWaterSituationStatisticsTableLzz.getV());
                     }
                     if(param.getParamName().contains("河道")){
-                        lzz.setOutputFlow(dayWaterSituationStatisticsTableLzz==null?null:dayWaterSituationStatisticsTableLzz.getV());
+                        outputFlow+=dayWaterSituationStatisticsTableLzz==null?0.00:dayWaterSituationStatisticsTableLzz.getV()==null?0.00:dayWaterSituationStatisticsTableLzz.getV();
+                    }
+                    if(param.getParamName().contains("楼庄子水厂管道1")){
+                        outputFlow+=dayWaterSituationStatisticsTableLzz==null?0.00:dayWaterSituationStatisticsTableLzz.getV()==null?0.00:dayWaterSituationStatisticsTableLzz.getV();
+                    }
+                    if(param.getParamName().contains("楼庄子水厂管道2")){
+                        outputFlow+=dayWaterSituationStatisticsTableLzz==null?0.00:dayWaterSituationStatisticsTableLzz.getV()==null?0.00:dayWaterSituationStatisticsTableLzz.getV();
                     }
                 }
+                lzz.setOutputFlow(outputFlow==0.00?null:outputFlow);
             }
             if(getTopUnitNameFromOverallSituationUnitMgr(mgr.getId()).equals("头屯河水库")){
                 tth.setOverallId(mgr.getId());
@@ -1535,7 +1583,19 @@ public class AllServiceImpl implements AllService {
         return result;
     }
     private Double formatDouble(Double value) {
+        if(value==null){
+            return null;
+        }
         DecimalFormat df = new DecimalFormat("0.00");
+        String format = df.format(value);
+        return Double.parseDouble(format);
+    }
+
+    private Double formatDoubleThree(Double value) {
+        if(value==null){
+            return null;
+        }
+        DecimalFormat df = new DecimalFormat("0.000");
         String format = df.format(value);
         return Double.parseDouble(format);
     }

@@ -26,7 +26,7 @@ public class DataUtils {
 	/**
 	 * 从数据库导入的数据进行处理，包括对三号桥、楼庄子进库站异常流量的处理，上游雨量站温度空值的处理
 	 */
-	public static ForcastInputParamNew emptyProcessing (ForcastInputParamNew result){
+	public static ForecastInputParamNew emptyProcessing (ForecastInputParamNew result){
 		//输入数据的转化
 		LzzHydrologyParam lzzHydrologyParam = result.getLzzHydrologyParam();
 		/**
@@ -149,7 +149,10 @@ public class DataUtils {
 		lzzHydrologyParam.setZccRainfallStation(ZCC);//制材厂
 		result.setLzzHydrologyParam(lzzHydrologyParam);
 		//雨情预报数据处理
-		if (result.getRainFallDtos()==null||result.getRainFallDtos().isEmpty()){
+		if (result.getIsSimulation()==null){
+			result.setIsSimulation(false);
+		}
+		if (result.getRainFallDtos().isEmpty()){
 			List<RainFallDto> rainFallDtos = new ArrayList<>();
 			Date date = result.getPredictionTime();
 			for (int i = 0; i < result.getPeriodTimeNum(); i++) {
@@ -326,8 +329,7 @@ public class DataUtils {
 	 *雨量信息，包括了前n小时落地雨和后期预报雨量
 	 * @return
 	 */
-	public static List<PredictInputData> getHoursRain(ForcastInputParamNew param, List<PredictInputData> input)
-			throws ParseException {
+	public static List<PredictInputData> getHoursRain(ForecastInputParamNew param, List<PredictInputData> input) throws ParseException {
 		List<PredictInputData> result = new ArrayList<>();
 		PredictInputData data = new PredictInputData();
 
@@ -342,6 +344,9 @@ public class DataUtils {
 		Date dataEnd = calendar.getTime();//预报结束时间
 		String station = input.get(0).getRainStation();
 		List<RainFallDto> rainPre =param.getRainFallDtos();
+		if (param.getIsSimulation()==null){
+			param.setIsSimulation(false);
+		}
 		if (param.getIsSimulation()){
 			for (int j = 0; j < n; j++) {
 				Date date =sdf.parse(rainPre.get(j).getDate());
@@ -356,11 +361,11 @@ public class DataUtils {
 				}else {
 					data = assignmentNullRAndT(dateStart,input.get(0).getRainStation());
 				}
-				calendar.setTime(dateStart);
-				calendar.add(Calendar.HOUR_OF_DAY, 1);
-				dateStart = calendar.getTime();
-				result.add(data);
 			}
+			calendar.setTime(dateStart);
+			calendar.add(Calendar.HOUR_OF_DAY, 1);
+			dateStart = calendar.getTime();
+			result.add(data);
 		}
 		else {
 			//找到最贴近的时间
@@ -511,7 +516,7 @@ public class DataUtils {
 	 * @param input
 	 * @return
 	 */
-	public static List<PredictInputData> getTwentyDaysRain(ForcastInputParamNew param, List<PredictInputData> input) throws ParseException {
+	public static List<PredictInputData> getTwentyDaysRain(ForecastInputParamNew param, List<PredictInputData> input) throws ParseException {
 		List<PredictInputData> result = new ArrayList<>();
 		Date dateStart = param.getPredictionTime();
 		PredictInputData data = new PredictInputData();
@@ -624,7 +629,7 @@ public class DataUtils {
 	 * @return surfaceData
 	 * 该流域的面雨量
 	 */
-	public static List<PredictInputData> pointToSurface(List<PredictInputData> pointData, String period){
+	public static List<PredictInputData> pointToSurface(List<PredictInputData> pointData, String period,String location){
 		List<PredictInputData> result=new ArrayList<>();
 		if (pointData.get(0).getRainStation().equals("面雨量")&&period.equals("小时"))//预报小时尺度转为面雨量
 		{
@@ -655,7 +660,7 @@ public class DataUtils {
 			//按时间排序，划分为同一时段不同雨量站的List
 			for (int j = 0; j < number; j++) {
 				for (int i = 0; i < pointData.size(); i++) {
-					Boolean dateCompare = DateCompare(pointData.get(j).getDates(),pointData.get(i).getDates(),"小时");
+					Boolean dateCompare = DateCompare(pointData.get(j).getDates(),pointData.get(i).getDates(),period);
 					if (dateCompare){
 						hourData=pointData.get(i);
 						hourDatalist.add(hourData);
@@ -672,67 +677,99 @@ public class DataUtils {
 				hourResult.setDates(hourDatalist.get(0).getDates());
 				//hourDatalist为同一时间段不同雨量站,hourDatalist.size()为雨量站数量
 				for (int j = 0; j < hourDatalist.size(); j++) {
-					if (hourDatalist.get(j).getRainStation().equals("八一林场自动雨量站")){
-						rainFall += hourDatalist.get(j).getRainfall()*0.357513;
-						temperature += hourDatalist.get(j).getTemperature();
-					}
-					if (hourDatalist.get(j).getRainStation().equals("加普沙自动雨量站")){
-						rainFall += hourDatalist.get(j).getRainfall()*0.15319;
-						temperature += hourDatalist.get(j).getTemperature();
-					}
-					if (hourDatalist.get(j).getRainStation().equals("东南沟自动雨量站")){
-						rainFall += hourDatalist.get(j).getRainfall()*0.161962;
-						temperature += hourDatalist.get(j).getTemperature();
-					}
-					if (hourDatalist.get(j).getRainStation().equals("宰尔德自动雨量站")){
-						rainFall += hourDatalist.get(j).getRainfall()*0.044054;
-						temperature += hourDatalist.get(j).getTemperature();
-					}
-					if (hourDatalist.get(j).getRainStation().equals("无名沟自动雨量站")){
-						rainFall += hourDatalist.get(j).getRainfall()*0.019984;
-						temperature += hourDatalist.get(j).getTemperature();
-					}
-					if (hourDatalist.get(j).getRainStation().equals("萨尔达万自动雨量站")){
-						rainFall += hourDatalist.get(j).getRainfall()*0.01961;
-						temperature += hourDatalist.get(j).getTemperature();
-					}
-					if (hourDatalist.get(j).getRainStation().equals("煤矿沟自动雨量站")){
-						rainFall += hourDatalist.get(j).getRainfall()*0.030977;
-						temperature += hourDatalist.get(j).getTemperature();
-					}
-					if (hourDatalist.get(j).getRainStation().equals("黑沟自动雨量站")){
-						rainFall += hourDatalist.get(j).getRainfall()*0.161962;
-						temperature += hourDatalist.get(j).getTemperature();
-					}
-					if (hourDatalist.get(j).getRainStation().equals("喀什沟自动雨量站")){
-						rainFall += hourDatalist.get(j).getRainfall()*0.147384;
-						temperature += hourDatalist.get(j).getTemperature();
-					}
-					if (hourDatalist.get(j).getRainStation().equals("制材厂自动雨量站")){
-						rainFall += hourDatalist.get(j).getRainfall()*0.1;
-						temperature += hourDatalist.get(j).getTemperature();
-					}
-					//区间
-					if (hourDatalist.get(j).getRainStation().equals("小渠子雨量站")){
-						rainFall += hourDatalist.get(j).getRainfall()*0.284;
-						if (hourDatalist.get(j).getTemperature()==null){
-							hourDatalist.get(j).setTemperature(0.0);
+					if (location.equals("3号桥")){
+						if (hourDatalist.get(j).getRainStation().equals("八一林场自动雨量站")){
+							rainFall += hourDatalist.get(j).getRainfall()*0.454164;
+							temperature += hourDatalist.get(j).getTemperature();
 						}
-						temperature += hourDatalist.get(j).getTemperature();
-					}
-					if (hourDatalist.get(j).getRainStation().equals("团结一队雨量站")){
-						rainFall += hourDatalist.get(j).getRainfall()*0.1948;
-						if (hourDatalist.get(j).getTemperature()==null){
-							hourDatalist.get(j).setTemperature(0.0);
+						if (hourDatalist.get(j).getRainStation().equals("加普沙自动雨量站")){
+							rainFall += hourDatalist.get(j).getRainfall()*0.194604;
+							temperature += hourDatalist.get(j).getTemperature();
 						}
-						temperature += hourDatalist.get(j).getTemperature();
-					}
-					if (hourDatalist.get(j).getRainStation().equals("头屯河水库雨量站")){
-						rainFall += hourDatalist.get(j).getRainfall()*0.51188;
-						if (hourDatalist.get(j).getTemperature()==null){
-							hourDatalist.get(j).setTemperature(0.0);
+						if (hourDatalist.get(j).getRainStation().equals("东南沟自动雨量站")){
+							rainFall += hourDatalist.get(j).getRainfall()*0.205747;
+							temperature += hourDatalist.get(j).getTemperature();
 						}
-						temperature += hourDatalist.get(j).getTemperature();
+						if (hourDatalist.get(j).getRainStation().equals("宰尔德自动雨量站")){
+							rainFall += hourDatalist.get(j).getRainfall()*0.055963;
+							temperature += hourDatalist.get(j).getTemperature();
+						}
+						if (hourDatalist.get(j).getRainStation().equals("无名沟自动雨量站")){
+							rainFall += hourDatalist.get(j).getRainfall()*0.025386;
+							temperature += hourDatalist.get(j).getTemperature();
+						}
+						if (hourDatalist.get(j).getRainStation().equals("萨尔达万自动雨量站")){
+							rainFall += hourDatalist.get(j).getRainfall()*0.024912;
+							temperature += hourDatalist.get(j).getTemperature();
+						}
+						if (hourDatalist.get(j).getRainStation().equals("煤矿沟自动雨量站")){
+							rainFall += hourDatalist.get(j).getRainfall()*0.039224;
+							temperature += hourDatalist.get(j).getTemperature();
+						}
+					} else if (location.equals("楼庄子")) {
+						if (hourDatalist.get(j).getRainStation().equals("八一林场自动雨量站")){
+							rainFall += hourDatalist.get(j).getRainfall()*0.344401;
+							temperature += hourDatalist.get(j).getTemperature();
+						}
+						if (hourDatalist.get(j).getRainStation().equals("加普沙自动雨量站")){
+							rainFall += hourDatalist.get(j).getRainfall()*0.147571;
+							temperature += hourDatalist.get(j).getTemperature();
+						}
+						if (hourDatalist.get(j).getRainStation().equals("东南沟自动雨量站")){
+							rainFall += hourDatalist.get(j).getRainfall()*0.156022;
+							temperature += hourDatalist.get(j).getTemperature();
+						}
+						if (hourDatalist.get(j).getRainStation().equals("宰尔德自动雨量站")){
+							rainFall += hourDatalist.get(j).getRainfall()*0.042438;
+							temperature += hourDatalist.get(j).getTemperature();
+						}
+						if (hourDatalist.get(j).getRainStation().equals("无名沟自动雨量站")){
+							rainFall += hourDatalist.get(j).getRainfall()*0.019251;
+							temperature += hourDatalist.get(j).getTemperature();
+						}
+						if (hourDatalist.get(j).getRainStation().equals("萨尔达万自动雨量站")){
+							rainFall += hourDatalist.get(j).getRainfall()*0.018891;
+							temperature += hourDatalist.get(j).getTemperature();
+						}
+						if (hourDatalist.get(j).getRainStation().equals("煤矿沟自动雨量站")){
+							rainFall += hourDatalist.get(j).getRainfall()*0.029744;
+							temperature += hourDatalist.get(j).getTemperature();
+						}
+						if (hourDatalist.get(j).getRainStation().equals("黑沟自动雨量站")){
+							rainFall += hourDatalist.get(j).getRainfall()*0.044157;
+							temperature += hourDatalist.get(j).getTemperature();
+						}
+						if (hourDatalist.get(j).getRainStation().equals("喀什沟自动雨量站")){
+							rainFall += hourDatalist.get(j).getRainfall()*0.082419;
+							temperature += hourDatalist.get(j).getTemperature();
+						}
+						if (hourDatalist.get(j).getRainStation().equals("制材厂自动雨量站")){
+							rainFall += hourDatalist.get(j).getRainfall()*0.115105;
+							temperature += hourDatalist.get(j).getTemperature();
+						}
+					}else {
+						//区间
+						if (hourDatalist.get(j).getRainStation().equals("小渠子雨量站")){
+							rainFall += hourDatalist.get(j).getRainfall()*0.284;
+							if (hourDatalist.get(j).getTemperature()==null){
+								hourDatalist.get(j).setTemperature(0.0);
+							}
+							temperature += hourDatalist.get(j).getTemperature();
+						}
+						if (hourDatalist.get(j).getRainStation().equals("团结一队雨量站")){
+							rainFall += hourDatalist.get(j).getRainfall()*0.1948;
+							if (hourDatalist.get(j).getTemperature()==null){
+								hourDatalist.get(j).setTemperature(0.0);
+							}
+							temperature += hourDatalist.get(j).getTemperature();
+						}
+						if (hourDatalist.get(j).getRainStation().equals("头屯河水库雨量站")){
+							rainFall += hourDatalist.get(j).getRainfall()*0.51188;
+							if (hourDatalist.get(j).getTemperature()==null){
+								hourDatalist.get(j).setTemperature(0.0);
+							}
+							temperature += hourDatalist.get(j).getTemperature();
+						}
 					}
 					temperature = temperature/hourDatalist.size();
 				}
@@ -768,7 +805,7 @@ public class DataUtils {
 	 * result.get(11)萨尔达万雨量站小时尺度站点+时间+降水+温度
 	 * result.get(12)制材厂雨量站小时尺度站点+时间+降水+温度
 	 */
-	public static List<List<PredictInputData>> lzzDataConversion(ForcastInputParamNew entity) {
+	public static List<List<PredictInputData>> lzzDataConversion(ForecastInputParamNew entity) {
 		List<List<PredictInputData>> result = new ArrayList<>();
 		Date dateStart = entity.getDataStartTime();
 		Date dateEnd = entity.getPredictionTime();
@@ -1120,10 +1157,15 @@ public class DataUtils {
 			}
 			if(((hour-hourBefore)<0||day!=day1)){
 				BigDecimal temperatureY = BigDecimal.valueOf(temperatureSum.doubleValue()/(temperatureNum.doubleValue()));
-				BigDecimal rainfallY = BigDecimal.valueOf(rainfallSum.doubleValue()/(rainfallNum.doubleValue()));
+				BigDecimal rainfallY = BigDecimal.valueOf(rainfallSum.doubleValue());
+				String id1 = input.get(i-1).getId();
+				// 使用间隔符提取数字部分
+				String[] parts1 = id1.split(":");
+				long numericValue1= Long.parseLong(parts1[1]);
+				Date date1 = new Date(numericValue1);
 				PredictInputData piece = new PredictInputData();
 				piece.setRainStation(bridgeNumber);
-				piece.setDates(date);
+				piece.setDates(date1);
 				piece.setTemperature(temperatureY.doubleValue());
 				piece.setRainfall(rainfallY.doubleValue());
 				result.add(piece);
@@ -1151,7 +1193,7 @@ public class DataUtils {
 	 * @param paramNew
 	 * @return 前期雨量和小时尺度降水
 	 */
-	public static List<List<PredictInputData>> lzzRainIntegration(ForcastInputParamNew paramNew) throws ParseException {
+	public static List<List<PredictInputData>> lzzRainIntegration(ForecastInputParamNew paramNew) throws ParseException {
 		List<List<PredictInputData>> result = new ArrayList<>();
 		//雨量站整合
 		List<PredictInputData> RainHour = new ArrayList<>();
@@ -1410,10 +1452,15 @@ public class DataUtils {
 				dayBefore = getSpecificDate(date1).get("日");
 			}
 			if(((hour-hourBefore)<0)||day!=dayBefore){
-				double rainfallY =rainfallSum/rainfallNum;
+				double rainfallY =rainfallSum;
+				String id1 = input.get(i-1).getId();
+				// 使用间隔符提取数字部分
+				String[] parts1 = id1.split("-");
+				long numericValue1= Long.parseLong(parts1[1]);
+				Date date1 = new Date(numericValue1);
 				PredictInputData piece = new PredictInputData();
 				piece.setRainStation(bridgeNumber);
-				piece.setDates(date);
+				piece.setDates(date1);
 				piece.setRainfall(rainfallY);
 				result.add(piece);
 				rainfallSum=0.0;
@@ -1433,7 +1480,7 @@ public class DataUtils {
 	 * @param paramNew
 	 * @return 24小时雨量和20天雨量
 	 */
-	public static List<List<PredictInputData>> irrigateRainIntegration(ForcastInputParamNew paramNew)
+	public static List<List<PredictInputData>> irrigateRainIntegration(ForecastInputParamNew paramNew)
 			throws ParseException {
 		List<List<PredictInputData>> result = new ArrayList<>();
 		//雨量站整合
@@ -1615,44 +1662,44 @@ public class DataUtils {
 
 	/**
 	 * 从数据库中获得水位站的对应日尺度温度与降水
-	 * @param paramForcastInputParamNew 从数据库中获得的数据
+	 * @param paramForecastInputParamNew 从数据库中获得的数据
 	 * @return 日尺度温度与降水
 	 */
-	public static List<PredictInputData> getRAndT(ForcastInputParamNew paramForcastInputParamNew) {
+	public static List<PredictInputData> getRAndT(ForecastInputParamNew paramForecastInputParamNew) {
 		//雨量站整合
 		List<PredictInputData> RainDay = new ArrayList<>();
 		//喀什沟
-		List<PredictInputData> KSGDAY = DataUtils.lzzRainHourToDay(paramForcastInputParamNew.getLzzHydrologyParam().getKsgRainfallStation());
+		List<PredictInputData> KSGDAY = DataUtils.lzzRainHourToDay(paramForecastInputParamNew.getLzzHydrologyParam().getKsgRainfallStation());
 		RainDay.addAll(KSGDAY);
 		//黑沟
-		List<PredictInputData> HGDAY = DataUtils.lzzRainHourToDay(paramForcastInputParamNew.getLzzHydrologyParam().getHgRainfallStation());
+		List<PredictInputData> HGDAY = DataUtils.lzzRainHourToDay(paramForecastInputParamNew.getLzzHydrologyParam().getHgRainfallStation());
 		RainDay.addAll(HGDAY);
 		//煤矿沟
-		List<PredictInputData> MKGDAY = DataUtils.lzzRainHourToDay(paramForcastInputParamNew.getLzzHydrologyParam().getMkgRainfallStation());
+		List<PredictInputData> MKGDAY = DataUtils.lzzRainHourToDay(paramForecastInputParamNew.getLzzHydrologyParam().getMkgRainfallStation());
 		RainDay.addAll(MKGDAY);
 		//无名沟
-		List<PredictInputData> WMGDAY = DataUtils.lzzRainHourToDay(paramForcastInputParamNew.getLzzHydrologyParam().getWmgRainfallStation());
+		List<PredictInputData> WMGDAY = DataUtils.lzzRainHourToDay(paramForecastInputParamNew.getLzzHydrologyParam().getWmgRainfallStation());
 		RainDay.addAll(WMGDAY);
 		//加普沙
-		List<PredictInputData> JPSDAY = DataUtils.lzzRainHourToDay(paramForcastInputParamNew.getLzzHydrologyParam().getJpsRainfallStation());
+		List<PredictInputData> JPSDAY = DataUtils.lzzRainHourToDay(paramForecastInputParamNew.getLzzHydrologyParam().getJpsRainfallStation());
 		RainDay.addAll(JPSDAY);
 		//宰尔德
-		List<PredictInputData> ZEDDAY = DataUtils.lzzRainHourToDay(paramForcastInputParamNew.getLzzHydrologyParam().getZrdRainfallStation());
+		List<PredictInputData> ZEDDAY = DataUtils.lzzRainHourToDay(paramForecastInputParamNew.getLzzHydrologyParam().getZrdRainfallStation());
 		RainDay.addAll(ZEDDAY);
 		//东南沟
-		List<PredictInputData> DNGDAY = DataUtils.lzzRainHourToDay(paramForcastInputParamNew.getLzzHydrologyParam().getDngRainfallStation());
+		List<PredictInputData> DNGDAY = DataUtils.lzzRainHourToDay(paramForecastInputParamNew.getLzzHydrologyParam().getDngRainfallStation());
 		RainDay.addAll(DNGDAY);
 		//八一林场
-		List<PredictInputData> BYLCDAY = DataUtils.lzzRainHourToDay(paramForcastInputParamNew.getLzzHydrologyParam().getBylcRainfallStation());
+		List<PredictInputData> BYLCDAY = DataUtils.lzzRainHourToDay(paramForecastInputParamNew.getLzzHydrologyParam().getBylcRainfallStation());
 		RainDay.addAll(BYLCDAY);
 		//萨尔达万
-		List<PredictInputData> SEDWDAY = DataUtils.lzzRainHourToDay(paramForcastInputParamNew.getLzzHydrologyParam().getSedwRainfallStation());
+		List<PredictInputData> SEDWDAY = DataUtils.lzzRainHourToDay(paramForecastInputParamNew.getLzzHydrologyParam().getSedwRainfallStation());
 		RainDay.addAll(SEDWDAY);
 		//制材厂
-		List<PredictInputData> ZCCDAY = DataUtils.lzzRainHourToDay(paramForcastInputParamNew.getLzzHydrologyParam().getZccRainfallStation());
+		List<PredictInputData> ZCCDAY = DataUtils.lzzRainHourToDay(paramForecastInputParamNew.getLzzHydrologyParam().getZccRainfallStation());
 		RainDay.addAll(ZCCDAY);
 		//添加日尺度温度与降水
-		List<PredictInputData> RAT = pointToSurface(RainDay,"日");//转换为平均值
+		List<PredictInputData> RAT = pointToSurface(RainDay,"日","楼庄子");//转换为平均值
 
 		return RAT;
 	}
@@ -1716,29 +1763,29 @@ public class DataUtils {
 		for (int i = 0; i < data.length; i++) {
 			int month = getSpecificDate((Date) data[i][0]).get("月");
 			switch (month){
-				case 1:evaporation=9.0*0.2*0.2*3.14/31/24;
+				case 1:evaporation=9.0/(0.2*0.2*3.14)/31/24;
 					break;
-				case 2:evaporation=16.4*0.2*0.2*3.14/28/24;
+				case 2:evaporation=16.4/(0.2*0.2*3.14)/28/24;
 					break;
-				case 3:evaporation=56.7*0.2*0.2*3.14/31/24;
+				case 3:evaporation=56.7/(0.2*0.2*3.14)/31/24;
 					break;
-				case 4:evaporation=177.3*0.2*0.2*3.14/30/24;
+				case 4:evaporation=177.3/(0.2*0.2*3.14)/30/24;
 					break;
-				case 5:evaporation=270.1*0.2*0.2*3.14/31/24;
+				case 5:evaporation=270.1/(0.2*0.2*3.14)/31/24;
 					break;
-				case 6:evaporation=294.8*0.2*0.2*3.14/30/24;
+				case 6:evaporation=294.8/(0.2*0.2*3.14)/30/24;
 					break;
-				case 7:evaporation=315.3*0.2*0.2*3.14/31/24;
+				case 7:evaporation=315.3/(0.2*0.2*3.14)/31/24;
 					break;
-				case 8:evaporation=275.3*0.2*0.2*3.14/31/24;
+				case 8:evaporation=275.3/(0.2*0.2*3.14)/31/24;
 					break;
-				case 9:evaporation=187.7*0.2*0.2*3.14/30/24;
+				case 9:evaporation=187.7/(0.2*0.2*3.14)/30/24;
 					break;
-				case 10:evaporation=101.8*0.2*0.2*3.14/31/24;
+				case 10:evaporation=101.8/(0.2*0.2*3.14)/31/24;
 					break;
-				case 11:evaporation=26.9*0.2*0.2*3.14/30/24;
+				case 11:evaporation=26.9/(0.2*0.2*3.14)/30/24;
 					break;
-				case 12:evaporation=8.0*0.2*0.2*3.14/31/24;
+				case 12:evaporation=8.0/(0.2*0.2*3.14)/31/24;
 					break;
 			}
 		}
@@ -1763,15 +1810,15 @@ public class DataUtils {
 	/**
 	 * 模型预报时的输入
 	 * @param dataList
-	 * @param paramsSetVO
+	 * @param
 	 * @return
 	 */
-	public static double[][] inputData_Real(List<double[]> dataList, ParamsSetVO paramsSetVO){
+	public static double[][] inputData_Real(List<double[]> dataList, ForecastInputParam param){
 		/**
 		 * 前n旬流量+平均流量
 		 */
 		int a = dataList.get(0).length;
-		int n = paramsSetVO.getHistory_day();
+		int n = param.getHistory_day();
 //		 一般训练期：检验期=3:1
 		double[][] data = new double[a - n + 1][n + 2];
 		for (int i = 0; i < a - n + 1; i++) {
@@ -1788,17 +1835,17 @@ public class DataUtils {
 	/**
 	 * 训练模型时的输入
 	 * @param dataList
-	 * @param paramsSetVO
+	 * @param
 	 * @param isTest
 	 * @return
 	 * @throws Exception
 	 */
-	public static double[][] inputData_Train(List<double[]> dataList, ParamsSetVO paramsSetVO, boolean isTest) {
+	public static double[][] inputData_Train(List<double[]> dataList, ForecastInputParam param, boolean isTest) {
 
 		int a = dataList.get(0).length;
 		int b = a / 4 * 3;
 		int c = a - b;
-		int n = paramsSetVO.getHistory_day();
+		int n = param.getHistory_day();
 		/**
 		 * 前n旬流量+平均流量
 		 */
@@ -1836,15 +1883,15 @@ public class DataUtils {
 	/**
 	 * 融雪模型数据输入
 	 * @param dataList
-	 * @param paramsSetVO
+	 * @param param
 	 * @return
 	 */
-	public static double[][] inputData_Real_Snow(List<double[]> dataList, ParamsSetVO paramsSetVO){
+	public static double[][] inputData_Real_Snow(List<double[]> dataList, ForecastInputParam param){
 		/**
 		 * 前3天流量+前3天温度+前3天降水
 		 */
 		int a = dataList.get(0).length;
-		int n = paramsSetVO.getHistory_day();
+		int n = param.getHistory_day();
 		int m = 0;//前m天的数据
 		if (dataList.size()>4){//有降雨数据
 			m = 3;
@@ -1870,18 +1917,18 @@ public class DataUtils {
 	/**
 	 * 融雪模型训练数据输入
 	 * @param dataList
-	 * @param paramsSetVO
+	 * @param param
 	 * @param isTest
 	 * @return
 	 * @throws Exception
 	 */
-	public static double[][] inputData_Train_Snow(List<double[]> dataList, ParamsSetVO paramsSetVO, boolean isTest) {
+	public static double[][] inputData_Train_Snow(List<double[]> dataList, ForecastInputParam param, boolean isTest) {
 
 		int a = dataList.get(0).length;
 		int b = a / 4 * 3;
 		int c = a - b;
-		int n = paramsSetVO.getHistory_day();//前期天数
-		int m = 0;//前m天的数据
+		int n = param.getHistory_day();//前期天数
+		int m = 0;
 		if (dataList.size()>4){//有降雨数据
 			m = 3;
 		}else {
@@ -1930,7 +1977,7 @@ public class DataUtils {
 	 * @return result.get(0)丰水期
 	 * result.get(1)枯水期
 	 */
-	public static List<Object[]> getSelectedData(ForcastInputParam param){
+	public static List<Object[]> getSelectedData(ForecastInputParam param){
 		List<Object[]> result = new ArrayList<>();
 		Object[] Feng = new Object[2];
 		Object[] Ku = new Object[2];
@@ -2046,6 +2093,7 @@ public class DataUtils {
 		int factor = 3;
 		List<Object[]> snowData = new ArrayList<>();
 		for (int i = 0; i < input.length; i++) {
+//			snowData.add(input[i]);
 			if (!(input[i][3] instanceof String)){
 				if ((double) input[i][3]==0.0){
 					snowData.add(input[i]);
@@ -2064,7 +2112,7 @@ public class DataUtils {
 					Data.add(data);
 				}
 			}else {
-				if (month>=3 && month<=7){
+				if (month>=5 && month<=7){
 					for (int j = 0; j < factor; j++) {
 						data[j]=snowData.get(i)[j];
 					}
@@ -2089,7 +2137,7 @@ public class DataUtils {
 	 * @param param
 	 * @return
 	 */
-	public static Object[][] inputProcessing(Object[][] input,ForcastInputParam param){
+	public static Object[][] inputProcessing(Object[][] input, ForecastInputParam param){
 		int month = 0;
 		for (int i = 0; i < input.length; i++) {
 			if (param.getLocation().equals("3号桥")||param.getLocation().equals("楼庄子")){
@@ -2100,37 +2148,37 @@ public class DataUtils {
 						input[i][1]=(1.29-(double) input[i][1])/1.29;
 						break;
 					case 2:
-						input[i][1]=(1.19-(double) input[i][1])/1.19;
+						input[i][1]=(1.16-(double) input[i][1])/1.16;
 						break;
 					case 3:
-						input[i][1]=(1.77-(double) input[i][1])/1.77;
+						input[i][1]=(1.44-(double) input[i][1])/1.44;
 						break;
 					case 4:
-						input[i][1]=(2.78-(double) input[i][1])/2.78;
+						input[i][1]=(2.57-(double) input[i][1])/2.57;
 						break;
 					case 5:
-						input[i][1]=(8.13-(double) input[i][1])/8.13;
+						input[i][1]=(7.95-(double) input[i][1])/7.95;
 						break;
 					case 6:
-						input[i][1]=(17.92-(double) input[i][1])/17.92;
+						input[i][1]=(17.865-(double) input[i][1])/17.865;
 						break;
 					case 7:
-						input[i][1]=(22.05-(double) input[i][1])/22.05;
+						input[i][1]=(21.63-(double) input[i][1])/21.63;
 						break;
 					case 8:
-						input[i][1]=(16.13-(double) input[i][1])/16.13;
+						input[i][1]=(16.07-(double) input[i][1])/16.07;
 						break;
 					case 9:
-						input[i][1]=(7.84-(double) input[i][1])/7.84;
+						input[i][1]=(7.5-(double) input[i][1])/7.5;
 						break;
 					case 10:
-						input[i][1]=(3.85-(double) input[i][1])/3.85;
+						input[i][1]=(3.76-(double) input[i][1])/3.76;
 						break;
 					case 11:
-						input[i][1]=(2.23-(double) input[i][1])/2.23;
+						input[i][1]=(2.27-(double) input[i][1])/2.27;
 						break;
 					case 12:
-						input[i][1]=(1.52-(double) input[i][1])/1.52;
+						input[i][1]=(1.62-(double) input[i][1])/1.62;
 						break;
 				}
 			}
@@ -2140,40 +2188,40 @@ public class DataUtils {
 				month = getSpecificDate(date).get("月");
 				switch (month){
 					case 1:
-						input[i][1]=(1.29*proportion-(double) input[i][1])/1.29*proportion;
+						input[i][1]=(1.29*0.116-(double) input[i][1])/1.29*0.116;
 						break;
 					case 2:
-						input[i][1]=(1.19*proportion-(double) input[i][1])/1.19*proportion;
+						input[i][1]=(1.16*0.0957-(double) input[i][1])/1.16*0.0957;
 						break;
 					case 3:
-						input[i][1]=(1.77*proportion-(double) input[i][1])/1.77*proportion;
+						input[i][1]=(1.44*0.538-(double) input[i][1])/1.44*0.538;
 						break;
 					case 4:
-						input[i][1]=(2.78*proportion-(double) input[i][1])/2.78*proportion;
+						input[i][1]=(2.57*0.316-(double) input[i][1])/2.57*0.316;
 						break;
 					case 5:
-						input[i][1]=(8.13*proportion-(double) input[i][1])/8.13*proportion;
+						input[i][1]=(7.95*0.072-(double) input[i][1])/7.95*0.072;
 						break;
 					case 6:
-						input[i][1]=(17.92*proportion-(double) input[i][1])/17.92*proportion;
+						input[i][1]=(17.865*0.0484-(double) input[i][1])/17.865*0.0484;
 						break;
 					case 7:
-						input[i][1]=(22.05*proportion-(double) input[i][1])/22.05*proportion;
+						input[i][1]=(21.63*0.044-(double) input[i][1])/21.63*0.044;
 						break;
 					case 8:
-						input[i][1]=(16.13*proportion-(double) input[i][1])/16.13*proportion;
+						input[i][1]=(16.07*0.0395-(double) input[i][1])/16.07*0.0395;
 						break;
 					case 9:
-						input[i][1]=(7.84*proportion-(double) input[i][1])/7.84*proportion;
+						input[i][1]=(7.5*0.0419-(double) input[i][1])/7.5*0.0419;
 						break;
 					case 10:
-						input[i][1]=(3.85*proportion-(double) input[i][1])/3.85*proportion;
+						input[i][1]=(3.76*0.0383-(double) input[i][1])/3.76*0.0383;
 						break;
 					case 11:
-						input[i][1]=(2.23*proportion-(double) input[i][1])/2.23*proportion;
+						input[i][1]=(2.27*0.0365-(double) input[i][1])/2.27*0.0365;
 						break;
 					case 12:
-						input[i][1]=(1.52*proportion-(double) input[i][1])/1.52*proportion;
+						input[i][1]=(1.62*0.001524-(double) input[i][1])/1.62*0.001524;
 						break;
 				}
 			}
@@ -2186,15 +2234,15 @@ public class DataUtils {
 	 * @param input
 	 * @return
 	 */
-	public static Object[][] resultProcessing(Object[][] input,ParamsSetVO pvo){
+	public static Object[][] resultProcessing(Object[][] input,ForecastInputParam param){
 		int month = 0;
 		for (int i = 0; i < input.length; i++) {
-			if (pvo.getForecastDuanmian().equals("3号桥")||pvo.getForecastDuanmian().equals("楼庄子")){
+			if (param.getLocation().equals("3号桥")||param.getLocation().equals("楼庄子")){
 				Date date = (Date) input[i][0];
 				month = getSpecificDate(date).get("月");
 				switch (month){
 					case 1:
-						input[i][1]=(1-(double) input[i][1])*1;
+						input[i][1]=(1-(double) input[i][1])*1.29;
 						if ((double) input[i][1]<0.66){
 							input[i][1]=0.66;
 						}
@@ -2203,7 +2251,7 @@ public class DataUtils {
 						}
 						break;
 					case 2:
-						input[i][1]=(1-(double) input[i][1])*1;
+						input[i][1]=(1-(double) input[i][1])*1.16;
 						if ((double) input[i][1]<0.57){
 							input[i][1]=0.57;
 						}
@@ -2212,7 +2260,7 @@ public class DataUtils {
 						}
 						break;
 					case 3:
-						input[i][1]=(1-(double) input[i][1])*1;
+						input[i][1]=(1-(double) input[i][1])*1.44;
 						if ((double) input[i][1]<0.68){
 							input[i][1]=0.68;
 						}
@@ -2221,7 +2269,7 @@ public class DataUtils {
 						}
 						break;
 					case 4:
-						input[i][1]=(1-(double) input[i][1])*2;
+						input[i][1]=(1-(double) input[i][1])*2.57;
 						if ((double) input[i][1]<1.38){
 							input[i][1]=1.38;
 						}
@@ -2230,7 +2278,7 @@ public class DataUtils {
 						}
 						break;
 					case 5:
-						input[i][1]=(1-(double) input[i][1])*6;
+						input[i][1]=(1-(double) input[i][1])*7.95;
 						if ((double) input[i][1]<3.61){
 							input[i][1]=3.61;
 						}
@@ -2239,7 +2287,7 @@ public class DataUtils {
 						}
 						break;
 					case 6:
-						input[i][1]=(1-(double) input[i][1])*12;
+						input[i][1]=(1-(double) input[i][1])*17.865;
 						if ((double) input[i][1]<9.54){
 							input[i][1]=9.54;
 						}
@@ -2248,7 +2296,7 @@ public class DataUtils {
 						}
 						break;
 					case 7:
-						input[i][1]=(1-(double) input[i][1])*18;
+						input[i][1]=(1-(double) input[i][1])*21.63;
 						if ((double) input[i][1]<12.1){
 							input[i][1]=12.1;
 						}
@@ -2257,7 +2305,7 @@ public class DataUtils {
 						}
 						break;
 					case 8:
-						input[i][1]=(1-(double) input[i][1])*12;
+						input[i][1]=(1-(double) input[i][1])*16.07;
 						if ((double) input[i][1]<9.19){
 							input[i][1]=9.19;
 						}
@@ -2266,7 +2314,7 @@ public class DataUtils {
 						}
 						break;
 					case 9:
-						input[i][1]=(1-(double) input[i][1])*7;
+						input[i][1]=(1-(double) input[i][1])*7.5;
 						if ((double) input[i][1]<3.62){
 							input[i][1]=3.62;
 						}
@@ -2275,7 +2323,7 @@ public class DataUtils {
 						}
 						break;
 					case 10:
-						input[i][1]=(1-(double) input[i][1])*3;
+						input[i][1]=(1-(double) input[i][1])*3.76;
 						if ((double) input[i][1]<1.95){
 							input[i][1]=1.95;
 						}
@@ -2284,7 +2332,7 @@ public class DataUtils {
 						}
 						break;
 					case 11:
-						input[i][1]=(1-(double) input[i][1])*2;
+						input[i][1]=(1-(double) input[i][1])*2.27;
 						if ((double) input[i][1]<1.13){
 							input[i][1]=1.13;
 						}
@@ -2293,7 +2341,7 @@ public class DataUtils {
 						}
 						break;
 					case 12:
-						input[i][1]=(1-(double) input[i][1])*1;
+						input[i][1]=(1-(double) input[i][1])*1.62;
 						if ((double) input[i][1]<0.86){
 							input[i][1]=0.86;
 						}
@@ -2304,116 +2352,129 @@ public class DataUtils {
 				}
 			}
 			//各个月份的区间比例0.178571429	0.167701863	0.359649123	0.251428571	0.112087912	0.145833333	0.139564124	0.168034766	0.139506173	0.174358974	0.248	0.172043011
-			else if (pvo.getForecastDuanmian().equals("楼头区间")){
+			else if (param.getLocation().equals("楼头区间")){
 				Date date = (Date) input[i][0];
 				month = getSpecificDate(date).get("月");
+				double proportion = 0.058;
 				switch (month){
 					case 1:
-						input[i][1]=(1-(double) input[i][1])*1.29*0.178571429;
-						if ((double) input[i][1]<0.66*0.178571429){
-							input[i][1]=0.66*0.178571429;
+						proportion = 0.116;
+						input[i][1]=(1-(double) input[i][1])*1.29*proportion;
+						if ((double) input[i][1]<0.66*proportion){
+							input[i][1]=0.66*proportion;
 						}
-						if ((double) input[i][1]>3*0.178571429){
-							input[i][1]=2.38*0.178571429;
+						if ((double) input[i][1]>3*proportion){
+							input[i][1]=2.38*proportion;
 						}
 						break;
 					case 2:
-						input[i][1]=(1-(double) input[i][1])*1.19*0.167701863;
-						if ((double) input[i][1]<0.57*0.167701863){
-							input[i][1]=0.57*0.167701863;
+						proportion = 0.0957;
+						input[i][1]=(1-(double) input[i][1])*1.16*proportion;
+						if ((double) input[i][1]<0.57*proportion){
+							input[i][1]=0.57*proportion;
 						}
-						if ((double) input[i][1]>3*0.167701863){
-							input[i][1]=1.88*0.167701863;
+						if ((double) input[i][1]>3*proportion){
+							input[i][1]=1.88*proportion;
 						}
 						break;
 					case 3:
-						input[i][1]=(1-(double) input[i][1])*1.77*0.359649123;
-						if ((double) input[i][1]<0.68*0.359649123){
-							input[i][1]=0.68*0.359649123;
+						proportion = 0.538;
+						input[i][1]=(1-(double) input[i][1])*1.44*proportion;
+						if ((double) input[i][1]<0.68*proportion){
+							input[i][1]=0.68*proportion;
 						}
-						if ((double) input[i][1]>5*0.359649123){
-							input[i][1]=3.94*0.359649123;
+						if ((double) input[i][1]>5*proportion){
+							input[i][1]=3.94*proportion;
 						}
 						break;
 					case 4:
-						input[i][1]=(1-(double) input[i][1])*2.78*0.251428571;
-						if ((double) input[i][1]<1.38*0.251428571){
-							input[i][1]=1.38*0.251428571;
+						proportion = 0.316;
+						input[i][1]=(1-(double) input[i][1])*2.57*proportion;
+						if ((double) input[i][1]<1.38*proportion){
+							input[i][1]=1.38*proportion;
 						}
-						if ((double) input[i][1]>5*0.251428571){
-							input[i][1]=4.06*0.251428571;
+						if ((double) input[i][1]>5*proportion){
+							input[i][1]=4.06*proportion;
 						}
 						break;
 					case 5:
-						input[i][1]=(1-(double) input[i][1])*8.13*0.112087912;
-						if ((double) input[i][1]<3.61*0.112087912){
-							input[i][1]=3.61*0.112087912;
+						proportion = 0.072;
+						input[i][1]=(1-(double) input[i][1])*7.95*proportion;
+						if ((double) input[i][1]<3.61*proportion){
+							input[i][1]=3.61*proportion;
 						}
-						if ((double) input[i][1]>20*0.112087912){
-							input[i][1]=14.7*0.112087912;
+						if ((double) input[i][1]>20*proportion){
+							input[i][1]=14.7*proportion;
 						}
 						break;
 					case 6:
-						input[i][1]=(1-(double) input[i][1])*17.92*0.145833333;
-						if ((double) input[i][1]<9.54*0.145833333){
-							input[i][1]=9.54*0.145833333;
+						proportion = 0.0484;
+						input[i][1]=(1-(double) input[i][1])*17.865*proportion;
+						if ((double) input[i][1]<9.54*proportion){
+							input[i][1]=9.54*proportion;
 						}
-						if ((double) input[i][1]>35*0.145833333){
-							input[i][1]=32.99*0.145833333;
+						if ((double) input[i][1]>35*proportion){
+							input[i][1]=32.99*proportion;
 						}
 						break;
 					case 7:
-						input[i][1]=(1-(double) input[i][1])*22.05*0.139564124;
-						if ((double) input[i][1]<12.1*0.139564124){
-							input[i][1]=12.1*0.139564124;
+						proportion = 0.044;
+						input[i][1]=(1-(double) input[i][1])*21.63*proportion;
+						if ((double) input[i][1]<12.1*proportion){
+							input[i][1]=12.1*proportion;
 						}
-						if ((double) input[i][1]>50*0.139564124){
-							input[i][1]=46.1*0.139564124;
+						if ((double) input[i][1]>50*proportion){
+							input[i][1]=46.1*proportion;
 						}
 						break;
 					case 8:
-						input[i][1]=(1-(double) input[i][1])*16.13*0.168034766;
-						if ((double) input[i][1]<9.19*0.168034766){
-							input[i][1]=9.19*0.168034766;
+						proportion = 0.0395;
+						input[i][1]=(1-(double) input[i][1])*16.07*proportion;
+						if ((double) input[i][1]<9.19*proportion){
+							input[i][1]=9.19*proportion;
 						}
-						if ((double) input[i][1]>30*0.168034766){
-							input[i][1]=27.2*0.168034766;
+						if ((double) input[i][1]>30*proportion){
+							input[i][1]=27.2*proportion;
 						}
 						break;
 					case 9:
-						input[i][1]=(1-(double) input[i][1])*7.84*0.139506173;
-						if ((double) input[i][1]<3.62*0.139506173){
-							input[i][1]=3.62*0.139506173;
+						proportion = 0.0419;
+						input[i][1]=(1-(double) input[i][1])*7.5*proportion;
+						if ((double) input[i][1]<3.62*proportion){
+							input[i][1]=3.62*proportion;
 						}
-						if ((double) input[i][1]>20*0.139506173){
-							input[i][1]=14.7*0.139506173;
+						if ((double) input[i][1]>20*proportion){
+							input[i][1]=14.7*proportion;
 						}
 						break;
 					case 10:
-						input[i][1]=(1-(double) input[i][1])*3.85*0.174358974;
-						if ((double) input[i][1]<1.95*0.174358974){
-							input[i][1]=1.95*0.174358974;
+						proportion = 0.0383;
+						input[i][1]=(1-(double) input[i][1])*3.76*proportion;
+						if ((double) input[i][1]<1.95*proportion){
+							input[i][1]=1.95*proportion;
 						}
-						if ((double) input[i][1]>10*0.174358974){
-							input[i][1]=6.66*0.174358974;
+						if ((double) input[i][1]>10*proportion){
+							input[i][1]=6.66*proportion;
 						}
 						break;
 					case 11:
-						input[i][1]=(1-(double) input[i][1])*2.23*0.248;
-						if ((double) input[i][1]<1.13*0.248){
-							input[i][1]=1.13*0.248;
+						proportion = 0.0365;
+						input[i][1]=(1-(double) input[i][1])*2.27*proportion;
+						if ((double) input[i][1]<1.13*proportion){
+							input[i][1]=1.13*proportion;
 						}
-						if ((double) input[i][1]>5*0.248){
-							input[i][1]=3.36*0.248;
+						if ((double) input[i][1]>5*proportion){
+							input[i][1]=3.36*proportion;
 						}
 						break;
 					case 12:
-						input[i][1]=(1-(double) input[i][1])*1.52*0.172043011;
-						if ((double) input[i][1]<0.86*0.172043011){
-							input[i][1]=0.86*0.172043011;
+						proportion = 0.001524;
+						input[i][1]=(1-(double) input[i][1])*1.62*proportion;
+						if ((double) input[i][1]<0.86*proportion){
+							input[i][1]=0.86*proportion;
 						}
-						if ((double) input[i][1]>5*0.172043011){
-							input[i][1]=3.16*0.172043011;
+						if ((double) input[i][1]>5*proportion){
+							input[i][1]=3.16*proportion;
 						}
 						break;
 				}

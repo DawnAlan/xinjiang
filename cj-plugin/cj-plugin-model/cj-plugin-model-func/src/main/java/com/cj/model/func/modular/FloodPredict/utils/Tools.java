@@ -55,7 +55,7 @@ public class Tools {
         return result;
     }
 
-    public static String array2String(int[] array) {
+    public static String array2String(Integer[] array) {
         String str = "";
         for (int i = 0; i < array.length; i++) {
             if (i == array.length - 1) {
