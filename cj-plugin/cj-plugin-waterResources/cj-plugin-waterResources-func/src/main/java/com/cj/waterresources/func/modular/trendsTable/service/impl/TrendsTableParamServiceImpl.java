@@ -63,6 +63,7 @@ public class TrendsTableParamServiceImpl extends ServiceImpl<TrendsTableParamMap
         }
         TrendsTableParam one = this.lambdaQuery().eq(TrendsTableParam::getUseType, req.getUseType()).
                 eq(TrendsTableParam::getUseStation, req.getUseStation()).
+                eq(TrendsTableParam::getPId,req.getPId()).
                 eq(TrendsTableParam::getParamName, req.getParamName()).one();
         if(one != null){
             return RestResponse.no("该表头名称已存在，请更换名称");
@@ -251,6 +252,7 @@ public class TrendsTableParamServiceImpl extends ServiceImpl<TrendsTableParamMap
             }else {
                 TrendsTableParam one = this.lambdaQuery().eq(TrendsTableParam::getUseType, req.getParam().getUseType()).
                         eq(TrendsTableParam::getUseStation, req.getParam().getUseStation()).
+                        eq(TrendsTableParam::getPId,req.getParam().getPId()).
                         eq(TrendsTableParam::getParamName, req.getParam().getParamName()).one();
                 if(one != null){
                     TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();

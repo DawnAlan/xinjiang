@@ -38,7 +38,6 @@ public class UseWaterManagementServiceImpl extends ServiceImpl<UseWaterManagemen
     public RestResponse insert(UseWaterManagementAddReq req) {
         try {
             List<UseWaterManagement> list = this.lambdaQuery().
-                    eq(StringUtils.isNotEmpty(req.getPId()),UseWaterManagement::getPId, req.getPId()).
                     eq(UseWaterManagement::getUnitName, req.getUnitName()).
                     eq(UseWaterManagement::getUseWaterPlan,req.getUseWaterPlan()).
                     eq(UseWaterManagement::getArea,req.getArea()).
