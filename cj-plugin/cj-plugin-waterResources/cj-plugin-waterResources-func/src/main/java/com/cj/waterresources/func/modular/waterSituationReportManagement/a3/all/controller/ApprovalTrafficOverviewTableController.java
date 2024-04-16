@@ -40,7 +40,7 @@ public class ApprovalTrafficOverviewTableController {
     @ApiOperation("流量概览表查询方案列表")
     @CommonLog(value = "流量概览表查询方案列表")
     @GetMapping("/selectList")
-    public RestResponse selectList(@RequestParam(value = "time", required = false) Date time,
+    public RestResponse selectList(@RequestParam(value = "time", required = false) String time,
                                    @RequestParam(value = "name", required = false) String name) {
         return approvalTrafficOverviewTableService.selectList(time, name);
     }
@@ -48,17 +48,25 @@ public class ApprovalTrafficOverviewTableController {
     @ApiOperationSupport(order = 2)
     @ApiOperation("流量概览表新增方案列表")
     @CommonLog(value = "流量概览表新增方案列表")
-    @GetMapping("/add")
+    @PostMapping("/add")
     public RestResponse add(@RequestBody ApprovalTrafficOverviewTableAddReq req) {
         return approvalTrafficOverviewTableService.add(req);
     }
 
-    @ApiOperationSupport(order = 2)
+    @ApiOperationSupport(order = 3)
     @ApiOperation("流量概览表删除方案列表")
     @CommonLog(value = "流量概览表删除方案列表")
     @GetMapping("/delete")
     public RestResponse delete(@RequestParam(value = "id") String id) {
         return approvalTrafficOverviewTableService.delete(id);
+    }
+
+    @ApiOperationSupport(order = 4)
+    @ApiOperation("查询8点的流量")
+    @CommonLog(value = "查询8点的流量")
+    @GetMapping("/synchronizationEightData")
+    public RestResponse synchronizationEightData(@RequestParam(value = "id", required = true) String id) {
+        return approvalTrafficOverviewTableService.synchronizationEightData(id);
     }
 }
 

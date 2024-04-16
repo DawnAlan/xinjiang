@@ -57,11 +57,6 @@ public class MonthCropImportTableReq {
     @Excel(name = "下旬次数", width = 15)
     private Double laterOctoberCount;
 
-    //本旬合计次数
-    @ApiModelProperty(value = "合计次数")
-    @Excel(name = "合计次数", width = 15)
-    private Double totalCount;
-
     //上旬需水
     @ApiModelProperty(value = "上旬需水")
     @Excel(name = "上旬需水", width = 15)
@@ -76,9 +71,4 @@ public class MonthCropImportTableReq {
     @ApiModelProperty(value = "下旬需水")
     @Excel(name = "下旬需水", width = 15)
     private Double laterOctoberWaterDemand;
-
-    //本旬合计需水
-    @ApiModelProperty(value = "合计需水")
-    @Excel(name = "合计需水", width = 15)
-    private Double totalCountWaterDemand;
 }

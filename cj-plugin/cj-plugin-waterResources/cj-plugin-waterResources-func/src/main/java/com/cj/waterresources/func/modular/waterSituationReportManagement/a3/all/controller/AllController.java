@@ -120,4 +120,12 @@ public class AllController {
     public RestResponse selectReservoirHistoryList(@RequestBody SelectReservoirHistoryListReq req) {
         return allService.selectReservoirHistoryList(req);
     }
+
+    @ApiOperationSupport(order = 11)
+    @ApiOperation("查询2库水位库容")
+    @CommonLog(value = "查询2库水位库容")
+    @PostMapping("/getRealTimeWaterLevelData")
+    public RestResponse getRealTimeWaterLevelData(@RequestBody GetRealTimeWaterLevelDataReq req) {
+        return allService.getRealTimeWaterLevelData(req.getDate());
+    }
 }

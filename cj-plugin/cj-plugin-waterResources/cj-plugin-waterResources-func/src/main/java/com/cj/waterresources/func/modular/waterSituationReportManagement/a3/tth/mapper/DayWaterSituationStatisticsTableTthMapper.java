@@ -58,5 +58,8 @@ public interface DayWaterSituationStatisticsTableTthMapper extends BaseMapper<Da
 
     @Select("select ID,RECORD_TIME,TIME,TABLE_HEAD_ID,V from DAY_WATER_SITUATION_STATISTICS_TABLE_TTH WHERE TABLE_HEAD_ID = #{tableHeadId} and RECORD_TIME between  #{startTime} and #{endTime}  and TIME = '08:00' order by RECORD_TIME asc")
     List<DayWaterSituationStatisticsTableTth> selectReservoirHistoryList(@Param("startTime")String startTime, @Param("endTime")String endTime,@Param("tableHeadId") String tableHeadId);
+
+    @Select("select ID,RECORD_TIME,TIME,TABLE_HEAD_ID,V,END_TABLE_LIST from DAY_WATER_SITUATION_STATISTICS_TABLE_TTH WHERE RECORD_TIME = #{recordTime}  and TIME = '08:00'")
+    List<DayWaterSituationStatisticsTableTth> selectForApproval(@Param("recordTime")String recordTime);
 }
 

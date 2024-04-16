@@ -16,14 +16,27 @@ import java.util.List;
 public interface IncomingWaterForecastMapper extends BaseMapper<IncomingWaterForecast> {
 
     //TO_CHAR(TIME,'YYYY-MM-DD hh24:MI')
-    @Select("select * from INCOMING_WATER_FORECAST where TO_CHAR(PREDICTION_TIME,'YYYY') = #{year} AND PERIOD_TIME_TYPE = 1 ")
-    List<IncomingWaterForecast> getPredictionListForYear(@Param("year") String year);
-    @Select("select * from INCOMING_WATER_FORECAST where TO_CHAR(PREDICTION_TIME,'YYYY-MM') = #{time} AND PERIOD_TIME_TYPE = 2")
-    List<IncomingWaterForecast> getPredictionListForMonth(@Param("time")String time);
-    @Select("select * from INCOMING_WATER_FORECAST where TO_CHAR(PREDICTION_TIME,'YYYY-MM-DD') BETWEEN #{startTime} AND #{endTime} AND PERIOD_TIME_TYPE = 3")
-    List<IncomingWaterForecast> getPredictionListForTenDays(@Param("startTime")String startTime,@Param("endTime")String endTime);
-    @Select("select * from INCOMING_WATER_FORECAST where TO_CHAR(PREDICTION_TIME,'YYYY-MM-DD') = #{time} AND PERIOD_TIME_TYPE = 4")
-    List<IncomingWaterForecast> getPredictionListForDay(String time);
+    @Select("select * \n" +
+            "from INCOMING_WATER_FORECAST \n" +
+            "where TO_CHAR(PREDICTION_TIME,'MM-DD') = '01-01' AND TO_CHAR(END_TIME,'MM-DD')= '01-01' ")
+    List<IncomingWaterForecast> getPredictionListForYear();
+    @Select("select * \n" +
+            "from INCOMING_WATER_FORECAST \n" +
+            "where (TO_NUMBER(TO_CHAR(PREDICTION_TIME,'MM'))- TO_NUMBER(TO_CHAR(END_TIME,'MM')) = -1) \n" +
+            "AND (TO_NUMBER(TO_CHAR(PREDICTION_TIME,'DD'))- TO_NUMBER(TO_CHAR(END_TIME,'DD')) = 0) and TO_NUMBER(TO_CHAR(PREDICTION_TIME,'DD'))=1 and TO_NUMBER(TO_CHAR(END_TIME,'DD'))=1")
+    List<IncomingWaterForecast> getPredictionListForMonth();
+    @Select("select * \n" +
+            "from INCOMING_WATER_FORECAST \n" +
+            "where ((TO_NUMBER(TO_CHAR(PREDICTION_TIME,'MM'))- TO_NUMBER(TO_CHAR(END_TIME,'MM')) = 0) \n" +
+            "AND (TO_NUMBER(TO_CHAR(PREDICTION_TIME,'DD'))- TO_NUMBER(TO_CHAR(END_TIME,'DD')) = -10)) or \n" +
+            "((TO_NUMBER(TO_CHAR(PREDICTION_TIME,'MM'))- TO_NUMBER(TO_CHAR(END_TIME,'MM')) = -1) \n" +
+            "AND (TO_NUMBER(TO_CHAR(PREDICTION_TIME,'DD'))- TO_NUMBER(TO_CHAR(END_TIME,'DD')) = 20))")
+    List<IncomingWaterForecast> getPredictionListForTenDays();
+    @Select("select * \n" +
+            "from INCOMING_WATER_FORECAST \n" +
+            "where (TO_NUMBER(TO_CHAR(PREDICTION_TIME,'MM'))- TO_NUMBER(TO_CHAR(END_TIME,'MM')) = 0) \n" +
+            "AND (TO_NUMBER(TO_CHAR(PREDICTION_TIME,'DD'))- TO_NUMBER(TO_CHAR(END_TIME,'DD')) = -1)")
+    List<IncomingWaterForecast> getPredictionListForDay();
 
 }
 

@@ -4,19 +4,19 @@ import java.util.List;
 
 public interface WaterResourceApi {
 
-    String getYearWaterPlan(String area);
+    String getYearWaterPlan(String area,Integer year);
 
-    String getYearWaterPlanCrop(String area,String unit);
+    String getYearWaterPlanCrop(String area,String unit,Integer year);
 
-    String getMonthWaterPlan(String area);
+    String getMonthWaterPlan(String area,Integer year,Integer month);
 
-    String getMonthWaterPlanCrop(String area,String unit);
+    String getMonthWaterPlanCrop(String area,String unit,Integer year,Integer month);
 
-    String getTenDaysWaterPlan(String area);
+    String getTenDaysWaterPlan(String area,Integer year,Integer month,String tenDays);
 
-    String getTenDaysWaterPlanCrop(String area,String unit);
+    String getTenDaysWaterPlanCrop(String area,String unit,Integer year,Integer month,String tenDays);
 
-    String getDayWaterPlan(String area);
+    String getDayWaterPlan(String area,Integer year,Integer month,Integer day);
 
     String getUseWaterUser(String useWaterPlan,String area);
 

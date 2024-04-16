@@ -192,7 +192,7 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
                     }
                 }
             }
-            if(StringUtils.isNotEmpty(gaugingStation.getId())){
+            if(StringUtils.isNotEmpty(gaugingStation.getTreeId())){
                 gaugingStationList.add(gaugingStation);
             }
         }
@@ -243,7 +243,7 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
             station.setGatherTime(dto.getTime());
             station.setRecordTime(DateUtil.parse(sdf1.format(dto.getTime()),"yyyy-MM-dd"));
             lzzGaugingStationList.add(station);
-            redisUtil.set("lzz:waterworks:1:"+timeData.format(dto.getTime()),dto.getV().doubleValue());
+            redisUtil.set("lzz:waterworks:1:"+timeData.format(dto.getTime()),dto.getV().doubleValue(),60*60*24*2);
         }
         for(ParamDto dto:two){
             LzzGaugingStation station = new LzzGaugingStation();
@@ -254,7 +254,7 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
             station.setGatherTime(dto.getTime());
             station.setRecordTime(DateUtil.parse(sdf1.format(dto.getTime()),"yyyy-MM-dd"));
             lzzGaugingStationList.add(station);
-            redisUtil.set("lzz:waterworks:2:"+timeData.format(dto.getTime()),dto.getV().doubleValue());
+            redisUtil.set("lzz:waterworks:2:"+timeData.format(dto.getTime()),dto.getV().doubleValue(),60*60*24*2);
         }
 
 
@@ -289,7 +289,11 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
                     }
                 }
             }
-            result.addAll(rainfallStationList);
+            for(LzzRainfallStation station :rainfallStationList){
+                if(StringUtils.isNotEmpty(station.getTreeId())){
+                    result.add(station);
+                }
+            }
         }
         boolean b = lzzRainfallStationService.saveOrUpdateBatch(result);
         if(b){
@@ -317,7 +321,11 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
                     }
                 }
             }
-            result.addAll(rainfallStationList);
+            for(LzzRainfallStation station :rainfallStationList){
+                if(StringUtils.isNotEmpty(station.getTreeId())){
+                    result.add(station);
+                }
+            }
         }
         boolean b = lzzRainfallStationService.saveOrUpdateBatch(result);
         if(b){
@@ -367,9 +375,11 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
                     } else {
                         lzz.setStorageCapacity(0.00);
                     }
-                    reservoirLevelList.add(lzz);
-                    redisUtil.set("lzz:waterLevel:"+timeData.format(paramDto.getTime()),lzz.getRelativeWaterLevel());
-                    redisUtil.set("lzz:capacity:"+timeData.format(paramDto.getTime()),lzz.getStorageCapacity());
+                    if(StringUtils.isNotEmpty(lzz.getTreeId())){
+                        reservoirLevelList.add(lzz);
+                        redisUtil.set("lzz:waterLevel:"+timeData.format(paramDto.getTime()),lzz.getRelativeWaterLevel(),3600*24*2);
+                        redisUtil.set("lzz:capacity:"+timeData.format(paramDto.getTime()),lzz.getStorageCapacity(),3600*24*2);
+                    }
                 }
 
             }
@@ -537,7 +547,7 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
                         if(userPidParam.getName().equals("出库自动水位站")){
                             gaugingStation.setStationName("楼庄子出库水位站");
                         }
-                        if(userPidParam.getName().equals("天谷自动水位站")){
+                        if(userPidParam.getName().equals("入库自动水位站")){
                             gaugingStation.setStationName("楼庄子入库水位站");
                         }
                         if(!userPidParam.getName().equals("出库自动水位站") && !userPidParam.getName().equals("入库自动水位站")){
@@ -547,7 +557,9 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
                         gaugingStation.setId(gaugingStation.getStationName()+":"+paramDto.getTime().getTime());
                         gaugingStation.setGatherTime(paramDto.getTime());
                         gaugingStation.setRecordTime(DateUtil.parse(sdf1.format(paramDto.getTime()),"yyyy-MM-dd"));
-                        gaugingStationList.add(gaugingStation);
+                        if(StringUtils.isNotEmpty(gaugingStation.getTreeId())){
+                            gaugingStationList.add(gaugingStation);
+                        }
                     }
                 }
             }
@@ -575,11 +587,11 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
                         LzzGaugingStation gaugingStation = new LzzGaugingStation();
                         if(userPidParam.getName().equals("出库自动水位站")){
                             gaugingStation.setStationName("楼庄子出库水位站");
-                            redisUtil.set("lzz:out:"+timeData.format(paramDto.getTime()),paramDto.getV().doubleValue());
+                            redisUtil.set("lzz:out:"+timeData.format(paramDto.getTime()),paramDto.getV().doubleValue(),3600*24*2);
                         }
-                        if(userPidParam.getName().equals("天谷自动水位站")){
+                        if(userPidParam.getName().equals("入库自动水位站")){
                             gaugingStation.setStationName("楼庄子入库水位站");
-                            redisUtil.set("lzz:input:"+timeData.format(paramDto.getTime()),paramDto.getV().doubleValue());
+                            redisUtil.set("lzz:input:"+timeData.format(paramDto.getTime()),paramDto.getV().doubleValue(),3600*24*2);
                         }
                         if(!userPidParam.getName().equals("出库自动水位站") && !userPidParam.getName().equals("入库自动水位站")){
                             gaugingStation.setStationName(userPidParam.getName());
@@ -686,4 +698,5 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
             return RestResponse.no("error");
         }
     }
+
 }

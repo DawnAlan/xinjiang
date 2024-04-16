@@ -17,7 +17,7 @@ public interface PredictionApi {
     String getRealTimeRainfallByDate(String date, Integer lzz, Integer tth, List<String> lzzIdList, List<String> tthIdList);
 
     //查询实时工情
-    String getRealTimeWaterLevelData(String date);
+/*    String getRealTimeWaterLevelData(String date);*/
 
     //查询实时水情
     String getRealTimeReservoirLevelData(String date);

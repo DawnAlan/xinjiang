@@ -103,7 +103,7 @@ public class ResourceOptimizationlong_TendaysTest
 
 
         Map<String, Object> data1 = new HashMap<>();
-        data1=SetInflow(waterTransferReq, waterTransferReq.getData(),864000);
+        data1=SetInflow(waterTransferReq, waterTransferReq.getData(),864000,monthNum-20);
         double[][] inflow=new double[2][period];
 
         inflow[0]=(double[])data1.get("楼庄子流量");
@@ -1356,7 +1356,7 @@ public class ResourceOptimizationlong_TendaysTest
         this.reservoirs[1].levelFloodDesign = 991.2;
         this.reservoirs[1].levelFloodCheck = 992.54;
     }
-    public  Map<String, Object> SetInflow(WaterTransferReq waterTransferReq, Map<String,List<DataInflowPrevent>> DataInflowPrevent, int t)
+    public  Map<String, Object> SetInflow(WaterTransferReq waterTransferReq, Map<String,List<DataInflowPrevent>> DataInflowPrevent, int t,int dayNum)
     {
         List<Double> inflow_lzz = new ArrayList<>();
         List<Double> inflow_tth = new ArrayList<>();
@@ -1367,12 +1367,22 @@ public class ResourceOptimizationlong_TendaysTest
         List<DataInflowPrevent> data_FloodPrevent_all = waterTransferReq.getData().get("lzz");
         for (int i = 0; i < data_FloodPrevent_all.size(); i++)
         {
-            if (data_FloodPrevent_all.get(i).getScale()==t)
-            {
-                Time.add (data_FloodPrevent_all.get(i).getTime());
-                inflow_lzz.add(data_FloodPrevent_all.get(i).getPreQ()) ;
-            }
-
+                if (data_FloodPrevent_all.get(i).getScale() == t) {
+                    Time.add(data_FloodPrevent_all.get(i).getTime());
+                    inflow_lzz.add(data_FloodPrevent_all.get(i).getPreQ());
+                }
+                if (data_FloodPrevent_all.get(i).getScale() == 365) {
+                    Time.add(data_FloodPrevent_all.get(i).getTime());
+                    Calendar CC=Calendar.getInstance();
+                    CC.setTime(data_FloodPrevent_all.get(i).getTime());
+                    int x=CC.get(Calendar.DAY_OF_MONTH);
+                    if (x>20){
+                        inflow_lzz.add(data_FloodPrevent_all.get(i).getPreQ()/(dayNum*8.64));
+                    }
+                    else {
+                        inflow_lzz.add(data_FloodPrevent_all.get(i).getPreQ()/(10*8.64));
+                    }
+                }
         }
         List<DataInflowPrevent> data_FloodPrevent_all2 = waterTransferReq.getData().get("tth");
         for (int i = 0; i < data_FloodPrevent_all2.size(); i++)
@@ -1380,6 +1390,19 @@ public class ResourceOptimizationlong_TendaysTest
             if (data_FloodPrevent_all2.get(i).getScale()==t)
             {
                 inflow_tth.add(data_FloodPrevent_all2.get(i).getPreQ()) ;
+            }
+            if (data_FloodPrevent_all2.get(i).getScale()==365)
+            {
+                Time.add(data_FloodPrevent_all2.get(i).getTime());
+                Calendar CC=Calendar.getInstance();
+                CC.setTime(data_FloodPrevent_all2.get(i).getTime());
+                int x=CC.get(Calendar.DAY_OF_MONTH);
+                if (x>20){
+                    inflow_tth.add(data_FloodPrevent_all2.get(i).getPreQ()/(dayNum*8.64));
+                }
+                else {
+                    inflow_tth.add(data_FloodPrevent_all2.get(i).getPreQ()/(10*8.64));
+                }
             }
         }
         double[]inflowlzz=new double[inflow_lzz.size()];

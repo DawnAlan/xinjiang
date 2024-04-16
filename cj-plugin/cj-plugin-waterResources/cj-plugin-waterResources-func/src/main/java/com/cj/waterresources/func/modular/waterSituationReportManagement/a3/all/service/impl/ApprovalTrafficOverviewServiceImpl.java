@@ -30,7 +30,12 @@ public class ApprovalTrafficOverviewServiceImpl extends ServiceImpl<ApprovalTraf
 
     @Override
     public RestResponse update(ApprovalTrafficOverview approvalTrafficOverview) {
-        return null;
+        boolean b = this.updateById(approvalTrafficOverview);
+        if(b){
+          return RestResponse.ok("更新成功");
+        }else {
+            return RestResponse.no("更新失败");
+        }
     }
 }
 

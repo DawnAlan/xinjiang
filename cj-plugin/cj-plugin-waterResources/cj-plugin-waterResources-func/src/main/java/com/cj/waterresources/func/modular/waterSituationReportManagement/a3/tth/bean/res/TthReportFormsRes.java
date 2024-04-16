@@ -1,5 +1,6 @@
 package com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tth.bean.res;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -10,6 +11,7 @@ import java.util.Date;
 public class TthReportFormsRes implements Serializable {
 
     @ApiModelProperty(value = "日期")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date date;
 
     @ApiModelProperty(value = "进库流量-今年")

@@ -45,11 +45,11 @@ public class PredictionApiContextBean implements PredictionApi {
         return realTimeRainfall;
     }
 
-    @Override
+    /*@Override
     public String getRealTimeWaterLevelData(String date) {
         String realTimeWaterLevelData = predictionFeign.getRealTimeWaterLevelData(date);
         return realTimeWaterLevelData;
-    }
+    }*/
 
     @Override
     public String getRealTimeReservoirLevelData(String date) {

@@ -157,7 +157,7 @@ public class PredictionApiProvider implements PredictionApi {
     }
 
 
-    @SneakyThrows
+   /* @SneakyThrows
     @Override
     public String getRealTimeWaterLevelData(String date) {
         String lzzId = "f4e914b3e4f34ac18148c93eae02924f";
@@ -169,38 +169,45 @@ public class PredictionApiProvider implements PredictionApi {
             lzzData.setReservoirName(lzzGaugingStation.getStationName());
             lzzData.setFloodControlLevel(1394.50);
             if(lzzGaugingStation.getRelativeWaterLevel()<0){
-                Set<String> allKeys = redisUtil.getAllKeys("lzz:time:waterLevel:true");
-                List<Date> dateList = new ArrayList<>();
-                for(String s:allKeys){
-                    if(s.contains("日均")){
-                        continue;
+                Set<String> allKeys = redisUtil.getAllKeys("lzz:time:waterLevel:true:"+date.split(":")[0]);
+                if(allKeys.isEmpty()){
+
+                }else {
+                    List<Date> dateList = new ArrayList<>();
+                    for(String s:allKeys){
+                        if(s.contains("日均")){
+                            continue;
+                        }
+                        String[] split1 = s.split(" ");
+                        int length = split1[split1.length-1].split(":").length;
+                        String[] split2 = split1[0].split(":");
+                        String dateTemp =split2[split2.length-1]+" "+(length==1?split1[split1.length-1]+":00":split1[split1.length-1]);
+                        Date parse = sdf1.parse(dateTemp);
+                        dateList.add(parse);
                     }
-                    String[] split1 = s.split(" ");
-                    String[] split2 = split1[0].split(":");
-                    String dateTemp =split2[split2.length-1]+" "+split1[split1.length-1];
-                    Date parse = sdf1.parse(dateTemp);
-                    dateList.add(parse);
+                    List<Date> collect = dateList.stream().sorted(Comparator.comparing(Date::getDate, Comparator.reverseOrder())).collect(Collectors.toList());
+                    Double v = collect.size()>0?(Double) redisUtil.get("lzz:time:waterLevel:true:"+sdf1.format(collect.get(0))):null;
+                    lzzData.setRealTimeWaterLevel(v==null?null:formatDouble(v));
+                    lzzData.setUsedStorageCapacity(v==null?null:formatDouble(getWaterLevelByFlow(v,lzzId)));
+                    lzzData.setRemainingStorageCapacity(v==null?null:7374.0 - lzzData.getUsedStorageCapacity());
                 }
-                List<Date> collect = dateList.stream().sorted(Comparator.comparing(Date::getDate, Comparator.reverseOrder())).collect(Collectors.toList());
-                Double v = collect.size()>0?(Double) redisUtil.get("lzz:time:waterLevel:true:"+sdf1.format(collect.get(0))):null;
-                lzzData.setRealTimeWaterLevel(v==null?null:formatDouble(v));
-                lzzData.setUsedStorageCapacity(v==null?null:formatDouble(getWaterLevelByFlow(v,lzzId)));
-                lzzData.setRemainingStorageCapacity(v==null?null:7374.0 - lzzData.getUsedStorageCapacity());
+
             }else {
                 lzzData.setRealTimeWaterLevel(lzzGaugingStation.getRelativeWaterLevel());
                 lzzData.setUsedStorageCapacity(lzzGaugingStation.getStorageCapacity());
                 lzzData.setRemainingStorageCapacity(7374.0 - lzzData.getUsedStorageCapacity());
             }
         }else {
-            Set<String> allKeys = redisUtil.getAllKeys("lzz:time:waterLevel:true");
+            Set<String> allKeys = redisUtil.getAllKeys("lzz:time:waterLevel:true:"+date.split(":")[0]);
             List<Date> dateList = new ArrayList<>();
             for(String s:allKeys){
                 if(s.contains("日均")){
                     continue;
                 }
                 String[] split1 = s.split(" ");
+                int length = split1[split1.length-1].split(":").length;
                 String[] split2 = split1[0].split(":");
-                String dateTemp =split2[split2.length-1]+" "+split1[split1.length-1];
+                String dateTemp =split2[split2.length-1]+" "+(length==1?split1[split1.length-1]+":00":split1[split1.length-1]);
                 Date parse = sdf1.parse(dateTemp);
                 dateList.add(parse);
             }
@@ -222,7 +229,7 @@ public class PredictionApiProvider implements PredictionApi {
         }
         RealTimeEngineeringSituationDataRes tthData = new RealTimeEngineeringSituationDataRes();
         if(null!=irrigatedPlatformDataInfo){
-            tthData.setReservoirName(irrigatedPlatformDataInfo.getMonitorName());
+            tthData.setReservoirName("头屯河水库");
             tthData.setFloodControlLevel(988.0);
             tthData.setRealTimeWaterLevel(irrigatedPlatformDataInfo.getSqWaterLevel());
             tthData.setUsedStorageCapacity(getWaterLevelByFlow(irrigatedPlatformDataInfo.getSqWaterLevel(),tthId));
@@ -232,8 +239,9 @@ public class PredictionApiProvider implements PredictionApi {
             List<Date> dateListWaterLevel = new ArrayList<>();
             for(String s:allKeysWaterLevel){
                 String[] split1 = s.split(" ");
+                int length = split1[split1.length-1].split(":").length;
                 String[] split2 = split1[0].split(":");
-                String dateTemp =split2[split2.length-1]+" "+split1[split1.length-1];
+                String dateTemp =split2[split2.length-1]+" "+(length==1?split1[split1.length-1]+":00":split1[split1.length-1]);
                 Date parse = sdf1.parse(dateTemp);
                 dateListWaterLevel.add(parse);
             }
@@ -243,8 +251,9 @@ public class PredictionApiProvider implements PredictionApi {
             List<Date> dateListCapacity = new ArrayList<>();
             for(String s:allKeysCapacity){
                 String[] split1 = s.split(" ");
+                int length = split1[split1.length-1].split(":").length;
                 String[] split2 = split1[0].split(":");
-                String dateTemp =split2[split2.length-1]+" "+split1[split1.length-1];
+                String dateTemp =split2[split2.length-1]+" "+(length==1?split1[split1.length-1]+":00":split1[split1.length-1]);
                 Date parse = sdf1.parse(dateTemp);
                 dateListCapacity.add(parse);
             }
@@ -256,7 +265,7 @@ public class PredictionApiProvider implements PredictionApi {
         }
         result.add(tthData);
         return JSONObject.toJSONString(result);
-    }
+    }*/
 
     @Override
     public String getRealTimeReservoirLevelData(String date) {
@@ -699,16 +708,6 @@ public class PredictionApiProvider implements PredictionApi {
         return Double.parseDouble(format);
     }
 
-    @SneakyThrows
-    private Double getWaterLevelByFlow(Double level, String id){
-        String token = StpUtil.getTokenValue();
-        InetAddress localHost = InetAddress.getLocalHost();
-        //String hostAddress = "192.168.31.154";
-        String hostAddress = localHost.getHostAddress();
-        String url = "http://" + hostAddress +":9003/toutunhe/wpdCurved/queryLevelFlow?ndcdId="+id+"&level="+level;
-        String s = RestTemplateUtil.getBySaToken(url,token);
-        BigDecimal value = (BigDecimal) JSONObject.parseObject(s).get("data");
-        return value.doubleValue();
-    }
+
 
 }

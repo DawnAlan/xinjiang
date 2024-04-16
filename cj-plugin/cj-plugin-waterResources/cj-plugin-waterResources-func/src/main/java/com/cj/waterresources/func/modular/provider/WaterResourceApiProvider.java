@@ -86,8 +86,7 @@ public class WaterResourceApiProvider implements WaterResourceApi {
     private final RedisUtil redisUtil;
 
     @Override
-    public String getYearWaterPlan(String area) {
-        Integer year = LocalDateTime.now().getYear();
+    public String getYearWaterPlan(String area,Integer year) {
         List<WaterUsePlanForViewRes> totalAmount = new ArrayList<>();
         List<YearWaterUsePlanTrunkCanal> list = yearWaterUsePlanTrunkCanalService.lambdaQuery().
                 eq(YearWaterUsePlanTrunkCanal::getYear, year).
@@ -113,10 +112,10 @@ public class WaterResourceApiProvider implements WaterResourceApi {
     }
 
     @Override
-    public String getYearWaterPlanCrop(String area,String unit) {
+    public String getYearWaterPlanCrop(String area,String unit,Integer year) {
         Map<String, Object> result = new HashMap<>();
         YearCropSelectListReq req = new YearCropSelectListReq();
-        req.setYear(LocalDateTime.now().getYear());
+        req.setYear(year);
         req.setUnit(unit);
         req.setArea(area);
         RestResponse<List<YearWaterUsePlanCrop>> listRestResponse = yearWaterUsePlanCropService.selectList(req);
@@ -147,9 +146,7 @@ public class WaterResourceApiProvider implements WaterResourceApi {
     }
 
     @Override
-    public String getMonthWaterPlan(String area) {
-        Integer year = LocalDateTime.now().getYear();
-        Integer month = LocalDateTime.now().getMonth().getValue();
+    public String getMonthWaterPlan(String area,Integer year,Integer month) {
         List<MonthWaterUsePlan> list = monthWaterUsePlanService.lambdaQuery().
                 eq(MonthWaterUsePlan::getArea, area).
                 eq(MonthWaterUsePlan::getYear, year).
@@ -170,9 +167,7 @@ public class WaterResourceApiProvider implements WaterResourceApi {
     }
 
     @Override
-    public String getMonthWaterPlanCrop(String area,String unit) {
-        Integer year = LocalDateTime.now().getYear();
-        Integer month = LocalDateTime.now().getMonth().getValue();
+    public String getMonthWaterPlanCrop(String area,String unit,Integer year,Integer month) {
         Map<String, Object> result = new HashMap<>();
         List<MonthWaterUsePlanCrop> list = monthWaterUsePlanCropService.lambdaQuery().
                 eq(MonthWaterUsePlanCrop::getArea, area).
@@ -198,15 +193,11 @@ public class WaterResourceApiProvider implements WaterResourceApi {
     }
 
     @Override
-    public String getTenDaysWaterPlan(String area) {
-        Integer year = LocalDateTime.now().getYear();
-        Integer month = LocalDateTime.now().getMonth().getValue();
-        Integer day = LocalDateTime.now().getDayOfMonth();
-        String s = determineTenDays(day);
+    public String getTenDaysWaterPlan(String area,Integer year,Integer month,String tenDays) {
         List<TenDayWaterUsePlan> list = tenDayWaterUsePlanService.lambdaQuery().
                 eq(TenDayWaterUsePlan::getYear, year).
                 eq(TenDayWaterUsePlan::getMonth, month).
-                eq(TenDayWaterUsePlan::getTenDays, s).
+                eq(TenDayWaterUsePlan::getTenDays, tenDays).
                 eq(TenDayWaterUsePlan::getArea, area).
                 list();
         if(null!= list && list.size()>0){
@@ -226,16 +217,12 @@ public class WaterResourceApiProvider implements WaterResourceApi {
     }
 
     @Override
-    public String getTenDaysWaterPlanCrop(String area,String unit) {
-        Integer year = LocalDateTime.now().getYear();
-        Integer month = LocalDateTime.now().getMonth().getValue();
-        Integer day = LocalDateTime.now().getDayOfMonth();
-        String s = determineTenDays(day);
+    public String getTenDaysWaterPlanCrop(String area,String unit,Integer year,Integer month,String tenDays) {
         Map<String, Object> result = new HashMap<>();
         List<TenDayWaterUsePlan> list = tenDayWaterUsePlanService.lambdaQuery().
                 eq(TenDayWaterUsePlan::getYear, year).
                 eq(TenDayWaterUsePlan::getMonth, month).
-                eq(TenDayWaterUsePlan::getTenDays, s).
+                eq(TenDayWaterUsePlan::getTenDays, tenDays).
                 eq(TenDayWaterUsePlan::getUseWaterUser, unit).
                 eq(TenDayWaterUsePlan::getArea, area).
                 list();
@@ -256,7 +243,7 @@ public class WaterResourceApiProvider implements WaterResourceApi {
     }
 
     @Override
-    public String getDayWaterPlan(String area) {
+    public String getDayWaterPlan(String area,Integer year,Integer month,Integer day) {
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.DAY_OF_MONTH, -1);
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -579,7 +566,9 @@ public class WaterResourceApiProvider implements WaterResourceApi {
         if(reservoir.equals("楼庄子水库")){
             List<TrendsTableParam> lzzTableParam = trendsTableParamListTemp.stream().filter(t->t.getUseType()==1 && t.getUseStation().equals("楼庄子水库")).collect(Collectors.toList());
             TrendsTableParam lzzJkllTableParam = lzzTableParam.stream().filter(t -> t.getParamName().equals("进库流量")).collect(Collectors.toList()).get(0);
-            TrendsTableParam lzzCkllTableParam = lzzTableParam.stream().filter(t -> t.getParamName().equals("河道")).collect(Collectors.toList()).get(0);
+            TrendsTableParam lzzCkTableParam = lzzTableParam.stream().filter(t -> t.getParamName().equals("出库") && t.getPId().equals("0")).collect(Collectors.toList()).get(0);
+            TrendsTableParam lzzLlTableParam = lzzTableParam.stream().filter(t -> t.getParamName().equals("流量") && t.getPId().equals(lzzCkTableParam.getId())).collect(Collectors.toList()).get(0);
+            TrendsTableParam lzzCkllTableParam = lzzTableParam.stream().filter(t -> t.getParamName().equals("合计") && t.getPId().equals(lzzLlTableParam.getId())).collect(Collectors.toList()).get(0);
             TrendsTableParam lzzSwTableParam = lzzTableParam.stream().filter(t -> t.getParamName().equals("库水位")).collect(Collectors.toList()).get(0);
             TrendsTableParam lzzKrTableParam = lzzTableParam.stream().filter(t -> t.getParamName().equals("库容")).collect(Collectors.toList()).get(0);
             TrendsTableParam lzzJkzdTableParam = lzzTableParam.stream().filter(t -> t.getParamName().equals("进库浊度")).collect(Collectors.toList()).get(0);
@@ -616,7 +605,8 @@ public class WaterResourceApiProvider implements WaterResourceApi {
         if(reservoir.equals("头屯河水库")){
             List<TrendsTableParam> tthTableParam = trendsTableParamListTemp.stream().filter(t->t.getUseType()==1 && t.getUseStation().equals("头屯河水库")).collect(Collectors.toList());
             TrendsTableParam tthJkllTableParam = tthTableParam.stream().filter(t -> t.getParamName().equals("进库流量") && !t.getPId().equals("0")).collect(Collectors.toList()).get(0);
-            TrendsTableParam tthCkllTableParam = tthTableParam.stream().filter(t -> t.getParamName().equals("河道流量")).collect(Collectors.toList()).get(0);
+            TrendsTableParam tthCkTableParam = tthTableParam.stream().filter(t -> t.getParamName().equals("出库流量") && t.getPId().equals("0")).collect(Collectors.toList()).get(0);
+            TrendsTableParam tthCkllTableParam = tthTableParam.stream().filter(t -> t.getParamName().equals("合计") && t.getPId().equals(tthCkTableParam.getId())).collect(Collectors.toList()).get(0);
             TrendsTableParam tthSwTableParam = tthTableParam.stream().filter(t -> t.getParamName().equals("库水位")).collect(Collectors.toList()).get(0);
             TrendsTableParam tthKrTableParam = tthTableParam.stream().filter(t -> t.getParamName().equals("水库库容")).collect(Collectors.toList()).get(0);
             TrendsTableParam tthJkzdTableParam = tthTableParam.stream().filter(t -> t.getParamName().equals("进库浊度")).collect(Collectors.toList()).get(0);
@@ -703,7 +693,7 @@ public class WaterResourceApiProvider implements WaterResourceApi {
         Map<String,WaterFeeStatisticsRes> result = new HashMap<>();
         Integer year = LocalDateTime.now().getYear();
         Integer month = LocalDateTime.now().getMonth().getValue();
-        Integer day = LocalDateTime.now().getDayOfMonth();
+        Integer day = LocalDateTime.now().getDayOfMonth()-1;
         List<TrendsTableParam> totalId = trendsTableParamListTemp.stream().filter(t->t.getPId().equals("0") && t.getUseType()==2 && t.getParamName().equals("合计") && !t.getUseStation().equals("城市工业")).collect(Collectors.toList());
         List<WaterFeeStatisticsTotal> waterFeeStatisticsTotalList = waterFeeStatisticsTotalService.lambdaQuery().
                 eq(WaterFeeStatisticsTotal::getYear, year).

@@ -90,7 +90,11 @@ public class UseWaterManagementServiceImpl extends ServiceImpl<UseWaterManagemen
         List<UseWaterManagementQueryRes> useWaterManagementQueryRes = this.baseMapper.selectListByReq(req);
         List<UseWaterManagementQueryRes> collect = useWaterManagementQueryRes.stream().filter(t -> null != t.getPId() && t.getPId().equals("0")).collect(Collectors.toList());
         if(null != collect && collect.size()>0){
-            getParamTree(collect, useWaterManagementQueryRes);
+            if(req.getUseWaterPlan().equals("日用水计划")){
+                getParamTreeForDay(collect, useWaterManagementQueryRes);
+            }else {
+                getParamTree(collect, useWaterManagementQueryRes);
+            }
             if(null != useWaterManagementQueryRes && useWaterManagementQueryRes.size()>0){
                 return RestResponse.ok(collect);
             }else {
@@ -118,6 +122,24 @@ public class UseWaterManagementServiceImpl extends ServiceImpl<UseWaterManagemen
                     }
                     res.setChildren(tempList);
                     getParamTree(tempList,list);
+                }
+            }
+        }
+    }
+
+    public void getParamTreeForDay(List<UseWaterManagementQueryRes> resultList, List<UseWaterManagementQueryRes> list){
+        if(resultList.size()>0){
+            for(UseWaterManagementQueryRes res : resultList){
+                List<UseWaterManagementQueryRes> collect = list.stream().filter(t -> t.getPId().equals(res.getUnitId())).collect(Collectors.toList());
+                if(collect.size()>0){
+                    List<UseWaterManagementQueryRes> tempList = new ArrayList<>();
+                    for (UseWaterManagementQueryRes param:collect){
+                        UseWaterManagementQueryRes tempRes = new UseWaterManagementQueryRes();
+                        BeanUtils.copyProperties(param,tempRes);
+                        tempList.add(tempRes);
+                    }
+                    res.setChildren(tempList);
+                    getParamTreeForDay(tempList,list);
                 }
             }
         }

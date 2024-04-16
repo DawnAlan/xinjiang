@@ -172,8 +172,13 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
             }
             String approval= (String) redisUtil.get("approvalManagement_"+approvalManagement.getId());
             ApprovalManagement byId = this.getById(approvalManagement.getId());
-            if(byId.getApprovedById().equals(approval)){
+            String[] split1 = approval.split(",");
+            String[] split2 = byId.getApprovedById().split(",");
+            List<String> bList = turnToList(split1);
+            List<String> aList = turnToList(split2);
+            if(toS(aList,bList)){
                 approvalManagement.setApprovalStatus(2);
+                redisUtil.del("approvalManagement_"+approvalManagement.getId());
             }else {
                 approvalManagement.setApprovalStatus(1);
             }
@@ -491,6 +496,29 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
             }
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    private List<String> turnToList(String[] strings){
+        List<String> result = new ArrayList<>();
+        for(String s:strings){
+            result.add(s);
+        }
+        return result;
+    }
+
+    private Boolean toS(List<String> a ,List<String> b){
+        int size = a.size();
+        int i = 0;
+        for(String s:b){
+            if(a.contains(s)){
+                i++;
+            }
+        }
+        if(size==i){
+            return true;
+        }else {
+            return false;
         }
     }
 }

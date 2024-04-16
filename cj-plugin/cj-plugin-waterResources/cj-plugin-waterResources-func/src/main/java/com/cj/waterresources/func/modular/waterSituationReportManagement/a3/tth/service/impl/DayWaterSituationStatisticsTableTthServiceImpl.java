@@ -298,7 +298,7 @@ public class DayWaterSituationStatisticsTableTthServiceImpl extends ServiceImpl<
                 TrendsTableParam hdTableId = trendsTableParamList.stream().filter(t -> t.getParamName().equals("河道流量")).collect(Collectors.toList()).get(0);
                 dayWaterSituationStatisticsTableTthList.forEach(t->{
                     if(t.getTableHeadId().equals(hdTableId.getId())){
-                        redisUtil.set("A3:tth:out:"+sdf.format(t.getRecordTime())+" "+t.getTime(),t.getV());
+                        redisUtil.set("A3:tth:out:"+sdf.format(t.getRecordTime())+" "+t.getTime(),t.getV(),3600*24*2);
                     }
                 });
             }

@@ -8,6 +8,7 @@ import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hd.e
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hx.entity.DayWaterSituationStatisticsTableHx;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.entity.DayWaterSituationStatisticsTableLzz;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.entity.DayWaterSituationStatisticsTableQsLh;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tth.entity.DayWaterSituationStatisticsTableTth;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -61,5 +62,8 @@ public interface DayWaterSituationStatisticsTableLzzMapper extends BaseMapper<Da
 
     @Select("select ID,RECORD_TIME,TIME,TABLE_HEAD_ID,V from DAY_WATER_SITUATION_STATISTICS_TABLE_LZZ WHERE TABLE_HEAD_ID = #{tableHeadId} and RECORD_TIME between  #{startTime} and #{endTime}  and TIME = '08:00' order by RECORD_TIME asc")
     List<DayWaterSituationStatisticsTableLzz> selectReservoirHistoryList(@Param("startTime")String startTime, @Param("endTime")String endTime,@Param("tableHeadId") String tableHeadId);
+
+    @Select("select ID,RECORD_TIME,TIME,TABLE_HEAD_ID,V,END_TABLE_LIST from DAY_WATER_SITUATION_STATISTICS_TABLE_LZZ WHERE RECORD_TIME = #{recordTime}  and TIME = '08:00'")
+    List<DayWaterSituationStatisticsTableLzz> selectForApproval(@Param("recordTime")String recordTime);
 }
 

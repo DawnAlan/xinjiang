@@ -78,5 +78,8 @@ public interface IrrigatedPlatformDataInfoMapper extends BaseMapper<IrrigatedPla
 
     @Select("SELECT * FROM IRRIGATED_PLATFORM_DATA_INFO WHERE MONITOR_ID = #{id} AND RECORD_TIME = #{time}  order by MONITOR_TIME desc limit 1")
     IrrigatedPlatformDataInfo selectInfoForIndex(@Param("id") String id, @Param("time") String time);
+
+    @Select("SELECT * FROM IRRIGATED_PLATFORM_DATA_INFO WHERE MONITOR_NAME = #{monitorName} AND RECORD_TIME = #{time}  order by MONITOR_TIME desc limit 1")
+    IrrigatedPlatformDataInfo selectInfoForIndex1(@Param("monitorName") String monitorName, @Param("time") String time);
 }
 

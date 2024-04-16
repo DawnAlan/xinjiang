@@ -14,8 +14,11 @@ public class ApprovalTrafficOverviewTableAddReq implements Serializable {
     private String name;
     //创建方案时间
     @ApiModelProperty(value = "创建方案时间")
-    private Date time;
+    private String time;
     //模型id
     @ApiModelProperty(value = "模型id")
     private String modelId;
+
+    @ApiModelProperty(value = "模型名称")
+    private String modelName;
 }

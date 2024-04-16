@@ -45,5 +45,8 @@ public interface LzzGaugingStationMapper extends BaseMapper<LzzGaugingStation> {
 
     @Select("SELECT * FROM LZZ_GAUGING_STATION WHERE TREE_ID = #{id} AND RECORD_TIME = #{time}  order by GATHER_TIME desc limit 1")
     LzzGaugingStation selectInfoForIndex(@Param("id") String id, @Param("time") String time);
+
+    @Select("SELECT * FROM LZZ_GAUGING_STATION WHERE STATION_NAME = #{stationName} AND RECORD_TIME = #{time}  order by GATHER_TIME desc limit 1")
+    LzzGaugingStation selectInfoForIndex1(@Param("stationName") String stationName, @Param("time") String time);
 }
 

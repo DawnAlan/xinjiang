@@ -11,19 +11,19 @@ public interface ForecastPredictionService {
 
     RestResponse getNeedWaterValueList(String area,Integer timeType);
 
-    RestResponse getYearWaterPlan(String area);
+    RestResponse getYearWaterPlan(String area,Integer year);
 
-    RestResponse getYearWaterPlanCrop(String area,String unit);
+    RestResponse getYearWaterPlanCrop(String area,String unit,Integer year);
 
-    RestResponse getMonthWaterPlan(String area);
+    RestResponse getMonthWaterPlan(String area,Integer year,Integer month);
 
-    RestResponse getMonthWaterPlanCrop(String area,String unit);
+    RestResponse getMonthWaterPlanCrop(String area,String unit,Integer year,Integer month);
 
-    RestResponse getTenDaysWaterPlan(String area);
+    RestResponse getTenDaysWaterPlan(String area,Integer year,Integer month,String tenDays);
 
-    RestResponse getTenDaysWaterPlanCrop(String area,String unit);
+    RestResponse getTenDaysWaterPlanCrop(String area,String unit,Integer year,Integer month,String tenDays);
 
-    RestResponse getDayWaterPlan(String area);
+    RestResponse getDayWaterPlan(String area,Integer year,Integer month,Integer day);
 
     RestResponse getUseWaterUser(String useWaterPlan,String area);
 }

@@ -6,6 +6,8 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
 import java.util.Date;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 /**
@@ -37,6 +39,7 @@ public class IncomingWaterForecast implements Serializable {
      * 预报时间
      */
     @TableField(value = "PREDICTION_TIME")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date predictionTime;
 
     /**
@@ -67,6 +70,7 @@ public class IncomingWaterForecast implements Serializable {
      * 创建时间
      */
     @TableField(value = "CREATE_TIME")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createTime;
 
     /**
@@ -82,6 +86,7 @@ public class IncomingWaterForecast implements Serializable {
      * 结束时间
      */
     @TableField(value = "END_TIME")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date endTime;
 
     @TableField(exist = false)

@@ -102,6 +102,7 @@ public class WebSocketServer {
                     item.sendMessage(message);
                 }
             } catch (IOException e) {
+                e.printStackTrace();
                 continue;
             }
         }

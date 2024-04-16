@@ -2,6 +2,7 @@ package com.cj.waterresources.func.modular.waterSituationsummary.entity;
 
 import java.math.BigDecimal;
 import com.baomidou.mybatisplus.extension.activerecord.Model;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -22,6 +23,7 @@ public class WaterSituationSummary extends Model<WaterSituationSummary> {
     //站点名称
     private String siteName;
     //记录时间
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date dateTime;
     //年
     private Integer year;

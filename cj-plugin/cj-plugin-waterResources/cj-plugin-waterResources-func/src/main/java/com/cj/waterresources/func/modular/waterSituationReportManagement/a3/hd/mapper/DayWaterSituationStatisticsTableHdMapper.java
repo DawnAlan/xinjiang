@@ -5,6 +5,7 @@ import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.res.A3StatisticsRes;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.dkl.entity.DayWaterSituationStatisticsTableDkl;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hd.entity.DayWaterSituationStatisticsTableHd;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.entity.DayWaterSituationStatisticsTableLzz;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -44,6 +45,9 @@ public interface DayWaterSituationStatisticsTableHdMapper extends BaseMapper<Day
 
     @Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_HD where TIME = '今日均'")
     List<DayWaterSituationStatisticsTableHd> selectAllListToday();
+
+    @Select("select ID,RECORD_TIME,TIME,TABLE_HEAD_ID,V,END_TABLE_LIST from DAY_WATER_SITUATION_STATISTICS_TABLE_HD WHERE RECORD_TIME = #{recordTime}  and TIME = '08:00'")
+    List<DayWaterSituationStatisticsTableHd> selectForApproval(@Param("recordTime")String recordTime);
 
 }
 
