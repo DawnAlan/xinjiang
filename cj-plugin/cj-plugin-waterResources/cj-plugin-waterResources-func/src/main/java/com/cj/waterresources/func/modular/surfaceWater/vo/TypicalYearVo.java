@@ -29,8 +29,8 @@ public class TypicalYearVo {
     @ApiModelProperty(value = "平均水量")
     private Double typicalWater;
 
-    @ApiModelProperty(value = "平均年")
-    private Integer avgYear;
+//    @ApiModelProperty(value = "平均年")
+//    private Integer avgYear;
     @ApiModelProperty(value = "平均流量")
     private Double avgFlow;
     @ApiModelProperty(value = "平均水量")

@@ -18,10 +18,14 @@ public class TypicalYearReq {
     private BigDecimal prediction4;
     @ApiModelProperty(value = "5月预报")
     private BigDecimal prediction5;
-    @ApiModelProperty(value = "比去年")
-    private BigDecimal comparedToLastYear;
+//    @ApiModelProperty(value = "比去年")
+//    private BigDecimal comparedToLastYear;
     @ApiModelProperty(value = "来水频率")
     private BigDecimal frequency;
+    @ApiModelProperty(value = "平均流量")
+    private Double avgFlow;
+    @ApiModelProperty(value = "平均水量")
+    private Double avgWater;
     @ApiModelProperty(value = "历年流量情况")
     private List<TypicalYearDetailReq> typicalYearDetailReqList;
 

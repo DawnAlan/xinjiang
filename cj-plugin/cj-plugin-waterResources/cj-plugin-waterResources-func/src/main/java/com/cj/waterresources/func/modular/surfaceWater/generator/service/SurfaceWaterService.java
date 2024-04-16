@@ -228,14 +228,14 @@ public class SurfaceWaterService extends ServiceImpl<SurfaceWaterMapper, Surface
                         .findFirst()
                         .orElse(null) : null;
 
-        // 计算平均值并找到最接近平均值的行
-        double avgValue = input.getTypicalYearDetailReqList().stream()
-                .mapToDouble(TypicalYearDetailReq::getAvgFlow)
-                .average()
-                .orElse(0.0);
-        TypicalYearDetailReq closestToAvgDataPoint = input.getTypicalYearDetailReqList().stream()
-                .min((dp1, dp2) -> Double.compare(Math.abs(dp1.getAvgFlow() - avgValue), Math.abs(dp2.getAvgFlow() - avgValue)))
-                .orElse(null);
+//        // 计算平均值并找到最接近平均值的行
+//        double avgValue = input.getTypicalYearDetailReqList().stream()
+//                .mapToDouble(TypicalYearDetailReq::getAvgFlow)
+//                .average()
+//                .orElse(0.0);
+//        TypicalYearDetailReq closestToAvgDataPoint = input.getTypicalYearDetailReqList().stream()
+//                .min((dp1, dp2) -> Double.compare(Math.abs(dp1.getAvgFlow() - avgValue), Math.abs(dp2.getAvgFlow() - avgValue)))
+//                .orElse(null);
 
         Double bbb = input.getPredictionYear().doubleValue();
 
@@ -245,7 +245,7 @@ public class SurfaceWaterService extends ServiceImpl<SurfaceWaterMapper, Surface
 
         TypicalYearDetailReq ty = input.getTypicalYearDetailReqList().stream().filter(r -> r.getYear() == (input.getYear() - 1)).findFirst().get();
         //比去年
-        Double comparedToLastYear = input.getPredictionYear().doubleValue() - ty.getAvgWater().doubleValue() / ty.getAvgWater().doubleValue();
+        Double comparedToLastYear = (input.getPredictionYear().doubleValue() - ty.getSumWater().doubleValue()) / ty.getSumWater().doubleValue();
 
         TypicalYearVo typicalYearVo = new TypicalYearVo();
         typicalYearVo.setPredictionYear(input.getPredictionYear());
@@ -254,15 +254,15 @@ public class SurfaceWaterService extends ServiceImpl<SurfaceWaterMapper, Surface
         typicalYearVo.setPrediction5(input.getPrediction5());
         typicalYearVo.setYear(input.getYear());
         typicalYearVo.setFrequency(input.getFrequency());
-        typicalYearVo.setComparedToLastYear(new BigDecimal(comparedToLastYear).setScale(2, RoundingMode.DOWN));
+        typicalYearVo.setComparedToLastYear(new BigDecimal(comparedToLastYear.isNaN()?0:comparedToLastYear).setScale(2, RoundingMode.DOWN));
 
         typicalYearVo.setTypicalYear(typicalDataPoint.getYear());
         typicalYearVo.setTypicalFlow(typicalDataPoint.getAvgFlow());
         typicalYearVo.setTypicalWater(typicalDataPoint.getAvgWater());
 
-        typicalYearVo.setAvgYear(closestToAvgDataPoint.getYear());
-        typicalYearVo.setAvgFlow(closestToAvgDataPoint.getAvgFlow());
-        typicalYearVo.setAvgWater(closestToAvgDataPoint.getAvgWater());
+//        typicalYearVo.setAvgYear(closestToAvgDataPoint.getYear());
+        typicalYearVo.setAvgFlow(input.getAvgFlow());
+        typicalYearVo.setAvgWater(input.getAvgWater());
 
         typicalYearVo.setMaxYear(maxDataPoint.getYear());
         typicalYearVo.setMaxFlow(maxDataPoint.getAvgFlow());
