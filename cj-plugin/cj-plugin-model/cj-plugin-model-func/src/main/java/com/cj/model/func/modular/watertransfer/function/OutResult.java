@@ -375,6 +375,13 @@ public class OutResult {
             String[][]nameGreenQushouDay=(String[][]) dataDemand.get("渠首绿化子级站点名");
             String[][]nameAgricultureQushouDay=(String[][]) dataDemand.get("渠首农业子级站点名");
 
+            String[][]idAgricultureEastDay=(String[][]) dataDemand.get("idAgricultureEastSub");
+            String[][]idAgricultureWestDay=(String[][]) dataDemand.get("idAgricultureWestSub");
+            String[][]idGreenEastDay=(String[][]) dataDemand.get("idGreenEastSub");
+            String[][]idGreenWestDay=(String[][]) dataDemand.get("idGreenWestSub");
+            String[][]idGreenQushouDay=(String[][]) dataDemand.get("idGreenQushouSub");
+            String[][]idAgricultureQushouDay=(String[][]) dataDemand.get("idAgricultureQushouSub");
+
             double[][]demandAgricultureEastDay=(double[][]) dataDemand.get("河东灌溉子级需水");
             double[][]demandAgricultureWestDay=(double[][]) dataDemand.get("河西灌溉子级需水");
             double[][]demandGreenEastDay=(double[][]) dataDemand.get("河东绿化子级需水");
@@ -407,6 +414,8 @@ public class OutResult {
                             option.setProportion(Double.parseDouble(df.format(waterAgricultureEastDay[ii][x]/demandAgricultureEastDay[ii][x])));
                         }
                         option.setWaterLack(Double.parseDouble(df.format(demandAgricultureEastDay[ii][x]-waterAgricultureEastDay[ii][x])));
+                        option.setFlow(Double.parseDouble(df.format(waterAgricultureEastDay[ii][x]/8.64)));
+                        option.setUnitId(idAgricultureEastDay[ii][x]);
                         option2.add(option);
                     }
                 }
@@ -430,6 +439,8 @@ public class OutResult {
                             option.setProportion(Double.parseDouble(df.format(waterAgricultureWestDay[ii][x]/demandAgricultureWestDay[ii][x])));
                         }
                         option.setWaterLack(Double.parseDouble(df.format(demandAgricultureWestDay[ii][x]-waterAgricultureWestDay[ii][x])));
+                        option.setFlow(Double.parseDouble(df.format(waterAgricultureWestDay[ii][x]/8.64)));
+                        option.setUnitId(idAgricultureWestDay[ii][x]);
                         option2.add(option);
                     }
                 }
@@ -453,6 +464,8 @@ public class OutResult {
                             option.setProportion(Double.parseDouble(df.format(waterGreenEastDay[ii][x]/demandGreenEastDay[ii][x])));
                         }
                         option.setWaterLack(Double.parseDouble(df.format(demandGreenEastDay[ii][x]-waterGreenEastDay[ii][x])));
+                        option.setFlow(Double.parseDouble(df.format(waterGreenEastDay[ii][x]/8.64)));
+                        option.setUnitId(idGreenEastDay[ii][x]);
                         option2.add(option);
                     }
                 }
@@ -476,6 +489,8 @@ public class OutResult {
                             option.setProportion(Double.parseDouble(df.format(waterGreenWestDay[ii][x]/demandGreenWestDay[ii][x])));
                         }
                         option.setWaterLack(Double.parseDouble(df.format(demandGreenWestDay[ii][x]-waterGreenWestDay[ii][x])));
+                        option.setFlow(Double.parseDouble(df.format(waterGreenWestDay[ii][x]/8.64)));
+                        option.setUnitId(idGreenWestDay[ii][x]);
                         option2.add(option);
                     }
                 }
@@ -499,6 +514,8 @@ public class OutResult {
                             option.setProportion(Double.parseDouble(df.format(waterGreenQushouDay[ii][x]/demandGreenQushouDay[ii][x])));
                         }
                         option.setWaterLack(Double.parseDouble(df.format(demandGreenQushouDay[ii][x]-waterGreenQushouDay[ii][x])));
+                        option.setFlow(Double.parseDouble(df.format(waterGreenQushouDay[ii][x]/8.64)));
+                        option.setUnitId(idGreenQushouDay[ii][x]);
                         option2.add(option);
                     }
                 }
@@ -522,6 +539,8 @@ public class OutResult {
                             option.setProportion(Double.parseDouble(df.format(waterAgricultureQushouDay[ii][x]/demandAgricultureQushouDay[ii][x])));
                         }
                         option.setWaterLack(Double.parseDouble(df.format(demandAgricultureQushouDay[ii][x]-waterAgricultureQushouDay[ii][x])));
+                        option.setFlow(Double.parseDouble(df.format(waterAgricultureQushouDay[ii][x]/8.64)));
+                        option.setUnitId(idAgricultureQushouDay[ii][x]);
                         option2.add(option);
                     }
                 }
@@ -631,8 +650,8 @@ public class OutResult {
         row0.createCell(4).setCellValue("water");
         row0.createCell(5).setCellValue("proportion");
         row0.createCell(6).setCellValue("waterLack");
-
-
+        row0.createCell(7).setCellValue("flow");
+        row0.createCell(8).setCellValue("unitId");
         // 获取 CreationHelper 对象来帮助处理日期
         CreationHelper createHelper = workbook.getCreationHelper();
 
@@ -649,6 +668,12 @@ public class OutResult {
             row.createCell(4).setCellValue(line.getWater());
             row.createCell(5).setCellValue(line.getProportion());
             row.createCell(6).setCellValue(line.getWaterLack());
+            if (line.getFlow()!=null){
+                row.createCell(7).setCellValue(line.getFlow());
+            }
+            if (line.getUnitId()!=null){
+                row.createCell(8).setCellValue(line.getUnitId());
+            }
             row.getCell(0).setCellStyle(cellStyle);
         }
         try

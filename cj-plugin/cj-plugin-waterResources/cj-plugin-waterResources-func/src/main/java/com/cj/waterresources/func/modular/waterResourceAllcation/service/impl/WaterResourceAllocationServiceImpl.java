@@ -925,7 +925,7 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
                             + "-" + n.getArea()
                             + (n.getPId().equals("0") || !useWaterManagementMapById.containsKey(n.getPId()) ? "" : "-" + useWaterManagementMapById.get(n.getPId()).get(0).getUnitName())
                             + "-" + n.getUnitName(),
-                    n -> n.getId(),
+                    n -> n.getUnitId(),
                     (oldValue, newValue) -> newValue));
         }
         demands.forEach(demand -> demand.setUnitId(useWaterManagementUnitIdMap.get(
