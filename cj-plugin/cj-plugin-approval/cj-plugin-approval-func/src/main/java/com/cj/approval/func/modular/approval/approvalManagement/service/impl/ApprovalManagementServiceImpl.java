@@ -123,8 +123,10 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
             if(b){
                 try {
                     String[] approvedById = approvalManagement.getApprovedById().split(",");
+                    int i = 1;
                     for (String s:approvedById){
-                        WebSocketServer.sendInfo("您有一条待审批的指令",s);
+                        WebSocketServer.sendInfo("您有一条待审批的指令："+i++,s);
+                        log.warn("已发送指令："+i+",用户id："+s);
                     }
                 }catch (Exception e){
                     e.printStackTrace();

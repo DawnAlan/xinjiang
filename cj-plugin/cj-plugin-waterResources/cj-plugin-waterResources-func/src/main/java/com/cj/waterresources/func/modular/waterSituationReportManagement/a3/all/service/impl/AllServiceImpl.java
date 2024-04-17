@@ -661,9 +661,9 @@ public class AllServiceImpl implements AllService {
         tth.setYesterdayFloodRetentionCapacity(tthDouble==null?null:tthDouble>0?tthDouble:0.00);
         tth.setYearFloodRetentionCapacity(formatDouble((Double)redisUtil.get("floodRetentionCapacity:tth")));
         tth.setReservoirName("头屯河水库");
+        Double outputFlow = 0.00;
         for(OverallSituationUnitMgr mgr:idsList){
             if(getTopUnitNameFromOverallSituationUnitMgr(mgr.getId()).equals("楼庄子水库")){
-                Double outputFlow = 0.00;
                 lzz.setOverallId(mgr.getId());
                 if(StringUtils.isNotEmpty(mgr.getMonitorId())){
                     LzzGaugingStation info = lzzGaugingStationMapper.selectInfoForIndex(mgr.getMonitorId(), date);
@@ -695,7 +695,6 @@ public class AllServiceImpl implements AllService {
                         outputFlow+=dayWaterSituationStatisticsTableLzz==null?0.00:dayWaterSituationStatisticsTableLzz.getV()==null?0.00:dayWaterSituationStatisticsTableLzz.getV();
                     }
                 }
-                lzz.setOutputFlow(outputFlow==0.00?null:outputFlow);
             }
             if(getTopUnitNameFromOverallSituationUnitMgr(mgr.getId()).equals("头屯河水库")){
                 tth.setOverallId(mgr.getId());
@@ -719,6 +718,7 @@ public class AllServiceImpl implements AllService {
                 }
             }
         }
+        lzz.setOutputFlow(outputFlow==0.00?null:outputFlow);
         resList.add(lzz);
         resList.add(tth);
         return RestResponse.ok(resList);
