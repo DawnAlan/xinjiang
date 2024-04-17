@@ -19,17 +19,17 @@ import java.util.stream.Collectors;
 
 public class ResourceOptimizationlong_MonthTest {
 
-    static double[] monthday1 = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-    static double[] monthday = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+    private double[] monthday1 = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+    private double[] monthday = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
     //POA  初始化参数设计
     static double discreteAccuracy = 0.01;
     static double delatT = 24 * 3600;
     static double penaltyFactor = 1e8;
-    static boolean isLeapYear = false;
-    static double[][]ecoFlow;
-    static double[][]ecoFlow1;
-    static int period;
-    static int num;
+    private boolean isLeapYear = false;
+    private double[][]ecoFlow;
+    private double[][]ecoFlow1;
+    private int period;
+    private int num;
     private Reservoir[] reservoirs;
 
     public ArrayList<WaterTransfer> ResourceOptimizationlong_MonthTest(WaterTransferReq req) throws Exception {
@@ -842,7 +842,7 @@ public class ResourceOptimizationlong_MonthTest {
         return result;
     }
 
-    public static double[][] calFit(int id, Reservoir[] reservoir, int period,
+    public  double[][] calFit(int id, Reservoir[] reservoir, int period,
                                     double[][] wl_term, double[][] inflow,
                                     double[][] waterDemand) throws Exception {
 
