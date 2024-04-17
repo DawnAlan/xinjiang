@@ -17,20 +17,18 @@ public class ResourceOptimizationshort_DayAheadTest
 {
 //    private static double irrigate1;
 //	private static int generation1;
-    static double[] monthday = {31,28,31,30,31,30,31,31,30,31,30,31};
+    private double[] monthday = {31,28,31,30,31,30,31,31,30,31,30,31};
     //POA  初始化参数设计
     static double discreteAccuracy = 0.01;
-//    private static double period;
-    double [][]outflow_term;
     double convergencePrecision = 0.001;// 相邻两代   相差不到   万分之一
     //        double convergencePrecision_down = 0.0001;
     static double delatT = 24 * 3600;
     static double penaltyFactor = 1e8;
-    static boolean isLeapYear = false;
-    static double[]daynum={10,10,10};
-    private static int period=10;
+    private boolean isLeapYear = false;
+    private double[]daynum={10,10,10};
+    private  int period=10;
 
-    static double[] minOutflow;
+    private double[] minOutflow;
     private Reservoir [] reservoirs;
 
     public ArrayList ResourceOptimizationshort_daysTest(WaterTransferReq waterTransferReq) throws Exception {
@@ -927,7 +925,7 @@ public class ResourceOptimizationshort_DayAheadTest
         return  result;
     }
 
-    public static double[][] calFit(int id, Reservoir[] reservoir, int period,
+    public  double[][] calFit(int id, Reservoir[] reservoir, int period,
                                     double[][] wl_term, double[][] waterDemand , double[][] inflow ) throws Exception
     {
 
