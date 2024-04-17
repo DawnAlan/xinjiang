@@ -130,7 +130,8 @@ public class GatewayConfigure {
             "/actuator/**",
             "/websocketApproval/**",
             "/websocketWater/**",
-            "**"
+            "**",
+            "/**"
 
     };
 
