@@ -2,6 +2,7 @@ package com.cj.flood.func.modular.prediction.mapper;
 
 import com.cj.flood.func.modular.prediction.entity.IncomingWaterForecast;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.cj.model.func.modular.FloodPredict.entity.PredictInputData;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
@@ -38,6 +39,12 @@ public interface IncomingWaterForecastMapper extends BaseMapper<IncomingWaterFor
             "AND (TO_NUMBER(TO_CHAR(PREDICTION_TIME,'DD'))- TO_NUMBER(TO_CHAR(END_TIME,'DD')) = -1)")
     List<IncomingWaterForecast> getPredictionListForDay();
 
+
+    @Select("select RECORD_TIME as dates,v as flow from DAY_WATER_SITUATION_STATISTICS_TABLE_TTH where TIME = '今日均' and (RECORD_TIME between #{startTime} and #{endTime}) and TABLE_HEAD_ID = '2ac7d9b44ab5497092e77d0dccf5e116' ")
+    List<PredictInputData> selectResultTthByPrediction(@Param("startTime") String startTime, @Param("endTime") String endTime);
+
+    @Select("select RECORD_TIME as dates,v as flow from DAY_WATER_SITUATION_STATISTICS_TABLE_LZZ where TIME = '今日均' and (RECORD_TIME between #{startTime} and #{endTime}) and TABLE_HEAD_ID = '73f33822cf2c48caa4302dabf769b29b' ")
+    List<PredictInputData> selectResultLzzByPrediction(@Param("startTime") String startTime, @Param("endTime") String endTime);
 }
 
 

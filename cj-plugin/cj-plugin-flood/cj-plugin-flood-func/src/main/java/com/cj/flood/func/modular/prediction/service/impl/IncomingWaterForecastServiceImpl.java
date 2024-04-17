@@ -28,10 +28,7 @@ import com.cj.flood.func.modular.prediction.bean.res.IncomingWaterForecastDetail
 import com.cj.flood.func.modular.prediction.entity.IncomingWaterForecast;
 import com.cj.flood.func.modular.prediction.service.IncomingWaterForecastService;
 import com.cj.flood.func.modular.prediction.mapper.IncomingWaterForecastMapper;
-import com.cj.model.func.modular.FloodPredict.entity.ForecastInputParamNew;
-import com.cj.model.func.modular.FloodPredict.entity.IrrigatedHydrologyParam;
-import com.cj.model.func.modular.FloodPredict.entity.LzzHydrologyParam;
-import com.cj.model.func.modular.FloodPredict.entity.TemporaryXlsx;
+import com.cj.model.func.modular.FloodPredict.entity.*;
 import com.cj.model.func.modular.FloodPredict.model.TouTunHe;
 import com.cj.model.func.modular.FloodPredict.utils.InputUtils;
 import com.cj.model.func.modular.entity.Flood;
@@ -45,6 +42,7 @@ import java.io.*;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -134,6 +132,8 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                 private LzzRainfallStationService lzzRainfallStationService = SpringUtil.getBean(LzzRainfallStationService.class);
                 private IrrigatedPlatformDataInfoService irrigatedPlatformDataInfoService = SpringUtil.getBean(IrrigatedPlatformDataInfoService.class);
 
+                private IncomingWaterForecastMapper incomingWaterForecastMapper = SpringUtil.getBean(IncomingWaterForecastMapper.class);
+
                 @Override
                 public void run() {
                     try {
@@ -153,6 +153,17 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                         forcastInputParamNew.setRainFallDtos(req.getRainFallDtos());
                         List<Date> dates = InputUtils.judgeDate(incomingWaterForecast.getPredictionTime(),incomingWaterForecast.getPeriodTimeNum());
                         if(dates.isEmpty()){
+                            List<PredictInputData> resultListTemp = new ArrayList<>();
+                            LocalDateTime now = LocalDateTime.now();
+                            int year = now.getYear();
+                            String startTime = year+"-01-01";
+                            String endTime = sdf1.format(sdf1.parse(now.toString()));
+                            List<PredictInputData> lzz = incomingWaterForecastMapper.selectResultLzzByPrediction(startTime, endTime);
+                            lzz.forEach(t->t.setLocation("楼庄子"));
+                            List<PredictInputData> tth = incomingWaterForecastMapper.selectResultTthByPrediction(startTime, endTime);
+                            tth.forEach(t->t.setLocation("头屯河"));
+                            resultListTemp.addAll(lzz);
+                            resultListTemp.addAll(tth);
                             LzzHydrologyParam lzzHydrologyParam = new LzzHydrologyParam();
                             lzzHydrologyParam.setThreeGaugingStation(lzzGaugingStationService.lambdaQuery().eq(LzzGaugingStation::getStationName,"3号桥水位站").list());
                             lzzHydrologyParam.setLzzInput(lzzGaugingStationService.lambdaQuery().eq(LzzGaugingStation::getStationName,"天谷自动水位站").list());
@@ -175,10 +186,18 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                             irrigatedHydrologyParam.setTthInput(irrigatedPlatformDataInfoService.lambdaQuery().eq(IrrigatedPlatformDataInfo::getMonitorName,"入库流量").list());
                             forcastInputParamNew.setLzzHydrologyParam(lzzHydrologyParam);
                             forcastInputParamNew.setIrrigatedHydrologyParam(irrigatedHydrologyParam);
+                            forcastInputParamNew.setInflowRunoffs(resultListTemp);
                             forcastInputParamNew.setDataStartTime(sdf.parse("2023-01-01 00:00:00"));
                         }else {
+                            List<PredictInputData> resultListTemp = new ArrayList<>();
                             Date startTime = dates.get(0);
                             Date endTime = dates.get(1);
+                            List<PredictInputData> lzz = incomingWaterForecastMapper.selectResultLzzByPrediction(sdf1.format(startTime), sdf1.format(endTime));
+                            lzz.forEach(t->t.setLocation("楼庄子"));
+                            List<PredictInputData> tth = incomingWaterForecastMapper.selectResultTthByPrediction(sdf1.format(startTime), sdf1.format(endTime));
+                            tth.forEach(t->t.setLocation("头屯河"));
+                            resultListTemp.addAll(lzz);
+                            resultListTemp.addAll(tth);
                             LzzHydrologyParam lzzHydrologyParam = new LzzHydrologyParam();
                             lzzHydrologyParam.setThreeGaugingStation(lzzGaugingStationService.lambdaQuery().eq(LzzGaugingStation::getStationName,"3号桥水位站").between(LzzGaugingStation::getGatherTime,startTime,endTime).list());
                             lzzHydrologyParam.setLzzInput(lzzGaugingStationService.lambdaQuery().eq(LzzGaugingStation::getStationName,"天谷自动水位站").between(LzzGaugingStation::getGatherTime,startTime,endTime).list());
@@ -201,6 +220,7 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                             irrigatedHydrologyParam.setTthInput(irrigatedPlatformDataInfoService.lambdaQuery().eq(IrrigatedPlatformDataInfo::getMonitorName,"入库流量").between(IrrigatedPlatformDataInfo::getMonitorTime,startTime,endTime).list());
                             forcastInputParamNew.setLzzHydrologyParam(lzzHydrologyParam);
                             forcastInputParamNew.setIrrigatedHydrologyParam(irrigatedHydrologyParam);
+                            forcastInputParamNew.setInflowRunoffs(resultListTemp);
                             forcastInputParamNew.setDataStartTime(startTime);
                         }
 
@@ -217,11 +237,15 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                         String ss = DateUtil.format(date, "ss");
                         ObjectWriteResponse objectWriteResponse = minioUtils.putObject("tth", yyyyMMdd+"/"+hh+"/"+mm+"/"+ss+"/"+ UUID.fastUUID().toString(true)+"/"+split[split.length-1], fileAddress);
                         String object = objectWriteResponse.object();
-                        incomingWaterForecastService.lambdaUpdate().set(IncomingWaterForecast::getStatus,2).set(IncomingWaterForecast::getModelResultAddress,object).eq(IncomingWaterForecast::getId,incomingWaterForecast.getId()).update();
+                        incomingWaterForecastService.lambdaUpdate().set(IncomingWaterForecast::getStatus,2).
+                                set(IncomingWaterForecast::getModelResultAddress,object).
+                                eq(IncomingWaterForecast::getId,incomingWaterForecast.getId()).update();
                     }catch (Exception e) {
                         e.printStackTrace();
                         log.error("-------------------------------------------error-------------------------------------------");
-                        incomingWaterForecastService.lambdaUpdate().set(IncomingWaterForecast::getStatus,3).eq(IncomingWaterForecast::getId,incomingWaterForecast.getId()).update();
+                        incomingWaterForecastService.lambdaUpdate().set(IncomingWaterForecast::getStatus,3).
+                                set(IncomingWaterForecast::getRemark,e.getMessage()).
+                                eq(IncomingWaterForecast::getId,incomingWaterForecast.getId()).update();
                     }
                 }
             });

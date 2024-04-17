@@ -139,7 +139,7 @@ public class ExcelTool {
 		inputData[0][3]="温度";
 		inputData[0][4]="降水";
 		for (int i = 1; i <inputDataList.size() ; i++) {
-			inputData[i][0]=inputDataList.get(i).getRainStation();
+			inputData[i][0]=inputDataList.get(i).getLocation();
 			inputData[i][1]=inputDataList.get(i).getDates();
 			inputData[i][2]=inputDataList.get(i).getFlow();
 			inputData[i][3]=inputDataList.get(i).getTemperature();

@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.*;
 
+
 import static com.cj.model.func.modular.FloodPredict.model.TouTunHe.getOneStationDataList;
 import static com.cj.model.func.modular.FloodPredict.utils.TimeUtils.*;
 
@@ -36,16 +37,11 @@ public class InputUtils {
             Date startTime = calendar.getTime();
             result.add(startTime);
         }
-        Date today = new Date();
-        if (predictTime.before(today)){
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTime(today);
-            calendar.add(Calendar.DAY_OF_MONTH, (n/24+1));
-            predictTime = calendar.getTime();
-            result.add(predictTime);
-        }else {
-            result.add(predictTime);
-        }
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(predictTime);
+        calendar.add(Calendar.DAY_OF_MONTH, (n/24)+1);
+        predictTime = calendar.getTime();
+        result.add(predictTime);
         return result;
     }
 
@@ -101,8 +97,8 @@ public class InputUtils {
         calendar.setTime(predictTime);
         calendar.add(Calendar.DAY_OF_MONTH, -20);
         predictTime = calendar.getTime();
-        //预报时间超过储存时间并且非场次洪水
-        if (predictTime.after(historyTime)&&!(paramForecastInputParamNew.getModelType()==3))
+        //预报时间超过储存时间
+        if (predictTime.after(historyTime))
         {
             //数据不足，补充新时段数据
             Map<String,List<List<PredictInputData>>> stationsData = getOneStationDataList(paramForecastInputParamNew);
@@ -218,29 +214,36 @@ public class InputUtils {
         int preLength = preliminaryData.length;
         int width = historyInput[0].length;
         Object[][] input;
-        if (hisLength+preLength-dayDuration>1000){//如果历史加目前输入大于1000天
-            input = new Object[1000][width];
-            if (preLength>1000){
-                for (int i = 0; i <1000 ; i++) {
-                    System.arraycopy(preliminaryData[preliminaryData.length-1000+i],0, input[i], 0, width);
-                }
-            }else {
-                for (int i = 0; i <1000-preLength ; i++) {
-                    System.arraycopy(historyInput[hisLength+preLength-dayDuration-1000+i],0, input[i], 0, width);
-                }
-                for (int i = 1000-preLength; i < 1000; i++) {
-                    System.arraycopy(preliminaryData[i+preLength-1000],0, input[i], 0, width);
-                }
-            }
-        }else {//历史加目前小于3000天
-            input = new Object[hisLength+preLength-dayDuration][4];
-            for (int i = 0; i < hisLength-dayDuration; i++) {
-                System.arraycopy(historyInput[i],0, input[i], 0, width);
-            }
-            for (int i = hisLength-dayDuration; i < hisLength+preLength-dayDuration; i++) {
-                System.arraycopy(preliminaryData[i+dayDuration-hisLength],0, input[i], 0,width);
-            }
+        input = new Object[hisLength+preLength-dayDuration][4];
+        for (int i = 0; i < hisLength-dayDuration; i++) {
+            System.arraycopy(historyInput[i],0, input[i], 0, width);
         }
+        for (int i = hisLength-dayDuration; i < hisLength+preLength-dayDuration; i++) {
+            System.arraycopy(preliminaryData[i+dayDuration-hisLength],0, input[i], 0,width);
+        }
+//        if (hisLength+preLength-dayDuration>10000){//如果历史加目前输入大于1000天
+//            input = new Object[10000][width];
+//            if (preLength>10000){
+//                for (int i = 0; i <10000 ; i++) {
+//                    System.arraycopy(preliminaryData[preliminaryData.length-10000+i],0, input[i], 0, width);
+//                }
+//            }else {
+//                for (int i = 0; i <10000-preLength ; i++) {
+//                    System.arraycopy(historyInput[hisLength+preLength-dayDuration-10000+i],0, input[i], 0, width);
+//                }
+//                for (int i = 10000-preLength; i < 10000; i++) {
+//                    System.arraycopy(preliminaryData[i+preLength-10000],0, input[i], 0, width);
+//                }
+//            }
+//        }else {//历史加目前小于3000天
+//            input = new Object[hisLength+preLength-dayDuration][4];
+//            for (int i = 0; i < hisLength-dayDuration; i++) {
+//                System.arraycopy(historyInput[i],0, input[i], 0, width);
+//            }
+//            for (int i = hisLength-dayDuration; i < hisLength+preLength-dayDuration; i++) {
+//                System.arraycopy(preliminaryData[i+dayDuration-hisLength],0, input[i], 0,width);
+//            }
+//        }
         return input;
     }
 

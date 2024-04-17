@@ -207,9 +207,6 @@ public class SnowMeltModel {
         Date testEndDate = (Date) snowInput[snowInput.length-1][0];
         param.setTestSetEndTime(testEndDate);//测试集结束时期
         //预报时段的确定
-        param.setPeriodStepNumber(param.getPeriodStepNumber()/24+1);//预报时段数
-        param.setPeriodStepSize(param.getPeriodStepSize());//预报时段步长
-        param.setPreStartTime(param.getPreStartTime());//预报时间
         param.setIsSnowMeltModel(true);
         return param;
     }

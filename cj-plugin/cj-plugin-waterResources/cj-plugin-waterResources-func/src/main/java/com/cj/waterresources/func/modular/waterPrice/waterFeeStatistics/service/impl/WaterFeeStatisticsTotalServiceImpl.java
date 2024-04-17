@@ -59,7 +59,7 @@ public class WaterFeeStatisticsTotalServiceImpl extends ServiceImpl<WaterFeeStat
     }
 
     @Override
-    public RestResponse selectTotalForIndex() {
+    public RestResponse selectTotalForIndex(String time) {
         String mk = (String) redisUtil.get("trendsTableParam:list");
         if(StringUtils.isEmpty(mk)){
             trendsTableParamService.updateCache();
@@ -68,11 +68,11 @@ public class WaterFeeStatisticsTotalServiceImpl extends ServiceImpl<WaterFeeStat
         List<TrendsTableParam> trendsTableParamListTemp = JSONObject.parseArray(mk, TrendsTableParam.class);
         List<TrendsTableParam> trendsTableParamList = trendsTableParamListTemp.stream().filter(t -> t.getUseType() == 2 && !t.getUseStation().equals("城市工业")&& t.getPId().equals("0") && t.getParamName().equals("合计")).collect(Collectors.toList());
         List<SelectTotalForIndexRes> resList = new ArrayList<>();
-        Integer year = LocalDateTime.now().getYear();
-        Integer month = LocalDateTime.now().getMonth().getValue();
-        Integer day = LocalDateTime.now().getDayOfMonth();
+        String[] split = time.split("-");
+        Integer year = Integer.valueOf(split[0]);
+        Integer month =Integer.valueOf(split[1]);
+        Integer day = Integer.valueOf(split[2]);
         String s = determineTenDays(day);
-
         List<String> totalIds = trendsTableParamList.stream().map(TrendsTableParam::getId).collect(Collectors.toList());
         List<WaterFeeStatisticsTotal> waterFeeStatisticsTotalList = this.lambdaQuery().in(WaterFeeStatisticsTotal::getTableHeadId, totalIds).eq(WaterFeeStatisticsTotal::getYear, year).eq(WaterFeeStatisticsTotal::getMonth, month).
                 eq(WaterFeeStatisticsTotal::getTenDays, s).list();

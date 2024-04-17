@@ -43,9 +43,9 @@ public class ModelParamCalibration {
     public static void main(String[] args) throws IOException, InvalidFormatException {
 
         Double area = 1174.0;
-        Double preFlow = 5.9;
+        Double preFlow = 6.5;
         Double preRain = 38.63;
-        String sheetName = "06-23~06-27";
+        String sheetName = "07-18~07-23";
 //        Object[][]Flood= ShanBeiCalibration(area,sheetName);
 //        ExcelTool.writeObjectExcel("D:\\204\\2.头屯河\\径流预报数据文件\\率定结果.xlsx",sheetName+"三号桥", Flood);
         double[] shanbeiParams=new double[12];
@@ -54,7 +54,7 @@ public class ModelParamCalibration {
         shanbeiParams[2]=102;//WM张力水蓄水容量，或最大蓄水量 60-80mm
         shanbeiParams[3]=1;//蒸散发折减系数 KC
         shanbeiParams[4]=32;//fc流域土壤稳定下渗率 0.3-0.5 mm/min
-        shanbeiParams[5]=60;//fm流域土壤最大下渗率 1-2 mm/min
+        shanbeiParams[5]=100;//fm流域土壤最大下渗率 1-2 mm/min
         shanbeiParams[6]=0.022;//K霍尔顿下渗曲线方程
         shanbeiParams[7]=0.3;//B反映下渗能力在透水面积上的分布特性
         shanbeiParams[8]=0.966;//CS 为地面径流消退系数
@@ -63,9 +63,9 @@ public class ModelParamCalibration {
         shanbeiParams[11]=1;
         int L = (int) shanbeiParams[9];
 
-        preREData = ExcelTool.readExcel("D:\\204\\2.头屯河\\径流预报数据文件\\陕北-DATA-2023.xlsx",sheetName+"蒸发降雨");
-        historyRData = ExcelTool.readExcel("D:\\204\\2.头屯河\\径流预报数据文件\\陕北-DATA-2023.xlsx",sheetName+"前期雨量");
-        historyFData = ExcelTool.readExcel("D:\\204\\2.头屯河\\径流预报数据文件\\陕北-DATA-2023.xlsx",sheetName+"前期径流");
+        preREData = ExcelTool.readExcel("D:\\204\\2.头屯河\\径流预报数据文件\\陕北-DATA.xlsx",sheetName+"蒸发降雨");
+        historyRData = ExcelTool.readExcel("D:\\204\\2.头屯河\\径流预报数据文件\\陕北-DATA.xlsx",sheetName+"前期雨量");
+        historyFData = ExcelTool.readExcel("D:\\204\\2.头屯河\\径流预报数据文件\\陕北-DATA.xlsx",sheetName+"前期径流");
 //        洪水过程推演
         shanbeiModel.InputData(shanbeiParams,preREData,historyRData);
 //        shanbeiModel.InitialMoistureContentCalculation();
@@ -86,7 +86,7 @@ public class ModelParamCalibration {
             results[i][0]=hisData[i];
             results[i][1]=preData[i];
         }
-        ExcelTool.writeObjectExcel("D:\\204\\2.头屯河\\径流预报数据文件\\手动率定结果-2023.xlsx",sheetName,results);
+        ExcelTool.writeObjectExcel("D:\\204\\2.头屯河\\径流预报数据文件\\手动率定结果.xlsx",sheetName,results);
     }
     public static Object[][]ShanBeiCalibration(Double data,String sheetName) throws IOException {
         Area=data;

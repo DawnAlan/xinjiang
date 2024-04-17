@@ -10,10 +10,6 @@ import lombok.Getter;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 
@@ -54,6 +50,7 @@ public class ModelOfTTH {
     List<Double> MinQ = new ArrayList<>();
 
     int coefficient =10000 ;
+
     public ModelOfTTH(Object[][] pre,int delta) {
         for (int i = 0; i < pre.length; i++) {
             Date t = (Date) pre[i][0];
@@ -105,118 +102,140 @@ public class ModelOfTTH {
         }
 
     }
-    public ModelOfTTH(ReqFloodPrevent reqFloodPrevent){
-        List<DataFloodPrevent> data_FloodPrevent_all = reqFloodPrevent.getData().get("lat");
+    public ModelOfTTH(ReqFloodPrevent reqFloodPrevent) throws Exception {
 
-        //时间戳、区间流量、生态流量、最大泄流
-        for (int i = 0; i < data_FloodPrevent_all.size(); i++) {
-            DataFloodPrevent dataFloodPrevent = data_FloodPrevent_all.get(i);
-            Time.add(dataFloodPrevent.getTime());
-            Q_Interval.add(dataFloodPrevent.getPre());
+        try{
+            List<DataFloodPrevent> data_FloodPrevent_all = reqFloodPrevent.getData().get("lat");
 
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTime(dataFloodPrevent.getTime());
-            int month = calendar.get(Calendar.MONTH)+1;
-            if(month>=4&&month<=9){
-                MinQ.add(1.48);
+            //时间戳、区间流量、生态流量、最大泄流
+            for (DataFloodPrevent dataFloodPrevent : data_FloodPrevent_all) {
+                Time.add(dataFloodPrevent.getTime());
+                Q_Interval.add(dataFloodPrevent.getPre());
+
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(dataFloodPrevent.getTime());
+                int month = calendar.get(Calendar.MONTH) + 1;
+                if (month >= 4 && month <= 9) {
+                    MinQ.add(1.48);
+                } else {
+                    MinQ.add(0.74);
+                }
+                MaxQ.add(180.0);
             }
-            else{
-                MinQ.add(0.74);
-            }
-            MaxQ.add(180.0);
+
         }
+        catch (Exception e){
+            throw new Exception("输入预报数据异常");
+        }
+        try{
+            List<DataFloodPrevent> data_FloodPrevent_all = reqFloodPrevent.getData().get("lat");
 
-        //时间间隔、初末水位、寻优精度
-        T_Delta= data_FloodPrevent_all.get(0).getScale();
-        H_begin= reqFloodPrevent.getH2_begin();
-        H_end  = reqFloodPrevent.getH2_end();
-        Step = reqFloodPrevent.getStep2();
+            //时间间隔、初末水位、寻优精度
+            T_Delta= data_FloodPrevent_all.get(0).getScale();
+            H_begin= reqFloodPrevent.getH2_begin();
+            H_end  = reqFloodPrevent.getH2_end();
+            Step = reqFloodPrevent.getStep2();
 
-        //库容曲线、泄流曲线
-        List<Double> LV_l = new ArrayList<>();
-        List<Double> LV_v = new ArrayList<>();
-        List<Double> LQ1_l = new ArrayList<>();
-        List<Double> LQ1_q = new ArrayList<>();
-        List<Double> LQ2_l = new ArrayList<>();
-        List<Double> LQ2_q = new ArrayList<>();
-        List<Double> LQ3_l = new ArrayList<>();
-        List<Double> LQ3_q = new ArrayList<>();
-        for (int i = 0; i < reqFloodPrevent.getCurveParam().size(); i++) {
-            CurveParam piece = reqFloodPrevent.getCurveParam().get(i);
-            int ID = piece.getId();
-            double level = piece.getLevel();
-            double value = piece.getValue();
-            switch (ID){
-                case 200:
-                    LV_l.add(level);
-                    LV_v.add(value);
-                    break;
-                case 201:
-                    LQ1_l.add(level);
-                    LQ1_q.add(value);
-                    break;
-                case 202:
-                    LQ2_l.add(level);
-                    LQ2_q.add(value);
-                    break;
-                case 203:
-                    LQ3_l.add(level);
-                    LQ3_q.add(value);
-                    break;
+        }
+        catch (Exception e){
+            throw new Exception("输入边界约束异常");
+        }
+        try{
+            LimitLevels= reqFloodPrevent.getLimitLevels_tth();
+            for (int i = 0; i < 12; i++) {
+                limits.add(LimitLevels[i]);
             }
         }
-        LV_Curve=new double[2][LV_l.size()];
-        LQ_Curve1 = new double[2][LQ1_l.size()];
-        LQ_Curve2 = new double[2][LQ2_l.size()];
-        LQ_Curve3 = new double[2][LQ3_l.size()];
-        for (int i = 0; i < LV_Curve[0].length; i++) {
-            LV_Curve[0][i]=LV_l.get(i);
-            LV_Curve[1][i]=LV_v.get(i);
+        catch (Exception e){
+            throw new Exception("输入汛限水位异常");
         }
-        for (int i = 0; i < LQ_Curve1[0].length; i++) {
-            LQ_Curve1[0][i]=LQ1_l.get(i);
-            LQ_Curve1[1][i]=LQ1_q.get(i);
-        }
-        for (int i = 0; i < LQ_Curve2[0].length; i++) {
-            LQ_Curve2[0][i]=LQ2_l.get(i);
-            LQ_Curve2[1][i]=LQ2_q.get(i);
-        }
-        for (int i = 0; i < LQ_Curve3[0].length; i++) {
-            LQ_Curve3[0][i]=LQ3_l.get(i);
-            LQ_Curve3[1][i]=LQ3_q.get(i);
-        }
-        Arrays.sort(LV_Curve[0]);
-        Arrays.sort(LV_Curve[1]);
-        Arrays.sort(LQ_Curve1[0]);
-        Arrays.sort(LQ_Curve1[1]);
-        Arrays.sort(LQ_Curve2[0]);
-        Arrays.sort(LQ_Curve2[1]);
-        Arrays.sort(LQ_Curve3[0]);
-        Arrays.sort(LQ_Curve3[1]);
+        try{
+            //库容曲线、泄流曲线
+            List<Double> LV_l = new ArrayList<>();
+            List<Double> LV_v = new ArrayList<>();
+            List<Double> LQ1_l = new ArrayList<>();
+            List<Double> LQ1_q = new ArrayList<>();
+            List<Double> LQ2_l = new ArrayList<>();
+            List<Double> LQ2_q = new ArrayList<>();
+            List<Double> LQ3_l = new ArrayList<>();
+            List<Double> LQ3_q = new ArrayList<>();
+            for (int i = 0; i < reqFloodPrevent.getCurveParam().size(); i++) {
+                CurveParam piece = reqFloodPrevent.getCurveParam().get(i);
+                int ID = piece.getId();
+                double level = piece.getLevel();
+                double value = piece.getValue();
+                switch (ID){
+                    case 200:
+                        LV_l.add(level);
+                        LV_v.add(value);
+                        break;
+                    case 201:
+                        LQ1_l.add(level);
+                        LQ1_q.add(value);
+                        break;
+                    case 202:
+                        LQ2_l.add(level);
+                        LQ2_q.add(value);
+                        break;
+                    case 203:
+                        LQ3_l.add(level);
+                        LQ3_q.add(value);
+                        break;
+                }
+            }
+            LV_Curve=new double[2][LV_l.size()];
+            LQ_Curve1 = new double[2][LQ1_l.size()];
+            LQ_Curve2 = new double[2][LQ2_l.size()];
+            LQ_Curve3 = new double[2][LQ3_l.size()];
+            for (int i = 0; i < LV_Curve[0].length; i++) {
+                LV_Curve[0][i]=LV_l.get(i);
+                LV_Curve[1][i]=LV_v.get(i);
+            }
+            for (int i = 0; i < LQ_Curve1[0].length; i++) {
+                LQ_Curve1[0][i]=LQ1_l.get(i);
+                LQ_Curve1[1][i]=LQ1_q.get(i);
+            }
+            for (int i = 0; i < LQ_Curve2[0].length; i++) {
+                LQ_Curve2[0][i]=LQ2_l.get(i);
+                LQ_Curve2[1][i]=LQ2_q.get(i);
+            }
+            for (int i = 0; i < LQ_Curve3[0].length; i++) {
+                LQ_Curve3[0][i]=LQ3_l.get(i);
+                LQ_Curve3[1][i]=LQ3_q.get(i);
+            }
+            Arrays.sort(LV_Curve[0]);
+            Arrays.sort(LV_Curve[1]);
+            Arrays.sort(LQ_Curve1[0]);
+            Arrays.sort(LQ_Curve1[1]);
+            Arrays.sort(LQ_Curve2[0]);
+            Arrays.sort(LQ_Curve2[1]);
+            Arrays.sort(LQ_Curve3[0]);
+            Arrays.sort(LQ_Curve3[1]);
 
-        //特征水位、特征库容
+
+        }
+        catch (Exception e){
+            throw new Exception("输入特性曲线异常");
+        }
+
+        //默认特征水位、特征库容
         this.DeadLevel  =972;
         this.LimitLevel =987;
         this.NormalLevel=989.6;
         this.HeightLevel=989.6;
         this.DesignLevel=991.2;
         this.ProofLevel =992.54;
-        DeadVolume = GetV(DeadLevel);
-        LimitVolume = GetV(LimitLevel);
-        NormalVolume = GetV(NormalLevel);
-        HeightVolume = GetV(HeightLevel);
-        DesignVolume = GetV(DesignLevel);
-        ProofVolume = GetV(ProofLevel);
 
-        LimitLevels= reqFloodPrevent.getLimitLevels_tth();
-        for (int i = 0; i < 12; i++) {
-            limits.add(LimitLevels[i]);
-        }
+
+
+
     }
 
 
-    //头屯河常规调度
-    public List<Option> Calculate_S2(){
+    /**
+     * 头屯河常规调度
+     */
+    public List<Option> Calculate_S1(){
 
         /*
         （1）当入库流量不大于下游河道安全泄量120m3/s时，库水位不超过汛限水位,水库下泄流量不超过120m3/s，泄洪方式采用放水涵洞，持续泄洪直至水位回落到汛限水位;
@@ -286,6 +305,192 @@ public class ModelOfTTH {
         return result;
     }
     /**
+     * 头屯河灵活调度
+     */
+    public List<Option> Calculate_S2(){
+
+        /*
+        （1）当入库流量不大于下游河道安全泄量120m3/s时，库水位不超过汛限水位,水库下泄流量不超过120m3/s，泄洪方式采用放水涵洞，持续泄洪直至水位回落到汛限水位;
+        （2）当入库流量大于下游河道安全泄量120m3/s但不超过 590m3/s时，库水位不超过防洪高水位 989.60m，按水库的限泄流量下泄，泄洪方式采用放水涵洞和泄水隧洞相结合。通过拦洪错峰延长 泄洪时段发挥水库调洪功能，持续泄洪直至水位回落到汛限水位;
+        （3）当入库流量大于下游河道安全泄量120m3/s但不超过590m3/s时，库水位超过防洪高水位（989.60m）时，并且库水位持续上涨，防洪调度方式转入水库保坝安全的调度阶段。放水涵洞、泄水隧洞及溢洪道均参与泄洪，力求大坝安全。放水涵洞控制下泄120m3/s，泄水隧洞及溢洪道敞开自由泄洪。持续泄洪直至水位回落到汛限水位;
+        （4）当入库流量超过590m3/s，但低于校核洪水1013m3/s，库水位超过防洪高水位（989.60m）时，泄水建筑物全部敞开泄流，泄洪方式采用放水涵洞、泄水隧洞、溢洪 道相结合。尽量控制库水位不超过校核洪水位（992.54m）。
+        （5）当入库流量继续增加或无减小的趋势，且库水位已达到或超过校核洪水位（992.54m）后，调度运行转入头屯河水库抢险应急预案进行处理，按照预案要求进行应急调度和人员转移撤离。
+        */
+
+        List<Option> result = new ArrayList<>();
+
+        for (int i = 0; i < Q_Input.size(); i++) {
+            Option option = new Option();
+            Date time = Time.get(i);
+            double beginH;
+            double endH;
+            double Q_in = Q_Input.get(i);
+            double minQ = MinQ.get(i);
+            double Q_out;
+            double Q_1;
+            double Q_2;
+            double Q_3;
+            double V;
+            double retain;
+            UpdateLimitLevel(Time.get(i));
+
+
+            if(i==0){
+                beginH=H_begin;
+            }
+            else{
+                beginH=result.get(i-1).getH2();
+            }
+
+            double[] Q=FlexibleCalculate(beginH,Q_in,minQ);
+            Q_out=Q[0];
+            Q_1=Q[1];
+            Q_2=Q[2];
+            Q_3=Q[3];
+            endH=OnceBalance1(beginH,Q_in,Q_out);
+            V=GetV(endH);
+            retain=Math.max(0,V-GetV(H_begin));
+
+            double[] aa=getPercentage_tth(V);
+            double percent1=aa[0];
+            double percent2=aa[1];
+
+            option.setTime(time);
+            option.setType("灵活调度");
+            option.setName("头屯河");
+            option.setH1(beginH);
+            option.setH2(endH);
+            option.setQIn(Q_in);
+            option.setQOut(Q_out);
+            option.setQ1(Q_1);
+            option.setQ2(Q_2);
+            option.setQ3(Q_3);
+            option.setV(V);
+            option.setRetain(retain);
+            option.setPercentage1(percent1);
+            option.setPercentage2(percent2);
+            option.setLimits(limits);
+
+            result.add(option);
+        }
+
+        return result;
+    }
+    /**
+     * 预泄调度
+     */
+    public List<Option> Calculate_S3(){
+        Date time;
+        double Q_in;
+        double Q_out;
+        double H1;
+        double H2;
+        double Q_eco;
+        double Q1;
+        double Q2;
+        double Q3;
+        double V;
+        double Retain;
+        double p1;
+        double p2;
+
+        double[] Limit;
+
+
+
+        double decline=H_begin;
+
+        List<List<Option>> all = new ArrayList<>();
+        while (decline>=DeadLevel){
+            List<Option> options = new ArrayList<>();
+            boolean judge=false;
+            for (int i = 0; i < Time.size(); i++) {
+                time=Time.get(i);
+                Q_in=Q_Input.get(i);
+                Q_eco=MinQ.get(i);
+                if(i==0){
+                    H1=H_begin;
+                }
+                else{
+                    H1=options.get(i-1).getH2();
+                }
+
+                Option option = new Option();
+                option.setQIn(Q_in);
+                option.setH1(H1);
+                option.setTime(Time.get(i));
+                UpdateLimitLevel(time);
+                //泄流能力限制
+                Limit =H_LimitFront(H1,Q_in,Q_eco);
+                //水位变化速率限制
+                double[] H_delta = new double[2];
+                H_delta[0] = H1- (double) T_Delta /3600/24*2;
+                H_delta[1] = H1+ (double) T_Delta /3600/24*2;
+                //计算本时段末水位、流量
+                if(!judge){
+                    H2 = Math.max(Math.max(Limit[0],H_delta[0]),decline);
+                    Q_out=OnceBalance2(H1,Q_in,H2);
+                    if(H2==decline){
+                        judge=true;
+                    }
+                }
+                else{
+                    Q_out=FlexibleCalculate(H1,Q_in,Q_eco)[0];
+                    H2=OnceBalance1(H1,Q_in,Q_out);
+                }
+                option.setH2(H2);
+                option.setQOut(Q_out);
+                options.add(option);
+            }
+
+            all.add(options);
+            decline=decline-0.1;
+        }
+        //选出最优解
+        int num = 0;
+        double best = Value(all.get(0));
+        for (int i = 0; i < all.size(); i++) {
+            double value = Value(all.get(i));
+            if(value<best){
+                best=value;
+                num=i;
+            }
+        }
+        //补全其他数据
+        for (int i = 0; i < all.get(num).size(); i++) {
+            Option option = all.get(num).get(i);
+            H1=option.getH1();
+            H2=option.getH2();
+            Q_out= option.getQOut();
+            Q1=Math.min(Q_out,GetQ1((H1+H2)/2));
+            Q2=Math.min(Q_out-Q1,GetQ2((H1+H2)/2));
+            Q3=Q_out-Q1-Q2;
+            V=GetV(H2);
+            Retain=Math.max(0,V-GetV(H_begin));
+            p1=getPercentage_tth(V)[0];
+            p2=getPercentage_tth(V)[1];
+
+
+            option.setName("头屯河");
+            option.setType("预泄调度");
+            option.setTime(Time.get(i));
+            option.setQ1(Q1);
+            option.setQ2(Q2);
+            option.setQ3(Q3);
+            option.setV(V);
+            option.setRetain(Retain);
+            option.setPercentage1(p1);
+            option.setPercentage2(p2);
+            option.setLimits(limits);
+        }
+
+
+
+        return all.get(num);
+    }
+
+
+    /**
      * 常规调度计算流量
      */
     public double[] ConventionalCalculate(double level, double Q_Input, double MinQ){
@@ -296,8 +501,6 @@ public class ModelOfTTH {
         （4）当入库流量超过590m3/s，但低于校核洪水1013m3/s，库水位超过防洪高水位（989.60m）时，泄水建筑物全部敞开泄流，泄洪方式采用放水涵洞、泄水隧洞、溢洪 道相结合。尽量控制库水位不超过校核洪水位（992.54m）。
         （5）当入库流量继续增加或无减小的趋势，且库水位已达到或超过校核洪水位（992.54m）后，调度运行转入头屯河水库抢险应急预案进行处理，按照预案要求进行应急调度和人员转移撤离。
         */
-
-
         double[] Q = new double[4];
 
         //最大下泄能力
@@ -311,6 +514,7 @@ public class ModelOfTTH {
             }
             else{
                 MaxQ=GetQ1(level)+GetQ2(level);
+                MaxQ=Math.min(GetQ1(level)+GetQ2(level),120);
             }
         }
         else{
@@ -337,285 +541,40 @@ public class ModelOfTTH {
         Q[3]=Q[0]-Q[1]-Q[2];
         return Q;
     }
-
-
-
-    //最大调洪水位最小
-    public List<Option> MinLevel(List<Option> Initial, String name){
-
-        //先从常规调度的结果中获得初始解
-        List<Option> Initial_op = new ArrayList<>();
-        for (int i = 0; i < Initial.size(); i++) {
-            if(Initial.get(i).getName().equals(name)){
-                Option object = Initial.get(i);
-                Option option = new Option();
-                option.setType("最小拦蓄");
-                option.setName(object.getName());
-                option.setTime(object.getTime());
-                option.setQIn(object.getQIn());
-                option.setH1(object.getH1());
-                option.setH2(object.getH2());
-                option.setQOut(object.getQOut());
-                Initial_op.add(option);
-            }
-        }
-
-        double SumQ_in = 0;
-        double SumQ_out= 0;
-        double SumQ_eco= 0;
-        for (int i = 0; i < Initial_op.size(); i++) {
-            SumQ_in=SumQ_in+Initial_op.get(i).getQIn();
-            SumQ_out=SumQ_out+Initial_op.get(i).getQOut();
-            SumQ_eco=SumQ_eco+MinQ.get(i);
-        }
-
-        double QIn;
-        double QOut;
-        double H1;
-        double H2;
-        double Q_eco;
-        double[] Limit;
-
-        double Out_limit;
-        double H2_limit;
-
-        //优化
-        for (int i = 0; i < Initial_op.size(); i++) {
-            QIn= Initial_op.get(i).getQIn();
-            H1 = Initial_op.get(i).getH1();
-            Q_eco=MinQ.get(i);
-            Limit =H_LimitFront(H1,QIn,Q_eco);
-
-            //保证后续时段生态流量
-            Out_limit=SumQ_out-(SumQ_eco-MinQ.get(i));
-            H2_limit=OnceBalance1(H1,QIn,Out_limit);
-
-            //水位变化速率限制
-            double[] H_delta = new double[2];
-            H_delta[0] = H1- (double) T_Delta /3600/24*2;
-            H_delta[1] = H1+ (double) T_Delta /3600/24*2;
-
-
-            //本时段末水位
-            if(i==Initial_op.size()-1){
-                QOut=SumQ_out;
-                H2=H_end;
-                Initial_op.get(i).setH2(H2);
-                Initial_op.get(i).setQOut(QOut);
-            }
-            else{
-                H2 = Math.max(Math.max(Math.max(Limit[0],H2_limit),H_delta[0]),H_begin-1);
-                QOut=OnceBalance2(H1,QIn,H2);
-                Initial_op.get(i).setH2(H2);
-                Initial_op.get(i).setQOut(QOut);
-                Initial_op.get(i+1).setH1(H2);
-            }
-
-            //剩余时段总出库、剩余时段总生态流量
-            SumQ_out=SumQ_out-QOut;
-            SumQ_eco=SumQ_eco-Q_eco;
-        }
-        //补全其他数据
-        for (int i = 0; i < Initial_op.size(); i++) {
-            Option option = Initial_op.get(i);
-            QIn= option.getQIn();
-            H1= option.getH1();
-            H2= option.getH2();
-            QOut = OnceBalance2(H1,QIn,H2);
-            double Q1 = Math.min(QOut,GetQ1(H1));
-            double Q2 = Math.min(QOut-Q1,GetQ2((H1+H2)/2));
-            double Q3 = QOut-Q1-Q2;
-            double V=GetV(H2);
-            double[] aa=getPercentage_tth(V);
-            double retain=Math.max(0,V-GetV(H_begin));
-            double percent1=aa[0];
-            double percent2=aa[1];
-            option.setQOut(QOut);
-            option.setQ1(Q1);
-            option.setQ2(Q2);
-            option.setQ3(Q3);
-            option.setV(V);
-            option.setRetain(retain);
-            option.setPercentage1(percent1);
-            option.setPercentage2(percent2);
-            option.setLimits(limits);
-        }
-
-
-        return Initial_op;
-    }
-
-    //最大下泄流量最小
-    public List<Option> MinDischarge(List<Option> Initial, String name){
-        //先从常规调度的结果中获得初始解
-        List<Option> Initial_op = new ArrayList<>();
-        for (int i = 0; i < Initial.size(); i++) {
-            if(Initial.get(i).getName().equals(name)){
-                Option object = Initial.get(i);
-                Option option = new Option();
-                option.setType("最大削峰");
-                option.setName(object.getName());
-                option.setTime(object.getTime());
-                option.setQIn(object.getQIn());
-                option.setH1(object.getH1());
-                option.setH2(object.getH2());
-                option.setQOut(object.getQOut());
-                Initial_op.add(option);
-            }
-        }
-
-        //总入库、总出库、总生态流量、平均出库
-        double SumQ_in = 0;
-        double SumQ_out= 0;
-        double SumQ_eco= 0;
-        double Q_average;
-        for (int i = 0; i < Initial_op.size(); i++) {
-            SumQ_in=SumQ_in+Initial_op.get(i).getQIn();
-            SumQ_out=SumQ_out+Initial_op.get(i).getQOut();
-            SumQ_eco=SumQ_eco+MinQ.get(i);
-        }
-
-        //时段入库、出库、初末水位、生态流量、下泄能力、死水位流量
-        double QIn;
-        double QOut;
-        double H1;
-        double H2;
-        double Q_eco;
-        double Q_max;
-        double Q_min;
-        double Q_dead;
-        double Q_proof;
-
-        double Out_limit;
-
-        SumQ_in = 0;
-        SumQ_out= 0;
-        SumQ_eco= 0;
-        for (int i = 0; i < Initial_op.size(); i++) {
-            SumQ_in=SumQ_in+Initial_op.get(i).getQIn();
-            SumQ_out=SumQ_out+Initial_op.get(i).getQOut();
-            SumQ_eco=SumQ_eco+MinQ.get(i);
-        }
-        Q_average=SumQ_out/Initial_op.size();
-
-
-
-        for (int i = 0; i < Initial_op.size(); i++) {
-            //时段入库、初水位、生态流量
-            QIn= Initial_op.get(i).getQIn();
-            H1 = Initial_op.get(i).getH1();
-            Q_eco=MinQ.get(i);
-
-
-            //保证后续时段生态流量
-            Out_limit=SumQ_out-(SumQ_eco-MinQ.get(i));
-
-            //水位变化速率限制
-            double[] H_delta = new double[2];
-            double[] Q_delta = new double[2];
-            H_delta[0] = H1- (double) T_Delta /3600/24*1;
-            H_delta[1] = H1+ (double) T_Delta /3600/24*4;
-            Q_delta[0]=OnceBalance2(H1,QIn,H_delta[1]);
-            Q_delta[1]=OnceBalance2(H1,QIn,H_delta[0]);
-
-
-            //流量限制
-            Q_dead=OnceBalance2(H1,QIn,DeadLevel);
-            Q_proof=OnceBalance2(H1,QIn,ProofLevel);
-            Q_max=MaxQ_out(H1,QIn);
-            Q_max=Math.min(Q_max,Out_limit);
-            Q_max=Math.min(Q_max,Q_dead);
-            Q_max=Math.min(Q_max,Q_delta[1]);
-
-            //最小流量限制
-            Q_min=Math.max(Q_eco,Q_delta[0]);
-
-            //本时段出库、末水位
-            if(i==Initial_op.size()-1){
-                H2=H_end;
-                QOut=OnceBalance2(H1,QIn,H2);
-            }
-            else{
-                if(Q_max<Q_proof){
-                    //水位将超过校核水位
-                    QOut=Q_max;
-                }
-                else{
-                    //水位将超过设计水位,不超过校核水位
-                    double[] Q_limit= new double[2];
-                    Q_limit[0] = Math.max(Q_proof,Q_eco);
-                    Q_limit[1] = Q_max;
-                    double rate = 1.4;
-                    double temp = rate*Q_average;
-                    if(temp>Q_max){
-                        QOut=Q_max;
-                    }
-                    else if(temp<Q_min){
-                        QOut=Q_min;
-                    }
-                    else{
-                        QOut=temp;
-                    }
-                }
-
-                H2=OnceBalance1(H1,QIn,QOut);
-                Initial_op.get(i+1).setH1(H2);
-            }
-            Initial_op.get(i).setH2(H2);
-            Initial_op.get(i).setQOut(QOut);
-
-            //剩余时段总出库、剩余时段总生态流量
-            SumQ_out=SumQ_out-QOut;
-            SumQ_eco=SumQ_eco-Q_eco;
-            Q_average=SumQ_out/(Initial_op.size()-i-1);
-        }
-
-        //补全其他数据
-        for (int i = 0; i < Initial_op.size(); i++) {
-            Option option = Initial_op.get(i);
-            QIn= option.getQIn();
-            H1= option.getH1();
-            H2= option.getH2();
-            QOut = OnceBalance2(H1,QIn,H2);
-            double Q1 = Math.min(QOut,GetQ1(H1));
-            double Q2 = Math.min(QOut-Q1,GetQ2((H1+H2)/2));
-            double Q3 = QOut-Q1-Q2;
-            double V=GetV(H2);
-            double[] aa=getPercentage_tth(V);
-            double retain=Math.max(0,V-GetV(H_begin));
-            double percent1=aa[0];
-            double percent2=aa[1];
-            option.setQOut(QOut);
-            option.setQ1(Q1);
-            option.setQ2(Q2);
-            option.setQ3(Q3);
-            option.setV(V);
-            option.setRetain(retain);
-            option.setPercentage1(percent1);
-            option.setPercentage2(percent2);
-            option.setLimits(limits);
-        }
-        return Initial_op;
-    }
-
-
-
-
-
     /**
-     * 返回最高水位的序号
+     *灵活调度流量计算
      */
-    public int MaxLevel(List<Option> options){
-        double max=options.get(0).getH2();
-        int num=0;
-        for (int i = 0; i < options.size(); i++) {
-            double level = options.get(i).getH2();
-            if(level>=max){
-                max=level;
-                num=i;
-            }
+    public double[] FlexibleCalculate(double level, double Q_Input, double MinQ){
+        double[] Q = new double[4];
+
+        //最大下泄能力
+        double MaxQ;
+        if(Q_Input>=590||level>=HeightLevel){
+            MaxQ=GetQ1(level)+GetQ2(level)+GetQ3(level);
         }
-        return num;
+        else{
+            MaxQ=Math.min(GetQ1(level)+GetQ2(level)+GetQ3(level),120);
+        }
+
+        //恢复至汛限水位所需下泄流量
+        double Q_limit=(GetV(level)-LimitVolume)*coefficient/T_Delta+Q_Input;
+
+        if(MinQ<=Q_limit&&Q_limit<=MaxQ){
+            Q[0]=Q_limit;
+            Q[1]=Math.min(Q[0],GetQ1(level));
+            Q[2] = Math.min(Q[0] - Q[1], GetQ2(level));
+        }
+        else if(Q_limit<=MinQ){
+            Q[0]=MinQ;
+            Q[1]=MinQ;
+            Q[2]=0;
+        }else{
+            Q[0]=MaxQ;
+            Q[1]=GetQ1(level);
+            Q[2]=Math.min(Q[0] - Q[1], GetQ2(level));
+        }
+        Q[3]=Q[0]-Q[1]-Q[2];
+        return Q;
     }
     /**
      *水库水位限制，从前往后推
@@ -643,72 +602,56 @@ public class ModelOfTTH {
     /**
      * 计算最大下泄能力
      */
-    public double MaxQ_out(double level,double Q_in){
+    public double MaxQ_out(double H1,double Q_in){
         double Q1;
-        double Q2;
-        double Q_max;
+        double Q2=0;
         double H2;
 
-        if(Q_in>=590||level>=ProofLevel){
-            Q1=GetQ1(level)+GetQ2(level)+GetQ3(level);
-        }
-        else if(Q_in>=120){
-            if(level>=HeightLevel){
-                Q1=GetQ1(level)+GetQ2(level)+GetQ3(level);
+        T_Delta = T_Delta/100;
+        for (int i = 0; i < 100; i++) {
+            if(Q_in>=590||H1>=HeightLevel){
+                Q1=GetQ1(H1)+GetQ2(H1)+GetQ3(H1);
             }
             else{
-                Q1=GetQ1(level)+GetQ2(level);
+                Q1=Math.min(GetQ1(H1)+GetQ2(H1)+GetQ3(H1),120);
             }
+            H1=OnceBalance1(H1,Q_in,Q1);
+            if(H1<=DeadLevel){
+                H1=DeadLevel;
+                Q1=OnceBalance2(H1,Q_in,DeadLevel);
+            }
+            Q2=Q2+Q1;
         }
-        else{
-            Q1=Math.min(GetQ1(level),120);
-        }
-
-        Q_max=Q1;
-
-        while (true){
-            H2=OnceBalance1(level,Q_in,Q_max);
-            if(Q_in>=590||(level+H2)/2>=ProofLevel){
-                Q2=GetQ1((level+H2)/2)+GetQ2((level+H2)/2)+GetQ3((level+H2)/2);
-            }
-            else if(Q_in>=120){
-                if((level+H2)/2>=HeightLevel){
-                    Q2=GetQ1((level+H2)/2)+GetQ2((level+H2)/2)+GetQ3((level+H2)/2);
-                }
-                else{
-                    Q2=GetQ1((level+H2)/2)+GetQ2((level+H2)/2);
-                }
-            }
-            else{
-                Q2=Math.min(GetQ1((level+H2)/2),120);
-            }
-
-            if(Q2>=Q_max){
-                return Q2;
-            }else{
-                Q_max=Q_max-0.05;
-            }
-        }
+        Q2=Q2/100;
+        T_Delta=T_Delta*100;
 
 
 
+//        if(Q_in>=590||H1>=HeightLevel){
+//            Q1=GetQ1(H1)+GetQ2(H1)+GetQ3(H1);
+//        }
+//        else{
+//            Q1=Math.min(GetQ1(H1)+GetQ2(H1)+GetQ3(H1),120);
+//        }
+//        H2=OnceBalance1(H1,Q_in,Q1);
+//
+//        if(H2<=DeadLevel){
+//            Q2=OnceBalance2(H1,Q_in,DeadLevel);
+//        }
+//        else{
+//            if(Q_in>=590||(H1+H2)/2>=HeightLevel){
+//                Q2=GetQ1((H1+H2)/2)+GetQ2((H1+H2)/2)+GetQ3((H1+H2)/2);
+//            }
+//            else{
+//                Q2=Math.min(GetQ1((H1+H2)/2)+GetQ2((H1+H2)/2)+GetQ3((H1+H2)/2),120);
+//            }
+//        }
 
-
-    }
-    /**
-     * 计算库容占用比例
-     */
-    public static double[] getPercentage_tth(double V){
-        double[] result = new double[2];
-        result[0]=100*Math.max(0,(V-1297.03))/223.816;
-        result[1]=100*Math.max(0,(V-1297.03))/541.681;
-        result[0]=BigDecimal.valueOf(result[0]).setScale(2, RoundingMode.HALF_UP).doubleValue();
-        result[1]=BigDecimal.valueOf(result[1]).setScale(2, RoundingMode.HALF_UP).doubleValue();
-        return result;
+        return Q2;
     }
 
 
-    //水量平衡，计算末水位、出库流量
+
     public double OnceBalance1(double H_begin, double Q_in, double Q_out){
         double V_end=GetV(H_begin)*coefficient+(Q_in-Q_out)*T_Delta;
         return GetH(V_end/coefficient);
@@ -839,15 +782,6 @@ public class ModelOfTTH {
         }
         return MaxQ1;
     }
-
-
-    public void setQ_Input2(List<Option> op_lzz){
-        Q_Input = new ArrayList<>();
-        for (int i = 0; i < op_lzz.size(); i++) {
-            double qIn = Q_Interval.get(i)+op_lzz.get(i).getQOut();
-            Q_Input.add(BigDecimal.valueOf(qIn).setScale(2, RoundingMode.HALF_UP).doubleValue());
-        }
-    }
     public void UpdateLimitLevel(Date time){
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(time);
@@ -903,15 +837,72 @@ public class ModelOfTTH {
                 break;
         }
     }
-    public void SetEndH(double H){
-        H_end=H;
+    public static double[] getPercentage_tth(double V){
+        double[] result = new double[2];
+        result[0]=100*Math.max(0,(V-1297.03))/223.816;
+        result[1]=100*Math.max(0,(V-1297.03))/541.681;
+        result[0]=BigDecimal.valueOf(result[0]).setScale(2, RoundingMode.HALF_UP).doubleValue();
+        result[1]=BigDecimal.valueOf(result[1]).setScale(2, RoundingMode.HALF_UP).doubleValue();
+        return result;
     }
 
 
+    /**
+     * 返回最高水位的序号
+     */
+    public int MaxLevel(List<Option> options){
+        double max=options.get(0).getH2();
+        int num=0;
+        for (int i = 0; i < options.size(); i++) {
+            double level = options.get(i).getH2();
+            if(level>=max){
+                max=level;
+                num=i;
+            }
+        }
+        return num;
+    }
+    /**
+     * 返回最低水位的序号
+     */
+    public int MinLevel(List<Option> options){
+        double max=options.get(0).getH2();
+        int num=0;
+        for (int i = 0; i < options.size(); i++) {
+            double level = options.get(i).getH2();
+            if(level<=max){
+                max=level;
+                num=i;
+            }
+        }
+        return num;
+    }
+    /**
+     * 计算目标函数
+     */
+    public double Value(List<Option> options){
+        double delta;
+        double over;
+        double value;
+        int min = MinLevel(options);
+        int max = MaxLevel(options);
 
+        delta=options.get(max).getH2()-options.get(min).getH2();
+        over=Math.max(0,options.get(max).getH2()-LimitLevel);
+        value=delta+10*over;
 
+        return value;
+    }
 
-
-
+    /**
+     * 设定入库流量
+     */
+    public void setQ_Input2(List<Option> op_lzz){
+        Q_Input = new ArrayList<>();
+        for (int i = 0; i < op_lzz.size(); i++) {
+            double qIn = Q_Interval.get(i)+op_lzz.get(i).getQOut();
+            Q_Input.add(BigDecimal.valueOf(qIn).setScale(2, RoundingMode.HALF_UP).doubleValue());
+        }
+    }
 
 }

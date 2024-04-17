@@ -15,6 +15,7 @@ import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 
 import java.io.IOException;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 
@@ -29,14 +30,6 @@ import static com.cj.model.func.modular.FloodPredict.utils.Tools.ObjectToXlsx;
 
 public class TouTunHe {
 
-    /**
-     * 主方法
-     * @param forecastParam 前端给的参数
-     * @return Flood表的临时路径
-     * @throws IOException
-     * @throws ParseException
-     * @throws InvalidFormatException
-     */
     public static TemporaryXlsx getFloodList(ForecastInputParamNew forecastParam)
             throws IOException, ParseException, InvalidFormatException {
 
@@ -92,16 +85,20 @@ public class TouTunHe {
     }
 
     /**
+     * A3表数据修改
      * 添加历史模拟时的历史降水数据
      * 根据站点名称获得相应的List<List<PredictInputData>> 数据
      * @param paramNew
      * @return 三个站点的日尺度历史径流，小时尺度雨量和日尺度雨量
      */
     public static  Map<String,List<List<PredictInputData>>> getOneStationDataList(ForecastInputParamNew paramNew)
-            throws ParseException {
+            throws ParseException, IOException {
         Map<String,List<List<PredictInputData>>> threeResults = new HashMap<>();
-        List<List<PredictInputData>> threeDataConversions = new ArrayList<>();
-        threeDataConversions = DataUtils.lzzDataConversion(paramNew);//对输入数据进行处理
+        //从数据库中获取数据
+//        List<List<PredictInputData>> lzzDataConversions = DataUtils.lzzDataConversion(paramNew);//获取楼庄子和3号桥的日均流量
+//        List<PredictInputData> LZZ = lzzDataConversions.get(1);//从数据库中获取的
+
+        List<PredictInputData> flowData = paramNew.getInflowRunoffs();//从A3表获取楼庄子和3号桥的日均流量
         List<PredictInputData> RAT = getRAndT(paramNew);//获得相应的温度和降水
         List<List<PredictInputData>> integration = new ArrayList<>();
         if (paramNew.getModelType()==3)//场次洪水
@@ -113,17 +110,51 @@ public class TouTunHe {
         List<List<PredictInputData>> QJResult = new ArrayList<>();
         List<List<PredictInputData>> LZZResult = new ArrayList<>();
         //三号桥历史径流日尺度
-        List<PredictInputData> THQ = threeDataConversions.get(0);
-        THQ = addRAndT(THQ, RAT);
-        THQResult.add(THQ);
-        if (paramNew.getModelType()==3){
-            THQResult.add(integration.get(0));
-            THQResult.add(integration.get(1));
+        List<PredictInputData> LZZ = new ArrayList<>();//从A3中获取的
+        List<PredictInputData> QJ = new ArrayList<>();//从A3中获取的
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date dataDate = sdf.parse("2024-01-01 00:00:00");
+        if (paramNew.getPredictionTime().before(dataDate)){
+            Object[][] lzzData = ExcelTool.readExcel("D:\\头屯河历史数据1.xlsx","楼庄子日");
+            Object[][] tthData = ExcelTool.readExcel("D:\\头屯河历史数据1.xlsx","楼头区间日");
+            Date startTime = paramNew.getDataStartTime();
+            Date endTime = paramNew.getPredictionTime();
+            for (int i = 0; i < lzzData.length; i++) {
+                PredictInputData predictInputData = new PredictInputData();
+                if (((Date) lzzData[i][0]).before(endTime)&&((Date) lzzData[i][0]).after(startTime)){
+                    predictInputData.setLocation("楼庄子");
+                    predictInputData.setDates(((Date) lzzData[i][0]));
+                    predictInputData.setFlow((double)lzzData[i][1]);
+                    predictInputData.setTemperature((double)lzzData[i][2]);
+                    LZZ.add(predictInputData);
+                }
+            }
+            for (int i = 0; i < tthData.length; i++) {
+                PredictInputData predictInputData = new PredictInputData();
+                if (((Date) tthData[i][0]).before(endTime)&&((Date) tthData[i][0]).after(startTime)){
+                    predictInputData.setLocation("楼头区间");
+                    predictInputData.setDates(((Date) tthData[i][0]));
+                    predictInputData.setFlow((double)tthData[i][1]);
+                    predictInputData.setTemperature((double)tthData[i][2]);
+                    QJ.add(predictInputData);
+                }
+            }
         }
-        threeResults.put("3号桥",THQResult);
+        else {//本地文件未能记录该数据，从A3表中读取
+            for (int i = 0; i < flowData.size(); i++) {
+                if (flowData.get(i).getLocation().equals("楼庄子")){
+                    if (flowData.get(i).getFlow()!=null){
+                        LZZ.add(flowData.get(i));
+                    }
+                }else {
+                    if (flowData.get(i).getFlow()!=null){
+                        QJ.add(flowData.get(i));
+                    }
+                }
+            }
+        }
 
         //楼庄子历史径流日尺度
-        List<PredictInputData> LZZ = threeDataConversions.get(1);
         LZZ = addRAndT(LZZ, RAT);
         LZZResult.add(LZZ);
         if (paramNew.getModelType()==3){
@@ -131,9 +162,10 @@ public class TouTunHe {
             LZZResult.add(integration.get(1));
         }
         threeResults.put("楼庄子",LZZResult);
+        threeResults.put("3号桥",LZZResult);
 
         //头屯河日径流
-        List<PredictInputData> QJ = DataUtils.irrigatedDataConversion(paramNew.getIrrigatedHydrologyParam()).get(0);
+//        List<PredictInputData> QJ = DataUtils.irrigatedDataConversion(paramNew.getIrrigatedHydrologyParam()).get(0);//从数据库中获取的
         QJ = addRAndT(QJ, RAT);
         QJResult.add(QJ);
         if (paramNew.getModelType()==3)

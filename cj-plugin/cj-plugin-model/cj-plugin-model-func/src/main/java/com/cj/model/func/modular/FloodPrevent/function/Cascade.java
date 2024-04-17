@@ -1,6 +1,5 @@
 package com.cj.model.func.modular.FloodPrevent.function;
 
-import com.alibaba.fastjson.JSONObject;
 import com.cj.model.func.modular.FloodPrevent.bean.req.ReqFloodPrevent;
 import com.cj.model.func.modular.FloodPrevent.bean.res.ResOption;
 import com.cj.model.func.modular.FloodPrevent.entity.Option;
@@ -10,17 +9,17 @@ import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Cascade {
 
-    private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+public class Cascade{
 
     public static List<ResOption> calculator(ReqFloodPrevent reqFloodPrevent) throws Exception {
         ModelOfLZZ modelOfLZZ = new ModelOfLZZ(reqFloodPrevent);
@@ -30,7 +29,7 @@ public class Cascade {
         List<Option> LZZ_op1=modelOfLZZ.Calculate_S1();
         //头屯河常规调度
         modelOfTTH.setQ_Input2(LZZ_op1);
-        List<Option> TTH_op1=modelOfTTH.Calculate_S2();
+        List<Option> TTH_op1=modelOfTTH.Calculate_S1();
         //两库常规调度结果保存
         File tempFile1 = File.createTempFile("option1",".xlsx");
         String path1= tempFile1.getAbsolutePath();
@@ -40,20 +39,12 @@ public class Cascade {
         Write(path1,option1);
 
 
-        //两库常规调度时段末水位
-        double endH_lzz = LZZ_op1.get(LZZ_op1.size()-1).getH2();
-        modelOfLZZ.SetEndH(endH_lzz);
-        double endH_tth = TTH_op1.get(TTH_op1.size()-1).getH2();
-        modelOfTTH.SetEndH(endH_tth);
-
-
-
-        //楼庄子最小拦蓄调度
-        List<Option> LZZ_op2=modelOfLZZ.MinLevel(option1,"楼庄子");
-        //头屯河最小拦蓄调度
+        //楼庄子灵活调度
+        List<Option> LZZ_op2=modelOfLZZ.Calculate_S2();
+        //头屯河灵活调度
         modelOfTTH.setQ_Input2(LZZ_op2);
-        List<Option> TTH_op2=modelOfTTH.MinLevel(option1,"头屯河");
-        //两库最小拦蓄调度结果保存
+        List<Option> TTH_op2=modelOfTTH.Calculate_S2();
+        //两库灵活调度结果保存
         File tempFile2 = File.createTempFile("option2",".xlsx");
         String path2= tempFile2.getAbsolutePath();
         List<Option> option2 = new ArrayList<>();
@@ -62,12 +53,13 @@ public class Cascade {
         Write(path2,option2);
 
 
-        //楼庄子最大削峰调度
-        List<Option> LZZ_op3=modelOfLZZ.MinDischarge(option1,"楼庄子");
-        //头屯河最大削峰调度
+
+        //楼庄子预泄调度
+        List<Option> LZZ_op3=modelOfLZZ.Calculate_S3();
+        //头屯河预泄调度
         modelOfTTH.setQ_Input2(LZZ_op3);
-        List<Option> TTH_op3=modelOfTTH.MinDischarge(option1,"头屯河");
-        //两库最大削峰调度结果保存
+        List<Option> TTH_op3=modelOfTTH.Calculate_S3();
+        //两库预泄调度结果保存
         File tempFile3 = File.createTempFile("option3",".xlsx");
         String path3= tempFile3.getAbsolutePath();
         List<Option> option3 = new ArrayList<>();
@@ -75,10 +67,9 @@ public class Cascade {
         option3.addAll(TTH_op3);
         Write(path3,option3);
 
-
-
         //返回结果路径及文件名称
         List<ResOption> result = new ArrayList<>();
+
         ResOption resOption1 = new ResOption();
         resOption1.setPath(path1);
         resOption1.setName(reqFloodPrevent.getProgrammeName()+"-常规调度");
@@ -86,20 +77,19 @@ public class Cascade {
 
         ResOption resOption2 = new ResOption();
         resOption2.setPath(path2);
-        resOption2.setName(reqFloodPrevent.getProgrammeName()+"-最小拦蓄");
+        resOption2.setName(reqFloodPrevent.getProgrammeName()+"-灵活调度");
         result.add(resOption2);
 
         ResOption resOption3 = new ResOption();
         resOption3.setPath(path3);
-        resOption3.setName(reqFloodPrevent.getProgrammeName()+"-最大削峰");
+        resOption3.setName(reqFloodPrevent.getProgrammeName()+"-预泄调度");
         result.add(resOption3);
 
         return result;
     }
 
-
-
-    public static void Write(String path,List<Option> options) throws Exception {
+    public static void Write(String path,List<Option> options) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         XSSFWorkbook workbook = new XSSFWorkbook();
         XSSFSheet sheet = workbook.createSheet();
         XSSFRow row0 = sheet.createRow(0);
@@ -122,7 +112,7 @@ public class Cascade {
             Option line = options.get(i);
             XSSFRow row = sheet.createRow(i+1);
 
-            double Q_in = BigDecimal.valueOf(line.getQIn()).setScale(3,RoundingMode.HALF_UP).doubleValue();
+            double Q_in = BigDecimal.valueOf(line.getQIn()).setScale(3, RoundingMode.HALF_UP).doubleValue();
             double H1=BigDecimal.valueOf(line.getH1()).setScale(2,RoundingMode.HALF_UP).doubleValue();
             double H2=BigDecimal.valueOf(line.getH2()).setScale(2,RoundingMode.HALF_UP).doubleValue();
             double Q_out=BigDecimal.valueOf(line.getQOut()).setScale(3,RoundingMode.HALF_UP).doubleValue();
@@ -158,29 +148,27 @@ public class Cascade {
         }catch (IOException e) {
             e.printStackTrace();
         }
-
-
-
-
-
-
-
     }
-    public static double[] getPercentage_lzz(double V){
 
-        double[] result = new double[2];
-        result[0]=100*Math.max(0,(V-6534.4))/724.93;
-        result[1]=100*Math.max(0,(V-6534.4))/839.59;
-        result[0]=BigDecimal.valueOf(result[0]).setScale(2, RoundingMode.HALF_UP).doubleValue();
-        result[1]=BigDecimal.valueOf(result[1]).setScale(2, RoundingMode.HALF_UP).doubleValue();
-        return result;
-    }
-    public static double[] getPercentage_tth(double V){
-        double[] result = new double[2];
-        result[0]=100*Math.max(0,(V-1297.03))/223.816;
-        result[1]=100*Math.max(0,(V-1297.03))/541.681;
-        result[0]=BigDecimal.valueOf(result[0]).setScale(2, RoundingMode.HALF_UP).doubleValue();
-        result[1]=BigDecimal.valueOf(result[1]).setScale(2, RoundingMode.HALF_UP).doubleValue();
-        return result;
-    }
+
+
+
+
+
+
+
+
+
+//    public static List<ResOption> calculator(ReqFloodPrevent reqFloodPrevent) throws ExecutionException, InterruptedException {
+//        Calculate a = new Calculate();
+//        a.setReqFloodPrevent(reqFloodPrevent);
+//        FutureTask<List<ResOption>> futureTask = new FutureTask<>(a);
+//
+//        Thread t = new Thread(futureTask);
+//        t.start();
+//
+//        List<ResOption> result = futureTask.get();
+//
+//        return result;
+//    }
 }

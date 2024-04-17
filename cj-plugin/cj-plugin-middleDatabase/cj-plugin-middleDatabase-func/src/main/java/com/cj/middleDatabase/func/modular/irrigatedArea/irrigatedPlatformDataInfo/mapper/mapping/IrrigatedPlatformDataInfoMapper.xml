@@ -10,7 +10,7 @@
         <foreach item="item" collection="id" open="(" separator="," close=")">
             #{item}
         </foreach>
-        AND TO_CHAR(MONITOR_TIME,'YYYY-MM-DD') = #{time} ORDER BY MONITOR_TIME DESC limit #{num}
+        AND RECORD_TIME = #{time} ORDER BY MONITOR_TIME DESC limit #{num}
     </select>
 
     <select id="getRealTimeRainfall" resultType="com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.entity.IrrigatedPlatformDataInfo">

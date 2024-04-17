@@ -150,14 +150,14 @@ public class IrrigatedPlatformDataInfoServiceImpl extends ServiceImpl<IrrigatedP
     }
 
     @Override
-    public List<IrrigatedPlatformDataInfo> getRealTimeWaterLevel(String station) {
+    public List<IrrigatedPlatformDataInfo> getRealTimeWaterLevel(String station,String time) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         List<IrrigatedPlatformDataInfo> nothing = new ArrayList<>();
         IrrigatedPlatformTree one = irrigatedPlatformTreeService.lambdaQuery().eq(IrrigatedPlatformTree::getName, station).one();
         List<IrrigatedPlatformTree> list = irrigatedPlatformTreeService.lambdaQuery().eq(IrrigatedPlatformTree::getParentId, one.getId()).list();
         List<String> ids = new ArrayList<>();
         list.forEach(t->ids.add(t.getId()));
-        List<IrrigatedPlatformDataInfo> realTimeWaterLevel = this.baseMapper.getRealTimeWaterLevel(sdf.format(new Date()), ids,list.size());
+        List<IrrigatedPlatformDataInfo> realTimeWaterLevel = this.baseMapper.getRealTimeWaterLevel(time, ids,list.size());
         if(null != realTimeWaterLevel && realTimeWaterLevel.size()>0){
             return realTimeWaterLevel;
         }else {

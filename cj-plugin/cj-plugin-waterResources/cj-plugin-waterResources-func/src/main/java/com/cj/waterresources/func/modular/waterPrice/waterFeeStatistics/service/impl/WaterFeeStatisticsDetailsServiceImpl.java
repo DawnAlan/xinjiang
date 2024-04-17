@@ -3656,7 +3656,7 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
     }
 
     @Override
-    public RestResponse selectTotalForIndex(String stationName) {
+    public RestResponse selectTotalForIndex(String stationName,String time) {
         List<SelectTotalForIndexRes> resList = new ArrayList<>();
         String mk = (String) redisUtil.get("trendsTableParam:list");
         if(StringUtils.isEmpty(mk)){
@@ -3666,9 +3666,10 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
         List<TrendsTableParam> trendsTableParamListTemp = JSONObject.parseArray(mk, TrendsTableParam.class);
         List<TrendsTableParam> trendsTableParamList = trendsTableParamListTemp.stream().filter(t -> t.getUseType() == 2 && t.getUseStation().equals(stationName)&& t.getPId().equals("0") && !t.getParamName().equals("合计")).collect(Collectors.toList());
         List<TrendsTableParam> trendsTableParamAllList = trendsTableParamListTemp.stream().filter(t -> t.getUseType() == 2 && t.getUseStation().equals(stationName)).collect(Collectors.toList());
-        Integer year = LocalDateTime.now().getYear();
-        Integer month = LocalDateTime.now().getMonth().getValue();
-        Integer day = LocalDateTime.now().getDayOfMonth();
+        String[] split = time.split("-");
+        Integer year = Integer.valueOf(split[0]);
+        Integer month =Integer.valueOf(split[1]);
+        Integer day = Integer.valueOf(split[2]);
         String tenDays = determineTenDays(day);
         List<String> paramIds = trendsTableParamList.stream().map(TrendsTableParam::getId).collect(Collectors.toList());
         List<TrendsTableParamVo> resultParamVoList = new ArrayList<>();

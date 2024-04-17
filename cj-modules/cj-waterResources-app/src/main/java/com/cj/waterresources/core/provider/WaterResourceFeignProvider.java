@@ -110,28 +110,28 @@ public class WaterResourceFeignProvider implements WaterResourceFeign {
     }
 
     @Override
-    public String getRealTimeWaterSituationOfTheReservoir(String reservoir) {
-        return waterResourceApiProvider.getRealTimeWaterSituationOfTheReservoir(reservoir);
+    public String getRealTimeWaterSituationOfTheReservoir(String reservoir,String time) {
+        return waterResourceApiProvider.getRealTimeWaterSituationOfTheReservoir(reservoir,time);
     }
 
     @Override
-    public String getRealTimeWaterLevel(String station) {
-        return waterResourceApiProvider.getRealTimeWaterLevel(station);
+    public String getRealTimeWaterLevel(String station,String time) {
+        return waterResourceApiProvider.getRealTimeWaterLevel(station,time);
     }
 
     @Override
-    public String getWaterSupplyStatistics(String station) {
-        return waterResourceApiProvider.getWaterSupplyStatistics(station);
+    public String getWaterSupplyStatistics(String time) {
+        return waterResourceApiProvider.getWaterSupplyStatistics(time);
     }
 
     @Override
-    public String getWaterFeeStatistics() {
-        return waterResourceApiProvider.getWaterFeeStatistics();
+    public String getWaterFeeStatistics(String time) {
+        return waterResourceApiProvider.getWaterFeeStatistics(time);
     }
 
     @Override
-    public String getTodayInspectionStatistics() {
-        return waterResourceApiProvider.getTodayInspectionStatistics();
+    public String getTodayInspectionStatistics(String time) {
+        return waterResourceApiProvider.getTodayInspectionStatistics(time);
     }
 
     @Override

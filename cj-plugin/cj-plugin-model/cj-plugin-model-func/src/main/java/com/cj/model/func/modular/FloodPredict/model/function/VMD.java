@@ -1,11 +1,8 @@
 package com.cj.model.func.modular.FloodPredict.model.function;
 
-import com.cj.model.func.modular.FloodPredict.utils.ExcelTool;
 import org.apache.commons.math3.complex.Complex;
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.jtransforms.fft.DoubleFFT_1D;
 
-import java.io.IOException;
 import java.util.Arrays;
 /**
  *

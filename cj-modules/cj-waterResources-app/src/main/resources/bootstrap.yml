@@ -21,3 +21,6 @@ minio:
 does-not-exist: 日期,合计,配水比例,实收
 waterResourcePrice: 0.25
 dayUseWaterPlanChoseTime: 18
+inspection:
+  path: http://222.82.208.100:17999
+  #path: http://10.65.8.168:10188/app

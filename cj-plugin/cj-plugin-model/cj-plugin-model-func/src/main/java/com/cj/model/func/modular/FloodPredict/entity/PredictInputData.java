@@ -14,5 +14,5 @@ public class PredictInputData {
 
     private Double rainfall;//降雨
 
-    private String RainStation;//雨量站
+    private String location;//站点位置
 }
