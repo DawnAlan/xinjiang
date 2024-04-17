@@ -12,26 +12,26 @@ public class Elman implements NeuralNetwork {
 
 	private int[] layernum;// 神经网络各层节点数
 
-	private static double LEARN_RATE; // 学习率.
-	private static int TRAINING_REPS;
+	private double LEARN_RATE; // 学习率.
+	private int TRAINING_REPS;
 
 	private double[][][] layer_weight;// 各层节点权重
 
 	// TODO 检验期的修改
-//    private static double forecastInput[] ;
+//    private double forecastInput[] ;
 
-	private static double hidden[][];
-	private static double hidden2[][];
-	private static double target[][];
-	private static double actual[][];
-	private static double actual2[][];
-	private static double context[];
+	private double hidden[][];
+	private double hidden2[][];
+	private double target[][];
+	private double actual[][];
+	private double actual2[][];
+	private double context[];
 
 	// Unit errors.
-	private static double erro[][];
-	private static double errh[][];
+	private double erro[][];
+	private double errh[][];
 
-	static double epsilon; // 误差精度
+	double epsilon; // 误差精度
 
 	public Elman(double[][] input, int[] Layernum, double lEARN_RATE, int tRAINING_REPS, double Epsilon) {
 		this.LEARN_RATE = lEARN_RATE;

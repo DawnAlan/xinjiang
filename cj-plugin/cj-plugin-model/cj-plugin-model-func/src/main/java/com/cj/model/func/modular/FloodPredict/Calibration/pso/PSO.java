@@ -42,7 +42,8 @@ public class PSO {
      */
     public PSOResult Execute(int swarmCount, int max_iter) {
         Particle[] swarm = domain.RandomSwarm(swarmCount);
-        DomainInfo globalBest = Domain.FindBest(swarm);
+
+        DomainInfo globalBest = domain.FindBest(swarm);
 
         for (int t = 0; t < max_iter; ++t) {
             double w = getW(t, max_iter);
@@ -70,7 +71,7 @@ public class PSO {
                 particle.Current.distance =  domain.TargetError(x);
                 particle.UpdateHistoryBest();
             }
-            globalBest = Domain.FindBest(swarm);
+            globalBest = domain.FindBest(swarm);
         }
 
         return new PSOResult(globalBest.position, globalBest.distance);

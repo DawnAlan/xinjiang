@@ -12,10 +12,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import static com.cj.model.func.modular.FloodPredict.utils.TimeUtils.getSpecificDate;
+
 
 
 public class SnowMeltModel {
+    TimeUtils timeUtils = new TimeUtils();
 
     /**
      * 融雪模型训练
@@ -128,7 +129,7 @@ public class SnowMeltModel {
 
         //预报期时间、流量赋值
         Date startDate = param.getPreStartTime();
-        Date[][] dates = TimeUtils.getSelectDateList(startDate, preNumber, 1, 0);
+        Date[][] dates = timeUtils.getSelectDateList(startDate, preNumber, 1, 0);
 
         //预报赋值
         Object[][] predict = new Object[preNumber + 1][2];
@@ -219,7 +220,7 @@ public class SnowMeltModel {
     public Object[][] magnification(Object[][] data){
         int l;
         for (int i = 0; i < data.length; i++) {
-            l = getSpecificDate((Date) data[i][0]).get("月");
+            l = timeUtils.getSpecificDate((Date) data[i][0]).get("月");
             data[i][1] = setQjMagnification(l);
         }
         return data;
@@ -231,7 +232,7 @@ public class SnowMeltModel {
      * @param month
      * @return
      */
-    public static Double setQjMagnification(int month){
+    public Double setQjMagnification(int month){
         Double result = 0.0;
         switch (month){
             case 1:{

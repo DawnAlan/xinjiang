@@ -1,7 +1,9 @@
 package com.cj.model.func.modular.FloodPredict.model.test;
 
 import com.cj.model.func.modular.FloodPredict.entity.PredictInputData;
+import com.cj.model.func.modular.FloodPredict.utils.DataUtils;
 import com.cj.model.func.modular.FloodPredict.utils.ExcelTool;
+import com.cj.model.func.modular.FloodPredict.utils.TimeUtils;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 
 import java.io.IOException;
@@ -16,7 +18,9 @@ import static com.cj.model.func.modular.FloodPredict.utils.TimeUtils.*;
 import static com.cj.model.func.modular.FloodPredict.utils.Tools.AddObject;
 
 public class FlowProcessing {
-    public static void main(String[] args) throws ParseException, IOException, InvalidFormatException {
+    TimeUtils timeUtils = new TimeUtils();
+    DataUtils dataUtils = new DataUtils();
+    public void main(String[] args) throws ParseException, IOException, InvalidFormatException {
 
 //        int year = 2012;
 //        List<Object[][]> resultList = new ArrayList<>();
@@ -36,7 +40,7 @@ public class FlowProcessing {
             inputData1.setFlow((Double) input[i][1]);
             inputData.add(inputData1);
         }
-        List<PredictInputData> resultList = ChangeDate(inputData,"月");
+        List<PredictInputData> resultList = timeUtils.ChangeDate(inputData,"月");
         Object[][] result = new Object[resultList.size()][2];
         for (int i = 0; i < result.length; i++) {
             result[i][0]=resultList.get(i).getDates();
@@ -46,17 +50,17 @@ public class FlowProcessing {
     }
 
 
-    public static Object[][] getDays(Object[][] input,int year) throws ParseException {
+    public  Object[][] getDays(Object[][] input,int year) throws ParseException {
         SimpleDateFormat sFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Date startTime = sFormat.parse(year+"-01-01 00:00:00");
         Date endTime = sFormat.parse(year+"-12-31 00:00:00");
-        int l = duration(startTime,endTime,"日");
+        int l = timeUtils.duration(startTime,endTime,"日");
         Object[][] result = new Object[l][2];
         for (int i = 0; i < l; i++) {
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(startTime);
-            int month = getSpecificDate(startTime).get("月");
-            int day = getSpecificDate(startTime).get("日");
+            int month = timeUtils.getSpecificDate(startTime).get("月");
+            int day = timeUtils.getSpecificDate(startTime).get("日");
             result[i][0]=startTime;
             if (day<=10){
                 result[i][1]=input[day][month];

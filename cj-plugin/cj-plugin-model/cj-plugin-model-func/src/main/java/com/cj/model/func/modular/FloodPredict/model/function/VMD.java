@@ -46,7 +46,7 @@ public class VMD {
 //            ExcelTool.writeObjectExcel("D:\\14年前数据.xlsx","Sheet2",result);
 //            System.out.println(a);
 //    }
-    public static double[][] vmd (double[] signal, int K) {
+    public double[][] vmd (double[] signal, int K) {
         //初始参数一般不做修改，如果分解拟合度较差，可以选择缩小alpha值
         int alpha = 10;
         double tau = 0;
@@ -375,7 +375,7 @@ public class VMD {
     }
 
     // 定义一个用于实现 FFT 移位的方法
-    private static Complex[] fftShift(Complex[] input) {
+    private Complex[] fftShift(Complex[] input) {
         int n = input.length;
         int k = (n + 1) / 2;
         Complex[] output = new Complex[n];
@@ -384,7 +384,7 @@ public class VMD {
         return output;
     }
     // 对数组进行循环移位操作
-    public static Complex[] ifftshift(Complex[] array) {
+    public Complex[] ifftshift(Complex[] array) {
         int n = array.length;
         int shift = (n + 1) / 2;
         Complex[] shifted = new Complex[n];
@@ -393,14 +393,14 @@ public class VMD {
 
         return shifted;
     }
-    private static int computeNextPowerOfTwo(int n) {
+    private int computeNextPowerOfTwo(int n) {
         int power = 1;
         while (power < n) {
             power *= 2;
         }
         return power;
     }
-    private static Complex[] fft (double[] in){
+    private Complex[] fft (double[] in){
         DoubleFFT_1D fft = new DoubleFFT_1D(in.length);
         double[] out = new double[2 * in.length];
         // 将输入数组复制到输出数组的前 n 个元素中
@@ -417,7 +417,7 @@ public class VMD {
         }
         return fftResult;
     }
-    private static Complex[] refft (Complex[] in){
+    private Complex[] refft (Complex[] in){
 
         DoubleFFT_1D fftn = new DoubleFFT_1D(in.length);
         double [] ifftResult_double=new double[2* in.length];
@@ -434,7 +434,7 @@ public class VMD {
         }
         return  ifftResult;
     }
-    public static double[][] matrixMultiplication(double[][] matrixA, double[][] matrixB) {
+    public double[][] matrixMultiplication(double[][] matrixA, double[][] matrixB) {
         int rowsA = matrixA.length;
         int colsA = matrixA[0].length;
         int colsB = matrixB[0].length;
@@ -450,7 +450,7 @@ public class VMD {
         }
         return result;
     }
-    public static Complex[][] complexMatrixMultiplication(Complex[][] matrix1, Complex[][] matrix2) {
+    public Complex[][] complexMatrixMultiplication(Complex[][] matrix1, Complex[][] matrix2) {
         int rows1 = matrix1.length;
         int cols1 = matrix1[0].length;
         int cols2 = matrix2[0].length;

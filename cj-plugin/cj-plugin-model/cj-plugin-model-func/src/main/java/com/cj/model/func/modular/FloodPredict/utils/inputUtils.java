@@ -4,6 +4,7 @@ import com.cj.model.func.modular.FloodPredict.entity.ForecastInputParam;
 import com.cj.model.func.modular.FloodPredict.entity.ForecastInputParamNew;
 import com.cj.model.func.modular.FloodPredict.entity.PredictInputData;
 import com.cj.model.func.modular.FloodPredict.entity.TemporaryXlsx;
+import com.cj.model.func.modular.FloodPredict.model.TouTunHe;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 
 import java.io.IOException;
@@ -11,11 +12,11 @@ import java.text.ParseException;
 import java.util.*;
 
 
-import static com.cj.model.func.modular.FloodPredict.model.TouTunHe.getOneStationDataList;
-import static com.cj.model.func.modular.FloodPredict.utils.TimeUtils.*;
+
 
 public class InputUtils {
 
+    TimeUtils timeUtils = new TimeUtils();
 
     /**
      * 判断需要从数据库获取哪些数据
@@ -23,11 +24,11 @@ public class InputUtils {
      * @return
      * @throws IOException
      */
-    public static List<Date> judgeDate (Date predictTime, int n) throws IOException {
+    public List<Date> judgeDate (Date predictTime, int n) throws IOException {
         List<Date> result = new ArrayList<>();
         Object[][] historyInput = ExcelTool.readExcel("D:\\头屯河历史数据1.xlsx", "3号桥日");
         Date historyTime = (Date) historyInput[historyInput.length-1][0];
-        int number = duration(historyTime,predictTime,"日");
+        int number = timeUtils.duration(historyTime,predictTime,"日");
         if (number > 20){
             result.add(historyTime);
         }else {
@@ -45,7 +46,7 @@ public class InputUtils {
         return result;
     }
 
-    public static ForecastInputParam paramConvert(ForecastInputParamNew forecastParam){
+    public ForecastInputParam paramConvert(ForecastInputParamNew forecastParam){
         ForecastInputParam param = new ForecastInputParam();
         //模型类型
         param.setIsRealtime(true);
@@ -88,7 +89,7 @@ public class InputUtils {
      * @throws ParseException
      * @throws InvalidFormatException
      */
-    public static void intervalData(ForecastInputParamNew paramForecastInputParamNew)
+    public void intervalData(ForecastInputParamNew paramForecastInputParamNew)
             throws IOException, ParseException, InvalidFormatException {
         Object[][] historyInput = ExcelTool.readExcel("D:\\头屯河历史数据1.xlsx", "3号桥日");
         Date historyTime = (Date) historyInput[historyInput.length-1][0];
@@ -101,7 +102,8 @@ public class InputUtils {
         if (predictTime.after(historyTime))
         {
             //数据不足，补充新时段数据
-            Map<String,List<List<PredictInputData>>> stationsData = getOneStationDataList(paramForecastInputParamNew);
+            TouTunHe touTunHe = new TouTunHe();
+            Map<String,List<List<PredictInputData>>> stationsData = touTunHe.getOneStationDataList(paramForecastInputParamNew);
             List<List<PredictInputData>> Three = stationsData.get("3号桥");
             List<List<PredictInputData>> Lou = stationsData.get("楼庄子");
             List<List<PredictInputData>> Qu = stationsData.get("楼头区间");
@@ -118,7 +120,7 @@ public class InputUtils {
      * @throws IOException
      * @throws InvalidFormatException
      */
-    public static void dataObject(List<List<PredictInputData>> input,String station)
+    public void dataObject(List<List<PredictInputData>> input,String station)
             throws IOException, InvalidFormatException {
         differentInput(input,station,"日");
         differentInput(input,station,"旬");
@@ -133,14 +135,14 @@ public class InputUtils {
      * @throws IOException
      * @throws InvalidFormatException
      */
-    public static void differentInput (List<List<PredictInputData>> input,String station,String period)
+    public void differentInput (List<List<PredictInputData>> input,String station,String period)
             throws IOException, InvalidFormatException {
         String Option = station + period;
         Object[][] historyInput = ExcelTool.readExcel("D:\\头屯河历史数据1.xlsx", Option);
         //数据驱动模型输入
         List<PredictInputData> machineData = input.get(0);
         //数据驱动模型数据输入尺度转换
-        List<PredictInputData> re = ChangeDate(machineData, period);
+        List<PredictInputData> re = timeUtils.ChangeDate(machineData, period);
         Object[][] machineInputData = new Object[re.size()][4];
         for (int i = 0; i < re.size(); i++) {
             machineInputData[i][0] = re.get(i).getDates();
@@ -161,20 +163,20 @@ public class InputUtils {
      * @param preliminaryData
      * @return
      */
-    public static Object[][] dataIntegration(Object[][] historyInput ,Object[][] preliminaryData, ForecastInputParam param){
+    public Object[][] dataIntegration(Object[][] historyInput ,Object[][] preliminaryData, ForecastInputParam param){
 
         if (preliminaryData.length==0){
             Date dateEnd = (Date) historyInput[historyInput.length-1][0];
             Date dateStart = param.getPreStartTime();
             int duration = 0;
             if (param.getPeriod().equals("日")){//计算预报时间和历史记录时间的相差天数
-                duration =duration(dateStart,dateEnd,"日") + 1;
+                duration =timeUtils.duration(dateStart,dateEnd,"日") + 1;
             }
             if (param.getPeriod().equals("旬")){
-                duration =xunDuration(dateStart,dateEnd) + 1;
+                duration =timeUtils.xunDuration(dateStart,dateEnd) + 1;
             }
             if (param.getPeriod().equals("月")){
-                duration =duration(dateStart,dateEnd,"月") + 1;
+                duration =timeUtils.duration(dateStart,dateEnd,"月") + 1;
             }
             if (duration < 0){//输入数据在历史中没有
                 duration = 0;
@@ -187,13 +189,13 @@ public class InputUtils {
         Date dateStart = (Date) preliminaryData[0][0];
         int duration = 0;
         if (param.getPeriod().equals("日")){//计算预报时间和历史记录时间的相差天数
-            duration =duration(dateStart,dateEnd,"日");
+            duration =timeUtils.duration(dateStart,dateEnd,"日");
         }
         if (param.getPeriod().equals("旬")){
-            duration =xunDuration(dateStart,dateEnd);
+            duration =timeUtils.xunDuration(dateStart,dateEnd);
         }
         if (param.getPeriod().equals("月")){
-            duration =duration(dateStart,dateEnd,"月");
+            duration =timeUtils.duration(dateStart,dateEnd,"月");
         }
         if (duration < 0){//输入数据在历史中没有
             duration = 0;
@@ -209,7 +211,7 @@ public class InputUtils {
      * @param dayDuration 之间的差距
      * @return
      */
-    public static Object[][] integration(Object[][] historyInput,Object[][] preliminaryData, int dayDuration){
+    public Object[][] integration(Object[][] historyInput,Object[][] preliminaryData, int dayDuration){
         int hisLength = historyInput.length;
         int preLength = preliminaryData.length;
         int width = historyInput[0].length;
@@ -252,7 +254,7 @@ public class InputUtils {
      * @param param
      * @return
      */
-    public static ForecastInputParam getMachineParams(ForecastInputParam param){
+    public ForecastInputParam getMachineParams(ForecastInputParam param){
         String location = param.getLocation();
         String period = param.getPeriod();
         if(location.equals("3号桥")){//楼庄子与3号桥运用参数一致

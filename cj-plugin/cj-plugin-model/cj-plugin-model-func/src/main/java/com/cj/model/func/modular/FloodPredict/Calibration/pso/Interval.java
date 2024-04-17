@@ -111,7 +111,7 @@ public class Interval {
      * @param lower the lower bound to validate
      * @param upper the upper bound to validate
      */
-    private static void  CheckBoundsValid(double lower, double upper) {
+    private void  CheckBoundsValid(double lower, double upper) {
         Preconditions.checkArgument(lower <= upper, "lower bound is greater than the upper bound");
     }
 }

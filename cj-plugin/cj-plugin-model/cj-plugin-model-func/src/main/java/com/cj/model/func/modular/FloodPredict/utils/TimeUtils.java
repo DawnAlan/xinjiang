@@ -16,7 +16,7 @@ import java.util.*;
  */
 public class TimeUtils {
 	//基础方法
-	public static DateIndex getDateIndex(Date date){
+	public DateIndex getDateIndex(Date date){
 
 		DateIndex dateIndex = new DateIndex();
 		SimpleDateFormat sdf0 = new SimpleDateFormat("yyyy");
@@ -38,7 +38,7 @@ public class TimeUtils {
 		}
 		return dateIndex;
 	}
-	public static Date getDateByIndexTenDay(DateIndex index){
+	public Date getDateByIndexTenDay(DateIndex index){
 		Calendar calendar = Calendar.getInstance();
 		int month = (index.getIndex() - 1) / 3;
 		int day = ((index.getIndex() + 2) % 3) * 10 + 1;
@@ -58,16 +58,16 @@ public class TimeUtils {
 	 * @param hours
 	 * @return
 	 */
-	public static Date[][] getDateList(Date startDate,int len, int day, int hours){
+	public Date[][] getDateList(Date startDate,int len, int day, int hours){
 		Date[][] dates = new Date[len][1];
 		Calendar now = Calendar.getInstance();
 		now.setTime(startDate);
 		startDate = now.getTime();
 		if(day == 10){
-			DateIndex index = TimeUtils.getDateIndex(startDate);
+			DateIndex index = getDateIndex(startDate);
 			DateIndex outputIndex = index;
 			for(int i = 0; i < len; i++){
-				dates[i][0] = TimeUtils.getDateByIndexTenDay(outputIndex);
+				dates[i][0] = getDateByIndexTenDay(outputIndex);
 				outputIndex = outputIndex.getNextDateIndex(36);
 			}
 
@@ -95,18 +95,18 @@ public class TimeUtils {
 	 * @param hours
 	 * @return
 	 */
-	public static Date[][] getSelectDateList(Date startDate, int len, int day, int hours){
+	public Date[][] getSelectDateList(Date startDate, int len, int day, int hours){
 		Date[][] dates = new Date[len][1];
 		Calendar now = Calendar.getInstance();
 		now.setTime(startDate);
 		startDate = now.getTime();
 		if(day == 10){
 			int month = getSpecificDate(startDate).get("月");
-			DateIndex outputIndex = TimeUtils.getDateIndex(startDate);
+			DateIndex outputIndex = getDateIndex(startDate);
 			if (month<=9&&month>=5){
 				int judgeIndex = 0;
 				for(int i = 0; i < len; i++){
-					dates[i][0] = TimeUtils.getDateByIndexTenDay(outputIndex);
+					dates[i][0] = getDateByIndexTenDay(outputIndex);
 					int year = getSpecificDate(dates[i][0]).get("年");
 					outputIndex = outputIndex.getNextDateIndex(36);
 					judgeIndex =outputIndex.getIndex();
@@ -119,7 +119,7 @@ public class TimeUtils {
 			if (month<=4||month>=10){
 				int judgeIndex = 0;
 				for(int i = 0; i < len; i++){
-					dates[i][0] = TimeUtils.getDateByIndexTenDay(outputIndex);
+					dates[i][0] = getDateByIndexTenDay(outputIndex);
 					outputIndex = outputIndex.getNextDateIndex(36);
 					judgeIndex =outputIndex.getIndex();
 					if (judgeIndex==13){
@@ -174,7 +174,7 @@ public class TimeUtils {
 	 * @param len 预见期的长度
 	 * @return 除去基础数据日期的所有日期
 	 */
-	public static Date[][] getMonthDateList(Date startDate,int len) {
+	public Date[][] getMonthDateList(Date startDate,int len) {
 		Date[][] dates = new Date[len][1];
 		int day = getSpecificDate(startDate).get("日");
 		Calendar cal = Calendar.getInstance();
@@ -194,7 +194,7 @@ public class TimeUtils {
 	 * 返回日期相差的数量（分：小时，日，月）
 	 * 后面减去前面
 	 */
-	public static int duration(Date dateStart,Date dateEnd,String period){
+	public int duration(Date dateStart,Date dateEnd,String period){
 		int result = 0;
 		if (period.equals("年")){
 			LocalDate localDate1 = dateStart.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
@@ -227,7 +227,7 @@ public class TimeUtils {
 	}
 
 	//判断每一旬的天数
-	public static int getDays(Object[][] predict, ForecastInputParam param, int i) {//存在问题
+	public int getDays(Object[][] predict, ForecastInputParam param, int i) {//存在问题
 		Date date1= (Date) predict[i * param.getPeriodStepSize()][0];
 		LocalDate date = date1.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 
@@ -251,7 +251,7 @@ public class TimeUtils {
 	/**
 	 * 返回旬相差的数量
 	 */
-	public static int xunDuration(Date dateStart,Date dateEnd){
+	public int xunDuration(Date dateStart,Date dateEnd){
 		int result = 0;
 		int year = duration(dateStart,dateEnd,"年");
 		int month = duration(dateStart,dateEnd,"月");
@@ -267,7 +267,7 @@ public class TimeUtils {
 	 * @param period
 	 * @return 如果两个日期在规定尺度上相等，则返回true
 	 */
-	public static Boolean DateCompare(Date date1,Date date2,String period){
+	public Boolean DateCompare(Date date1,Date date2,String period){
 		Boolean result = false;
 		int year = getSpecificDate(date1).get("年");
 		int month = getSpecificDate(date1).get("月");
@@ -306,7 +306,7 @@ public class TimeUtils {
 	 * @param inputTime 需要寻找的时间
 	 * @return
 	 */
-	public static int findNearestTime(List<Date> timeSeries, Date inputTime) {
+	public int findNearestTime(List<Date> timeSeries, Date inputTime) {
 		Collections.sort(timeSeries);
 
 		int index = Collections.binarySearch(timeSeries, inputTime);
@@ -349,7 +349,7 @@ public class TimeUtils {
 	 * @param period
 	 * @return
 	 */
-	public static List<PredictInputData> ChangeDate(List<PredictInputData> data, String period){
+	public List<PredictInputData> ChangeDate(List<PredictInputData> data, String period){
 		List<PredictInputData>  result = new ArrayList<>();
 
 		double flowSum = 0;
@@ -471,7 +471,7 @@ public class TimeUtils {
 	 * @param date
 	 * @return
 	 */
-	public static Map<String, Integer> getSpecificDate(Date date){
+	public Map<String, Integer> getSpecificDate(Date date){
 		Map<String, Integer> result = new HashMap<>();
 		int year;
 		int month;

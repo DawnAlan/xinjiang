@@ -28,12 +28,14 @@ public class DNN_ADAM implements NeuralNetwork {
 	private double max_rate;
 	private double min_rate;
 	private int batchNum;
-	private static double rou1 = 0.9;
-	private static double rou2 = 0.999;
-	private static double e = 0.001;
-	private static double delta = Math.pow(10, -8);
+	private double rou1 = 0.9;
+	private double rou2 = 0.999;
+	private double e = 0.001;
+	private double delta = Math.pow(10, -8);
 	private double[][][] s;
 	private double[][][] r;
+
+	Params params =new Params();
 
 	@Override
 	public String getName() {
@@ -185,7 +187,7 @@ public class DNN_ADAM implements NeuralNetwork {
 	 */
 	public void train(double[][] input, double[][] realOutput, int ITER) {	
 		MiniBatch mb = separateByBatch(batchNum, input, realOutput);
-		for (int t = 0; t < Params.trainNum; t++) {
+		for (int t = 0; t < params.trainNum; t++) {
 			initParams();
 			double error = 0;	
 			rate = max_rate - (max_rate - min_rate) * t / ITER;
@@ -206,7 +208,7 @@ public class DNN_ADAM implements NeuralNetwork {
 			}
 			error = error / mb.getNum();
 //			log.info(t + " " +error );
-			if(error < Params.ERROR){
+			if(error < params.ERROR){
 				break;
 			}
 		}

@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -20,6 +21,9 @@ public class IncomingWaterForecastViewDto implements Serializable {
 
     @ApiModelProperty(value = "洪量组成")
     private List<IncomingWaterForecastKVDto> qComposition;
+
+    @ApiModelProperty("超警时刻")
+    private List<Date> overAlarmProcess;
 
     @ApiModelProperty(value = "洪峰流量")
     private Double peakFlood;

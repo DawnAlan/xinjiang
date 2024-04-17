@@ -10,7 +10,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import static com.cj.model.func.modular.FloodPredict.utils.TimeUtils.*;
 
 /**
  * 数据处理方法
@@ -19,18 +18,18 @@ import static com.cj.model.func.modular.FloodPredict.utils.TimeUtils.*;
  *
  */
 public class DataUtils {
-
+	TimeUtils timeUtils = new TimeUtils();
 	private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-	static int beforeHours = 10;
+	int beforeHours = 10;
 
 	/**
 	 * 从数据库导入的数据进行处理，包括对三号桥、楼庄子进库站异常流量的处理，上游雨量站温度空值的处理
 	 */
-	public static ForecastInputParamNew emptyProcessing (ForecastInputParamNew result){
+	public ForecastInputParamNew emptyProcessing (ForecastInputParamNew result){
 		//输入数据的转化
 		Date predictionTime = result.getPredictionTime();
 		Date nowDate = new Date();
-		int duration = duration(predictionTime,nowDate,"日");
+		int duration = timeUtils.duration(predictionTime,nowDate,"日");
 		LzzHydrologyParam lzzHydrologyParam = result.getLzzHydrologyParam();
 		/**
 		 * 水位站数据的前期处理
@@ -63,7 +62,7 @@ public class DataUtils {
 			String bridgeNumber = parts[0];
 			long numericValue= Long.parseLong(parts[1]);
 			Date date = new Date(numericValue); // 根据时间戳创建日期对象
-			int month = getSpecificDate(date).get("月");
+			int month = timeUtils.getSpecificDate(date).get("月");
 			if (parts.length > 1 && bridgeNumber.length() > 1){
 				if(month<=6||month>=9){
 					if (station.getFlow() != null && station.getFlow() <= 100){
@@ -104,7 +103,7 @@ public class DataUtils {
 			String bridgeNumber = parts[0];
 			long numericValue= Long.parseLong(parts[1]);
 			Date date = new Date(numericValue); // 根据时间戳创建日期对象
-			int month = getSpecificDate(date).get("月");
+			int month = timeUtils.getSpecificDate(date).get("月");
 			if (parts.length > 1 &&bridgeNumber.length() > 1){
 				if(month<=6||month>=9){
 					if (station.getFlow() != null && station.getFlow() <= 100){
@@ -180,21 +179,21 @@ public class DataUtils {
 	 * @param input
 	 * @return
 	 */
-	public static List<PredictInputData> preRainHourToDay(List<RainFallDto> input) throws ParseException {
+	public List<PredictInputData> preRainHourToDay(List<RainFallDto> input) throws ParseException {
 		List<PredictInputData> result = new ArrayList<>();
 		double rainfallSum =0.0;
 		int rainfallNum=0;
 		for (int i = 0; i < input.size(); i++) {
 			Date date = sdf.parse(input.get(i).getDate()); // 小时尺度时间
-			int hour = getSpecificDate(date).get("小时");
-			int day = getSpecificDate(date).get("日");
+			int hour = timeUtils.getSpecificDate(date).get("小时");
+			int day = timeUtils.getSpecificDate(date).get("日");
 			int hourBefore = 0;
 			String station1 = input.get(0).getArea();
 			int day1 = day;
 			if(i!=0){
 				Date date1 = sdf.parse(input.get(i-1).getDate());
-				hourBefore = getSpecificDate(date1).get("小时");
-				day1 = getSpecificDate(date1).get("日");
+				hourBefore = timeUtils.getSpecificDate(date1).get("小时");
+				day1 = timeUtils.getSpecificDate(date1).get("日");
 				station1= input.get(i-1).getArea();
 			}
 			String station = input.get(i).getArea();
@@ -224,7 +223,7 @@ public class DataUtils {
 	 *雨量信息，包括了前n小时落地雨和后期预报雨量
 	 * @return
 	 */
-	public static List<PredictInputData> getHoursRain(ForecastInputParamNew param, List<PredictInputData> input) throws ParseException {
+	public List<PredictInputData> getHoursRain(ForecastInputParamNew param, List<PredictInputData> input) throws ParseException {
 		List<PredictInputData> result = new ArrayList<>();
 		PredictInputData data = new PredictInputData();
 
@@ -246,7 +245,7 @@ public class DataUtils {
 			for (int j = 0; j < n; j++) {
 				for (int i = 0; i < rainPre.size(); i++) {
 					Date date =sdf.parse(rainPre.get(i).getDate());
-					Boolean dateCompare = DateCompare(dateStart,date,"小时");
+					Boolean dateCompare = timeUtils.DateCompare(dateStart,date,"小时");
 					if (dateCompare && station.equals(rainPre.get(i).getArea()))//日期相等并且地点相等才能赋值
 					{
 						data.setLocation(input.get(0).getLocation());
@@ -270,16 +269,16 @@ public class DataUtils {
 			for (PredictInputData predictInputData : input) {
 				dateList.add(predictInputData.getDates());
 			}
-			int d = findNearestTime(dateList,dateStart);
+			int d = timeUtils.findNearestTime(dateList,dateStart);
 			Date dateFind = input.get(d).getDates();
 
-			int end_inputEnd = duration(dataEnd,input.get(input.size()-1).getDates(),"小时");
+			int end_inputEnd = timeUtils.duration(dataEnd,input.get(input.size()-1).getDates(),"小时");
 			if (end_inputEnd > 0)//预报结束时间在数据库中有，也就是全部读取历史数据
 			{
 				//此时的dateFind是历史数据中与开始预报时间最接近的
 				for (int i = 0; i < n; i++) {
 					for (int j = 0; d + j < input.size() && j < n; j++) {
-						Boolean dateCompare = DateCompare(dateStart,input.get(d+j).getDates(),"小时");
+						Boolean dateCompare = timeUtils.DateCompare(dateStart,input.get(d+j).getDates(),"小时");
 						if (dateCompare){
 							data=input.get(d+j);
 							break;
@@ -294,7 +293,7 @@ public class DataUtils {
 				}
 			}else //预报结束时间在数据库中没有，也就是需要读取预报雨量
 			{
-				int start_inputEnd = duration(dateStart,input.get(input.size()-1).getDates(),"小时");
+				int start_inputEnd = timeUtils.duration(dateStart,input.get(input.size()-1).getDates(),"小时");
 				int length = param.getRainFallDtos().size();
 				rainPre =param.getRainFallDtos();
 				station = input.get(0).getLocation();
@@ -305,7 +304,7 @@ public class DataUtils {
 						{
 							for (int j = 0; j < length; j++) {
 								Date date =sdf.parse(rainPre.get(j).getDate());
-								Boolean dateCompare = DateCompare(dateStart,date,"小时");
+								Boolean dateCompare = timeUtils.DateCompare(dateStart,date,"小时");
 								if (rainPre.get(0).getArea().equals("面雨量")){
 									if (dateCompare)//日期相等
 									{
@@ -345,7 +344,7 @@ public class DataUtils {
 					for (int i = 0; i < start_inputEnd; i++) //从落地雨开始给其赋值到数据库末尾
 					{
 						for (int j = 0; d + j < input.size() && j < n; j++) {
-							Boolean dateCompare = DateCompare(dateStart,input.get(d+j).getDates(),"小时");
+							Boolean dateCompare = timeUtils.DateCompare(dateStart,input.get(d+j).getDates(),"小时");
 							if (dateCompare){
 								data=input.get(d+j);
 								break;
@@ -359,13 +358,13 @@ public class DataUtils {
 						result.add(data);
 					}
 					//此时的dataStart==数据库末尾的时间
-					int inputEnd_dateEnd = duration(dateStart,dataEnd,"小时");//数据库末尾到预报结束时间的距离
+					int inputEnd_dateEnd = timeUtils.duration(dateStart,dataEnd,"小时");//数据库末尾到预报结束时间的距离
 					for (int i = 0; i < inputEnd_dateEnd; i++) {
 						if (length>0)
 						{
 							for (int j = 0; j < length; j++) {
 								Date date =sdf.parse(rainPre.get(j).getDate());
-								Boolean dateCompare = DateCompare(dateStart,date,"小时");
+								Boolean dateCompare = timeUtils.DateCompare(dateStart,date,"小时");
 								if (rainPre.get(0).getArea().equals("面雨量")){
 									if (dateCompare)//日期相等
 									{
@@ -413,7 +412,7 @@ public class DataUtils {
 	 * @param input
 	 * @return
 	 */
-	public static List<PredictInputData> getTwentyDaysRain(ForecastInputParamNew param, List<PredictInputData> input) throws ParseException {
+	public List<PredictInputData> getTwentyDaysRain(ForecastInputParamNew param, List<PredictInputData> input) throws ParseException {
 		List<PredictInputData> result = new ArrayList<>();
 		Date dateStart = param.getPredictionTime();
 		PredictInputData data = new PredictInputData();
@@ -426,13 +425,13 @@ public class DataUtils {
 		calendar.add(Calendar.DAY_OF_MONTH, -20);
 		Date dateStart_20 = calendar.getTime();//找到前二十天
 		Date inputDateEnd = input.get(input.size()-1).getDates();//数据库中最新时间
-		int d = findNearestTime(dateList,dateStart_20);//找到最贴近的时间
-		int start_End =duration(dateStart,inputDateEnd,"日");
+		int d = timeUtils.findNearestTime(dateList,dateStart_20);//找到最贴近的时间
+		int start_End = timeUtils.duration(dateStart,inputDateEnd,"日");
 		if (start_End > 0)//预报时间在数据库内全为历史值
 		{
 			for (int i = 0; i < 20; i++) {
 				for (int j = 0; d + j < input.size() && j < 20; j++) {
-					Boolean dateCompare = DateCompare(dateStart_20,input.get(d+j).getDates(),"日");
+					Boolean dateCompare = timeUtils.DateCompare(dateStart_20,input.get(d+j).getDates(),"日");
 					if (dateCompare){
 						data=input.get(d+j);
 						break;
@@ -448,7 +447,7 @@ public class DataUtils {
 		}else //预报开始时间在数据库外，又可以分为前二十天都不在数据库或者不都在数据库
 		{	List<RainFallDto> rainFallDtoList = param.getRainFallDtos();
 			List<PredictInputData> preRainDay =preRainHourToDay(rainFallDtoList);
-			int start_20_End = duration(dateStart_20,inputDateEnd,"日");
+			int start_20_End = timeUtils.duration(dateStart_20,inputDateEnd,"日");
 			if (start_20_End < 0)//全部为预报值
 			{
 				for (int i = 0; i < 20; i++) {
@@ -456,7 +455,7 @@ public class DataUtils {
 					{
 						for (PredictInputData predictInputData : preRainDay) {
 							Date date = predictInputData.getDates();
-							Boolean dateCompare = DateCompare(dateStart_20, date, "日");
+							Boolean dateCompare = timeUtils.DateCompare(dateStart_20, date, "日");
 							if (dateCompare && predictInputData.getLocation().equals(input.get(0).getLocation()))//日期和站点都相等才能赋值
 							{
 								data = predictInputData;
@@ -476,10 +475,10 @@ public class DataUtils {
 				}
 			}else //二十天一部分历史，一部分预报
 			{
-				int start_20_inputEnd = duration(dateStart_20,inputDateEnd,"日");
+				int start_20_inputEnd = timeUtils.duration(dateStart_20,inputDateEnd,"日");
 				for (int i = 0; i < start_20_inputEnd; i++) {
 					for (int j = 0; d + j < input.size() && j < 20; j++) {
-						Boolean dateCompare = DateCompare(dateStart_20,input.get(d+j).getDates(),"日");
+						Boolean dateCompare = timeUtils.DateCompare(dateStart_20,input.get(d+j).getDates(),"日");
 						if (dateCompare){
 							data=input.get(d+j);
 							break;
@@ -492,12 +491,12 @@ public class DataUtils {
 					dateStart_20 = calendar.getTime();
 					result.add(data);
 				}
-				int inputEnd_Start = duration(inputDateEnd,dateStart,"日");
+				int inputEnd_Start = timeUtils.duration(inputDateEnd,dateStart,"日");
 				for (int i = 0; i < inputEnd_Start; i++) {
 					if (!preRainDay.isEmpty()){
 						for (PredictInputData predictInputData : preRainDay) {
 							Date date = predictInputData.getDates();
-							Boolean dateCompare = DateCompare(dateStart_20, date, "日");
+							Boolean dateCompare = timeUtils.DateCompare(dateStart_20, date, "日");
 							if (dateCompare && predictInputData.getLocation().equals(input.get(0).getLocation()))//日期相等才能赋值
 							{
 								data = predictInputData;
@@ -526,7 +525,7 @@ public class DataUtils {
 	 * @return surfaceData
 	 * 该流域的面雨量
 	 */
-	public static List<PredictInputData> pointToSurface(List<PredictInputData> pointData, String period,String location){
+	public List<PredictInputData> pointToSurface(List<PredictInputData> pointData, String period,String location){
 		List<PredictInputData> result=new ArrayList<>();
 		if (pointData.get(0).getLocation().equals("面雨量")&&period.equals("小时"))//预报小时尺度转为面雨量
 		{
@@ -534,7 +533,7 @@ public class DataUtils {
 			result.add(pointData.get(0));
 			for (int i = 1; i < pointData.size(); i++) {//把十相同部分的面雨量化简为一个
 				Date time = pointData.get(i).getDates();
-				Boolean dateCompare = DateCompare(start,time,"小时");
+				Boolean dateCompare = timeUtils.DateCompare(start,time,"小时");
 				if (!dateCompare){
 					result.add(pointData.get(i));
 				}else {
@@ -557,7 +556,7 @@ public class DataUtils {
 			//按时间排序，划分为同一时段不同雨量站的List
 			for (int j = 0; j < number; j++) {
 				for (int i = 0; i < pointData.size(); i++) {
-					Boolean dateCompare = DateCompare(pointData.get(j).getDates(),pointData.get(i).getDates(),period);
+					Boolean dateCompare = timeUtils.DateCompare(pointData.get(j).getDates(),pointData.get(i).getDates(),period);
 					if (dateCompare){
 						hourData=pointData.get(i);
 						hourDatalist.add(hourData);
@@ -702,7 +701,7 @@ public class DataUtils {
 	 * result.get(11)萨尔达万雨量站小时尺度站点+时间+降水+温度
 	 * result.get(12)制材厂雨量站小时尺度站点+时间+降水+温度
 	 */
-	public static List<List<PredictInputData>> lzzDataConversion(ForecastInputParamNew entity) {
+	public List<List<PredictInputData>> lzzDataConversion(ForecastInputParamNew entity) {
 		List<List<PredictInputData>> result = new ArrayList<>();
 		Date dateStart = entity.getDataStartTime();
 		Date dateEnd = entity.getPredictionTime();
@@ -769,11 +768,11 @@ public class DataUtils {
 	 * @return 站点名称、日尺度时间、流量
 	 * （选择时间为2023年及以后则返回每一天的值，23年以前之间返回原始数据不做其他处理）
 	 */
-	public static List<PredictInputData> lzzFlowConversion(Date dateStart,Date dateEnd,List<LzzGaugingStation> input) {
+	public List<PredictInputData> lzzFlowConversion(Date dateStart,Date dateEnd,List<LzzGaugingStation> input) {
 		List<PredictInputData> result = new ArrayList<>();
 		double flowSum = 0;
 		int flowNum = 0;
-		int yearEnd = getSpecificDate(dateEnd).get("年");
+		int yearEnd = timeUtils.getSpecificDate(dateEnd).get("年");
 		for (int i = 0; i < input.size(); i++) {
 			String id = input.get(i).getId();
 			// 使用间隔符提取数字部分
@@ -781,9 +780,9 @@ public class DataUtils {
 			String bridgeNumber = parts[0];
 			long numericValue= Long.parseLong(parts[1]);
 			Date date = new Date(numericValue); // 根据时间戳创建日期对象
-			int year = getSpecificDate(date).get("年");
-			int day =getSpecificDate(date).get("日");
-			int hour = getSpecificDate(date).get("小时");
+			int year = timeUtils.getSpecificDate(date).get("年");
+			int day =timeUtils.getSpecificDate(date).get("日");
+			int hour = timeUtils.getSpecificDate(date).get("小时");
 			int hourBefore = 0;
 			int dayBefore = day;
 			if(i!=0){
@@ -792,8 +791,8 @@ public class DataUtils {
 				String[] parts1 = id1.split(":");
 				long numericValue1= Long.parseLong(parts1[1]);
 				Date date1 = new Date(numericValue1);
-				hourBefore = getSpecificDate(date1).get("小时");
-				dayBefore = getSpecificDate(date1).get("日");
+				hourBefore = timeUtils.getSpecificDate(date1).get("小时");
+				dayBefore = timeUtils.getSpecificDate(date1).get("日");
 			}
 			if(((hour-hourBefore)<0)||day!=dayBefore){
 				if (flowNum==0){
@@ -884,12 +883,12 @@ public class DataUtils {
 		List<PredictInputData> resultEnd = new ArrayList<>();
 		if (yearEnd >= 2023){
 			// 计算相差天数并返回
-			int n =duration(dateStart,dateEnd,"日");
+			int n =timeUtils.duration(dateStart,dateEnd,"日");
 			for (int i = 0; i < n; i++) {
 				PredictInputData data = new PredictInputData();
 				for (int j = 0; j < result.size(); j++) {
 					Date date = result.get(j).getDates();
-					Boolean dateCompare = DateCompare(date,dateStart,"日");
+					Boolean dateCompare = timeUtils.DateCompare(date,dateStart,"日");
 					if (dateCompare){
 						data=result.get(j);
 					}else {
@@ -924,12 +923,12 @@ public class DataUtils {
 	 * @param input
 	 * @return
 	 */
-	public static List<PredictInputData> lzzFlowError(List<PredictInputData> input){
+	public List<PredictInputData> lzzFlowError(List<PredictInputData> input){
 		List<PredictInputData> result = new ArrayList<>();
 		for (int i = 0; i < input.size(); i++) {
 			if (input.get(i).getFlow()==0){
 				Date date=input.get(i).getDates();
-				int month = getSpecificDate(date).get("月");
+				int month = timeUtils.getSpecificDate(date).get("月");
 				switch (month){
 					case 1:input.get(i).setFlow(1.29);
 						break;
@@ -959,7 +958,7 @@ public class DataUtils {
 			}
 			//去除枯水月份过大流量
 			Date date=input.get(i).getDates();
-			int month = getSpecificDate(date).get("月");
+			int month = timeUtils.getSpecificDate(date).get("月");
 			if (month<=2||month>=10){
 				if (input.get(i).getFlow()>=10){
 					switch (month){
@@ -1001,7 +1000,7 @@ public class DataUtils {
 	 * @param input
 	 * @return 小时尺度站点名、时间、雨量、温度
 	 */
-	public static List<PredictInputData> lzzRainConversion(List<LzzRainfallStation> input){
+	public List<PredictInputData> lzzRainConversion(List<LzzRainfallStation> input){
 		List<PredictInputData> resultMid = new ArrayList<>();
 		for (int i = 0; i < input.size(); i++) {
 			String id = input.get(i).getId();
@@ -1026,7 +1025,7 @@ public class DataUtils {
 	 * @param input
 	 * @return 站点名称、日尺度时间、降水、温度
 	 */
-	public static List<PredictInputData> lzzRainHourToDay(List<LzzRainfallStation> input){
+	public List<PredictInputData> lzzRainHourToDay(List<LzzRainfallStation> input){
 		List<PredictInputData> result = new ArrayList<>();
 		BigDecimal temperatureSum =BigDecimal.valueOf(0);
 		BigDecimal rainfallSum =BigDecimal.valueOf(0);
@@ -1039,8 +1038,8 @@ public class DataUtils {
 			String bridgeNumber = parts[0];
 			long numericValue= Long.parseLong(parts[1]);
 			Date date = new Date(numericValue); // 根据时间戳创建日期对象
-			int hour = getSpecificDate(date).get("小时");
-			int day = getSpecificDate(date).get("日");
+			int hour = timeUtils.getSpecificDate(date).get("小时");
+			int day = timeUtils.getSpecificDate(date).get("日");
 			int hourBefore = 0;
 			int day1 = day;
 			if(i!=0){
@@ -1049,8 +1048,8 @@ public class DataUtils {
 				String[] parts1 = id1.split(":");
 				long numericValue1= Long.parseLong(parts1[1]);
 				Date date1 = new Date(numericValue1);
-				hourBefore = getSpecificDate(date1).get("小时");
-				day1 = getSpecificDate(date1).get("日");
+				hourBefore = timeUtils.getSpecificDate(date1).get("小时");
+				day1 = timeUtils.getSpecificDate(date1).get("日");
 			}
 			if(((hour-hourBefore)<0||day!=day1)){
 				BigDecimal temperatureY = BigDecimal.valueOf(temperatureSum.doubleValue()/(temperatureNum.doubleValue()));
@@ -1090,80 +1089,80 @@ public class DataUtils {
 	 * @param paramNew
 	 * @return 前期雨量和小时尺度降水
 	 */
-	public static List<List<PredictInputData>> lzzRainIntegration(ForecastInputParamNew paramNew) throws ParseException {
+	public List<List<PredictInputData>> lzzRainIntegration(ForecastInputParamNew paramNew) throws ParseException {
 		List<List<PredictInputData>> result = new ArrayList<>();
 		//雨量站整合
 		List<PredictInputData> RainHour = new ArrayList<>();
 		List<PredictInputData> RainDay = new ArrayList<>();
 		//喀什沟
-		List<List<PredictInputData>> lzzData = DataUtils.lzzDataConversion(paramNew);
+		List<List<PredictInputData>> lzzData = lzzDataConversion(paramNew);
 		List<PredictInputData> KSG = lzzData.get(3);
-		KSG=DataUtils.getHoursRain(paramNew ,KSG);
-		List<PredictInputData> KSGDAY = DataUtils.lzzRainHourToDay(paramNew.getLzzHydrologyParam().getKsgRainfallStation());
-		KSGDAY=DataUtils.getTwentyDaysRain(paramNew,KSGDAY);
+		KSG=getHoursRain(paramNew ,KSG);
+		List<PredictInputData> KSGDAY = lzzRainHourToDay(paramNew.getLzzHydrologyParam().getKsgRainfallStation());
+		KSGDAY=getTwentyDaysRain(paramNew,KSGDAY);
 		RainDay.addAll(KSGDAY);
 		RainHour.addAll(KSG);
 		//黑沟
 		List<PredictInputData> HG = lzzData.get(4);
-		HG=DataUtils.getHoursRain(paramNew,HG);
-		List<PredictInputData> HGDAY = DataUtils.lzzRainHourToDay(paramNew.getLzzHydrologyParam().getHgRainfallStation());
-		HGDAY=DataUtils.getTwentyDaysRain(paramNew,HGDAY);
+		HG=getHoursRain(paramNew,HG);
+		List<PredictInputData> HGDAY = lzzRainHourToDay(paramNew.getLzzHydrologyParam().getHgRainfallStation());
+		HGDAY=getTwentyDaysRain(paramNew,HGDAY);
 		RainDay.addAll(HGDAY);
 		RainHour.addAll(HG);
 		//煤矿沟
 		List<PredictInputData> MKG = lzzData.get(5);
-		MKG=DataUtils.getHoursRain(paramNew,MKG);
-		List<PredictInputData> MKGDAY = DataUtils.lzzRainHourToDay(paramNew.getLzzHydrologyParam().getMkgRainfallStation());
-		MKGDAY=DataUtils.getTwentyDaysRain(paramNew,MKGDAY);
+		MKG=getHoursRain(paramNew,MKG);
+		List<PredictInputData> MKGDAY = lzzRainHourToDay(paramNew.getLzzHydrologyParam().getMkgRainfallStation());
+		MKGDAY=getTwentyDaysRain(paramNew,MKGDAY);
 		RainDay.addAll(MKGDAY);
 		RainHour.addAll(MKG);
 		//无名沟
 		List<PredictInputData> WMG = lzzData.get(6);
-		WMG=DataUtils.getHoursRain(paramNew,WMG);
-		List<PredictInputData> WMGDAY = DataUtils.lzzRainHourToDay(paramNew.getLzzHydrologyParam().getWmgRainfallStation());
-		WMGDAY=DataUtils.getTwentyDaysRain(paramNew,WMGDAY);
+		WMG=getHoursRain(paramNew,WMG);
+		List<PredictInputData> WMGDAY = lzzRainHourToDay(paramNew.getLzzHydrologyParam().getWmgRainfallStation());
+		WMGDAY=getTwentyDaysRain(paramNew,WMGDAY);
 		RainDay.addAll(WMGDAY);
 		RainHour.addAll(WMG);
 		//加普沙
 		List<PredictInputData> JPS = lzzData.get(7);
-		JPS=DataUtils.getHoursRain(paramNew,JPS);
-		List<PredictInputData> JPSDAY = DataUtils.lzzRainHourToDay(paramNew.getLzzHydrologyParam().getJpsRainfallStation());
-		JPSDAY=DataUtils.getTwentyDaysRain(paramNew,JPSDAY);
+		JPS=getHoursRain(paramNew,JPS);
+		List<PredictInputData> JPSDAY = lzzRainHourToDay(paramNew.getLzzHydrologyParam().getJpsRainfallStation());
+		JPSDAY=getTwentyDaysRain(paramNew,JPSDAY);
 		RainDay.addAll(JPSDAY);
 		RainHour.addAll(JPS);
 		//宰尔德
 		List<PredictInputData> ZED = lzzData.get(8);
-		ZED=DataUtils.getHoursRain(paramNew,ZED);
-		List<PredictInputData> ZEDDAY = DataUtils.lzzRainHourToDay(paramNew.getLzzHydrologyParam().getZrdRainfallStation());
-		ZEDDAY=DataUtils.getTwentyDaysRain(paramNew,ZEDDAY);
+		ZED=getHoursRain(paramNew,ZED);
+		List<PredictInputData> ZEDDAY = lzzRainHourToDay(paramNew.getLzzHydrologyParam().getZrdRainfallStation());
+		ZEDDAY=getTwentyDaysRain(paramNew,ZEDDAY);
 		RainDay.addAll(ZEDDAY);
 		RainHour.addAll(ZED);
 		//东南沟
 		List<PredictInputData> DNG = lzzData.get(9);
-		DNG=DataUtils.getHoursRain(paramNew,DNG);
-		List<PredictInputData> DNGDAY = DataUtils.lzzRainHourToDay(paramNew.getLzzHydrologyParam().getDngRainfallStation());
-		DNGDAY=DataUtils.getTwentyDaysRain(paramNew,DNGDAY);
+		DNG=getHoursRain(paramNew,DNG);
+		List<PredictInputData> DNGDAY = lzzRainHourToDay(paramNew.getLzzHydrologyParam().getDngRainfallStation());
+		DNGDAY=getTwentyDaysRain(paramNew,DNGDAY);
 		RainDay.addAll(DNGDAY);
 		RainHour.addAll(DNG);
 		//八一林场
 		List<PredictInputData> BYLC = lzzData.get(10);
-		BYLC=DataUtils.getHoursRain(paramNew,BYLC);
-		List<PredictInputData> BYLCDAY = DataUtils.lzzRainHourToDay(paramNew.getLzzHydrologyParam().getBylcRainfallStation());
-		BYLCDAY=DataUtils.getTwentyDaysRain(paramNew,BYLCDAY);
+		BYLC=getHoursRain(paramNew,BYLC);
+		List<PredictInputData> BYLCDAY = lzzRainHourToDay(paramNew.getLzzHydrologyParam().getBylcRainfallStation());
+		BYLCDAY=getTwentyDaysRain(paramNew,BYLCDAY);
 		RainDay.addAll(BYLCDAY);
 		RainHour.addAll(BYLC);
 		//萨尔达万
 		List<PredictInputData> SEDW = lzzData.get(11);
-		SEDW=DataUtils.getHoursRain(paramNew,SEDW);
-		List<PredictInputData> SEDWDAY = DataUtils.lzzRainHourToDay(paramNew.getLzzHydrologyParam().getSedwRainfallStation());
-		SEDWDAY=DataUtils.getTwentyDaysRain(paramNew,SEDWDAY);
+		SEDW=getHoursRain(paramNew,SEDW);
+		List<PredictInputData> SEDWDAY = lzzRainHourToDay(paramNew.getLzzHydrologyParam().getSedwRainfallStation());
+		SEDWDAY=getTwentyDaysRain(paramNew,SEDWDAY);
 		RainDay.addAll(SEDWDAY);
 		RainHour.addAll(SEDW);
 		//制材厂
 		List<PredictInputData> ZCC = lzzData.get(12);
-		ZCC=DataUtils.getHoursRain(paramNew,ZCC);
-		List<PredictInputData> ZCCDAY = DataUtils.lzzRainHourToDay(paramNew.getLzzHydrologyParam().getZccRainfallStation());
-		ZCCDAY=DataUtils.getTwentyDaysRain(paramNew,ZCCDAY);
+		ZCC=getHoursRain(paramNew,ZCC);
+		List<PredictInputData> ZCCDAY = lzzRainHourToDay(paramNew.getLzzHydrologyParam().getZccRainfallStation());
+		ZCCDAY=getTwentyDaysRain(paramNew,ZCCDAY);
 		RainDay.addAll(ZCCDAY);
 		RainHour.addAll(ZCC);
 		//添加小时尺度雨量和日尺度雨量
@@ -1178,7 +1177,7 @@ public class DataUtils {
 	 * @return
 	 */
 
-	public static List<LzzRainfallStation> lzzTemProcessing(List<LzzRainfallStation> inputData){
+	public List<LzzRainfallStation> lzzTemProcessing(List<LzzRainfallStation> inputData){
 		List<LzzRainfallStation> result = new ArrayList<>();
 		for (int i = 0; i < inputData.size() ; i++) {
 			//去除空值异常
@@ -1222,7 +1221,7 @@ public class DataUtils {
 	 *result.get(2)团结一队小时尺度站点+时间+降雨
 	 *result.get(3)头屯河水库雨量站小时尺度站点+时间+降水
 	 */
-	public static List<List<PredictInputData>> irrigatedDataConversion(IrrigatedHydrologyParam entity){
+	public List<List<PredictInputData>> irrigatedDataConversion(IrrigatedHydrologyParam entity){
 		List<List<PredictInputData>> result = new ArrayList<>();
 		//头屯河入库流量
 		List<IrrigatedPlatformDataInfo> TTHI = entity.getTthInput();
@@ -1248,7 +1247,7 @@ public class DataUtils {
 	 * @param input
 	 * @return 返回日尺度的站点、时间、流量
 	 */
-	public static List<PredictInputData> irrigateFlowConversion(List<IrrigatedPlatformDataInfo> input){
+	public List<PredictInputData> irrigateFlowConversion(List<IrrigatedPlatformDataInfo> input){
 		List<PredictInputData> result = new ArrayList<>();
 		for (int i = 0; i < input.size(); i++) {
 			String id = input.get(i).getId();
@@ -1257,7 +1256,7 @@ public class DataUtils {
 			String bridgeNumber = parts[0];
 			long numericValue= Long.parseLong(parts[1]);
 			Date date = new Date(numericValue); // 根据时间戳创建日期对象
-			int day = getSpecificDate(date).get("日");
+			int day = timeUtils.getSpecificDate(date).get("日");
 			int dayBefore = 0;
 			if(i!=0){
 				String id1 = input.get(i-1).getId();
@@ -1287,7 +1286,7 @@ public class DataUtils {
 	 * @param input
 	 * @return 小时尺度的站点名、时间、雨量
 	 */
-	public static List<PredictInputData> irrigateRainConversion(List<IrrigatedPlatformDataInfo> input){
+	public List<PredictInputData> irrigateRainConversion(List<IrrigatedPlatformDataInfo> input){
 		List<PredictInputData> result = new ArrayList<>();
 		for (int i = 0; i < input.size(); i++) {
 			String id = input.get(i).getId();
@@ -1296,7 +1295,7 @@ public class DataUtils {
 			String bridgeNumber = parts[0];
 			long numericValue= Long.parseLong(parts[1]);
 			Date date = new Date(numericValue); // 根据时间戳创建日期对象
-			int hour = getSpecificDate(date).get("小时");
+			int hour = timeUtils.getSpecificDate(date).get("小时");
 			int hourBefore = 0;
 			if(i!=0){
 				String id1 = input.get(i-1).getId();
@@ -1324,7 +1323,7 @@ public class DataUtils {
 	 * @param input
 	 * @return 雨量站日尺度站点、时间、降水
 	 */
-	public static List<PredictInputData> irrigateRainHourToDay(List<IrrigatedPlatformDataInfo> input){
+	public List<PredictInputData> irrigateRainHourToDay(List<IrrigatedPlatformDataInfo> input){
 		List<PredictInputData> result = new ArrayList<>();
 		double rainfallSum = 0.0;
 		int rainfallNum=0;
@@ -1335,8 +1334,8 @@ public class DataUtils {
 			String bridgeNumber = parts[0];
 			long numericValue= Long.parseLong(parts[1]);
 			Date date = new Date(numericValue); // 根据时间戳创建日期对象
-			int hour = getSpecificDate(date).get("小时");
-			int day = getSpecificDate(date).get("日");
+			int hour = timeUtils.getSpecificDate(date).get("小时");
+			int day = timeUtils.getSpecificDate(date).get("日");
 			int hourBefore = 0;
 			int dayBefore = day;
 			if(i!=0){
@@ -1345,8 +1344,8 @@ public class DataUtils {
 				String[] parts1 = id1.split("-");
 				long numericValue1= Long.parseLong(parts1[1]);
 				Date date1 = new Date(numericValue1);
-				hourBefore = getSpecificDate(date1).get("小时");
-				dayBefore = getSpecificDate(date1).get("日");
+				hourBefore = timeUtils.getSpecificDate(date1).get("小时");
+				dayBefore = timeUtils.getSpecificDate(date1).get("日");
 			}
 			if(((hour-hourBefore)<0)||day!=dayBefore){
 				double rainfallY =rainfallSum;
@@ -1377,32 +1376,32 @@ public class DataUtils {
 	 * @param paramNew
 	 * @return 24小时雨量和20天雨量
 	 */
-	public static List<List<PredictInputData>> irrigateRainIntegration(ForecastInputParamNew paramNew)
+	public List<List<PredictInputData>> irrigateRainIntegration(ForecastInputParamNew paramNew)
 			throws ParseException {
 		List<List<PredictInputData>> result = new ArrayList<>();
 		//雨量站整合
 		List<PredictInputData> RainHour = new ArrayList<>();
 		List<PredictInputData> RainDay = new ArrayList<>();
-		List<List<PredictInputData>> rainStation = DataUtils.irrigatedDataConversion(paramNew.getIrrigatedHydrologyParam());
+		List<List<PredictInputData>> rainStation = irrigatedDataConversion(paramNew.getIrrigatedHydrologyParam());
 		//小渠子
 		List<PredictInputData> XQZ = rainStation.get(1);
-		XQZ=DataUtils.getHoursRain(paramNew,XQZ);
-		List<PredictInputData> XQZDAY = DataUtils.irrigateRainHourToDay(paramNew.getIrrigatedHydrologyParam().getXqzGaugingStation());
-		XQZDAY=DataUtils.getTwentyDaysRain(paramNew,XQZDAY);
+		XQZ=getHoursRain(paramNew,XQZ);
+		List<PredictInputData> XQZDAY = irrigateRainHourToDay(paramNew.getIrrigatedHydrologyParam().getXqzGaugingStation());
+		XQZDAY=getTwentyDaysRain(paramNew,XQZDAY);
 		RainDay.addAll(XQZDAY);
 		RainHour.addAll(XQZ);
 		//团结一队
 		List<PredictInputData> TJYD = rainStation.get(2);
-		TJYD=DataUtils.getHoursRain(paramNew,TJYD);
-		List<PredictInputData> TJYDDAY = DataUtils.irrigateRainHourToDay(paramNew.getIrrigatedHydrologyParam().getTjydGaugingStation());
-		TJYDDAY=DataUtils.getTwentyDaysRain(paramNew,TJYDDAY);
+		TJYD=getHoursRain(paramNew,TJYD);
+		List<PredictInputData> TJYDDAY = irrigateRainHourToDay(paramNew.getIrrigatedHydrologyParam().getTjydGaugingStation());
+		TJYDDAY=getTwentyDaysRain(paramNew,TJYDDAY);
 		RainDay.addAll(TJYDDAY);
 		RainHour.addAll(TJYD);
 		//头屯河水库
 		List<PredictInputData> TTHR = rainStation.get(3);
-		TTHR=DataUtils.getHoursRain(paramNew,TTHR);
-		List<PredictInputData> TTHRDAY = DataUtils.irrigateRainHourToDay(paramNew.getIrrigatedHydrologyParam().getTthGaugingStation());
-		TTHRDAY=DataUtils.getTwentyDaysRain(paramNew,TTHRDAY);
+		TTHR=getHoursRain(paramNew,TTHR);
+		List<PredictInputData> TTHRDAY = irrigateRainHourToDay(paramNew.getIrrigatedHydrologyParam().getTthGaugingStation());
+		TTHRDAY=getTwentyDaysRain(paramNew,TTHRDAY);
 		RainDay.addAll(TTHRDAY);
 		RainHour.addAll(TTHR);
 		//添加小时尺度雨量和日尺度雨量
@@ -1416,7 +1415,7 @@ public class DataUtils {
 	 * @param inputData
 	 * @return
 	 */
-	public static IrrigatedHydrologyParam irrigateStationProcessing(IrrigatedHydrologyParam inputData){
+	public IrrigatedHydrologyParam irrigateStationProcessing(IrrigatedHydrologyParam inputData){
 		IrrigatedHydrologyParam result = new IrrigatedHydrologyParam();
 		List<IrrigatedPlatformDataInfo> XQZ = inputData.getXqzGaugingStation();
 		List<IrrigatedPlatformDataInfo> XQZresult = new ArrayList<>();
@@ -1486,7 +1485,7 @@ public class DataUtils {
 	 * @param month
 	 * @return
 	 */
-	public static Double setNullTemperature(int month){
+	public Double setNullTemperature(int month){
 		Double result = 0.0;
 		switch (month){
 			case 1:{
@@ -1547,10 +1546,10 @@ public class DataUtils {
 	 * @param location
 	 * @return
 	 */
-	public static PredictInputData assignmentNullRAndT(Date date, String location){
+	public PredictInputData assignmentNullRAndT(Date date, String location){
 		PredictInputData result = new PredictInputData();
 		result.setDates(date);
-		Double tem = setNullTemperature(getSpecificDate(date).get("月"));
+		Double tem = setNullTemperature(timeUtils.getSpecificDate(date).get("月"));
 		result.setTemperature(tem);
 		result.setLocation(location);
 		result.setRainfall(0.0);
@@ -1562,38 +1561,38 @@ public class DataUtils {
 	 * @param paramForecastInputParamNew 从数据库中获得的数据
 	 * @return 日尺度温度与降水
 	 */
-	public static List<PredictInputData> getRAndT(ForecastInputParamNew paramForecastInputParamNew) {
+	public List<PredictInputData> getRAndT(ForecastInputParamNew paramForecastInputParamNew) {
 		//雨量站整合
 		List<PredictInputData> RainDay = new ArrayList<>();
 		//喀什沟
-		List<PredictInputData> KSGDAY = DataUtils.lzzRainHourToDay(paramForecastInputParamNew.getLzzHydrologyParam().getKsgRainfallStation());
+		List<PredictInputData> KSGDAY = lzzRainHourToDay(paramForecastInputParamNew.getLzzHydrologyParam().getKsgRainfallStation());
 		RainDay.addAll(KSGDAY);
 		//黑沟
-		List<PredictInputData> HGDAY = DataUtils.lzzRainHourToDay(paramForecastInputParamNew.getLzzHydrologyParam().getHgRainfallStation());
+		List<PredictInputData> HGDAY = lzzRainHourToDay(paramForecastInputParamNew.getLzzHydrologyParam().getHgRainfallStation());
 		RainDay.addAll(HGDAY);
 		//煤矿沟
-		List<PredictInputData> MKGDAY = DataUtils.lzzRainHourToDay(paramForecastInputParamNew.getLzzHydrologyParam().getMkgRainfallStation());
+		List<PredictInputData> MKGDAY = lzzRainHourToDay(paramForecastInputParamNew.getLzzHydrologyParam().getMkgRainfallStation());
 		RainDay.addAll(MKGDAY);
 		//无名沟
-		List<PredictInputData> WMGDAY = DataUtils.lzzRainHourToDay(paramForecastInputParamNew.getLzzHydrologyParam().getWmgRainfallStation());
+		List<PredictInputData> WMGDAY = lzzRainHourToDay(paramForecastInputParamNew.getLzzHydrologyParam().getWmgRainfallStation());
 		RainDay.addAll(WMGDAY);
 		//加普沙
-		List<PredictInputData> JPSDAY = DataUtils.lzzRainHourToDay(paramForecastInputParamNew.getLzzHydrologyParam().getJpsRainfallStation());
+		List<PredictInputData> JPSDAY = lzzRainHourToDay(paramForecastInputParamNew.getLzzHydrologyParam().getJpsRainfallStation());
 		RainDay.addAll(JPSDAY);
 		//宰尔德
-		List<PredictInputData> ZEDDAY = DataUtils.lzzRainHourToDay(paramForecastInputParamNew.getLzzHydrologyParam().getZrdRainfallStation());
+		List<PredictInputData> ZEDDAY = lzzRainHourToDay(paramForecastInputParamNew.getLzzHydrologyParam().getZrdRainfallStation());
 		RainDay.addAll(ZEDDAY);
 		//东南沟
-		List<PredictInputData> DNGDAY = DataUtils.lzzRainHourToDay(paramForecastInputParamNew.getLzzHydrologyParam().getDngRainfallStation());
+		List<PredictInputData> DNGDAY = lzzRainHourToDay(paramForecastInputParamNew.getLzzHydrologyParam().getDngRainfallStation());
 		RainDay.addAll(DNGDAY);
 		//八一林场
-		List<PredictInputData> BYLCDAY = DataUtils.lzzRainHourToDay(paramForecastInputParamNew.getLzzHydrologyParam().getBylcRainfallStation());
+		List<PredictInputData> BYLCDAY = lzzRainHourToDay(paramForecastInputParamNew.getLzzHydrologyParam().getBylcRainfallStation());
 		RainDay.addAll(BYLCDAY);
 		//萨尔达万
-		List<PredictInputData> SEDWDAY = DataUtils.lzzRainHourToDay(paramForecastInputParamNew.getLzzHydrologyParam().getSedwRainfallStation());
+		List<PredictInputData> SEDWDAY = lzzRainHourToDay(paramForecastInputParamNew.getLzzHydrologyParam().getSedwRainfallStation());
 		RainDay.addAll(SEDWDAY);
 		//制材厂
-		List<PredictInputData> ZCCDAY = DataUtils.lzzRainHourToDay(paramForecastInputParamNew.getLzzHydrologyParam().getZccRainfallStation());
+		List<PredictInputData> ZCCDAY = lzzRainHourToDay(paramForecastInputParamNew.getLzzHydrologyParam().getZccRainfallStation());
 		RainDay.addAll(ZCCDAY);
 		//添加日尺度温度与降水
 		List<PredictInputData> RAT = pointToSurface(RainDay,"日","楼庄子");//转换为平均值
@@ -1607,11 +1606,11 @@ public class DataUtils {
 	 * @param RAT
 	 * @return
 	 */
-	public static List<PredictInputData> addRAndT(List<PredictInputData> WaterStation, List<PredictInputData> RAT){
+	public List<PredictInputData> addRAndT(List<PredictInputData> WaterStation, List<PredictInputData> RAT){
 		List<PredictInputData> result = new ArrayList<>();
 		for (int i = 0; i < WaterStation.size(); i++) {
 			for (int j = 0; j < RAT.size(); j++) {
-				Boolean dateCompare = DateCompare(RAT.get(j).getDates(),WaterStation.get(i).getDates(),"日");
+				Boolean dateCompare = timeUtils.DateCompare(RAT.get(j).getDates(),WaterStation.get(i).getDates(),"日");
 				if (dateCompare) {
 					double rain = RAT.get(j).getRainfall();
 					WaterStation.get(i).setRainfall(rain);
@@ -1626,7 +1625,7 @@ public class DataUtils {
 		//为空日期赋值，赋值为0
         for (PredictInputData predictInputData : WaterStation) {
             if (predictInputData.getTemperature() == null) {
-				Double tem = setNullTemperature(getSpecificDate(predictInputData.getDates()).get("月"));
+				Double tem = setNullTemperature(timeUtils.getSpecificDate(predictInputData.getDates()).get("月"));
                 predictInputData.setTemperature(tem);
             }
         }
@@ -1640,7 +1639,7 @@ public class DataUtils {
 	 * @param data
 	 * @return
 	 */
-	public static Object[][] temToEva(Object[][] data){
+	public Object[][] temToEva(Object[][] data){
 		//按温度分配蒸发
 		double[] temperature =new double[data.length];
 		for (int i = 0; i < data.length; i++) {
@@ -1658,7 +1657,7 @@ public class DataUtils {
 		//按月份分配蒸发
 		double evaporation = 0.0;
 		for (int i = 0; i < data.length; i++) {
-			int month = getSpecificDate((Date) data[i][0]).get("月");
+			int month = timeUtils.getSpecificDate((Date) data[i][0]).get("月");
 			switch (month){
 				case 1:evaporation=9.0/(0.2*0.2*3.14)/31/24;
 					break;
@@ -1714,7 +1713,7 @@ public class DataUtils {
 	 * @param
 	 * @return
 	 */
-	public static double[][] inputData_Real(List<double[]> dataList, ForecastInputParam param){
+	public double[][] inputData_Real(List<double[]> dataList, ForecastInputParam param){
 		/**
 		 * 前n旬流量+平均流量
 		 */
@@ -1741,7 +1740,7 @@ public class DataUtils {
 	 * @return
 	 * @throws Exception
 	 */
-	public static double[][] inputData_Train(List<double[]> dataList, ForecastInputParam param, boolean isTest) {
+	public double[][] inputData_Train(List<double[]> dataList, ForecastInputParam param, boolean isTest) {
 
 		int a = dataList.get(0).length;
 		int b = a / 4 * 3;
@@ -1787,7 +1786,7 @@ public class DataUtils {
 	 * @param param
 	 * @return
 	 */
-	public static double[][] inputData_Real_Snow(List<double[]> dataList, ForecastInputParam param){
+	public double[][] inputData_Real_Snow(List<double[]> dataList, ForecastInputParam param){
 		/**
 		 * 前3天流量+前3天温度+前3天降水
 		 */
@@ -1823,7 +1822,7 @@ public class DataUtils {
 	 * @return
 	 * @throws Exception
 	 */
-	public static double[][] inputData_Train_Snow(List<double[]> dataList, ForecastInputParam param, boolean isTest) {
+	public double[][] inputData_Train_Snow(List<double[]> dataList, ForecastInputParam param, boolean isTest) {
 
 		int a = dataList.get(0).length;
 		int b = a / 4 * 3;
@@ -1878,7 +1877,7 @@ public class DataUtils {
 	 * @return result.get(0)丰水期
 	 * result.get(1)枯水期
 	 */
-	public static List<Object[]> getSelectedData(ForecastInputParam param){
+	public List<Object[]> getSelectedData(ForecastInputParam param){
 		List<Object[]> result = new ArrayList<>();
 		Object[] Feng = new Object[2];
 		Object[] Ku = new Object[2];
@@ -1890,28 +1889,28 @@ public class DataUtils {
 		int month = 0;
 		switch (param.getPeriod()) {
 			case "月":
-				date = getMonthDateList(dateStart,number);
+				date = timeUtils.getMonthDateList(dateStart,number);
 				break;
 			case "旬":
-				date = getDateList(dateStart, number, 10, 0);
+				date = timeUtils.getDateList(dateStart, number, 10, 0);
 				break;
 			case "日":
-				date = getDateList(dateStart, number, 1, 0);
+				date = timeUtils.getDateList(dateStart, number, 1, 0);
 				break;
 		}
 		for (int i = 0; i < number; i++) {
-			month=getSpecificDate(date[i][0]).get("月");
+			month=timeUtils.getSpecificDate(date[i][0]).get("月");
 			if (month<=9&&month>=5){
 				fengNumber++;
 			}else {
 				kuNumber++;
 			}
 		}
-		month=getSpecificDate(date[0][0]).get("月");
+		month=timeUtils.getSpecificDate(date[0][0]).get("月");
 		if (month<=9&&month>=5){
 			Feng[0]=date[0];
 			for (int i = 0; i < number; i++) {
-				month=getSpecificDate(date[i][0]).get("月");
+				month=timeUtils.getSpecificDate(date[i][0]).get("月");
 				if (month==10){
 					Ku[0]=date[i];
 					break;
@@ -1920,7 +1919,7 @@ public class DataUtils {
 		}else {
 			Ku[0]=date[0];
 			for (int i = 0; i < number; i++) {
-				month=getSpecificDate(date[i][0]).get("月");
+				month=timeUtils.getSpecificDate(date[i][0]).get("月");
 				if (month==5){
 					Feng[0]=date[i];
 					break;
@@ -1940,14 +1939,14 @@ public class DataUtils {
 	 * @param preStartTime
 	 * @return
 	 */
-	public static Object[][] SelectDate(Object[][] input,Date preStartTime){
+	public Object[][] SelectDate(Object[][] input,Date preStartTime){
 		List<Object[]> KuData =new ArrayList<>();
 		Object[] kudata =new Object[input[0].length];
 		List<Object[]> FengData =new ArrayList<>();
 		Object[] fengdata =new Object[input[0].length];
 		for (int i = 0; i < input.length; i++) {
 			Date time = (Date) input[i][0];
-			int month = getSpecificDate(time).get("月");
+			int month = timeUtils.getSpecificDate(time).get("月");
 			kudata = new Object[input[0].length];
 			fengdata = new Object[input[0].length];
 			if (month<=4 || month>=10)
@@ -1965,7 +1964,7 @@ public class DataUtils {
 			}
 		}
 		Date time2 = preStartTime;
-		int month2 = getSpecificDate(time2).get("月");
+		int month2 = timeUtils.getSpecificDate(time2).get("月");
 		Object[][] longForecastInput;
 		if (month2<=4 || month2>=10){
 			longForecastInput = new Object[KuData.size()][input[0].length];
@@ -1988,7 +1987,7 @@ public class DataUtils {
 	 * @param input 历史径流+温度+降雨
 	 * @return
 	 */
-	public static Object[][] snowMeltDate(Object[][] input,String location){
+	public Object[][] snowMeltDate(Object[][] input,String location){
 		List<Object[]> Data =new ArrayList<>();
 		Object[] data ;
 		int factor = 3;
@@ -2003,7 +2002,7 @@ public class DataUtils {
 		}
 		for (int i = 0; i < snowData.size(); i++) {
 			Date time = (Date) snowData.get(i)[0];
-			int month = getSpecificDate(time).get("月");
+			int month = timeUtils.getSpecificDate(time).get("月");
 			data = new Object[factor];
 			if (location.equals("楼头区间")){
 				if (month>=3 && month<=5){
@@ -2038,12 +2037,12 @@ public class DataUtils {
 	 * @param param
 	 * @return
 	 */
-	public static Object[][] inputProcessing(Object[][] input, ForecastInputParam param){
+	public Object[][] inputProcessing(Object[][] input, ForecastInputParam param){
 		int month = 0;
 		for (int i = 0; i < input.length; i++) {
 			if (param.getLocation().equals("3号桥")||param.getLocation().equals("楼庄子")){
 				Date date = (Date) input[i][0];
-				month = getSpecificDate(date).get("月");
+				month = timeUtils.getSpecificDate(date).get("月");
 				switch (month){
 					case 1:
 						input[i][1]=(1.29-(double) input[i][1])/1.29;
@@ -2086,7 +2085,7 @@ public class DataUtils {
 			else if (param.getLocation().equals("楼头区间")){
 				double proportion = 0.058;
 				Date date = (Date) input[i][0];
-				month = getSpecificDate(date).get("月");
+				month = timeUtils.getSpecificDate(date).get("月");
 				switch (month){
 					case 1:
 						input[i][1]=(1.29*0.116-(double) input[i][1])/1.29*0.116;
@@ -2135,12 +2134,12 @@ public class DataUtils {
 	 * @param input
 	 * @return
 	 */
-	public static Object[][] resultProcessing(Object[][] input,ForecastInputParam param){
+	public Object[][] resultProcessing(Object[][] input,ForecastInputParam param){
 		int month = 0;
 		for (int i = 0; i < input.length; i++) {
 			if (param.getLocation().equals("3号桥")||param.getLocation().equals("楼庄子")){
 				Date date = (Date) input[i][0];
-				month = getSpecificDate(date).get("月");
+				month = timeUtils.getSpecificDate(date).get("月");
 				switch (month){
 					case 1:
 						input[i][1]=(1-(double) input[i][1])*1.29;
@@ -2255,7 +2254,7 @@ public class DataUtils {
 			//各个月份的区间比例0.178571429	0.167701863	0.359649123	0.251428571	0.112087912	0.145833333	0.139564124	0.168034766	0.139506173	0.174358974	0.248	0.172043011
 			else if (param.getLocation().equals("楼头区间")){
 				Date date = (Date) input[i][0];
-				month = getSpecificDate(date).get("月");
+				month = timeUtils.getSpecificDate(date).get("月");
 				double proportion = 0.058;
 				switch (month){
 					case 1:

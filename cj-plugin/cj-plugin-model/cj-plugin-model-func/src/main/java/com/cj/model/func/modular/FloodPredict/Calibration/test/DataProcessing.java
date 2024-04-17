@@ -1,6 +1,7 @@
 package com.cj.model.func.modular.FloodPredict.Calibration.test;
 
 import com.cj.model.func.modular.FloodPredict.utils.ExcelTool;
+import com.cj.model.func.modular.FloodPredict.utils.TimeUtils;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 
 import java.io.IOException;
@@ -11,31 +12,31 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import static com.cj.model.func.modular.FloodPredict.utils.TimeUtils.DateCompare;
-import static com.cj.model.func.modular.FloodPredict.utils.TimeUtils.duration;
 
 
 public class DataProcessing {
+    static TimeUtils timeUtils = new TimeUtils();
 
     public static void main(String[] args) throws IOException, ParseException, InvalidFormatException {
+        DataProcessing dataProcessing = new DataProcessing();
         Object[][] inputObject = ExcelTool.readExcel("D:\\204\\2.头屯河\\资料\\3.场次数据\\楼庄子上游雨量站23年.xlsx","初始数据");
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         String start = "06-01";
         String end = "08-31";
         Date startTime = sdf.parse("2023-"+start+" 00:00:00");
         Date endTime = sdf.parse("2023-"+end+" 00:00:00");
-        int l = duration(startTime,endTime,"小时");
+        int l = timeUtils.duration(startTime,endTime,"小时");
 //        逐小时
-        List<Object[]> BYLC = zhuduandian(inputObject,"八一林场自动雨量站",startTime,endTime).get(0);
-        List<Object[]> DN = zhuduandian(inputObject,"东南沟自动雨量站",startTime,endTime).get(0);
-        List<Object[]> HG = zhuduandian(inputObject,"黑沟自动雨量站",startTime,endTime).get(0);
-        List<Object[]> JPS = zhuduandian(inputObject,"加普沙自动雨量站",startTime,endTime).get(0);
-        List<Object[]> KSG = zhuduandian(inputObject,"喀什沟自动雨量站",startTime,endTime).get(0);
-        List<Object[]> MKG = zhuduandian(inputObject,"煤矿沟自动雨量站",startTime,endTime).get(0);
-        List<Object[]> SEDW = zhuduandian(inputObject,"萨尔达万自动雨量站",startTime,endTime).get(0);
-        List<Object[]> WMG = zhuduandian(inputObject,"无名沟自动雨量站",startTime,endTime).get(0);
-        List<Object[]> ZED = zhuduandian(inputObject,"宰尔德自动雨量站",startTime,endTime).get(0);
-        List<Object[]> ZCC = zhuduandian(inputObject,"制材厂自动雨量站",startTime,endTime).get(0);
+        List<Object[]> BYLC = dataProcessing.zhuduandian(inputObject,"八一林场自动雨量站",startTime,endTime).get(0);
+        List<Object[]> DN = dataProcessing.zhuduandian(inputObject,"东南沟自动雨量站",startTime,endTime).get(0);
+        List<Object[]> HG = dataProcessing.zhuduandian(inputObject,"黑沟自动雨量站",startTime,endTime).get(0);
+        List<Object[]> JPS = dataProcessing.zhuduandian(inputObject,"加普沙自动雨量站",startTime,endTime).get(0);
+        List<Object[]> KSG = dataProcessing.zhuduandian(inputObject,"喀什沟自动雨量站",startTime,endTime).get(0);
+        List<Object[]> MKG = dataProcessing.zhuduandian(inputObject,"煤矿沟自动雨量站",startTime,endTime).get(0);
+        List<Object[]> SEDW = dataProcessing.zhuduandian(inputObject,"萨尔达万自动雨量站",startTime,endTime).get(0);
+        List<Object[]> WMG = dataProcessing.zhuduandian(inputObject,"无名沟自动雨量站",startTime,endTime).get(0);
+        List<Object[]> ZED = dataProcessing.zhuduandian(inputObject,"宰尔德自动雨量站",startTime,endTime).get(0);
+        List<Object[]> ZCC = dataProcessing.zhuduandian(inputObject,"制材厂自动雨量站",startTime,endTime).get(0);
         Object[][] result = new Object[l+1][11];
         result[0][0] = "时间";
         result[0][1] = "八一林场自动雨量站";
@@ -63,16 +64,16 @@ public class DataProcessing {
         }
         ExcelTool.writeObjectExcel("D:\\204\\2.头屯河\\资料\\3.场次数据\\楼庄子上游雨量站23年.xlsx",start+"~"+end+"逐小时整理数据",result);
         //逐日
-        List<Object[]> BYLC1 = zhuduandian(inputObject,"八一林场自动雨量站",startTime,endTime).get(1);
-        List<Object[]> DN1 = zhuduandian(inputObject,"东南沟自动雨量站",startTime,endTime).get(1);
-        List<Object[]> HG1 = zhuduandian(inputObject,"黑沟自动雨量站",startTime,endTime).get(1);
-        List<Object[]> JPS1 = zhuduandian(inputObject,"加普沙自动雨量站",startTime,endTime).get(1);
-        List<Object[]> KSG1 = zhuduandian(inputObject,"喀什沟自动雨量站",startTime,endTime).get(1);
-        List<Object[]> MKG1 = zhuduandian(inputObject,"煤矿沟自动雨量站",startTime,endTime).get(1);
-        List<Object[]> SEDW1 = zhuduandian(inputObject,"萨尔达万自动雨量站",startTime,endTime).get(1);
-        List<Object[]> WMG1 = zhuduandian(inputObject,"无名沟自动雨量站",startTime,endTime).get(1);
-        List<Object[]> ZED1 = zhuduandian(inputObject,"宰尔德自动雨量站",startTime,endTime).get(1);
-        List<Object[]> ZCC1 = zhuduandian(inputObject,"制材厂自动雨量站",startTime,endTime).get(1);
+        List<Object[]> BYLC1 = dataProcessing.zhuduandian(inputObject,"八一林场自动雨量站",startTime,endTime).get(1);
+        List<Object[]> DN1 = dataProcessing.zhuduandian(inputObject,"东南沟自动雨量站",startTime,endTime).get(1);
+        List<Object[]> HG1 = dataProcessing.zhuduandian(inputObject,"黑沟自动雨量站",startTime,endTime).get(1);
+        List<Object[]> JPS1 = dataProcessing.zhuduandian(inputObject,"加普沙自动雨量站",startTime,endTime).get(1);
+        List<Object[]> KSG1 = dataProcessing.zhuduandian(inputObject,"喀什沟自动雨量站",startTime,endTime).get(1);
+        List<Object[]> MKG1 = dataProcessing.zhuduandian(inputObject,"煤矿沟自动雨量站",startTime,endTime).get(1);
+        List<Object[]> SEDW1 = dataProcessing.zhuduandian(inputObject,"萨尔达万自动雨量站",startTime,endTime).get(1);
+        List<Object[]> WMG1 = dataProcessing.zhuduandian(inputObject,"无名沟自动雨量站",startTime,endTime).get(1);
+        List<Object[]> ZED1 = dataProcessing.zhuduandian(inputObject,"宰尔德自动雨量站",startTime,endTime).get(1);
+        List<Object[]> ZCC1 = dataProcessing.zhuduandian(inputObject,"制材厂自动雨量站",startTime,endTime).get(1);
         Object[][] result1 = new Object[BYLC1.size()+1][2];
         result1[0][0] = "时间";
         result1[0][1] = "日面雨量";
@@ -140,7 +141,7 @@ public class DataProcessing {
         ExcelTool.writeObjectExcel("D:\\204\\2.头屯河\\资料\\3.场次数据\\楼庄子上游雨量站23年.xlsx",start+"~"+end+"面雨量整理数据",result2);
     }
 
-    public static List<List<Object[]>> zhuduandian(Object[][] input, String location, Date startTime, Date endTime)  {
+    public List<List<Object[]>> zhuduandian(Object[][] input, String location, Date startTime, Date endTime)  {
         List<List<Object[]>> result = new ArrayList<>();
         List<Object[]> resultHour = new ArrayList<>();
         List<Object[]> resultDay = new ArrayList<>();
@@ -155,7 +156,7 @@ public class DataProcessing {
         result.add(resultDay);
         return result;
     }
-    public static List<Object[]> zhuxiaoshi(List<Object[]> input, Date startTime,Date endTime){
+    public List<Object[]> zhuxiaoshi(List<Object[]> input, Date startTime,Date endTime){
         List<Object[]> inputList = new ArrayList<>();
         for (int i = 0; i < input.size(); i++) {
             Date time = (Date) input.get(i)[0];
@@ -163,7 +164,7 @@ public class DataProcessing {
                 inputList.add(input.get(i));
             }
         }
-        int l = duration(startTime,endTime,"小时");
+        int l = timeUtils.duration(startTime,endTime,"小时");
         List<Object[]> result = new ArrayList<>();
         for (int i = 0; i < l; i++) {
             Calendar cal = Calendar.getInstance();
@@ -189,8 +190,8 @@ public class DataProcessing {
         return result;
     }
 
-    public static List<Object[]> zhuri(List<Object[]> input, Date startTime,Date endTime){
-        int l = duration(startTime,endTime,"日");
+    public List<Object[]> zhuri(List<Object[]> input, Date startTime,Date endTime){
+        int l = timeUtils.duration(startTime,endTime,"日");
         List<Object[]> result = new ArrayList<>();
         Date date = startTime;
         for (int i = 0; i < l; i++) {
@@ -199,7 +200,7 @@ public class DataProcessing {
             cal.setTime(date);
             double sum = 0.0;
             for (int j = 0; j < input.size(); j++) {
-                Boolean judge = DateCompare(date,(Date) input.get(j)[0],"日");
+                Boolean judge = timeUtils.DateCompare(date,(Date) input.get(j)[0],"日");
                 if (judge){
                     sum += (Double)input.get(j)[2];
                 }

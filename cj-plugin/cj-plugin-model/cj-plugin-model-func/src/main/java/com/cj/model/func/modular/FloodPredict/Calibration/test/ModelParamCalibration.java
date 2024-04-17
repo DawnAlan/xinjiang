@@ -2,16 +2,12 @@ package com.cj.model.func.modular.FloodPredict.Calibration.test;
 
 
 import com.cj.model.func.modular.FloodPredict.Calibration.*;
-import com.cj.model.func.modular.FloodPredict.Calibration.pso.Domain;
-import com.cj.model.func.modular.FloodPredict.Calibration.pso.Interval;
-import com.cj.model.func.modular.FloodPredict.Calibration.pso.PSO;
-import com.cj.model.func.modular.FloodPredict.Calibration.pso.PSOResult;
+import com.cj.model.func.modular.FloodPredict.Calibration.pso.*;
 import com.cj.model.func.modular.FloodPredict.utils.ExcelTool;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 
 import java.io.IOException;
 
-import static com.cj.model.func.modular.FloodPredict.Calibration.pso.ParameterValidation.NashSutcliffeEfficiency;
 
 
 /**
@@ -21,13 +17,13 @@ import static com.cj.model.func.modular.FloodPredict.Calibration.pso.ParameterVa
  */
 public class ModelParamCalibration {
     /// 流域面积 单位平方公里
-    static double Area;
+    double Area;
 
     /// 计算初始土壤含水量时，用到的前期天数  >20d
-    static int PreImpactdays;
+    int PreImpactdays;
 
     /// 时段长度 单位（min）2~5min  可以取5min, 实际数据只有h的，以h来做
-    static int PeriodLength;
+    int PeriodLength;
     //预报流量
     static double[] preData;
     //历史流量
@@ -88,7 +84,7 @@ public class ModelParamCalibration {
         }
         ExcelTool.writeObjectExcel("D:\\204\\2.头屯河\\径流预报数据文件\\手动率定结果.xlsx",sheetName,results);
     }
-    public static Object[][]ShanBeiCalibration(Double data,String sheetName) throws IOException {
+    public Object[][]ShanBeiCalibration(Double data,String sheetName) throws IOException {
         Area=data;
         PreImpactdays=20;
         PeriodLength=1;
@@ -110,9 +106,9 @@ public class ModelParamCalibration {
                 //前期径流
                 new Interval(10, 10),
         };
-
+        ModelParamCalibration modelParamCalibration = new ModelParamCalibration();
         // 创建PSO算法的问题域
-        Domain domain = new Domain(regionIntervals, ModelParamCalibration::Evaluate, 1);
+        Domain domain = new Domain(regionIntervals, modelParamCalibration::Evaluate, 1);
 
         // 创建PSO算法实例
         PSO pso = new PSO(domain);
@@ -131,7 +127,8 @@ public class ModelParamCalibration {
     }
 
     // 定义PSO算法目标函数
-    public static double Evaluate(double[] params) {
+    public double Evaluate(double[] params) {
+        ParameterValidation parameterValidation = new ParameterValidation();
         double[] shanbeiParams=new double[12];
 
         shanbeiParams[0]=Area;//流域面积
@@ -161,6 +158,6 @@ public class ModelParamCalibration {
         for (int i = 0; i < shanbeiModel.Q.length-L; i++) {
             preData[i]= shanbeiModel.Q[i+L]+params[9];
         }
-        return NashSutcliffeEfficiency(hisData, preData);
+        return parameterValidation.NashSutcliffeEfficiency(hisData, preData);
     }
 }

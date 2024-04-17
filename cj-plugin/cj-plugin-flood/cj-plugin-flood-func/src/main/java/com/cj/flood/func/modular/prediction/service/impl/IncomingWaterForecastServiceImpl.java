@@ -151,7 +151,7 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                         }
                         forcastInputParamNew.setIsSimulation(req.getIsSimulation());
                         forcastInputParamNew.setRainFallDtos(req.getRainFallDtos());
-                        List<Date> dates = InputUtils.judgeDate(incomingWaterForecast.getPredictionTime(),incomingWaterForecast.getPeriodTimeNum());
+                        List<Date> dates = new InputUtils().judgeDate(incomingWaterForecast.getPredictionTime(),incomingWaterForecast.getPeriodTimeNum());
                         if(dates.isEmpty()){
                             List<PredictInputData> resultListTemp = new ArrayList<>();
                             LocalDateTime now = LocalDateTime.now();
@@ -226,7 +226,7 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
 
                         //调用模型方法生成模型结果，更新到数据库
                         //System.out.println("Hello pool");
-                        TemporaryXlsx floodList = TouTunHe.getFloodList(forcastInputParamNew);
+                        TemporaryXlsx floodList = new TouTunHe().getFloodList(forcastInputParamNew);
                         //生成模型结果文件
                         String fileAddress = floodList.getPath();
                         String[] split = fileAddress.split("\\\\");
@@ -452,7 +452,7 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                         forcastInputParamNew.setLzzHydrologyParam(lzzHydrologyParam);
                         forcastInputParamNew.setIrrigatedHydrologyParam(irrigatedHydrologyParam);
                         //调用模型方法生成模型结果，更新到数据库
-                        TemporaryXlsx floodList = TouTunHe.getFloodList(forcastInputParamNew);
+                        TemporaryXlsx floodList = new TouTunHe().getFloodList(forcastInputParamNew);
                         //生成模型结果文件
                         String fileAddress = floodList.getPath();
                         String[] split = fileAddress.split("\\\\");
@@ -716,6 +716,8 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                 incomingWaterForecastViewDto.setPeakFlood(null);
                 incomingWaterForecastViewDto.setPeakVolume(null);
             }
+            List<Date> overAlarmProcess = threeBridge.stream().filter(t -> t.getWarningTime() == 1).map(Flood::getTime).collect(Collectors.toList());
+            incomingWaterForecastViewDto.setOverAlarmProcess(overAlarmProcess);
             return incomingWaterForecastViewDto;
         }else {
             return null;

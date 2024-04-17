@@ -3,6 +3,7 @@ package com.cj.model.func.modular.FloodPredict.model.function;
 import com.cj.model.func.modular.FloodPredict.entity.ForecastInputParam;
 import com.cj.model.func.modular.FloodPredict.model.entity.ModelSaveEntity;
 import com.cj.model.func.modular.FloodPredict.entity.TemporaryXlsx;
+import com.cj.model.func.modular.FloodPredict.utils.DataUtils;
 import com.cj.model.func.modular.FloodPredict.utils.ExcelTool;
 import com.cj.model.func.modular.FloodPredict.utils.MathUtils;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
@@ -13,10 +14,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import static com.cj.model.func.modular.FloodPredict.utils.DataUtils.inputProcessing;
+
 
 public class MachineModel {
 
+    DataUtils dataUtils = new DataUtils();
     /**
      * 数据驱动模型训练
      * @param modelTrainInput
@@ -39,14 +41,15 @@ public class MachineModel {
 
         Object[][] inputTemp = modelTrainInput;//输入数据，第一列为时间，第二列为历史径流
         Object[][] modelparaTemp = new Object[10][10];//初始化模型参数
-        inputTemp=inputProcessing(inputTemp,param);//获得距平值
+        inputTemp=dataUtils.inputProcessing(inputTemp,param);//获得距平值
         //VMD分解
         double[] vmdInput = new double[inputTemp.length];
         double[][]vmdOutput;
         for (int i = 0; i < inputTemp.length; i++) {
             vmdInput[i] = Double.parseDouble(inputTemp[i][1].toString());
         }
-        vmdOutput=VMD.vmd(vmdInput,K);
+        VMD vmd = new VMD();
+        vmdOutput=vmd.vmd(vmdInput,K);
 
         //输入赋值
         Object[][] de_result =new Object[outputNumber+1][K+1];
@@ -175,7 +178,7 @@ public class MachineModel {
      * @param param
      * @return
      */
-    public static ForecastInputParam paramSet (Object[][] modelTrainInput, ForecastInputParam param) {
+    public  ForecastInputParam paramSet (Object[][] modelTrainInput, ForecastInputParam param) {
         //输入时段数的确定
         String period=param.getPeriod();
         param.setHistory_factor(1);
@@ -229,7 +232,7 @@ public class MachineModel {
      * @param pvo
      * @return
      */
-    public static Object[][] Trainresult(Object[][] de_result, double[][] reaResult,double[][] preResult,
+    public  Object[][] Trainresult(Object[][] de_result, double[][] reaResult,double[][] preResult,
                                          double[][] vmdreaResult,ForecastInputParam pvo) throws IOException, InvalidFormatException {
         Object[][] longResult =new Object[de_result.length][9];
         longResult[0][0]="时间";

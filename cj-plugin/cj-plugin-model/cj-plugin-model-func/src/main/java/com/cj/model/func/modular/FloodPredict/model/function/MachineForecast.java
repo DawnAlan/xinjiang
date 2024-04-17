@@ -2,22 +2,24 @@ package com.cj.model.func.modular.FloodPredict.model.function;
 
 import com.cj.model.func.modular.FloodPredict.entity.ForecastInputParam;
 import com.cj.model.func.modular.FloodPredict.model.entity.ModelSaveEntity;
+import com.cj.model.func.modular.FloodPredict.utils.DataUtils;
 import com.cj.model.func.modular.FloodPredict.utils.ExcelTool;
 import com.cj.model.func.modular.FloodPredict.utils.TimeUtils;
+import sun.misc.VM;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 
-import static com.cj.model.func.modular.FloodPredict.model.function.MachineModel.paramSet;
-import static com.cj.model.func.modular.FloodPredict.utils.DataUtils.inputProcessing;
-import static com.cj.model.func.modular.FloodPredict.utils.DataUtils.resultProcessing;
-import static com.cj.model.func.modular.FloodPredict.utils.TimeUtils.getDays;
+import java.util.Date;
+
+
+
 
 public class MachineForecast {
     boolean isHistory=false;
 
+    DataUtils dataUtils = new DataUtils();
+
+    TimeUtils timeUtils = new TimeUtils();
     /**
      * 数据驱动模型预报主函数
      * @param inputTemp
@@ -26,8 +28,8 @@ public class MachineForecast {
      * @throws IOException
      */
     public Object[][] machineForecast(Object[][] inputTemp, ForecastInputParam param) throws IOException {
-
-        paramSet(inputTemp, param);//设置输入
+        MachineModel machineModel = new MachineModel();
+        machineModel.paramSet(inputTemp, param);//设置输入
         param.setIsRealtime(true);
         String paraPath = param.getXlsx().get(0).getPath();
         String maxminPath = param.getXlsx().get(1).getPath();
@@ -44,7 +46,8 @@ public class MachineForecast {
         for (int i = 0; i < inputTemp.length; i++) {
             vmdInput[i] = Double.parseDouble(inputTemp[i][1].toString());
         }
-        vmdOutput=VMD.vmd(vmdInput,K);
+        VMD vmd = new VMD();
+        vmdOutput=vmd.vmd(vmdInput,K);
 
         //输入赋值
         Object[][] de_result =new Object[param.getPeriodStepNumber()*param.getPeriodStepSize()+1][K+1];
@@ -97,7 +100,7 @@ public class MachineForecast {
                 preResult[i][1] = (double) preResult[i][1] + (double) de_result[i + 1][j + 1];
             }
         }
-        resultProcessing(preResult , param);//恢复为径流量
+        dataUtils.resultProcessing(preResult , param);//恢复为径流量
         peakFlood = setLongFloodxlsx(preResult , param);
         return peakFlood;
     }
@@ -135,17 +138,17 @@ public class MachineForecast {
         //预报期时间、流量赋值
         switch (param.getPeriod()) {
             case "月":
-                dates = TimeUtils.getMonthDateList(startDate, param.getPeriodStepNumber());
+                dates = timeUtils.getMonthDateList(startDate, param.getPeriodStepNumber());
 //                dates = TimeUtils.getSelectMonthDateList(startDate, param.getPeriodStepNumber());
                 break;
             case "旬":
-                dates = TimeUtils.getDateList(startDate, param.getPeriodStepNumber(), 10, 0);
+                dates = timeUtils.getDateList(startDate, param.getPeriodStepNumber(), 10, 0);
                 break;
             case "日":
-                dates = TimeUtils.getDateList(startDate, param.getPeriodStepNumber() * param.getPeriodStepSize(), 1, 0);
+                dates = timeUtils.getDateList(startDate, param.getPeriodStepNumber() * param.getPeriodStepSize(), 1, 0);
                 break;
             default:
-                dates = TimeUtils.getDateList(startDate, param.getPeriodStepNumber() * param.getPeriodStepSize(), 0, 1);
+                dates = timeUtils.getDateList(startDate, param.getPeriodStepNumber() * param.getPeriodStepSize(), 0, 1);
                 break;
         }
         /**
@@ -186,7 +189,7 @@ public class MachineForecast {
      * @param param
      * @return
      */
-    public static Object[][] setLongFloodxlsx(Object[][]predict, ForecastInputParam param){
+    public Object[][] setLongFloodxlsx(Object[][]predict, ForecastInputParam param){
         //表头赋值
         Object[][] longFlood=new Object[param.getPeriodStepNumber()][15];
         //连续列的赋值
@@ -216,7 +219,7 @@ public class MachineForecast {
                 longFlood[i][9]=Math.round(3600*24*param.getPeriodStepSize()*(double)predict[i*param.getPeriodStepSize()][1]/10000 * 100.0) / 100.0;
             }
             if (param.getPeriod().equals("旬")){
-                int days = getDays(predict, param, i);
+                int days = timeUtils.getDays(predict, param, i);
                 longFlood[i][9]=Math.round(3600*24*days*(double)predict[i*param.getPeriodStepSize()][1]/10000 * 100.0) / 100.0;
             }
             if (param.getPeriod().equals("月")){
@@ -256,7 +259,7 @@ public class MachineForecast {
      * @param param
      * @return
      */
-    public static String judgingYearLeve(Object[][] input, ForecastInputParam param){
+    public String judgingYearLeve(Object[][] input, ForecastInputParam param){
         String result = "";
         double[] water = new double[input.length];
         for (int i = 0; i < water.length; i++) {

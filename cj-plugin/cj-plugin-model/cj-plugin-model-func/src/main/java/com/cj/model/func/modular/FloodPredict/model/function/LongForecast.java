@@ -18,6 +18,11 @@ import static com.cj.model.func.modular.FloodPredict.utils.Tools.array2String;
 
 
 public class LongForecast {
+    DataUtils dataUtils = new DataUtils();
+
+    TimeUtils timeUtils = new TimeUtils();
+
+    Params params = new Params();
     /**主函数
      * 输入参数，模拟或预报，模型输入，最大最小值
      * @param param
@@ -74,7 +79,7 @@ public class LongForecast {
             param.setMinRate(0.0001);
         }
 
-        Params.paramSet(param);// 参数设置
+        params.paramSet(param);// 参数设置
         List<double[]> datalist = new ArrayList<double[]>();
 
         /**
@@ -139,10 +144,10 @@ public class LongForecast {
         if(param.getIsSnowMeltModel()){
             try {
                 if (isRealTime) {
-                    data = DataUtils.inputData_Real_Snow(datalist, param);
+                    data = dataUtils.inputData_Real_Snow(datalist, param);
                 } else {
-                    trainData = DataUtils.inputData_Train_Snow(datalist, param, false);
-                    testData = DataUtils.inputData_Train_Snow(datalist, param, true);
+                    trainData = dataUtils.inputData_Train_Snow(datalist, param, false);
+                    testData = dataUtils.inputData_Train_Snow(datalist, param, true);
                 }
             }
             catch (Exception e) {
@@ -153,10 +158,10 @@ public class LongForecast {
         else {
             try {
                 if (isRealTime) {
-                    data = DataUtils.inputData_Real(datalist, param);
+                    data = dataUtils.inputData_Real(datalist, param);
                 } else {
-                    trainData = DataUtils.inputData_Train(datalist, param, false);
-                    testData = DataUtils.inputData_Train(datalist, param, true);
+                    trainData = dataUtils.inputData_Train(datalist, param, false);
+                    testData = dataUtils.inputData_Train(datalist, param, true);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -172,7 +177,7 @@ public class LongForecast {
         else {
             result = trainProcess(param, trainData, testData);
         }
-        Params.paramReset();
+        params.paramReset();
 
         return result;
     }
@@ -213,13 +218,13 @@ public class LongForecast {
 
         if (trainModel.equals("深度神经网络")) {
             if (clusterMethod.equals("adam")) {
-                trainModels = new DNN_ADAM(Params.dnnNet, Params.rate, Params.mobp, Params.maxRate, Params.minRate,
-                        Params.batch);
+                trainModels = new DNN_ADAM(params.dnnNet, params.rate, params.mobp, params.maxRate, params.minRate,
+                        params.batch);
             }
         }
         else if (trainModel.equals("Elman神经网络")) {
-            trainModels = new Elman(norm_input, Params.elmanNet, Params.LEARN_RATE, Params.TRAINING_REPS,
-                    Params.epsilon);
+            trainModels = new Elman(norm_input, params.elmanNet, params.LEARN_RATE, params.TRAINING_REPS,
+                    params.epsilon);
         }
         else {
             trainResult = new TrainResult();
@@ -230,7 +235,7 @@ public class LongForecast {
         /**
          训练集储存 */
         //训练数据
-        trainModels.train(norm_input, norm_output, Params.trainNum);
+        trainModels.train(norm_input, norm_output, params.trainNum);
         String inputIndex = array2String(param.getInputIndex());
         //反归一化处理
         trainResult1 = trainModels.simOutput(norm_input, norm_output);
@@ -377,16 +382,16 @@ public class LongForecast {
             } else {
                 mle.setInputIndex(inputIndex);
             }
-            mle.setErrorad(Params.ERROR);
-            mle.setTrainNum((double) Params.trainNum);
-            mle.setWidth(Params.width);
-            mle.setShiftError(Params.shiftError);
-            mle.setMaxRate(Params.maxRate);
-            mle.setMinRate(Params.minRate);
-            mle.setMobp(Params.mobp);
-            mle.setGamma(Params.gamma);
-            mle.setC(Params.c);
-            mle.setClusterad(Params.cluster);
+            mle.setErrorad(params.ERROR);
+            mle.setTrainNum((double) params.trainNum);
+            mle.setWidth(params.width);
+            mle.setShiftError(params.shiftError);
+            mle.setMaxRate(params.maxRate);
+            mle.setMinRate(params.minRate);
+            mle.setMobp(params.mobp);
+            mle.setGamma(params.gamma);
+            mle.setC(params.c);
+            mle.setClusterad(params.cluster);
             Date createTime = new Date();
             mle.setUpdatead(createTime);
             mle.setUserName("hust");
@@ -432,9 +437,9 @@ public class LongForecast {
                     }
                 }
             } else if (model.getName().equals("Elman神经网络")) {
-                mle.setErrorad(Params.epsilon);
-                mle.setTrainNum((double) Params.TRAINING_REPS);
-                mle.setMaxRate(Params.LEARN_RATE);
+                mle.setErrorad(params.epsilon);
+                mle.setTrainNum((double) params.TRAINING_REPS);
+                mle.setMaxRate(params.LEARN_RATE);
                 Elman elman = (Elman) model;
                 int[] layer = elman.getLayernum();
                 for (int i = 0; i < layer.length; i++) {
@@ -557,7 +562,7 @@ public class LongForecast {
         TrainResult trainResult;
         ModelSaveEntity modelSaveEntity;
         NeuralNetwork trainModels;
-        Params.paramSet(param);
+        params.paramSet(param);
         String trainModel = param.getModel();
         Boolean isRealTime = param.getIsRealtime();
         Boolean isCascade = false;
@@ -568,15 +573,15 @@ public class LongForecast {
         double[][] output=normalInput.get(3);
 
         if ((trainModel.equals("深度神经网络"))) {
-            trainModels = new DNN_ADAM(Params.dnnNet, Params.rate, Params.mobp, Params.maxRate, Params.minRate,
-                    Params.batch);
+            trainModels = new DNN_ADAM(params.dnnNet, params.rate, params.mobp, params.maxRate, params.minRate,
+                    params.batch);
             double[][][] layer_weight = getParams(DNNpara);//输入率定好的参数
-            trainResult = trainModels.simOutput1(norm_input, norm_output, layer_weight, Params.dnnNet);//用率定好的参数模拟
+            trainResult = trainModels.simOutput1(norm_input, norm_output, layer_weight, params.dnnNet);//用率定好的参数模拟
         } else if (trainModel.equals("Elman神经网络")) {
-            trainModels = new Elman(norm_input, Params.elmanNet, Params.LEARN_RATE, Params.TRAINING_REPS,
-                    Params.epsilon);
+            trainModels = new Elman(norm_input, params.elmanNet, params.LEARN_RATE, params.TRAINING_REPS,
+                    params.epsilon);
             double[][][] layer_weight = getParams(DNNpara);//输入率定好的参数
-            trainResult = trainModels.simOutput1(norm_input, norm_output, layer_weight, Params.elmanNet);//用率定好的参数模拟
+            trainResult = trainModels.simOutput1(norm_input, norm_output, layer_weight, params.elmanNet);//用率定好的参数模拟
         }
         else {
             trainResult = new TrainResult();
@@ -594,13 +599,13 @@ public class LongForecast {
         int outputNum = result[0].length;
         Date[][] dates;
         if (param.getPeriod().equals("月")) {
-            dates = TimeUtils.getMonthDateList(startDate, result.length);
+            dates = timeUtils.getMonthDateList(startDate, result.length);
         } else if (param.getPeriod().equals("旬")) {
-            dates = TimeUtils.getDateList(startDate, result.length, 10, 0);
+            dates = timeUtils.getDateList(startDate, result.length, 10, 0);
         } else if (param.getPeriod().equals("日")) {
-            dates = TimeUtils.getDateList(startDate, result.length, 1, 0);
+            dates = timeUtils.getDateList(startDate, result.length, 1, 0);
         } else {
-            dates = TimeUtils.getDateList(startDate, result.length, 0, 1);
+            dates = timeUtils.getDateList(startDate, result.length, 0, 1);
         }
         List<TthResultEntity> resultList = new ArrayList();
         String inputIndex1 = array2String(param.getInputIndex());

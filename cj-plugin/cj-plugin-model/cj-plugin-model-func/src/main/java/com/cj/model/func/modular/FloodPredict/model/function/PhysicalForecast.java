@@ -4,6 +4,7 @@ package com.cj.model.func.modular.FloodPredict.model.function;
 
 import com.cj.model.func.modular.FloodPredict.entity.ForecastInputParam;
 import com.cj.model.func.modular.FloodPredict.entity.PredictInputData;
+import com.cj.model.func.modular.FloodPredict.utils.DataUtils;
 import com.cj.model.func.modular.FloodPredict.utils.TimeUtils;
 import com.cj.model.func.modular.FloodPrevent.entity.Option;
 import com.cj.model.func.modular.FloodPrevent.model.ModelOfLZZ;
@@ -14,14 +15,17 @@ import java.util.Date;
 import java.util.List;
 
 import static com.cj.model.func.modular.FloodPredict.utils.DataUtils.*;
-import static com.cj.model.func.modular.FloodPredict.utils.TimeUtils.DateCompare;
-import static com.cj.model.func.modular.FloodPredict.utils.TimeUtils.getSpecificDate;
+
 
 
 public class PhysicalForecast {
     String floodLevel="一年一遇";//洪水等级
 
     static int before = 10;//前期落地雨时间
+
+    DataUtils dataUtils = new DataUtils();
+
+    TimeUtils timeUtils = new TimeUtils();
 
     /**
      * 获得场次洪水预报数据
@@ -40,15 +44,15 @@ public class PhysicalForecast {
         List<PredictInputData> PreFlow = Data.get(0);
         List<PredictInputData> PointPreREDataList=Data.get(1);
         List<PredictInputData> PointHistoryRDataList=Data.get(2);
-        List<PredictInputData> preREDataList = pointToSurface(PointPreREDataList,"小时",param.getLocation());
-        List<PredictInputData> historyRDataList = pointToSurface(PointHistoryRDataList,"日",param.getLocation());
+        List<PredictInputData> preREDataList = dataUtils.pointToSurface(PointPreREDataList,"小时",param.getLocation());
+        List<PredictInputData> historyRDataList = dataUtils.pointToSurface(PointHistoryRDataList,"日",param.getLocation());
         Object[][] preREData = new Object[preREDataList.size()][3];
         for (int i = 0; i < preREDataList.size(); i++) {
             preREData[i][0]=preREDataList.get(i).getDates();
             preREData[i][1]=preREDataList.get(i).getTemperature();
             preREData[i][2]=preREDataList.get(i).getRainfall();
         }
-        preREData=temToEva(preREData);//将温度转为蒸发量
+        preREData = dataUtils.temToEva(preREData);//将温度转为蒸发量
         Object[][] historyRData = new Object[historyRDataList.size()][2];
         for (int i = 0; i < historyRDataList.size(); i++) {
             historyRData[i][0]=historyRDataList.get(i).getDates();
@@ -150,7 +154,7 @@ public class PhysicalForecast {
      * @param predict 预报洪水过程
      * @return
      */
-    public static List<Object[][]> getFloodInformation(Object[][] predict){
+    public List<Object[][]> getFloodInformation(Object[][] predict){
         List<Object[][]> result = new ArrayList<>();
         Object[][] flood = new Object[predict.length][3];
         double max =0.0;
@@ -362,7 +366,7 @@ public class PhysicalForecast {
      * @param input
      * @return
      */
-    public static String getFloodLevel(Object[][] input, String location){
+    public String getFloodLevel(Object[][] input, String location){
         String result = "一年一遇";
         Object[][] floodNature = getFloodInformation(input).get(1);
         double maxQ = (double) floodNature[2][1];
@@ -466,7 +470,7 @@ public class PhysicalForecast {
      * @param predict 预报流量
      * @return
      */
-    public  static double[] getWaterLevel(Object[][] predict, ForecastInputParam param){
+    public double[] getWaterLevel(Object[][] predict, ForecastInputParam param){
         //水位流量关系
         double[] waterLevel=new double[predict.length];
         if (param.getLocation().equals("楼头区间")){
@@ -502,7 +506,7 @@ public class PhysicalForecast {
         for (int j = 0; j < number; j++) {
             hourDatalist = new ArrayList<>();
             for (int i = 0; i < pointData.size(); i++) {
-                Boolean dateCompare =DateCompare(pointData.get(j).getDates(),pointData.get(i).getDates(),"小时");
+                Boolean dateCompare =timeUtils.DateCompare(pointData.get(j).getDates(),pointData.get(i).getDates(),"小时");
                 if (dateCompare){
                     hourData=pointData.get(i);
                     hourDatalist.add(hourData);
@@ -687,12 +691,12 @@ public class PhysicalForecast {
                     PreFlow.get(i).setFlow(0.0);
                 }
                 Date time = PreFlow.get(i).getDates();
-                int year = getSpecificDate(time).get("年");
+                int year = timeUtils.getSpecificDate(time).get("年");
                 Date time2 = param.getPreStartTime();
-                int year2 = getSpecificDate(time2).get("年");
+                int year2 = timeUtils.getSpecificDate(time2).get("年");
                 if (year==year2){
                     Date time3 = PreFlow.get(i).getDates();
-                    int month = getSpecificDate(time3).get("月");
+                    int month = timeUtils.getSpecificDate(time3).get("月");
                     if (month>=1&&month<=5){
                         preFlowSum = preFlowSum + PreFlow.get(i).getFlow();
                         preFlowNum++;
@@ -721,15 +725,15 @@ public class PhysicalForecast {
      * @param snowFlow 融雪径流
      * @return 预报的径流值
      */
-    public static Object[][] mixedFlood (ForecastInputParam param, double[] shanBeiQ, int L,
+    public Object[][] mixedFlood (ForecastInputParam param, double[] shanBeiQ, int L,
                                          List<List<PredictInputData>> Data, Object[][] snowFlow){
         List<PredictInputData> preFlow = Data.get(0);
-        List<PredictInputData> preTemperature= pointToSurface(Data.get(1),"小时", param.getLocation());
+        List<PredictInputData> preTemperature= dataUtils.pointToSurface(Data.get(1),"小时", param.getLocation());
         int preNumber = param.getPeriodStepNumber();
         Object[][] result= new Object[shanBeiQ.length-before][2];
         //减去汇流滞时
         Date currentDate = param.getPreStartTime();
-        Date[][] dates = TimeUtils.getDateList(currentDate, shanBeiQ.length-before, 0, 1);
+        Date[][] dates = timeUtils.getDateList(currentDate, shanBeiQ.length-before, 0, 1);
        //shanBeiq为实际预报的值
         double[] shanBeiq = new double[shanBeiQ.length-before];
         for (int i = L; i < shanBeiQ.length-before+L; i++) {
@@ -756,7 +760,7 @@ public class PhysicalForecast {
         }
         if (baseAve>20)//基础径流偏大
         {
-            int month = getSpecificDate(param.getPreStartTime()).get("月");
+            int month = timeUtils.getSpecificDate(param.getPreStartTime()).get("月");
             String location = param.getLocation();
             if (!location.equals("楼头区间")){
                 switch (month){//根据收集的历史数据获取基础径流
@@ -823,7 +827,7 @@ public class PhysicalForecast {
     /**
      * 融雪径流减去基流后，根据温度进行分布
      */
-    public static double[] flowDistribution(int preNumber,int L,Double averageData,
+    public double[] flowDistribution(int preNumber,int L,Double averageData,
                                             Double baseData, List<PredictInputData> input) {
 
         int l = preNumber + before;

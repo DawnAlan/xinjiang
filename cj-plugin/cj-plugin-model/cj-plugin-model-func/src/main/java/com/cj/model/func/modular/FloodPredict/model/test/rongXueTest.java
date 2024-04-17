@@ -1,6 +1,8 @@
 package com.cj.model.func.modular.FloodPredict.model.test;
 
+import com.cj.model.func.modular.FloodPredict.utils.DataUtils;
 import com.cj.model.func.modular.FloodPredict.utils.ExcelTool;
+import com.cj.model.func.modular.FloodPredict.utils.TimeUtils;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 
 import java.io.IOException;
@@ -9,11 +11,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import static com.cj.model.func.modular.FloodPredict.utils.TimeUtils.DateCompare;
-import static com.cj.model.func.modular.FloodPredict.utils.TimeUtils.duration;
-
 public class rongXueTest {
-    public static void main(String[] args) throws ParseException, IOException, InvalidFormatException {
+    TimeUtils timeUtils = new TimeUtils();
+    DataUtils dataUtils =new DataUtils();
+    public void main(String[] args) throws ParseException, IOException, InvalidFormatException {
         /**
          * 融雪径流预报效果
          */
@@ -55,7 +56,7 @@ public class rongXueTest {
         int n = 0;
         double flow = 0.0;
         for (int i = 0; i < inputData.length - 1; i++) {
-            if (DateCompare((Date) inputData[i][1],(Date) inputData[i+1][1],"日")){
+            if (timeUtils.DateCompare((Date) inputData[i][1],(Date) inputData[i+1][1],"日")){
                 n++;
                 flow += (double) inputData[i][2];
             }else {
@@ -76,8 +77,8 @@ public class rongXueTest {
         }
         ExcelTool.writeObjectExcel("D:\\204\\2.头屯河\\资料\\3.场次数据\\楼庄子上游23年流量.xlsx", "日",resultObject);
     }
-    public static Object[][] getObject(Object[][] input, Date date){
-        int l = duration(date,(Date) input[input.length-1][0],"日");
+    public  Object[][] getObject(Object[][] input, Date date){
+        int l = timeUtils.duration(date,(Date) input[input.length-1][0],"日");
         Object[][] result = new Object[input.length-l][4];
         for (int i = 0; i < input.length - l; i++) {
             result[i]=input[i];
