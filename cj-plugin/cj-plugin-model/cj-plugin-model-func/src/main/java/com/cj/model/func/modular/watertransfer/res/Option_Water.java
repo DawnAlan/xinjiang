@@ -20,7 +20,10 @@ public class Option_Water {
     private Double waterLack;
     //    比例
     private Double proportion;
-
+    //    流量
+    private Double flow;
+    //    id
+    private String unitId;
 }
 
 
