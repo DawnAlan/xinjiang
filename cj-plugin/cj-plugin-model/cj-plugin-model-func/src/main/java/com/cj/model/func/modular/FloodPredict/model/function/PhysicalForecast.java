@@ -2,8 +2,14 @@ package com.cj.model.func.modular.FloodPredict.model.function;
 
 
 
+import com.cj.model.func.modular.FloodPredict.Calibration.ShanBeiModel;
+import com.cj.model.func.modular.FloodPredict.Calibration.entity.ShanbeiParam;
 import com.cj.model.func.modular.FloodPredict.entity.ForecastInputParam;
 import com.cj.model.func.modular.FloodPredict.entity.PredictInputData;
+import com.cj.model.func.modular.FloodPredict.model.TouTunHe;
+import com.cj.model.func.modular.FloodPredict.utils.DataUtils;
+import com.cj.model.func.modular.FloodPredict.utils.ExcelTool;
+import com.cj.model.func.modular.FloodPredict.utils.InputUtils;
 import com.cj.model.func.modular.FloodPredict.utils.TimeUtils;
 import com.cj.model.func.modular.FloodPrevent.entity.Option;
 import com.cj.model.func.modular.FloodPrevent.model.ModelOfLZZ;
@@ -13,15 +19,20 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import static com.cj.model.func.modular.FloodPredict.utils.DataUtils.*;
-import static com.cj.model.func.modular.FloodPredict.utils.TimeUtils.DateCompare;
-import static com.cj.model.func.modular.FloodPredict.utils.TimeUtils.getSpecificDate;
+
+
 
 
 public class PhysicalForecast {
     String floodLevel="一年一遇";//洪水等级
 
-    static int before = 10;//前期落地雨时间
+
+
+    DataUtils dataUtils = new DataUtils();
+
+    TimeUtils timeUtils = new TimeUtils();
+    InputUtils inputUtils = new InputUtils();
+    int beforeHours = inputUtils.beforeHours;//前期落地雨时间
 
     /**
      * 获得场次洪水预报数据
@@ -40,15 +51,15 @@ public class PhysicalForecast {
         List<PredictInputData> PreFlow = Data.get(0);
         List<PredictInputData> PointPreREDataList=Data.get(1);
         List<PredictInputData> PointHistoryRDataList=Data.get(2);
-        List<PredictInputData> preREDataList = pointToSurface(PointPreREDataList,"小时",param.getLocation());
-        List<PredictInputData> historyRDataList = pointToSurface(PointHistoryRDataList,"日",param.getLocation());
+        List<PredictInputData> preREDataList = dataUtils.pointToSurface(PointPreREDataList,"小时",param.getLocation());
+        List<PredictInputData> historyRDataList = dataUtils.pointToSurface(PointHistoryRDataList,"日",param.getLocation());
         Object[][] preREData = new Object[preREDataList.size()][3];
         for (int i = 0; i < preREDataList.size(); i++) {
             preREData[i][0]=preREDataList.get(i).getDates();
             preREData[i][1]=preREDataList.get(i).getTemperature();
             preREData[i][2]=preREDataList.get(i).getRainfall();
         }
-        preREData=temToEva(preREData);//将温度转为蒸发量
+        preREData = dataUtils.temToEva(preREData);//将温度转为蒸发量
         Object[][] historyRData = new Object[historyRDataList.size()][2];
         for (int i = 0; i < historyRDataList.size(); i++) {
             historyRData[i][0]=historyRDataList.get(i).getDates();
@@ -60,12 +71,23 @@ public class PhysicalForecast {
                 historyRData[i][1]=param.getPreRainFall()/historyRDataList.size();
             }
         }
-        shanBeiModel.InputData(path,sheetPara,preREData,historyRData);
+        Object[][] params = ExcelTool.readExcel(path,sheetPara);
+        ShanbeiParam shanbeiparam = new ShanbeiParam();
+        shanbeiparam.setArea((double) params[0][0]);
+        shanbeiparam.setFB((double) params[0][1]);
+        shanbeiparam.setWM((double) params[0][2]);
+        shanbeiparam.setKC((double) params[0][3]);
+        shanbeiparam.setFC((double) params[0][4]);
+        shanbeiparam.setFM((double) params[0][5]);
+        shanbeiparam.setK((double) params[0][6]);
+        shanbeiparam.setB((double) params[0][7]);
+        shanbeiparam.setCS((double) params[0][8]);
+        shanBeiModel.InputData(shanbeiparam,preREData,historyRData);
         shanBeiModel.InitialMoistureContentCalculation();
         shanBeiModel.RunoffYieldCalculation_UnevenInfiltration();
         shanBeiModel.ConfluenceCalculation();
         //获得径流序列包含了降水融雪地下水
-        Object[][]shortFlow = mixedFlood(param, shanBeiModel.Q, shanBeiModel.L,Data,snowData);
+        Object[][]shortFlow = mixedFlood(param, shanBeiModel.Q, 10,Data,snowData);
 
 
         //将Object转化为Flood类型
@@ -75,7 +97,8 @@ public class PhysicalForecast {
         if (param.getLocation().equals("楼庄子")){
             peakFlood[0][12]= getFloodLevel(shortFlow,"楼庄子");//洪水等级
             floodLevel = getFloodLevel(shortFlow,"楼庄子");
-        }else {
+        }
+        else {
             peakFlood[0][12]=floodLevel;
         }
         //洪水来源、洪水组成、洪水等级逐行赋值
@@ -127,7 +150,7 @@ public class PhysicalForecast {
             //连续列的赋值
             for (int i = 0; i < peakFloodXlsx.length; i++) {
                 peakFloodXlsx[i][5]=lzzOutList.get(i).getH1();
-                if(lzzOutList.get(i).getH1()>=1397.21)//是否超过防洪高水位
+                if(lzzOutList.get(i).getH1()>=1394.5)//是否超过汛限水位
                 {
                     peakFloodXlsx[i][14] = 1;
                 }else {
@@ -149,7 +172,7 @@ public class PhysicalForecast {
      * @param predict 预报洪水过程
      * @return
      */
-    public static List<Object[][]> getFloodInformation(Object[][] predict){
+    public List<Object[][]> getFloodInformation(Object[][] predict){
         List<Object[][]> result = new ArrayList<>();
         Object[][] flood = new Object[predict.length][3];
         double max =0.0;
@@ -361,7 +384,7 @@ public class PhysicalForecast {
      * @param input
      * @return
      */
-    public static String getFloodLevel(Object[][] input, String location){
+    public String getFloodLevel(Object[][] input, String location){
         String result = "一年一遇";
         Object[][] floodNature = getFloodInformation(input).get(1);
         double maxQ = (double) floodNature[2][1];
@@ -465,7 +488,7 @@ public class PhysicalForecast {
      * @param predict 预报流量
      * @return
      */
-    public  static double[] getWaterLevel(Object[][] predict, ForecastInputParam param){
+    public double[] getWaterLevel(Object[][] predict, ForecastInputParam param){
         //水位流量关系
         double[] waterLevel=new double[predict.length];
         if (param.getLocation().equals("楼头区间")){
@@ -488,10 +511,10 @@ public class PhysicalForecast {
      */
     public String getFloodSources(List<PredictInputData> pointData, ForecastInputParam param){
         String result=new String();
-        String stationName = pointData.get(0).getRainStation();
+        String stationName = pointData.get(0).getLocation();
         int number = 0 ;
         for (int i = 0; i < pointData.size(); i++) {
-            if (pointData.get(i).getRainStation().equals(stationName)){
+            if (pointData.get(i).getLocation().equals(stationName)){
                 number++;
             }
         }
@@ -501,7 +524,7 @@ public class PhysicalForecast {
         for (int j = 0; j < number; j++) {
             hourDatalist = new ArrayList<>();
             for (int i = 0; i < pointData.size(); i++) {
-                Boolean dateCompare =DateCompare(pointData.get(j).getDates(),pointData.get(i).getDates(),"小时");
+                Boolean dateCompare =timeUtils.DateCompare(pointData.get(j).getDates(),pointData.get(i).getDates(),"小时");
                 if (dateCompare){
                     hourData=pointData.get(i);
                     hourDatalist.add(hourData);
@@ -524,56 +547,56 @@ public class PhysicalForecast {
             hourResult.setDates(hourDatalist.get(0).getDates());
             //hourDatalist为同一时间段不同雨量站
             for (int j = 0; j < hourDataList.get(i).size(); j++) {
-                if (hourDatalist.get(j).getRainStation().equals("八一林场自动雨量站")){
-                    rainFall[0][0] = hourDatalist.get(j).getRainStation();
+                if (hourDatalist.get(j).getLocation().equals("八一林场自动雨量站")){
+                    rainFall[0][0] = hourDatalist.get(j).getLocation();
                     rainFall[0][1] = (double)rainFall[0][1]+hourDatalist.get(j).getRainfall()*0.1;
                 }
-                if (hourDatalist.get(j).getRainStation().equals("加普沙自动雨量站")){
-                    rainFall[1][0] = hourDatalist.get(j).getRainStation();
+                if (hourDatalist.get(j).getLocation().equals("加普沙自动雨量站")){
+                    rainFall[1][0] = hourDatalist.get(j).getLocation();
                     rainFall[1][1] = (double)rainFall[1][1]+hourDatalist.get(j).getRainfall()*0.1;
                 }
-                if (hourDatalist.get(j).getRainStation().equals("东南沟自动雨量站")){
-                    rainFall[2][0] = hourDatalist.get(j).getRainStation();
+                if (hourDatalist.get(j).getLocation().equals("东南沟自动雨量站")){
+                    rainFall[2][0] = hourDatalist.get(j).getLocation();
                     rainFall[2][1] = (double)rainFall[2][1]+hourDatalist.get(j).getRainfall()*0.1;
                 }
-                if (hourDatalist.get(j).getRainStation().equals("宰尔德自动雨量站")){
-                    rainFall[3][0] = hourDatalist.get(j).getRainStation();
+                if (hourDatalist.get(j).getLocation().equals("宰尔德自动雨量站")){
+                    rainFall[3][0] = hourDatalist.get(j).getLocation();
                     rainFall[3][1] = (double)rainFall[3][1]+hourDatalist.get(j).getRainfall()*0.1;
                 }
-                if (hourDatalist.get(j).getRainStation().equals("无名沟自动雨量站")){
-                    rainFall[4][0] = hourDatalist.get(j).getRainStation();
+                if (hourDatalist.get(j).getLocation().equals("无名沟自动雨量站")){
+                    rainFall[4][0] = hourDatalist.get(j).getLocation();
                     rainFall[4][1] = (double)rainFall[4][1]+hourDatalist.get(j).getRainfall()*0.1;
                 }
-                if (hourDatalist.get(j).getRainStation().equals("萨尔达万自动雨量站")){
-                    rainFall[5][0] = hourDatalist.get(j).getRainStation();
+                if (hourDatalist.get(j).getLocation().equals("萨尔达万自动雨量站")){
+                    rainFall[5][0] = hourDatalist.get(j).getLocation();
                     rainFall[5][1] = (double)rainFall[5][1]+hourDatalist.get(j).getRainfall()*0.1;
                 }
-                if (hourDatalist.get(j).getRainStation().equals("煤矿沟自动雨量站")){
-                    rainFall[6][0] = hourDatalist.get(j).getRainStation();
+                if (hourDatalist.get(j).getLocation().equals("煤矿沟自动雨量站")){
+                    rainFall[6][0] = hourDatalist.get(j).getLocation();
                     rainFall[6][1] = (double)rainFall[6][1]+hourDatalist.get(j).getRainfall()*0.1;
                 }
-                if (hourDatalist.get(j).getRainStation().equals("黑沟自动雨量站")){
-                    rainFall[7][0] = hourDatalist.get(j).getRainStation();
+                if (hourDatalist.get(j).getLocation().equals("黑沟自动雨量站")){
+                    rainFall[7][0] = hourDatalist.get(j).getLocation();
                     rainFall[7][1] = (double)rainFall[7][1]+hourDatalist.get(j).getRainfall()*0.1;
                 }
-                if (hourDatalist.get(j).getRainStation().equals("喀什沟自动雨量站")){
-                    rainFall[8][0] = hourDatalist.get(j).getRainStation();
+                if (hourDatalist.get(j).getLocation().equals("喀什沟自动雨量站")){
+                    rainFall[8][0] = hourDatalist.get(j).getLocation();
                     rainFall[8][1] = (double)rainFall[8][1]+hourDatalist.get(j).getRainfall()*0.1;
                 }
-                if (hourDatalist.get(j).getRainStation().equals("制材厂自动雨量站")){
-                    rainFall[9][0] = hourDatalist.get(j).getRainStation();
+                if (hourDatalist.get(j).getLocation().equals("制材厂自动雨量站")){
+                    rainFall[9][0] = hourDatalist.get(j).getLocation();
                     rainFall[9][1] = (double)rainFall[9][1]+hourDatalist.get(j).getRainfall()*0.1;
                 }
-                if (hourDatalist.get(j).getRainStation().equals("小渠子雨量站")){
-                    rainFall[10][0] = hourDatalist.get(j).getRainStation();
+                if (hourDatalist.get(j).getLocation().equals("小渠子雨量站")){
+                    rainFall[10][0] = hourDatalist.get(j).getLocation();
                     rainFall[10][1] = (double)rainFall[10][1]+hourDatalist.get(j).getRainfall()*0.1;
                 }
-                if (hourDatalist.get(j).getRainStation().equals("团结一队雨量站")){
-                    rainFall[11][0] = hourDatalist.get(j).getRainStation();
+                if (hourDatalist.get(j).getLocation().equals("团结一队雨量站")){
+                    rainFall[11][0] = hourDatalist.get(j).getLocation();
                     rainFall[11][1] = (double)rainFall[11][1]+hourDatalist.get(j).getRainfall()*0.1;
                 }
-                if (hourDatalist.get(j).getRainStation().equals("头屯河水库雨量站")){
-                    rainFall[12][0] = hourDatalist.get(j).getRainStation();
+                if (hourDatalist.get(j).getLocation().equals("头屯河水库雨量站")){
+                    rainFall[12][0] = hourDatalist.get(j).getLocation();
                     rainFall[12][1] = (double)rainFall[12][1]+hourDatalist.get(j).getRainfall()*0.1;
                 }
             }
@@ -664,30 +687,34 @@ public class PhysicalForecast {
             for (int i = 0; i < snowData.length; i++) {
                 snowFlow += (double) snowData[i][1];
             }
-            snowFlow = snowFlow/snowData.length/24*number;
+            snowFlow = snowFlow/snowData.length*number;
             for (int i = 0; i < Q_shanbei.length; i++) {
                 shanbeiFlow =shanbeiFlow +  Q_shanbei[i];
             }
             double Sum = snowFlow+preFlow+shanbeiFlow;
             double shanbei =Math.round((float) shanbeiFlow/Sum*95)/100.0;
             double rong = Math.round((float) snowFlow/Sum*95)/100.0;
-            result += "降水:"+ shanbei+","+"融雪:"+rong+","+"地下水:0.05";
+            if (Sum == 0.0){
+                result += "地下水:1.00";
+            }else {
+                result += "降水:"+ shanbei+","+"融雪:"+rong+","+"地下水:0.05";
+            }
         }
         else {
             for (int i = 0; i < Q_shanbei.length; i++) {
                 shanbeiFlow =shanbeiFlow +  Q_shanbei[i];
             }
             for (int i = 0; i < PreFlow.size(); i++) {
-                if (PreFlow.get(i).getFlow().isNaN()){
+                if (PreFlow.get(i).getFlow()==null){
                     PreFlow.get(i).setFlow(0.0);
                 }
                 Date time = PreFlow.get(i).getDates();
-                int year = getSpecificDate(time).get("年");
+                int year = timeUtils.getSpecificDate(time).get("年");
                 Date time2 = param.getPreStartTime();
-                int year2 = getSpecificDate(time2).get("年");
+                int year2 = timeUtils.getSpecificDate(time2).get("年");
                 if (year==year2){
                     Date time3 = PreFlow.get(i).getDates();
-                    int month = getSpecificDate(time3).get("月");
+                    int month = timeUtils.getSpecificDate(time3).get("月");
                     if (month>=1&&month<=5){
                         preFlowSum = preFlowSum + PreFlow.get(i).getFlow();
                         preFlowNum++;
@@ -698,7 +725,11 @@ public class PhysicalForecast {
             double Sum = preFlow+shanbeiFlow;
             double shanbei =Math.round((float) shanbeiFlow/Sum*95)/100.0;
             double rong = Math.round((float) preFlow/Sum*95)/100.0;
-            result += "降水:"+ shanbei+","+"融雪:"+rong+","+"地下水:0.05";
+            if (Sum == 0.0){
+                result += "地下水:1.00";
+            }else {
+                result += "降水:"+ shanbei+","+"融雪:"+rong+","+"地下水:0.05";
+            }
         }
         return result;
     }
@@ -712,19 +743,19 @@ public class PhysicalForecast {
      * @param snowFlow 融雪径流
      * @return 预报的径流值
      */
-    public static Object[][] mixedFlood (ForecastInputParam param, double[] shanBeiQ, int L,
+    public Object[][] mixedFlood (ForecastInputParam param, double[] shanBeiQ, int L,
                                          List<List<PredictInputData>> Data, Object[][] snowFlow){
         List<PredictInputData> preFlow = Data.get(0);
-        List<PredictInputData> preTemperature= pointToSurface(Data.get(1),"小时", param.getLocation());
-        int preNumber = param.getPeriodStepNumber();;
-        Object[][] result= new Object[shanBeiQ.length-before][2];
+        List<PredictInputData> preTemperature= dataUtils.pointToSurface(Data.get(1),"小时", param.getLocation());
+        int preNumber = param.getPeriodStepNumber();
+        Object[][] result= new Object[param.getPeriodStepNumber()][2];
         //减去汇流滞时
         Date currentDate = param.getPreStartTime();
-        Date[][] dates = TimeUtils.getDateList(currentDate, shanBeiQ.length-before, 0, 1);
+        Date[][] dates = timeUtils.getDateList(currentDate, param.getPeriodStepNumber(), 0, 1);
        //shanBeiq为实际预报的值
-        double[] shanBeiq = new double[shanBeiQ.length-before];
-        for (int i = L; i < shanBeiQ.length-before+L; i++) {
-            shanBeiq[i-L]=shanBeiQ[i];
+        double[] shanBeiq = new double[param.getPeriodStepNumber()];
+        for (int i = beforeHours; i < shanBeiQ.length- beforeHours; i++) {
+            shanBeiq[i-beforeHours]=shanBeiQ[i];
         }
         //基础流量
         Double baseAve = 0.0;
@@ -742,35 +773,42 @@ public class PhysicalForecast {
         }else {
             baseAve = 100.0;
         }
-
+        if (param.getLocation().equals("楼头区间")){
+            baseAve = baseAve * 0.2;
+        }
         if (baseAve>20)//基础径流偏大
         {
-            int month = getSpecificDate(param.getPreStartTime()).get("月");
-            switch (month){//根据收集的历史数据获取基础径流
-                case 1:baseAve=1.29;
-                    break;
-                case 2:baseAve=1.19;
-                    break;
-                case 3:baseAve=1.77;
-                    break;
-                case 4:baseAve=2.78;
-                    break;
-                case 5:baseAve=5.0;
-                    break;
-                case 6:baseAve=5.49;
-                    break;
-                case 7:baseAve=6.5;
-                    break;
-                case 8:baseAve=6.7;
-                    break;
-                case 9:baseAve=4.18;
-                    break;
-                case 10:baseAve=2.5;
-                    break;
-                case 11:baseAve=2.23;
-                    break;
-                case 12:baseAve=1.52;
-                    break;
+            int month = timeUtils.getSpecificDate(param.getPreStartTime()).get("月");
+            String location = param.getLocation();
+            if (!location.equals("楼头区间")){
+                switch (month){//根据收集的历史数据获取基础径流
+                    case 1:baseAve=1.29;
+                        break;
+                    case 2:baseAve=1.19;
+                        break;
+                    case 3:baseAve=1.77;
+                        break;
+                    case 4:baseAve=2.78;
+                        break;
+                    case 5:baseAve=5.0;
+                        break;
+                    case 6:baseAve=5.49;
+                        break;
+                    case 7:baseAve=6.5;
+                        break;
+                    case 8:baseAve=6.7;
+                        break;
+                    case 9:baseAve=4.18;
+                        break;
+                    case 10:baseAve=2.5;
+                        break;
+                    case 11:baseAve=2.23;
+                        break;
+                    case 12:baseAve=1.52;
+                        break;
+                }
+            }else {
+                baseAve = 1.29;
             }
         }
         if (param.getIsSimulation()){
@@ -785,7 +823,7 @@ public class PhysicalForecast {
             }
             snowAverage = snowSum / snowFlow.length;
         }
-        double[] snowDistribution = flowDistribution(preNumber,L,snowAverage,baseAve,preTemperature);//融雪随温度分配曲线
+        double[] snowDistribution = flowDistribution(preNumber,snowAverage,baseAve,preTemperature);//融雪随温度分配曲线
 
 
 //        snowAverage = 0.0;
@@ -807,10 +845,10 @@ public class PhysicalForecast {
     /**
      * 融雪径流减去基流后，根据温度进行分布
      */
-    public static double[] flowDistribution(int preNumber,int L,Double averageData,
+    public double[] flowDistribution(int preNumber,Double averageData,
                                             Double baseData, List<PredictInputData> input) {
 
-        int l = preNumber + before;
+        int l = preNumber + beforeHours;
         double[] temperature = new double[l];
         for (int i = 0; i < l; i++) {
             temperature[i] = input.get(i).getTemperature();
@@ -831,11 +869,8 @@ public class PhysicalForecast {
         double[] flow = new double[l];
         double[] result = new double[preNumber];
         if (number==0){
-            for (int i = 0; i < l; i++) {
-                flow[i] = averageData;
-                }
-            for (int i = L; i < preNumber+L; i++) {
-                result[i-L]=flow[i];
+            for (int i = 0; i < preNumber; i++) {
+                result[i]=baseData;
             }
             return result;
         }
@@ -859,8 +894,8 @@ public class PhysicalForecast {
                 flow[i] = baseData;
             }
         }
-        for (int i = L; i < preNumber+L; i++) {
-            result[i-L]=flow[i];
+        for (int i = beforeHours; i < preNumber + beforeHours; i++) {
+            result[i - beforeHours]=flow[i];
         }
         return result;
     }

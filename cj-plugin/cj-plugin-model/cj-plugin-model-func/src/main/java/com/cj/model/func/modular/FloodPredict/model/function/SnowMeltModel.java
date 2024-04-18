@@ -12,10 +12,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import static com.cj.model.func.modular.FloodPredict.utils.TimeUtils.getSpecificDate;
+
 
 
 public class SnowMeltModel {
+    TimeUtils timeUtils = new TimeUtils();
 
     /**
      * 融雪模型训练
@@ -128,7 +129,7 @@ public class SnowMeltModel {
 
         //预报期时间、流量赋值
         Date startDate = param.getPreStartTime();
-        Date[][] dates = TimeUtils.getSelectDateList(startDate, preNumber, 1, 0);
+        Date[][] dates = timeUtils.getSelectDateList(startDate, preNumber, 1, 0);
 
         //预报赋值
         Object[][] predict = new Object[preNumber + 1][2];
@@ -187,7 +188,9 @@ public class SnowMeltModel {
         }
         param.setInputIndex(inputIndex);//输入时段数
         //一些基础参数
-        param.setNetClass(param.getModel());
+        param.setNetClass("Elman神经网络");
+        param.setModel("Elman神经网络");
+        param.setPeriod("日");
         param.setMobp(10.0);
         param.setMinRate(0.0);
         param.setMaxRate(0.03);//这个会影响精度！！!
@@ -207,10 +210,9 @@ public class SnowMeltModel {
         Date testEndDate = (Date) snowInput[snowInput.length-1][0];
         param.setTestSetEndTime(testEndDate);//测试集结束时期
         //预报时段的确定
-        param.setPeriodStepNumber(param.getPeriodStepNumber()/24+1);//预报时段数
-        param.setPeriodStepSize(param.getPeriodStepSize());//预报时段步长
-        param.setPreStartTime(param.getPreStartTime());//预报时间
         param.setIsSnowMeltModel(true);
+        param.setIsRealtime(true);
+        param.setIsHistory(false);
         return param;
     }
 
@@ -222,7 +224,7 @@ public class SnowMeltModel {
     public Object[][] magnification(Object[][] data){
         int l;
         for (int i = 0; i < data.length; i++) {
-            l = getSpecificDate((Date) data[i][0]).get("月");
+            l = timeUtils.getSpecificDate((Date) data[i][0]).get("月");
             data[i][1] = setQjMagnification(l);
         }
         return data;
@@ -234,7 +236,7 @@ public class SnowMeltModel {
      * @param month
      * @return
      */
-    public static Double setQjMagnification(int month){
+    public Double setQjMagnification(int month){
         Double result = 0.0;
         switch (month){
             case 1:{

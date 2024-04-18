@@ -1,6 +1,7 @@
 package com.cj.model.func.modular.FloodPredict.Calibration.test;
 
 import com.cj.model.func.modular.FloodPredict.utils.ExcelTool;
+import com.cj.model.func.modular.FloodPredict.utils.TimeUtils;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 
 import java.io.IOException;
@@ -9,10 +10,10 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
-import static com.cj.model.func.modular.FloodPredict.utils.TimeUtils.DateCompare;
-import static com.cj.model.func.modular.FloodPredict.utils.TimeUtils.duration;
+
 
 public class FlowProcessing {
+    static TimeUtils timeUtils =new TimeUtils();
     public static void main(String[] args) throws IOException, ParseException, InvalidFormatException {
         Object[][] inputObject = ExcelTool.readExcel("D:\\204\\2.头屯河\\资料\\3.场次数据\\楼庄子上游22年流量.xlsx","Sheet2");
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -20,7 +21,7 @@ public class FlowProcessing {
         String end = "08-31";
         Date startTime = sdf.parse("2022-"+start+" 00:00:00");
         Date endTime = sdf.parse("2022-"+end+" 00:00:00");
-        int l = duration(startTime,endTime,"日");
+        int l = timeUtils.duration(startTime,endTime,"日");
         Object[][] result = new Object[l][2];
         for (int i = 0; i < l; i++) {
             Calendar calendar = Calendar.getInstance();
@@ -28,7 +29,7 @@ public class FlowProcessing {
             int n = 0;
             double flow = 0.0;
             for (int j = 0; j < inputObject.length; j++) {
-                if (DateCompare(startTime,(Date) inputObject[j][1],"日")){
+                if (timeUtils.DateCompare(startTime,(Date) inputObject[j][1],"日")){
                     flow +=(double) inputObject[j][2];
                     n++;
                 }

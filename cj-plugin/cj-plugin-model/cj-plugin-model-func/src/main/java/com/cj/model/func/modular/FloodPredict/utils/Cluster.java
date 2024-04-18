@@ -20,7 +20,7 @@ public class Cluster {
 	 *            聚类的数量
 	 * @return 返回隐含层高斯中心
 	 */
-	public static double[][] kmeans(double[][] data, int num_gaussian) {
+	public double[][] kmeans(double[][] data, int num_gaussian) {
 
 		// 聚类中心，每行是一个中心
 		double[][] centers = new double[num_gaussian][data[0].length];
@@ -103,7 +103,7 @@ public class Cluster {
 	 *            Another vector
 	 * @return 欧拉距离
 	 */
-	public static double euclidean_distance(double[] a, double[] b) {
+	public double euclidean_distance(double[] a, double[] b) {
 		double sum = 0.0;
 		for (int i = 0; i < a.length; i++) {
 			sum += Math.pow(a[i] - b[i], 2);
@@ -118,7 +118,7 @@ public class Cluster {
 	 * @param shiftError 偏移终止误差
 	 * @return 聚类中心
 	 */
-	public static double[][] mean_shift_kmeans(double[][] data, double width, double shiftError){
+	public double[][] mean_shift_kmeans(double[][] data, double width, double shiftError){
 		List<Center> centers = new ArrayList();
 		boolean[] flags = new boolean[data.length];
 		int dataDim = data[0].length;

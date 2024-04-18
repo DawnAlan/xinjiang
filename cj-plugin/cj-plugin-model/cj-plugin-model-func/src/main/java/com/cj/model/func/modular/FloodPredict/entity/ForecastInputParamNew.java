@@ -12,7 +12,7 @@ public class ForecastInputParamNew {
     private Integer modelType;
     //预报时间
     private Date predictionTime;
-    //预报时间
+    //数据开始时间
     private Date dataStartTime;
     //时段类型(1-月 2-旬 3-日 4-小时)
     private Integer periodTimeType;
@@ -26,6 +26,8 @@ public class ForecastInputParamNew {
     private IrrigatedHydrologyParam irrigatedHydrologyParam;
     //预报雨量
     private List<RainFallDto> rainFallDtos;
+    //A3表日均进库
+    private List<PredictInputData> inflowRunoffs;
     //前期径流
     private Double preFlow;
     //前期累计降雨

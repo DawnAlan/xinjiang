@@ -8,14 +8,14 @@ import java.util.Date;
 public class CalibrationFlow {
 
     //预报时间
-    private Date Time;
+    private Object[] Time;
 
     //历史径流
-    private Double historyFlow;
+    private double[] historyFlow;
 
     //前期参数模型预报径流
-    private Double preParamFlow;
+    private double[] preParamFlow;
 
     //率定参数模型预报径流
-    private Double newParamFlow;
+    private double[] newParamFlow;
 }

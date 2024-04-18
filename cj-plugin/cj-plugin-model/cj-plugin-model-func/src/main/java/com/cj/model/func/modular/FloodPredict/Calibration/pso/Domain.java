@@ -37,7 +37,7 @@ public class Domain {
     public double TargetValue;
 
     private double speedRate = 0.2;
-    private static final Random rand = new Random();
+    private  final Random rand = new Random();
 
     /**
      * Compute the error between evaluation of the position and target value
@@ -139,7 +139,7 @@ public class Domain {
      * @param swarm Particle swarm
      * @return The domain info of the particle who is the nearest to the target value
      */
-    public static DomainInfo FindBest(Particle[] swarm) {
+    public DomainInfo FindBest(Particle[] swarm) {
         return Stream.of(swarm)
                 .min((p1, p2) -> Double.compare(p1.Best.distance, p2.Best.distance))
                 .get().Best;
@@ -152,7 +152,7 @@ public class Domain {
      * @param max maximum value of the range, exclusive
      * @return a random value between min and max
      */
-    private static double Random(double min, double max) {
+    private double Random(double min, double max) {
         return min + (max - min) * rand.nextDouble();
     }
 

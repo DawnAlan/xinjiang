@@ -3,8 +3,13 @@ package com.cj.model.func.modular.FloodPredict.model.test;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.entity.IrrigatedPlatformDataInfo;
 import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.entity.LzzGaugingStation;
 import com.cj.middleDatabase.func.modular.lzz.lzzRainfallStation.entity.LzzRainfallStation;
+
 import com.cj.model.func.modular.FloodPredict.entity.*;
+import com.cj.model.func.modular.FloodPredict.model.TouTunHe;
+import com.cj.model.func.modular.FloodPredict.utils.DataUtils;
 import com.cj.model.func.modular.FloodPredict.utils.ExcelTool;
+import com.cj.model.func.modular.FloodPredict.utils.InputUtils;
+import com.cj.model.func.modular.FloodPredict.utils.TimeUtils;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 
 import java.io.IOException;
@@ -15,34 +20,38 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
-import static com.cj.model.func.modular.FloodPredict.model.TouTunHe.getFloodList;
-import static com.cj.model.func.modular.FloodPredict.utils.DataUtils.emptyProcessing;
-import static com.cj.model.func.modular.FloodPredict.utils.TimeUtils.duration;
-import static com.cj.model.func.modular.FloodPredict.utils.InputUtils.judgeDate;
+
+
 
 public class Test {
-    public static void main(String[] args) throws IOException, ParseException, InvalidFormatException {
-
+    static TimeUtils timeUtils = new TimeUtils();
+    static DataUtils dataUtils =new DataUtils();
+    static InputUtils inputUtils =new InputUtils();
+    public static void main(String[] args) throws IOException, ParseException, InvalidFormatException, ExecutionException, InterruptedException {
+        Test test =new Test();
         //模型参数输入设置
         ForecastInputParamNew paramForecastInputParamNew = new ForecastInputParamNew();
-        paramForecastInputParamNew.setModelType(1);//3为场次
+        paramForecastInputParamNew.setModelType(3);//3为场次
         SimpleDateFormat sFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        paramForecastInputParamNew.setPredictionTime(sFormat.parse("2023-01-01 00:00:00"));
+        paramForecastInputParamNew.setPredictionTime(sFormat.parse("2022-07-18 00:00:00"));
         paramForecastInputParamNew.setDataStartTime(sFormat.parse("2023-01-01 00:00:00"));
-        paramForecastInputParamNew.setPeriodTimeType(1);//1为月，2为旬，3为日，4为小时
+        paramForecastInputParamNew.setPeriodTimeType(4);//1为月，2为旬，3为日，4为小时
         paramForecastInputParamNew.setPeriodTimeStep(1);//预报步长
-        paramForecastInputParamNew.setPeriodTimeNum(12);//预报数量+
+        paramForecastInputParamNew.setPeriodTimeNum(144);//预报数量
 
 
         paramForecastInputParamNew =objectToList(paramForecastInputParamNew);//读取表格
         List<RainFallDto> rainPre = rainPredict(paramForecastInputParamNew);
         paramForecastInputParamNew.setRainFallDtos(rainPre);
-        paramForecastInputParamNew = emptyProcessing(paramForecastInputParamNew);//异常值处理
-        List<Date> a = judgeDate(paramForecastInputParamNew.getPredictionTime(), paramForecastInputParamNew.getPeriodTimeNum());
+        DataUtils dataUtils = new DataUtils();
+        paramForecastInputParamNew = dataUtils.emptyProcessing(paramForecastInputParamNew);//异常值处理
+        List<Date> a = inputUtils.judgeDate(paramForecastInputParamNew.getPredictionTime(), paramForecastInputParamNew.getPeriodTimeNum());
 
         TemporaryXlsx result = new TemporaryXlsx();
-        result= getFloodList(paramForecastInputParamNew);
+        TouTunHe touTunHe = new TouTunHe();
+        result= touTunHe.getFloodList(paramForecastInputParamNew);
     }
     /**
      * 读取表格赋予初始值
@@ -513,7 +522,7 @@ public class Test {
         calendar.setTime(dateStart);
         calendar.add(Calendar.HOUR_OF_DAY, start_end);
         Date dateEnd = calendar.getTime();
-        int length = duration(dateNew,dateEnd,"小时");
+        int length = timeUtils.duration(dateNew,dateEnd,"小时");
         for (int i = 0; i < length; i++) {
             rainFallDto = new RainFallDto();
             rainFallDto.setArea("喀什沟自动雨量站");

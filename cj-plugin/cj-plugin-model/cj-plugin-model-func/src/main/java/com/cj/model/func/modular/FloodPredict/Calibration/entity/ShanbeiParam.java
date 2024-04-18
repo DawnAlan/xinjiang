@@ -23,6 +23,5 @@ public class ShanbeiParam {
     //汇流滞时
     private Integer L;
     //合格率
-
     private Double QC;
 }
