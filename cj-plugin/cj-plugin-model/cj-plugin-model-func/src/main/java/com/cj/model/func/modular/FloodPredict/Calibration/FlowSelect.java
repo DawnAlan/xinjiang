@@ -1,10 +1,9 @@
-package com.cj.model.func.modular.FloodPredict.Calibration.test;
+package com.cj.model.func.modular.FloodPredict.Calibration;
 
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.entity.IrrigatedPlatformDataInfo;
 import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.entity.LzzGaugingStation;
-import com.cj.model.func.modular.FloodPredict.Calibration.entity.CalibrationParam;
 import com.cj.model.func.modular.FloodPredict.Calibration.entity.OneCalibrationParam;
-import com.cj.model.func.modular.FloodPredict.utils.ExcelTool;
+import com.cj.model.func.modular.FloodPredict.utils.InputUtils;
 import com.cj.model.func.modular.FloodPredict.utils.TimeUtils;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 
@@ -15,26 +14,7 @@ import java.util.*;
 public class FlowSelect {
 
     TimeUtils timeUtils = new TimeUtils();
-    public static void main(String[] args) throws IOException, InvalidFormatException {
-        FlowSelect flowSelect = new FlowSelect();
-        Object[][] Flood = ExcelTool.readExcel("D:\\204\\2.头屯河\\径流预报数据文件\\月尺度来水过程.xlsx","Sheet2");
-        Object flood = flowSelect.getFloodSelect(Flood);
-        if (flood instanceof String){
-            System.out.println(flood);
-        }else {
-            Object dateList = flowSelect.floodList((Object[][]) flood);
-            if (dateList instanceof String){
-                System.out.println(dateList);
-            }else {
-                List<Object[]> floodDate = (List<Object[]>) dateList;
-                for (int i = 0; i < floodDate.size(); i++) {
-
-                }
-            }
-        }
-
-//        ExcelTool.writeObjectExcel("D:\\204\\2.头屯河\\径流预报数据文件\\月尺度来水过程.xlsx","洪水过程",flood);
-    }
+    InputUtils inputUtils = new InputUtils();
 
     //获取3个断面洪水持续时间
     public List<Object[]> getFloodDate(OneCalibrationParam input) throws IOException, InvalidFormatException {
@@ -43,36 +23,37 @@ public class FlowSelect {
         List<LzzGaugingStation> threeFlow =new ArrayList<>();
         List<LzzGaugingStation> lzzFlow = new ArrayList<>();
         List<IrrigatedPlatformDataInfo> qjFlow = new ArrayList<>();
-        for (int i = 0; i < input.getLzzHydrologyParam().getThreeGaugingStation().size(); i++) //3号桥流量
-        {
-            if (input.getLzzHydrologyParam().getThreeGaugingStation().get(i).getGatherTime().after(input.getStartTime())){
-                threeFlow.add(input.getLzzHydrologyParam().getThreeGaugingStation().get(i));
-            }
-        }
-        for (int i = 0; i < input.getLzzHydrologyParam().getLzzInput().size(); i++) //楼庄子流量
-        {
-            if (input.getLzzHydrologyParam().getLzzInput().get(i).getGatherTime().after(input.getStartTime())){
-                lzzFlow.add(input.getLzzHydrologyParam().getLzzInput().get(i));
-            }
-        }
-        for (int i = 0; i < input.getIrrigatedHydrologyParam().getTthInput().size(); i++) //头屯河进库流量
-        {
-            if (input.getIrrigatedHydrologyParam().getTthInput().get(i).getMonitorTime().after(input.getStartTime())){
-                qjFlow.add(input.getIrrigatedHydrologyParam().getTthInput().get(i));
-            }
-        }
+
         Date dateStart = input.getStartTime();
         Date dateEnd = input.getEndTime();
         if (input.getLocation().equals("3号桥")){
+            for (int i = 0; i < input.getLzzHydrologyParam().getThreeGaugingStation().size(); i++) //3号桥流量
+            {
+                if (input.getLzzHydrologyParam().getThreeGaugingStation().get(i).getGatherTime().after(input.getStartTime())){
+                    threeFlow.add(input.getLzzHydrologyParam().getThreeGaugingStation().get(i));
+                }
+            }
             Object[][] threeObjectFlow = flowSelect.getFlow(threeFlow,new ArrayList<>(),dateStart,dateEnd);
             List<Object[]> threeDateList = flowSelect.floodList(flowSelect.getFloodSelect(threeObjectFlow));
             result=threeDateList;
         }
         else if (input.getLocation().equals("楼庄子")){
+            for (int i = 0; i < input.getLzzHydrologyParam().getLzzInput().size(); i++) //楼庄子流量
+            {
+                if (input.getLzzHydrologyParam().getLzzInput().get(i).getGatherTime().after(input.getStartTime())){
+                    lzzFlow.add(input.getLzzHydrologyParam().getLzzInput().get(i));
+                }
+            }
             Object[][] lzzObjectFlow = flowSelect.getFlow(lzzFlow,new ArrayList<>(),dateStart,dateEnd);
             List<Object[]> lzzDateList = flowSelect.floodList(flowSelect.getFloodSelect(lzzObjectFlow));
             result = lzzDateList;
         } else if (input.getLocation().equals("楼头区间")) {
+            for (int i = 0; i < input.getIrrigatedHydrologyParam().getTthInput().size(); i++) //头屯河进库流量
+            {
+                if (input.getIrrigatedHydrologyParam().getTthInput().get(i).getMonitorTime().after(input.getStartTime())){
+                    qjFlow.add(input.getIrrigatedHydrologyParam().getTthInput().get(i));
+                }
+            }
             Object[][] qjObjectFlow = flowSelect.getFlow(new ArrayList<>(),qjFlow,dateStart,dateEnd);
             List<Object[]> qjDateList = flowSelect.floodList(flowSelect.getFloodSelect(qjObjectFlow));
             result=qjDateList;
@@ -270,7 +251,7 @@ public class FlowSelect {
                 flood[i+1][0] = 0;
             }
         }
-        ExcelTool.writeObjectExcel("D:\\204\\2.头屯河\\径流预报数据文件\\月尺度来水过程.xlsx","洪水过程",flood);
+//        ExcelTool.writeObjectExcel("D:\\204\\2.头屯河\\径流预报数据文件\\月尺度来水过程.xlsx","洪水过程",flood);
         return flood;
     }
 
@@ -313,7 +294,7 @@ public class FlowSelect {
             endTime = (Date) oneFlow[oneFlow.length-1][1];
             Calendar cal = Calendar.getInstance();
             cal.setTime(startTime);
-            cal.add(Calendar.HOUR_OF_DAY,-24);
+            cal.add(Calendar.HOUR_OF_DAY,-inputUtils.beforeHours);
             startTime = cal.getTime();
             dateObject[0] = startTime;
             dateObject[1] = endTime;

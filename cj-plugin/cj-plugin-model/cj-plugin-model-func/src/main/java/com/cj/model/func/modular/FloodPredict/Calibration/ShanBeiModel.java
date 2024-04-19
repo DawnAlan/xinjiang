@@ -100,7 +100,6 @@ public class ShanBeiModel {
         CS = shanbeiParam.getCS(); //CS 为地面径流消退系数
 
 
-
         for (int i = 0; i < input.length; i++) {
             if (Double.parseDouble(input[i][2].toString())==0.0){
                 zero++;
@@ -351,7 +350,7 @@ public class ShanBeiModel {
                     double a = Ave_f * (1 - Math.pow(1 - (P[j] - E[j]) / fm, B + 1));
                     R2[j] = P[j] - E[j] - Ave_f * (1 - Math.pow(1 - (P[j] - E[j]) / fm, B + 1));
                 }
-                if (j>90){
+                if (j>260){
                     int a = 0;
                 }
                 if (R2[j] < 0) {
@@ -449,9 +448,9 @@ public class ShanBeiModel {
             } else if (P[j] >= 5 && P[j] < 10) {
                 L = 3;
             } else if (P[j] >= 1 && P[j] < 5) {
-                L = 5;
+                L = 4;
             } else if (P[j] > 0 && P[j] < 1) {
-                L = 7;
+                L = 5;
             }
             if (j < L) {
                 if (j == 0) {

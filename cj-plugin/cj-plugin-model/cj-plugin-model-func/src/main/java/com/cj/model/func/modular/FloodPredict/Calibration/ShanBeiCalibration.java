@@ -4,11 +4,9 @@ import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInf
 import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.entity.LzzGaugingStation;
 import com.cj.model.func.modular.FloodPredict.Calibration.entity.*;
 import com.cj.model.func.modular.FloodPredict.Calibration.pso.*;
-import com.cj.model.func.modular.FloodPredict.Calibration.test.FlowSelect;
 import com.cj.model.func.modular.FloodPredict.entity.ForecastInputParam;
 import com.cj.model.func.modular.FloodPredict.entity.ForecastInputParamNew;
 import com.cj.model.func.modular.FloodPredict.entity.PredictInputData;
-import com.cj.model.func.modular.FloodPredict.model.TouTunHe;
 import com.cj.model.func.modular.FloodPredict.model.function.SnowMeltModel;
 import com.cj.model.func.modular.FloodPredict.utils.DataUtils;
 import com.cj.model.func.modular.FloodPredict.utils.ExcelTool;
@@ -21,22 +19,21 @@ import java.text.ParseException;
 import java.util.*;
 
 
-
 public class ShanBeiCalibration {
 
     /// 流域面积 单位平方公里
-    double Area;
+    static double Area;
 
     ///基础流量
-    List<Object[][]> baseAveList = new ArrayList<>();
+    static List<Object[][]> baseAveList = new ArrayList<>();
     //楼庄子蒸发降雨
-    List<Object[][]> preREDataList = new ArrayList<>();
+    static List<Object[][]> preREDataList = new ArrayList<>();
     //前期雨量
-    List<Object[][]> historyRDataList = new ArrayList<>();
+    static List<Object[][]> historyRDataList = new ArrayList<>();
     //参与率定的真实径流
-    List<Object[][]> historyFDataList = new ArrayList<>();
+    static List<Object[][]> historyFDataList = new ArrayList<>();
     //预报的时间
-    List<Integer> durationList = new ArrayList<>();
+    static List<Integer> durationList = new ArrayList<>();
     //选择的模型参数
     ShanbeiParam shanbeiParamOld = new ShanbeiParam();
     //人工修改的模型参数
@@ -47,9 +44,10 @@ public class ShanBeiCalibration {
 
     DataUtils dataUtils = new DataUtils();
 
-    TimeUtils timeUtils =new TimeUtils();
+    static TimeUtils timeUtils =new TimeUtils();
 
     InputUtils inputUtils = new InputUtils();
+
 
     public Map<String,CalibrationOutput> calibration(CalibrationParam input) throws ParseException, IOException, InvalidFormatException {
         Map<String,CalibrationOutput> result = new HashMap<>();
@@ -60,49 +58,37 @@ public class ShanBeiCalibration {
         three.setIsAutomatic(input.getIsAutomatic());
         three.setStartTime(input.getStartTime());
         three.setEndTime(input.getEndTime());
-        String location = "楼庄子";
-        three.setLocation(location);
-        if (!isAutomatic){
-            three.setManualParam(input.getManualParam().get(location));
-        }
-        three.setHistoryParam(input.getHistoryParam().get(location));
-        CalibrationOutput lzzOutput = oneCalibration(three);
-        result.put(location,lzzOutput);
-        location = "3号桥";
-        three.setLocation(location);
-        if (!isAutomatic){
-            three.setManualParam(input.getManualParam().get(location));
-        }
-        three.setHistoryParam(input.getHistoryParam().get(location));
-        CalibrationOutput threeOutput = oneCalibration(three);
-        result.put(location,threeOutput);
-        location = "楼头区间";
-        three.setLocation(location);
-        if (!isAutomatic){
-            three.setManualParam(input.getManualParam().get(location));
-        }
-        three.setHistoryParam(input.getHistoryParam().get(location));
-        CalibrationOutput qjOutput = oneCalibration(three);
-        result.put(location,qjOutput);
+        result.put("楼庄子",threeCalibration("楼庄子",input,three));
+        result.put("头屯河",threeCalibration("头屯河",input,three));
+        result.put("3号桥",threeCalibration("3号桥",input,three));
         return result;
+    }
+
+    public CalibrationOutput threeCalibration(String location,CalibrationParam input,OneCalibrationParam param){
+        param.setLocation(location);
+        if (!isAutomatic){
+            param.setManualParam(input.getManualParam().get(location));
+        }
+        param.setHistoryParam(input.getHistoryParam().get(location));
+        CalibrationOutput threeOutput =new CalibrationOutput();
+        try {
+            threeOutput = oneStationCalibration(param);
+        }catch (RuntimeException | IOException | InvalidFormatException | ParseException e){
+            e.printStackTrace();
+            threeOutput.setError(String.valueOf(e));
+        }
+        return threeOutput;
     }
     /**
      * @param inputData
      * 从数据库中捞取预报开始时间前20天到预报结束时间的数据
      * @return 1.断面的陕北模型参数，2.真实径流，率定前的预报径流序列和率定后的预报径流序列
      */
-    public CalibrationOutput oneCalibration(OneCalibrationParam inputData) throws ParseException, IOException, InvalidFormatException {
+    public void oneCalibration(OneCalibrationParam inputData) throws ParseException, IOException, InvalidFormatException {
         FlowSelect flowSelect = new FlowSelect();
         String location = inputData.getLocation();
         List<Object[]> dateList = new ArrayList<>();
-        try {
-            dateList = flowSelect.getFloodDate(inputData);
-        }catch (RuntimeException e){
-            e.printStackTrace();
-            CalibrationOutput result = new CalibrationOutput();
-            result.setError(String.valueOf(e));
-            return result;
-        }
+        dateList = flowSelect.getFloodDate(inputData);
         List<CalibrationData> dataList = new ArrayList<>();
         for (int i = 0; i < dateList.size(); i++) {
             ForecastInputParamNew forecastInputParamNew = new ForecastInputParamNew();
@@ -129,7 +115,6 @@ public class ShanBeiCalibration {
             historyRDataList.add(dataList.get(i).getHisR());//前20天雨量
             baseAveList.add(dataList.get(i).getBaseFlow());//基础径流
         }
-        return oneStationCalibration();
     }
 
     /**
@@ -179,11 +164,11 @@ public class ShanBeiCalibration {
                 }
             }
         }
-        if (location.equals("楼头区间")){
+        if (location.equals("头屯河")){
             area = 380.0;
             List<List<PredictInputData>> qjIntegration = dataUtils.irrigateRainIntegration(paramNew);
-            hour = dataUtils.pointToSurface(qjIntegration.get(0),"小时","楼头区间");//前10小时以及期间的降雨
-            day = dataUtils.pointToSurface(qjIntegration.get(1),"日","楼头区间");//前20天累积雨量
+            hour = dataUtils.pointToSurface(qjIntegration.get(0),"小时","头屯河");//前10小时以及期间的降雨
+            day = dataUtils.pointToSurface(qjIntegration.get(1),"日","头屯河");//前20天累积雨量
             qjFlow = paramNew.getIrrigatedHydrologyParam().getTthInput();//流量
             for (int i = 0; i < qjFlow.size(); i++) {
                 if (qjFlow.get(i).getMonitorTime().after(startTimeBefore)&&qjFlow.get(i).getMonitorTime().before(endTime)){
@@ -224,7 +209,7 @@ public class ShanBeiCalibration {
         Object[][] snow = new Object[hour.size()/24 + 1][2];
         double baseAve = 0.0;
 
-        if (!location.equals("楼头区间")){
+        if (!location.equals("头屯河")){
             for (int i = 0; i < preRE.length; i++) {
                 Calendar calendar1 = Calendar.getInstance();
                 calendar1.setTime(dateStart);
@@ -329,8 +314,9 @@ public class ShanBeiCalibration {
      * @return
      * @throws IOException
      */
-    public Object[][] oneSnowFlow(String location,Date startTime,int number) throws IOException {
+    public Object[][] oneSnowFlow(String location, Date startTime, int number) throws IOException {
         Object[][] result = new Object[number/24+1][2];
+        location = (location.equals("头屯河") ? "楼头区间" : location);
         Object[][] input = ExcelTool.readExcel("D:\\头屯河历史数据1.xlsx",location+"日");
         int days = number/24 + 1;
         for (int i = 0; i < days; i++) {
@@ -367,29 +353,34 @@ public class ShanBeiCalibration {
      * @return
      * @throws IOException
      */
-    public CalibrationOutput oneStationCalibration() throws IOException, InvalidFormatException {
+    public CalibrationOutput oneStationCalibration(OneCalibrationParam inputData) throws IOException, InvalidFormatException, ParseException {
         CalibrationOutput results = new CalibrationOutput();
         // 定义模型各参数的有效范围
         Interval[] regionIntervals = new Interval[]{
-                new Interval(0.001, 0.02),//FB
-                new Interval(60, 120),//WM
-                new Interval(1, 1),//K
-                new Interval(18, 30),//FC
-                new Interval(80, 120),//FM
+                new Interval(0.008, 0.2),//FB
+                new Interval(60, 100),//WM
+                new Interval(0.9, 1),//K
+                new Interval(18, 40),//FC
+                new Interval(60, 120),//FM
                 new Interval(0.1, 0.3),//K
                 new Interval(0.3, 0.4),//B
-                new Interval(0.96, 0.995),//CS
+                new Interval(0.96, 0.98),//CS
         };
-        ShanBeiCalibration shanBeiCalibration = new ShanBeiCalibration();
+        //导入输入数据
+
+        oneCalibration(inputData);
         // 创建PSO算法的问题域
-        Domain domain = new Domain(regionIntervals, shanBeiCalibration::Evaluate, 1);
+
+        Domain domain = new Domain(regionIntervals, ShanBeiCalibration::Evaluate, 0);
+
 
         // 创建PSO算法实例
         PSO pso = new PSO(domain);
 
         // 运行算法并存储结果
-        PSOResult result = pso.Execute(1000, 3000);
+        PSOResult result = pso.Execute(60, 100);
 
+        System.out.println(result);
         // 输出结果
         ShanbeiParam shanbeiParamNew = new ShanbeiParam();
         shanbeiParamNew.setArea(Area);
@@ -411,7 +402,7 @@ public class ShanBeiCalibration {
             Object[][] historyFData = historyFDataList.get(i);
             double baseAve = 0.0;
             int duration = durationList.get(i);
-//            CalibrationFlow flow = new CalibrationFlow();
+
             //洪水过程推演
             if (isAutomatic){
                 shanbeiModel.InputData(shanbeiParamNew,preREData,historyRData)
@@ -427,18 +418,20 @@ public class ShanBeiCalibration {
             Object[] timeData = new Object[duration];
             double[] hisData = new double[duration];
             double[] preData = new double[duration];
+            int beforeHours = inputUtils.beforeHours;
             //洪水过程对比
             for (int j = 0; j < duration; j++) {
                 for (int k = 0; k < baseAveList.get(i).length; k++) {
-                    if (timeUtils.DateCompare((Date) historyFData[j][0],(Date) baseAveList.get(i)[k][0],"日")){
+                    if (timeUtils.DateCompare((Date) historyFData[j+beforeHours][0],(Date) baseAveList.get(i)[k][0],"日")){
                         baseAve = (double) baseAveList.get(i)[k][1];
                     }else {
                         baseAve = (double) historyFData[0][1];
                     }
                 }
-                timeData[j]=historyFData[j][0];
-                hisData[j]=(double) historyFData[j][1];
-                hisList.add((double) historyFData[j][1]);
+
+                timeData[j]=historyFData[j+beforeHours][0];
+                hisData[j]=(double) historyFData[j+beforeHours][1];
+                hisList.add((double) historyFData[j+beforeHours][1]);
                 preData[j]=shanbeiModel.Q[j] + baseAve;
                 preList.add(shanbeiModel.Q[j] + baseAve);
             }
@@ -452,11 +445,6 @@ public class ShanBeiCalibration {
             for (int j = 0; j < duration; j++) {
                 preDataOld[j]=shanbeiModel.Q[j] + baseAve;
             }
-//            flow.setTime(timeData);
-//            flow.setHistoryFlow(hisData);
-//            flow.setNewParamFlow(preData);
-//            flow.setPreParamFlow(preDataOld);
-//            flowList.add(flow);
             for (int j = 0; j < duration; j++) {
                 CalibrationFlow flow = new CalibrationFlow();
                 flow.setTime((Date) timeData[j]);
@@ -465,6 +453,7 @@ public class ShanBeiCalibration {
                 flow.setNewParamFlow(preData[j]);
                 flowList.add(flow);
             }
+
             //写表格
             Object[][] flowData =new Object[hisData.length + 1][2];
             flowData[0][0]="真实径流";
@@ -482,6 +471,7 @@ public class ShanBeiCalibration {
             preData[i] = preList.get(i);
         }
         Double error = qualifyRate(hisData,preData);
+        shanbeiParamNew.setL(shanbeiModel.L);
         shanbeiParamNew.setQC(error);
 
 
@@ -491,11 +481,12 @@ public class ShanBeiCalibration {
     }
 
     // 定义PSO算法目标函数
-    public double Evaluate(double[] params) {
+    public static double Evaluate(double[] params) {
         ParameterValidation parameterValidation =new ParameterValidation();
         List<Double> hisFlowList = new ArrayList<>();
         List<Double> preFlowList = new ArrayList<>();
         ShanbeiParam shanbeiParam = new ShanbeiParam();
+        ShanBeiModel shanBeiModel = new ShanBeiModel();
         shanbeiParam.setArea(Area);//流域面积
         shanbeiParam.setFB(params[0]);//不透水面积的比例，透水面积比例为1-FB
         shanbeiParam.setWM(params[1]);//张力水蓄水容量，或最大蓄水量 60-80mm
@@ -513,7 +504,7 @@ public class ShanBeiCalibration {
             double baseAve = 0.0;
             int duration = durationList.get(i);
             //洪水过程推演
-            shanbeiModel.InputData(shanbeiParam,preREData,historyRData)
+            shanBeiModel.InputData(shanbeiParam,preREData,historyRData)
                     .InitialMoistureContentCalculation()
                     .RunoffYieldCalculation_UnevenInfiltration()
                     .ConfluenceCalculation();
@@ -527,7 +518,7 @@ public class ShanBeiCalibration {
                     }
                 }
                 hisFlowList.add((double) historyFData[j][1]);
-                preFlowList.add(shanbeiModel.Q[j] + baseAve);
+                preFlowList.add(shanBeiModel.Q[j] + baseAve);
             }
         }
         double[] historyFlow = new double[hisFlowList.size()];
@@ -536,10 +527,10 @@ public class ShanBeiCalibration {
             historyFlow[j] = hisFlowList.get(j);
             predictFlow[j] = preFlowList.get(j);
         }
-        ShanBeiCalibration shanBeiCalibration = new ShanBeiCalibration();
+
 //        return parameterValidation.NashSutcliffeEfficiency(historyFlow, predictFlow);
 
-        return shanBeiCalibration.RMSE(historyFlow,predictFlow);
+        return RMSE(historyFlow,predictFlow);
     }
 
 
@@ -569,9 +560,8 @@ public class ShanBeiCalibration {
         return sum;
     }
 
-    public double RMSE(double[] a, double[] b) {
+    public static double RMSE(double[] a, double[] b) {
         if (a.length != b.length) {
-
             return -1;
         }
         double result = 0;
