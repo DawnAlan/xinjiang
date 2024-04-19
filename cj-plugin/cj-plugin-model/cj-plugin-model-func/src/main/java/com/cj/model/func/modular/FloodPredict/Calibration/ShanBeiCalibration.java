@@ -411,7 +411,7 @@ public class ShanBeiCalibration {
             Object[][] historyFData = historyFDataList.get(i);
             double baseAve = 0.0;
             int duration = durationList.get(i);
-            CalibrationFlow flow = new CalibrationFlow();
+//            CalibrationFlow flow = new CalibrationFlow();
             //洪水过程推演
             if (isAutomatic){
                 shanbeiModel.InputData(shanbeiParamNew,preREData,historyRData)
@@ -452,11 +452,19 @@ public class ShanBeiCalibration {
             for (int j = 0; j < duration; j++) {
                 preDataOld[j]=shanbeiModel.Q[j] + baseAve;
             }
-            flow.setTime(timeData);
-            flow.setHistoryFlow(hisData);
-            flow.setNewParamFlow(preData);
-            flow.setPreParamFlow(preDataOld);
-            flowList.add(flow);
+//            flow.setTime(timeData);
+//            flow.setHistoryFlow(hisData);
+//            flow.setNewParamFlow(preData);
+//            flow.setPreParamFlow(preDataOld);
+//            flowList.add(flow);
+            for (int j = 0; j < duration; j++) {
+                CalibrationFlow flow = new CalibrationFlow();
+                flow.setTime((Date) timeData[j]);
+                flow.setHistoryFlow(hisData[j]);
+                flow.setPreParamFlow(preDataOld[j]);
+                flow.setNewParamFlow(preData[j]);
+                flowList.add(flow);
+            }
             //写表格
             Object[][] flowData =new Object[hisData.length + 1][2];
             flowData[0][0]="真实径流";
