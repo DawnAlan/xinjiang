@@ -1,7 +1,5 @@
 package com.cj.flood.func.modular.prediction.bean.req;
 
-import com.alibaba.excel.annotation.format.DateTimeFormat;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 

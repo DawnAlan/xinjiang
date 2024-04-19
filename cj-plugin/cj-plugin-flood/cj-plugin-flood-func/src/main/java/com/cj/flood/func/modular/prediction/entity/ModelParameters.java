@@ -2,6 +2,8 @@ package com.cj.flood.func.modular.prediction.entity;
 
 import java.util.Date;
 import com.baomidou.mybatisplus.extension.activerecord.Model;
+import io.swagger.models.auth.In;
+import lombok.Builder;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -10,9 +12,10 @@ import java.io.Serializable;
  * 陕北模型参数(ModelParameters)表实体类
  *
  * @author makejava
- * @since 2024-04-19 14:25:17
+ * @since 2024-03-13 12:27:10
  */
 @Data
+@Builder
 public class ModelParameters extends Model<ModelParameters> {
     
     private String id;
@@ -37,7 +40,7 @@ public class ModelParameters extends Model<ModelParameters> {
     //地面径流消退系数
     private Double cs;
     //汇流滞时
-    private Double l;
+    private Integer l;
     //前期径流
     private Integer puelwpactdax;
     //降水系数
@@ -47,7 +50,7 @@ public class ModelParameters extends Model<ModelParameters> {
     //合格率
     private Double rate;
     //关联id
-    private String parentId;
+    private Integer state;
     //备注
     private String remarks;
     }

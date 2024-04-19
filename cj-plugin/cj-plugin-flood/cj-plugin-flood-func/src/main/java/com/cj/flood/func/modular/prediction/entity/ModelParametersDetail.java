@@ -2,6 +2,7 @@ package com.cj.flood.func.modular.prediction.entity;
 
 import java.util.Date;
 import com.baomidou.mybatisplus.extension.activerecord.Model;
+import lombok.Builder;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -13,6 +14,7 @@ import java.io.Serializable;
  * @since 2024-04-19 14:26:51
  */
 @Data
+@Builder
 public class ModelParametersDetail extends Model<ModelParametersDetail> {
     
     private String id;
