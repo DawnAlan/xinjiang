@@ -685,8 +685,6 @@ public class OutResult {
         }catch (IOException e) {
             e.printStackTrace();
         }
-
-
     }
 
 

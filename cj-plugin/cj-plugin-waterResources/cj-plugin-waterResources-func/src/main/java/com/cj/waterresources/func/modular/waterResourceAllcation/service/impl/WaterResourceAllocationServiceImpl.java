@@ -918,24 +918,28 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
 
     private List<Waterdemand> setWaterNeedUnitId(List<Waterdemand> demands) {
         if (useWaterManagementUnitIdMap == null) {
-            List<UseWaterManagement> list = useWaterManagementService.list();
-            Map<String, List<UseWaterManagement>> useWaterManagementMapById = list.stream().collect(Collectors.groupingBy(UseWaterManagement::getId));
-            useWaterManagementUnitIdMap = list.stream().collect(Collectors.toMap(
-                    n -> n.getUseWaterPlan()
+            synchronized (this){
+                if (useWaterManagementUnitIdMap == null) {
+                    List<UseWaterManagement> list = useWaterManagementService.list();
+                    Map<String, List<UseWaterManagement>> useWaterManagementMapById = list.stream().collect(Collectors.groupingBy(UseWaterManagement::getId));
+                    useWaterManagementUnitIdMap = list.stream().collect(Collectors.toMap(
+                            n -> n.getUseWaterPlan()
                             + "-" + n.getArea()
                             + (n.getPId().equals("0") || !useWaterManagementMapById.containsKey(n.getPId()) ? "" : "-" + useWaterManagementMapById.get(n.getPId()).get(0).getUnitName())
                             + "-" + n.getUnitName(),
-                    n -> n.getUnitId(),
-                    (oldValue, newValue) -> newValue));
+                            n -> n.getUnitId(),
+                            (oldValue, newValue) -> newValue));
+                }
+            }
         }
         demands.forEach(demand -> demand.setUnitId(useWaterManagementUnitIdMap.get(
                 (demand.getUseWaterPlan().equals("year") ? "年用水计划"
-                        : demand.getUseWaterPlan().equals("month") ? "月用水计划"
-                        : demand.getUseWaterPlan().equals("tenDays") ? "旬用水计划"
-                        : "日用水计划")
-                        + "-" + demand.getArea()
-                        + (demand.getUseWaterPlan().equals("day") ? "-" + demand.getUnit() : "")
-                        + (demand.getUseWaterPlan().equals("day") ? "-" + demand.getSubArea() : "-" + demand.getUnit())
+                : demand.getUseWaterPlan().equals("month") ? "月用水计划"
+                : demand.getUseWaterPlan().equals("tenDays") ? "旬用水计划"
+                : "日用水计划")
+                + "-" + demand.getArea()
+                + (demand.getUseWaterPlan().equals("day") ? "-" + demand.getUnit() : "")
+                + (demand.getUseWaterPlan().equals("day") ? "-" + demand.getSubArea() : "-" + demand.getUnit())
         )));
         return demands;
     }

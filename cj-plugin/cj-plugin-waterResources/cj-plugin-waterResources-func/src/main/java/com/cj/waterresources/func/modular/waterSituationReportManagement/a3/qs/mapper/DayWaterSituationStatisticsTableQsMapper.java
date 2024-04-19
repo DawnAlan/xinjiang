@@ -51,7 +51,7 @@ public interface DayWaterSituationStatisticsTableQsMapper extends BaseMapper<Day
     @Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_QS where TIME = '今日均'")
     List<DayWaterSituationStatisticsTableQs> selectAllListToday();
 
-    @Select("select ID,RECORD_TIME,TIME,TABLE_HEAD_ID,V,END_TABLE_LIST from DAY_WATER_SITUATION_STATISTICS_TABLE_QS WHERE RECORD_TIME = #{recordTime}  and TIME = '08:00'")
+    @Select("select ID,RECORD_TIME,TIME,TABLE_HEAD_ID,V,END_TABLE_LIST from DAY_WATER_SITUATION_STATISTICS_TABLE_QS WHERE RECORD_TIME = #{recordTime}  and TIME = '18:00'")
     List<DayWaterSituationStatisticsTableQs> selectForApproval(@Param("recordTime")String recordTime);
 }
 

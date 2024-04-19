@@ -89,6 +89,14 @@ public class AllController {
         return allService.selectFloodRetentionCapacityNew(date,ids);
     }
 
+    @ApiOperationSupport(order = 8)
+    @ApiOperation("A3表查询2库的出入库流量详情")
+    @CommonLog(value = "A3表查询2库的出入库流量详情")
+    @GetMapping("/selectCapacityOutPutDetail")
+    public RestResponse selectCapacityOutPutDetail(@RequestParam("date") String date,@RequestParam("ids") String ids) {
+        return allService.selectCapacityOutPutDetail(date,ids);
+    }
+
     @ApiOperationSupport(order = 9)
     @ApiOperation("防洪-查询今日水情和实时水情")
     @CommonLog(value = "防洪-查询今日水情和实时水情")

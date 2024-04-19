@@ -39,4 +39,6 @@ public interface AllService {
     RestResponse selectReservoirHistoryList(SelectReservoirHistoryListReq req);
 
     RestResponse<List<RealTimeEngineeringSituationDataRes>> getRealTimeWaterLevelData(String date);
+
+    RestResponse selectCapacityOutPutDetail(String date, String ids);
 }

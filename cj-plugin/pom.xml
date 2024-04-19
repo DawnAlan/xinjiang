@@ -43,6 +43,7 @@
         <module>cj-plugin-approval</module>
         <module>cj-plugin-fourPredictions</module>
         <module>cj-plugin-business-log</module>
+        <module>cj-plugin-xss</module>
     </modules>
 
 </project>

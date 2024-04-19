@@ -63,7 +63,7 @@ public interface DayWaterSituationStatisticsTableLzzMapper extends BaseMapper<Da
     @Select("select ID,RECORD_TIME,TIME,TABLE_HEAD_ID,V from DAY_WATER_SITUATION_STATISTICS_TABLE_LZZ WHERE TABLE_HEAD_ID = #{tableHeadId} and RECORD_TIME between  #{startTime} and #{endTime}  and TIME = '08:00' order by RECORD_TIME asc")
     List<DayWaterSituationStatisticsTableLzz> selectReservoirHistoryList(@Param("startTime")String startTime, @Param("endTime")String endTime,@Param("tableHeadId") String tableHeadId);
 
-    @Select("select ID,RECORD_TIME,TIME,TABLE_HEAD_ID,V,END_TABLE_LIST from DAY_WATER_SITUATION_STATISTICS_TABLE_LZZ WHERE RECORD_TIME = #{recordTime}  and TIME = '08:00'")
+    @Select("select ID,RECORD_TIME,TIME,TABLE_HEAD_ID,V,END_TABLE_LIST from DAY_WATER_SITUATION_STATISTICS_TABLE_LZZ WHERE RECORD_TIME = #{recordTime}  and TIME = '18:00'")
     List<DayWaterSituationStatisticsTableLzz> selectForApproval(@Param("recordTime")String recordTime);
 }
 
