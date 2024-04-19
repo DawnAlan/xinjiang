@@ -11,11 +11,15 @@
     <packaging>jar</packaging>
 
     <dependencies>
+        <!-- 每个插件接口都要引入common -->
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>3.8.1</version>
-            <scope>test</scope>
+            <groupId>com.cj</groupId>
+            <artifactId>cj-common</artifactId>
+        </dependency>
+        <!-- 引入登录鉴权接口，用于实现其登录所需逻辑 -->
+        <dependency>
+            <groupId>com.cj</groupId>
+            <artifactId>cj-plugin-auth-api</artifactId>
         </dependency>
     </dependencies>
 </project>

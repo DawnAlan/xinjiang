@@ -45,6 +45,10 @@ public class InstructionViewingController{
     @CommonLog(value = "指令查看表修改阅读状态")
     @GetMapping("/updateRedsStatus")
     public RestResponse updateRedsStatus(@RequestParam("id") String id) {
+        InstructionViewing byId = instructionViewingService.getById(id);
+        if(byId.getReadTime() !=null){
+            return RestResponse.ok();
+        }
         boolean update = instructionViewingService.lambdaUpdate().set(InstructionViewing::getReadTime,new Date()).
                 set(InstructionViewing::getViewStatus, 1).eq(InstructionViewing::getId, id).update();
         if(update){

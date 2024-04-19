@@ -2,6 +2,7 @@ package com.cj.approval.func.modular.approval.instructionFeedback.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cj.approval.func.core.utils.WebSocketServer;
+import com.cj.approval.func.modular.approval.approvalManagement.bean.res.SendMsgRes;
 import com.cj.approval.func.modular.approval.approvalManagement.entity.ApprovalManagement;
 import com.cj.approval.func.modular.approval.approvalManagement.service.ApprovalManagementService;
 import com.cj.approval.func.modular.approval.instructionFeedback.mapper.InstructionFeedbackMapper;
@@ -13,6 +14,9 @@ import com.cj.auth.core.pojo.SaBaseLoginUser;
 import com.cj.auth.core.util.StpLoginUserUtil;
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.UUIDUtils;
+import com.cj.msg.entity.OverallMsg;
+import com.cj.msg.enums.MessageCategoryEnum;
+import com.cj.msg.service.OverallMsgService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +36,9 @@ public class InstructionFeedbackServiceImpl extends ServiceImpl<InstructionFeedb
 
     @Autowired
     private InstructionViewingService instructionViewingService;
+
+    @Autowired
+    private OverallMsgService overallMsgService;
 
 
     @Override
@@ -64,7 +71,9 @@ public class InstructionFeedbackServiceImpl extends ServiceImpl<InstructionFeedb
                 try {
                     String[] split = instructionFeedback.getRecipientId().split(",");
                     for (String s : split){
-                        WebSocketServer.sendInfo(instructionFeedback.getFeedbackBy()+"已反馈，反馈的信息："+instructionFeedback.getFeedbackContext(),s);
+                        String msgContext = instructionFeedback.getFeedbackBy()+"已反馈，反馈的信息："+instructionFeedback.getFeedbackContext();
+                        saveMsg(saBaseLoginUser,msgContext,s,"");
+                        WebSocketServer.sendInfo(msgContext,s);
                     }
                 }catch (Exception e){
                     e.printStackTrace();
@@ -78,6 +87,25 @@ public class InstructionFeedbackServiceImpl extends ServiceImpl<InstructionFeedb
         }else {
             return RestResponse.no("error");
         }
+    }
+
+    private void saveMsg(SaBaseLoginUser saBaseLoginUser,String msgContext,String receiveUser,String extJson){
+        OverallMsg msg = new OverallMsg();
+        msg.setId(UUIDUtils.getUUID());
+        msg.setSubject(msgContext);
+        msg.setCreateTime(new Date());
+        msg.setIsRead(0);
+        msg.setCreateUser(saBaseLoginUser.getId());
+        msg.setReceiveUser(receiveUser);
+        msg.setCategory(MessageCategoryEnum.APPROVAL.getValue());
+        msg.setExtJson(extJson);
+        SendMsgRes sendMsgRes = new SendMsgRes();
+        sendMsgRes.setSendBy(saBaseLoginUser.getName());
+        sendMsgRes.setSendUnit(saBaseLoginUser.getOrgName());
+        sendMsgRes.setSendTime(new Date());
+        sendMsgRes.setSendContent(msgContext);
+        msg.setContent(com.alibaba.fastjson2.JSONObject.toJSONString(sendMsgRes));
+        overallMsgService.save(msg);
     }
 }
 
