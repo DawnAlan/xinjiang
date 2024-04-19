@@ -11,6 +11,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cj.approval.func.core.utils.MinioUtils;
 import com.cj.approval.func.core.utils.WebSocketServer;
 import com.cj.approval.func.modular.approval.approvalManagement.bean.req.SelectListReq;
+import com.cj.approval.func.modular.approval.approvalManagement.bean.res.SendMsgRes;
 import com.cj.approval.func.modular.approval.approvalManagement.mapper.ApprovalManagementMapper;
 import com.cj.approval.func.modular.approval.approvalManagement.entity.ApprovalManagement;
 import com.cj.approval.func.modular.approval.approvalManagement.service.ApprovalManagementService;
@@ -21,6 +22,9 @@ import com.cj.auth.core.util.StpLoginUserUtil;
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.RedisUtil;
 import com.cj.common.util.UUIDUtils;
+import com.cj.msg.entity.OverallMsg;
+import com.cj.msg.enums.MessageCategoryEnum;
+import com.cj.msg.service.OverallMsgService;
 import com.cj.sys.api.SysOrgApi;
 import com.cj.sys.api.SysUserApi;
 import com.deepoove.poi.XWPFTemplate;
@@ -86,6 +90,9 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
     @Value("${minio.url}")
     private String url;
 
+    @Autowired
+    private OverallMsgService overallMsgService;
+
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
     private SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -125,7 +132,9 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
                     String[] approvedById = approvalManagement.getApprovedById().split(",");
                     int i = 1;
                     for (String s:approvedById){
-                        WebSocketServer.sendInfo("您有一条待审批的指令",s);
+                        String msgContext = "您有一条待审批的指令";
+                        saveMsg(saBaseLoginUser,msgContext,s,"");
+                        WebSocketServer.sendInfo(msgContext,s);
                         log.warn("已发送指令："+i+",用户id："+s);
                     }
                 }catch (Exception e){
@@ -191,7 +200,9 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
                         if(!byId1.getInstructionType().equals("指令签批")){
                             String[] lssuedById = byId1.getLssuedById().split(",");
                             for(String s:lssuedById){
-                                WebSocketServer.sendInfo("您创建的指令已审批",s);
+                                String msgContext = "您创建的指令已审批";
+                                saveMsg(saBaseLoginUser,msgContext,s,"");
+                                WebSocketServer.sendInfo(msgContext,s);
                             }
                             String[] split = byId1.getRecipientId().split(",");
                             for(String s:split){
@@ -199,12 +210,16 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
                                 String orgId = (String) userByIdWithoutException.get("orgId");
                                 InstructionViewing one = instructionViewingService.lambdaQuery().eq(InstructionViewing::getInstructionId, approvalManagement.getId()).
                                         eq(InstructionViewing::getUnitId, orgId).one();
-                                WebSocketServer.sendInfo("您有一条待执行的指令,"+one.getId(),s);
+                                String msgContext = "您有一条待执行的指令";
+                                saveMsg(saBaseLoginUser,msgContext,s,one.getId());
+                                WebSocketServer.sendInfo(msgContext+","+one.getId(),s);
                             }
                         }else {
                             String[] lssuedById = byId1.getLssuedById().split(",");
                             for(String s:lssuedById){
-                                WebSocketServer.sendInfo("您创建的指令已审批",s);
+                                String msgContext = "您创建的指令已审批";
+                                saveMsg(saBaseLoginUser,msgContext,s,"");
+                                WebSocketServer.sendInfo(msgContext,s);
                             }
                         }
                     }
@@ -224,23 +239,30 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
     @SneakyThrows
     @Override
     public RestResponse revoke(String id) {
+        SaBaseLoginUser saBaseLoginUser = StpLoginUserUtil.getLoginUser();
         ApprovalManagement byId = this.getById(id);
         boolean update = this.lambdaUpdate().set(ApprovalManagement::getInstructionStatus, 4).eq(ApprovalManagement::getId, id).update();
         if(update){
             if(byId.getApprovalStatus()==1){
                 String[] split = byId.getApprovedById().split(",");
                 for(String s:split){
-                    WebSocketServer.sendInfo(sdf1.format(byId.getCreateTime())+byId.getDispatchingObjectives()+"已撤销",s);
+                    String msgContext = sdf1.format(byId.getCreateTime())+byId.getDispatchingObjectives()+"已撤销";
+                    saveMsg(saBaseLoginUser,msgContext,s,"");
+                    WebSocketServer.sendInfo(msgContext,s);
                 }
             }
             if(byId.getApprovalStatus()==2){
                 String[] split1 = byId.getApprovedById().split(",");
                 for(String s:split1){
-                    WebSocketServer.sendInfo(sdf1.format(byId.getCreateTime())+byId.getDispatchingObjectives()+"已撤销",s);
+                    String msgContext = sdf1.format(byId.getCreateTime())+byId.getDispatchingObjectives()+"已撤销";
+                    saveMsg(saBaseLoginUser,msgContext,s,"");
+                    WebSocketServer.sendInfo(msgContext,s);
                 }
                 String[] split2 = byId.getRecipientId().split(",");
                 for(String s:split2){
-                    WebSocketServer.sendInfo(sdf1.format(byId.getCreateTime())+byId.getDispatchingObjectives()+"已撤销",s);
+                    String msgContext = sdf1.format(byId.getCreateTime())+byId.getDispatchingObjectives()+"已撤销";
+                    saveMsg(saBaseLoginUser,msgContext,s,"");
+                    WebSocketServer.sendInfo(msgContext,s);
                 }
             }
             return RestResponse.ok("撤销成功");
@@ -265,7 +287,9 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
         if(update) {
             String[] approvedById = approvalManagement.getApprovedById().split(",");
             for (String s:approvedById){
-                WebSocketServer.sendInfo("您有一条待审批的指令",s);
+                String msgContext = "您有一条待审批的指令";
+                saveMsg(saBaseLoginUser,msgContext,s,"");
+                WebSocketServer.sendInfo(msgContext,s);
             }
             return RestResponse.ok();
         }else {
@@ -522,6 +546,25 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
         }else {
             return false;
         }
+    }
+
+    private void saveMsg(SaBaseLoginUser saBaseLoginUser,String msgContext,String receiveUser,String extJson){
+        OverallMsg msg = new OverallMsg();
+        msg.setId(UUIDUtils.getUUID());
+        msg.setSubject(msgContext);
+        msg.setCreateTime(new Date());
+        msg.setIsRead(0);
+        msg.setCreateUser(saBaseLoginUser.getId());
+        msg.setReceiveUser(receiveUser);
+        msg.setCategory(MessageCategoryEnum.APPROVAL.getValue());
+        msg.setExtJson(extJson);
+        SendMsgRes sendMsgRes = new SendMsgRes();
+        sendMsgRes.setSendBy(saBaseLoginUser.getName());
+        sendMsgRes.setSendUnit(saBaseLoginUser.getOrgName());
+        sendMsgRes.setSendTime(new Date());
+        sendMsgRes.setSendContent(msgContext);
+        msg.setContent(com.alibaba.fastjson2.JSONObject.toJSONString(sendMsgRes));
+        overallMsgService.save(msg);
     }
 }
 

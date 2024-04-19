@@ -22,7 +22,7 @@ public class CommonPageRequest {
 
     private static final String PAGE_PARAM_NAME = "current";
 
-    private static final Integer PAGE_SIZE_MAX_VALUE = 100;
+    private static final Integer PAGE_SIZE_MAX_VALUE = 10000;
 
     public static <T> Page<T> defaultPage() {
         return defaultPage(null);
