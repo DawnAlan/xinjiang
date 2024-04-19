@@ -661,9 +661,11 @@ public class AllServiceImpl implements AllService {
         tth.setYesterdayFloodRetentionCapacity(tthDouble==null?null:tthDouble>0?tthDouble:0.00);
         tth.setYearFloodRetentionCapacity(formatDouble((Double)redisUtil.get("floodRetentionCapacity:tth")));
         tth.setReservoirName("头屯河水库");
+        Double lzzOutputFlow = 0.00;
+        Double tthOutputFlow = 0.00;
+        Double tthInputFlow = 0.00;
         for(OverallSituationUnitMgr mgr:idsList){
             if(getTopUnitNameFromOverallSituationUnitMgr(mgr.getId()).equals("楼庄子水库")){
-                Double outputFlow = 0.00;
                 lzz.setOverallId(mgr.getId());
                 if(StringUtils.isNotEmpty(mgr.getMonitorId())){
                     LzzGaugingStation info = lzzGaugingStationMapper.selectInfoForIndex(mgr.getMonitorId(), date);
@@ -671,13 +673,13 @@ public class AllServiceImpl implements AllService {
                         lzz.setInputFlow(info==null?null:info.getFlow());
                     }
                     if(mgr.getUnitName().contains("河道")){
-                        outputFlow+=info==null?0.00:info.getFlow()==null?0.00:info.getFlow();
+                        lzzOutputFlow+=info==null?0.00:info.getFlow()==null?0.00:info.getFlow();
                     }
                     if(mgr.getUnitName().contains("楼庄子水厂管道1")){
-                        outputFlow+=info==null?0.00:info.getFlow()==null?0.00:info.getFlow();
+                        lzzOutputFlow+=info==null?0.00:info.getFlow()==null?0.00:info.getFlow();
                     }
                     if(mgr.getUnitName().contains("楼庄子水厂管道2")){
-                        outputFlow+=info==null?0.00:info.getFlow()==null?0.00:info.getFlow();
+                        lzzOutputFlow+=info==null?0.00:info.getFlow()==null?0.00:info.getFlow();
                     }
                 }else {
                     TrendsTableParam param = trendsTableParamList.stream().filter(t -> t.getUseStation().equals("楼庄子水库") && t.getUseType() == 1 && StringUtils.isNotEmpty(t.getUnitId())&& t.getUnitId().equals(mgr.getId())).collect(Collectors.toList()).get(0);
@@ -686,39 +688,77 @@ public class AllServiceImpl implements AllService {
                         lzz.setInputFlow(dayWaterSituationStatisticsTableLzz==null?null:dayWaterSituationStatisticsTableLzz.getV());
                     }
                     if(param.getParamName().contains("河道")){
-                        outputFlow+=dayWaterSituationStatisticsTableLzz==null?0.00:dayWaterSituationStatisticsTableLzz.getV()==null?0.00:dayWaterSituationStatisticsTableLzz.getV();
+                        lzzOutputFlow+=dayWaterSituationStatisticsTableLzz==null?0.00:dayWaterSituationStatisticsTableLzz.getV()==null?0.00:dayWaterSituationStatisticsTableLzz.getV();
                     }
                     if(param.getParamName().contains("楼庄子水厂管道1")){
-                        outputFlow+=dayWaterSituationStatisticsTableLzz==null?0.00:dayWaterSituationStatisticsTableLzz.getV()==null?0.00:dayWaterSituationStatisticsTableLzz.getV();
+                        lzzOutputFlow+=dayWaterSituationStatisticsTableLzz==null?0.00:dayWaterSituationStatisticsTableLzz.getV()==null?0.00:dayWaterSituationStatisticsTableLzz.getV();
                     }
                     if(param.getParamName().contains("楼庄子水厂管道2")){
-                        outputFlow+=dayWaterSituationStatisticsTableLzz==null?0.00:dayWaterSituationStatisticsTableLzz.getV()==null?0.00:dayWaterSituationStatisticsTableLzz.getV();
+                        lzzOutputFlow+=dayWaterSituationStatisticsTableLzz==null?0.00:dayWaterSituationStatisticsTableLzz.getV()==null?0.00:dayWaterSituationStatisticsTableLzz.getV();
                     }
                 }
-                lzz.setOutputFlow(outputFlow==0.00?null:outputFlow);
             }
             if(getTopUnitNameFromOverallSituationUnitMgr(mgr.getId()).equals("头屯河水库")){
                 tth.setOverallId(mgr.getId());
                 if(StringUtils.isNotEmpty(mgr.getMonitorId())){
                     IrrigatedPlatformDataInfo info = irrigatedPlatformDataInfoMapper.selectInfoForIndex(mgr.getMonitorId(), date);
                     if(mgr.getUnitName().contains("进库")){
-                        tth.setInputFlow(info==null?null:info.getSqMonitorFlow());
+                        tthInputFlow+=info==null?0.00:info.getSqMonitorFlow()==null?0.00:info.getSqMonitorFlow();
+                    }
+                    if(mgr.getUnitName().contains("龙口流量")){
+                        tthInputFlow+=info==null?0.00:info.getSqMonitorFlow()==null?0.00:info.getSqMonitorFlow();
                     }
                     if(mgr.getUnitName().contains("河道")){
-                        tth.setOutputFlow(info==null?null:info.getSqMonitorFlow());
+                        tthOutputFlow+=info==null?0.00:info.getSqMonitorFlow()==null?0.00:info.getSqMonitorFlow();
+                    }
+                    if(mgr.getUnitName().contains("红岩流量")){
+                        tthOutputFlow+=info==null?0.00:info.getSqMonitorFlow()==null?0.00:info.getSqMonitorFlow();
+                    }
+                    if(mgr.getUnitName().contains("暗渠流量")){
+                        tthOutputFlow+=info==null?0.00:info.getSqMonitorFlow()==null?0.00:info.getSqMonitorFlow();
+                    }
+                    if(mgr.getUnitName().contains("清水池泵站")){
+                        tthOutputFlow+=info==null?0.00:info.getSqMonitorFlow()==null?0.00:info.getSqMonitorFlow();
+                    }
+                    if(mgr.getUnitName().contains("八钢浮船")){
+                        tthOutputFlow+=info==null?0.00:info.getSqMonitorFlow()==null?0.00:info.getSqMonitorFlow();
+                    }
+                    if(mgr.getUnitName().contains("龙口直供")){
+                        tthOutputFlow+=info==null?0.00:info.getSqMonitorFlow()==null?0.00:info.getSqMonitorFlow();
                     }
                 }else {
                     TrendsTableParam param = trendsTableParamList.stream().filter(t -> t.getUseStation().equals("头屯河水库") && t.getUseType() == 1 && StringUtils.isNotEmpty(t.getUnitId())&& t.getUnitId().equals(mgr.getId())).collect(Collectors.toList()).get(0);
                     DayWaterSituationStatisticsTableTth dayWaterSituationStatisticsTableTth = dayWaterSituationStatisticsTableTthMapper.selectListForIndex(date, param.getId());
                     if(param.getParamName().contains("进库")){
-                        tth.setInputFlow(dayWaterSituationStatisticsTableTth==null?null:dayWaterSituationStatisticsTableTth.getV());
+                        tthInputFlow+=dayWaterSituationStatisticsTableTth==null?0.00:dayWaterSituationStatisticsTableTth.getV()==null?0.00:dayWaterSituationStatisticsTableTth.getV();
+                    }
+                    if(param.getParamName().contains("龙口流量")){
+                        tthInputFlow+=dayWaterSituationStatisticsTableTth==null?0.00:dayWaterSituationStatisticsTableTth.getV()==null?0.00:dayWaterSituationStatisticsTableTth.getV();
                     }
                     if(param.getParamName().contains("河道")){
-                        tth.setOutputFlow(dayWaterSituationStatisticsTableTth==null?null:dayWaterSituationStatisticsTableTth.getV());
+                        tthOutputFlow+=dayWaterSituationStatisticsTableTth==null?0.00:dayWaterSituationStatisticsTableTth.getV()==null?0.00:dayWaterSituationStatisticsTableTth.getV();
+                    }
+                    if(param.getParamName().contains("红岩流量")){
+                        tthOutputFlow+=dayWaterSituationStatisticsTableTth==null?0.00:dayWaterSituationStatisticsTableTth.getV()==null?0.00:dayWaterSituationStatisticsTableTth.getV();
+                    }
+                    if(param.getParamName().contains("暗渠流量")){
+                        tthOutputFlow+=dayWaterSituationStatisticsTableTth==null?0.00:dayWaterSituationStatisticsTableTth.getV()==null?0.00:dayWaterSituationStatisticsTableTth.getV();
+                    }
+                    if(param.getParamName().contains("清水池泵站")){
+                        tthOutputFlow+=dayWaterSituationStatisticsTableTth==null?0.00:dayWaterSituationStatisticsTableTth.getV()==null?0.00:dayWaterSituationStatisticsTableTth.getV();
+                    }
+                    if(param.getParamName().contains("八钢浮船")){
+                        tthOutputFlow+=dayWaterSituationStatisticsTableTth==null?0.00:dayWaterSituationStatisticsTableTth.getV()==null?0.00:dayWaterSituationStatisticsTableTth.getV();
+                    }
+                    if(param.getParamName().contains("龙口直供")){
+                        tthOutputFlow+=dayWaterSituationStatisticsTableTth==null?0.00:dayWaterSituationStatisticsTableTth.getV()==null?0.00:dayWaterSituationStatisticsTableTth.getV();
                     }
                 }
             }
         }
+        lzz.setOutputFlow(lzzOutputFlow==0.00?null:lzzOutputFlow);
+        tth.setOutputFlow(tthOutputFlow==0.00?null:tthOutputFlow);
+        tth.setInputFlow(tthInputFlow==0.00?null:tthInputFlow);
         resList.add(lzz);
         resList.add(tth);
         return RestResponse.ok(resList);
@@ -1316,6 +1356,55 @@ public class AllServiceImpl implements AllService {
         }
         tthData.setRemainingStorageCapacity(formatDouble(2030.0 - tthData.getUsedStorageCapacity()));
         result.add(tthData);
+        return RestResponse.ok(result);
+    }
+
+    @Override
+    public RestResponse selectCapacityOutPutDetail(String date, String ids) {
+        List<SelectCapacityOutPutDetailRes> result = new ArrayList<>();
+        List<OverallSituationUnitMgr> idsList = new ArrayList<>();
+        String overall = (String) redisUtil.get("overallSituationUnitMgr:list");
+        if(StringUtils.isEmpty(overall)){
+            List<OverallSituationUnitMgr> list = overallSituationUnitMgrService.list();
+            redisUtil.set("overallSituationUnitMgr:list", JSONObject.toJSONString(list));
+            overall = JSONObject.toJSONString(list);
+        }
+        List<OverallSituationUnitMgr> list = JSONObject.parseArray(overall, OverallSituationUnitMgr.class);
+        String mk = (String) redisUtil.get("trendsTableParam:list");
+        if(StringUtils.isEmpty(mk)){
+            trendsTableParamService.updateCache();
+            mk = (String) redisUtil.get("trendsTableParam:list");
+        }
+        List<TrendsTableParam> trendsTableParamList = JSONObject.parseArray(mk, TrendsTableParam.class);
+        for (String id:ids.split(",")){
+            idsList.add(list.stream().filter(t -> t.getId().equals(id)).collect(Collectors.toList()).get(0));
+        }
+        for(OverallSituationUnitMgr mgr:idsList){
+            SelectCapacityOutPutDetailRes res = new SelectCapacityOutPutDetailRes();
+            res.setStationName(mgr.getUnitName());
+            if(getTopUnitNameFromOverallSituationUnitMgr(mgr.getId()).equals("楼庄子水库")){
+                if(StringUtils.isNotEmpty(mgr.getMonitorId())){
+                    LzzGaugingStation info = lzzGaugingStationMapper.selectInfoForIndex(mgr.getMonitorId(), date);
+                    res.setFlow(info==null?0.00:info.getFlow()==null?0.00:info.getFlow());
+                }else {
+                    TrendsTableParam param = trendsTableParamList.stream().filter(t -> t.getUseStation().equals("楼庄子水库") && t.getUseType() == 1 && StringUtils.isNotEmpty(t.getUnitId())&& t.getUnitId().equals(mgr.getId())).collect(Collectors.toList()).get(0);
+                    DayWaterSituationStatisticsTableLzz dayWaterSituationStatisticsTableLzz = dayWaterSituationStatisticsTableLzzMapper.selectListForIndex(date, param.getId());
+                    res.setFlow(dayWaterSituationStatisticsTableLzz==null?0.00:dayWaterSituationStatisticsTableLzz.getV()==null?0.00:dayWaterSituationStatisticsTableLzz.getV());
+                }
+            }
+            if(getTopUnitNameFromOverallSituationUnitMgr(mgr.getId()).equals("头屯河水库")){
+                if(StringUtils.isNotEmpty(mgr.getMonitorId())){
+                    IrrigatedPlatformDataInfo info = irrigatedPlatformDataInfoMapper.selectInfoForIndex(mgr.getMonitorId(), date);
+                    res.setFlow(info==null?0.00:info.getSqMonitorFlow()==null?0.00:info.getSqMonitorFlow());
+
+                }else {
+                    TrendsTableParam param = trendsTableParamList.stream().filter(t -> t.getUseStation().equals("头屯河水库") && t.getUseType() == 1 && StringUtils.isNotEmpty(t.getUnitId())&& t.getUnitId().equals(mgr.getId())).collect(Collectors.toList()).get(0);
+                    DayWaterSituationStatisticsTableTth dayWaterSituationStatisticsTableTth = dayWaterSituationStatisticsTableTthMapper.selectListForIndex(date, param.getId());
+                    res.setFlow(dayWaterSituationStatisticsTableTth==null?0.00:dayWaterSituationStatisticsTableTth.getV()==null?0.00:dayWaterSituationStatisticsTableTth.getV());
+                }
+            }
+            result.add(res);
+        }
         return RestResponse.ok(result);
     }
 

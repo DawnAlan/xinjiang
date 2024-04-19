@@ -240,6 +240,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         sysUser.setPassword(CommonCryptogramUtil.doHashValue(devConfigApi.getValueByKey(SYS_DEFAULT_PASSWORD_KEY)));
         // 设置状态
         sysUser.setUserStatus(SysUserStatusEnum.ENABLE.getValue());
+        sysUser.setOrgName(sysOrgService.getById(sysUser.getOrgId()).getName());
         this.save(sysUser);
 
         // 发布增加事件

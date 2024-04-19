@@ -19,8 +19,8 @@ public class IndexServiceImpl implements IndexService {
     @Resource
     private ApprovalApi approvalApi;
     @Override
-    public RestResponse getTodayWaterDiversionInstruction() {
-        String data = approvalApi.getTotalCount();
+    public RestResponse getTodayWaterDiversionInstruction(String time) {
+        String data = approvalApi.getTotalCount(time);
         if(StringUtils.isNotEmpty(data)){
             return RestResponse.ok(JSONObject.parseObject(data));
         }else {
@@ -29,8 +29,8 @@ public class IndexServiceImpl implements IndexService {
     }
 
     @Override
-    public RestResponse getRealTimeWaterSituationOfTheReservoir(String reservoir) {
-        String data = waterResourceApi.getRealTimeWaterSituationOfTheReservoir(reservoir);
+    public RestResponse getRealTimeWaterSituationOfTheReservoir(String reservoir,String time) {
+        String data = waterResourceApi.getRealTimeWaterSituationOfTheReservoir(reservoir,time);
         if(StringUtils.isNotEmpty(data)){
             return RestResponse.ok(JSONObject.parseObject(data));
         }else {
@@ -39,8 +39,8 @@ public class IndexServiceImpl implements IndexService {
     }
 
     @Override
-    public RestResponse getRealTimeWaterLevel(String station) {
-        String data = waterResourceApi.getRealTimeWaterLevel(station);
+    public RestResponse getRealTimeWaterLevel(String station,String time) {
+        String data = waterResourceApi.getRealTimeWaterLevel(station,time);
         if(StringUtils.isNotEmpty(data)){
             return RestResponse.ok(JSONObject.parseArray(data));
         }else {
@@ -49,8 +49,8 @@ public class IndexServiceImpl implements IndexService {
     }
 
     @Override
-    public RestResponse getWaterSupplyStatistics(String station) {
-        String data = waterResourceApi.getWaterSupplyStatistics(station);
+    public RestResponse getWaterSupplyStatistics(String time) {
+        String data = waterResourceApi.getWaterSupplyStatistics(time);
         if(StringUtils.isNotEmpty(data)){
             return RestResponse.ok(JSONObject.parseObject(data));
         }else {
@@ -59,8 +59,8 @@ public class IndexServiceImpl implements IndexService {
     }
 
     @Override
-    public RestResponse getWaterFeeStatistics() {
-        String data = waterResourceApi.getWaterFeeStatistics();
+    public RestResponse getWaterFeeStatistics(String time) {
+        String data = waterResourceApi.getWaterFeeStatistics(time);
         if(StringUtils.isNotEmpty(data)){
             return RestResponse.ok(JSONObject.parseObject(data));
         }else {
@@ -69,8 +69,8 @@ public class IndexServiceImpl implements IndexService {
     }
 
     @Override
-    public RestResponse getTodayInspectionStatistics() {
-        String data = waterResourceApi.getTodayInspectionStatistics();
+    public RestResponse getTodayInspectionStatistics(String time) {
+        String data = waterResourceApi.getTodayInspectionStatistics(time);
         if(StringUtils.isNotEmpty(data)){
             return RestResponse.ok(JSONObject.parseObject(data));
         }else {

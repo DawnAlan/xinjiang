@@ -693,6 +693,13 @@ public class InputWay {
         String[][] nameAgricultureQushouDay = new String[nameAgricultureQushou.length][1];
         String[][] nameGreenQushouDay = new String[nameGreenQushou.length][1];
 
+        String[][] idAgricultureEastDay = new String[nameAgricultureEast.length][1];
+        String[][] idAgricultureWestDay = new String[nameAgricultureWest.length][1] ;
+        String[][] idGreenEastDay = new String[nameGreenEast.length][1];
+        String[][] idGreenWestDay = new String[nameGreenWest.length][1] ;
+        String[][] idAgricultureQushouDay = new String[nameAgricultureQushou.length][1];
+        String[][] idGreenQushouDay = new String[nameGreenQushou.length][1];
+
         double[][] demandAgricultureEastDay = new double[nameAgricultureEast.length][1];
         double[][] demandAgricultureWestDay = new double[nameAgricultureWest.length][1] ;
         double[][] demandGreenEastDay = new double[nameGreenEast.length][1];
@@ -700,29 +707,35 @@ public class InputWay {
         double[][] demandAgricultureQushouDay = new double[nameAgricultureQushou.length][1];
         double[][] demandGreenQushouDay = new double[nameGreenQushou.length][1];
         for (int i=0;i<nameAgricultureEastDay.length;i++){
-            nameAgricultureEastDay[i]=getNameDay(waterDemandData,"河东管理站",nameAgricultureEast[i]);
+            nameAgricultureEastDay[i]=getNameDay(waterDemandData,"河东管理站",nameAgricultureEast[i])[0];
+            idAgricultureEastDay[i]=getNameDay(waterDemandData,"河东管理站",nameAgricultureEast[i])[1];
             demandAgricultureEastDay[i]=getDemandDay(waterDemandData,"河东管理站",nameAgricultureEastDay[i]);
         }
 
         for (int i=0;i<nameAgricultureWestDay.length;i++){
-            nameAgricultureWestDay[i]=getNameDay(waterDemandData,"河西管理站",nameAgricultureWest[i]);
+            nameAgricultureWestDay[i]=getNameDay(waterDemandData,"河西管理站",nameAgricultureWest[i])[0];
+            idAgricultureWestDay[i]=getNameDay(waterDemandData,"河西管理站",nameAgricultureWest[i])[1];
             demandAgricultureWestDay[i]=getDemandDay(waterDemandData,"河西管理站",nameAgricultureWestDay[i]);
         }
         for (int i=0;i<nameGreenEastDay.length;i++){
-            nameGreenEastDay[i]=getNameDay(waterDemandData,"河东管理站",nameGreenEast[i]);
+            nameGreenEastDay[i]=getNameDay(waterDemandData,"河东管理站",nameGreenEast[i])[0];
+            idGreenEastDay[i]=getNameDay(waterDemandData,"河东管理站",nameGreenEast[i])[1];
             demandGreenEastDay[i]=getDemandDay(waterDemandData,"河东管理站",nameGreenEastDay[i]);
         }
         for (int i=0;i<nameGreenWestDay.length;i++){
-            nameGreenWestDay[i]=getNameDay(waterDemandData,"河西管理站",nameGreenWest[i]);
+            nameGreenWestDay[i]=getNameDay(waterDemandData,"河西管理站",nameGreenWest[i])[0];
+            idGreenWestDay[i]=getNameDay(waterDemandData,"河西管理站",nameGreenWest[i])[1];
             demandGreenWestDay[i]=getDemandDay(waterDemandData,"河西管理站",nameGreenWestDay[i]);
 
         }
         for (int i=0;i<nameAgricultureQushouDay.length;i++){
-            nameAgricultureQushouDay[i]=getNameDay(waterDemandData,"渠首管理站",nameAgricultureQushou[i]);
+            nameAgricultureQushouDay[i]=getNameDay(waterDemandData,"渠首管理站",nameAgricultureQushou[i])[0];
+            idAgricultureQushouDay[i]=getNameDay(waterDemandData,"渠首管理站",nameAgricultureQushou[i])[1];
             demandAgricultureQushouDay[i]=getDemandDay(waterDemandData,"渠首管理站",nameAgricultureQushouDay[i]);
         }
         for (int i=0;i<nameGreenQushouDay.length;i++){
-            nameGreenQushouDay[i]=getNameDay(waterDemandData,"渠首管理站",nameGreenQushou[i]);
+            nameGreenQushouDay[i]=getNameDay(waterDemandData,"渠首管理站",nameGreenQushou[i])[0];
+            idGreenQushouDay[i]=getNameDay(waterDemandData,"渠首管理站",nameGreenQushou[i])[1];
             demandGreenQushouDay[i]=getDemandDay(waterDemandData,"渠首管理站",nameGreenQushouDay[i]);
         }
 
@@ -948,6 +961,13 @@ public class InputWay {
         data.put("渠首绿化子级站点名", nameGreenQushouDay);
         data.put("渠首农业子级站点名", nameAgricultureQushouDay);
 
+        data.put("idAgricultureEastSub", idAgricultureEastDay);
+        data.put("idAgricultureWestSub", idAgricultureWestDay);
+        data.put("idGreenEastSub", idGreenEastDay);
+        data.put("idGreenWestSub", idGreenWestDay);
+        data.put("idGreenQushouSub", idGreenQushouDay);
+        data.put("idAgricultureQushouSub", idAgricultureQushouDay);
+
         data.put("河东灌溉子级需水", demandAgricultureEastDay);
         data.put("河西灌溉子级需水", demandAgricultureWestDay);
         data.put("河东绿化子级需水", demandGreenEastDay);
@@ -1143,6 +1163,7 @@ public class InputWay {
     public static double[] getDemandDay(List<Waterdemand> data, String tableName, String[] name) {
         double[] n  =new double[name.length];
         List<Double> demand = new ArrayList<>();
+        List<String> unitID = new ArrayList<>();
         for (int ii=0;ii<name.length;ii++) {
             double x = 0;
             for (int i = 0; i < data.size(); i++) {
@@ -1159,6 +1180,7 @@ public class InputWay {
                                     if (x>=0){
                                         demand.add(x);
                                     }
+
                                 }
                             }
                         }
@@ -1319,19 +1341,23 @@ public class InputWay {
         }
     }
 
+
     /**
-     * 获得每天上报计划的名字
+     * 获得每天上报计划的名字和站点对应的id
      * @param data
      * @param tableName
      * @return
      */
-    public static String[] getNameDay(List<Waterdemand> data, String tableName,String unit) {
+    public static String[][] getNameDay(List<Waterdemand> data, String tableName,String unit) {
         List<String> demand = new ArrayList<>();
-
+        List<String> demandID = new ArrayList<>();
         demand = data.stream().filter(n -> n.getArea().equals(tableName)&&n.getUseWaterPlan().equals("day")&&n.getUnit().equals(unit)).map(Waterdemand::getSubArea).distinct().collect(Collectors.toList());
-        String[] demanddata = new String[demand.size()];
+        demandID=data.stream().filter(n -> n.getArea().equals(tableName)&&n.getUseWaterPlan().equals("day")&&n.getUnit().equals(unit)).map(Waterdemand::getUnitId).distinct().collect(Collectors.toList());
+        String[][] demanddata = new String[2][demand.size()];
+
         for (int i = 0; i < demand.size(); i++) {
-            demanddata[i] = demand.get(i);
+            demanddata[0][i] = demand.get(i);
+            demanddata[1][i]=demandID.get(i);
         }
         return demanddata;
     }

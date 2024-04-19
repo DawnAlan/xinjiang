@@ -17,7 +17,7 @@ public interface WaterFeeStatisticsTotalService extends IService<WaterFeeStatist
 
     RestResponse<List<WaterFeeStatisticsTotal>> selectInfoList(WaterFeeStatisticsDetailsSelectListReq req);
 
-    RestResponse selectTotalForIndex();
+    RestResponse selectTotalForIndex(String time);
 
 }
 

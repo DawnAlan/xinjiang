@@ -23,11 +23,9 @@ public class ApprovalApiProvider implements ApprovalApi {
     private ApprovalManagementService approvalManagementService;
 
     @Override
-    public String getTotalCount() {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        String format = sdf.format(new Date());
+    public String getTotalCount(String time) {
         Map<String,Object> result = new HashMap<>();
-        List<ApprovalManagement> list = approvalManagementService.lambdaQuery().between(ApprovalManagement::getCreateTime,format+" 00:00:00",format+" 23:25:59").list();
+        List<ApprovalManagement> list = approvalManagementService.lambdaQuery().between(ApprovalManagement::getCreateTime,time+" 00:00:00",time+" 23:25:59").list();
         long finish = list.stream().filter(t -> t.getInstructionStatus() == 3).count();
         result.put("incomplete",list.size()-finish);
         result.put("finish",finish);

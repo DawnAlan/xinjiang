@@ -91,19 +91,21 @@ public interface WaterResourceFeign {
     String getWaterAlarm();
 
     @RequestMapping("/feign/provider/waterResource/getRealTimeWaterSituationOfTheReservoir")
-    String getRealTimeWaterSituationOfTheReservoir(@RequestParam(value = "reservoir", required =true)String reservoir);
+    String getRealTimeWaterSituationOfTheReservoir(@RequestParam(value = "reservoir", required =true)String reservoir,
+                                                   @RequestParam(value = "time", required =true)String time);
 
     @RequestMapping("/feign/provider/waterResource/getRealTimeWaterLevel")
-    String getRealTimeWaterLevel(@RequestParam(value = "station", required =true)String station);
+    String getRealTimeWaterLevel(@RequestParam(value = "station", required =true)String station,
+                                 @RequestParam(value = "time", required =true)String time);
 
     @RequestMapping("/feign/provider/waterResource/getWaterSupplyStatistics")
-    String getWaterSupplyStatistics(@RequestParam(value = "station", required =true)String station);
+    String getWaterSupplyStatistics(@RequestParam(value = "time", required =true)String time);
 
     @RequestMapping("/feign/provider/waterResource/getWaterFeeStatistics")
-    String getWaterFeeStatistics();
+    String getWaterFeeStatistics(@RequestParam(value = "time", required =true)String time);
 
     @RequestMapping("/feign/provider/waterResource/getTodayInspectionStatistics")
-    String getTodayInspectionStatistics();
+    String getTodayInspectionStatistics(@RequestParam(value = "time", required =true)String time);
 
     @RequestMapping("/feign/provider/waterResource/getFormList")
     String getFormList();

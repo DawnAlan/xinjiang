@@ -30,4 +30,10 @@ public class Excel2 {
     @Excel(name = "proportion")
     private double proportion;
 
+    @Excel(name = "flow")
+    private double flow;
+
+    @Excel(name = "unitId")
+    private String unitId;
+
 }

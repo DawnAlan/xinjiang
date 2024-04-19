@@ -31,9 +31,7 @@ public class Containment {
         List<Double[]> HAQ = new ArrayList<>();
 
         Set<String> keySet = options.keySet();
-        Iterator<String> keys = keySet.iterator();
-        while (keys.hasNext()){
-            String key = keys.next();
+        for (String key : keySet) {
             List<Option> option = options.get(key);
 
             List<Double> Qin_lzz = new ArrayList<>();
@@ -48,45 +46,40 @@ public class Containment {
             List<Double> Retain_tth = new ArrayList<>();
 
 
-
-            for (int i = 0; i < option.size(); i++) {
-                String name = option.get(i).getName();
-                if(name.equals("楼庄子")){
-                    Qin_lzz.add(option.get(i).getQIn());
-                    Qout_lzz.add(option.get(i).getQOut());
-                    V_lzz.add(option.get(i).getV());
-                    H_lzz.add(option.get(i).getH2());
-                    Retain_lzz.add(option.get(i).getRetain());
-                }
-                else if(name.equals("头屯河")){
-                    Qin_tth.add(option.get(i).getQIn());
-                    Qout_tth.add(option.get(i).getQOut());
-                    V_tth.add(option.get(i).getV());
-                    H_tth.add(option.get(i).getH2());
-                    Retain_tth.add(option.get(i).getRetain());
-                }
-                else{
+            for (Option value : option) {
+                String name = value.getName();
+                if (name.equals("楼庄子")) {
+                    Qin_lzz.add(value.getQIn());
+                    Qout_lzz.add(value.getQOut());
+                    V_lzz.add(value.getV());
+                    H_lzz.add(value.getH2());
+                    Retain_lzz.add(value.getRetain());
+                } else if (name.equals("头屯河")) {
+                    Qin_tth.add(value.getQIn());
+                    Qout_tth.add(value.getQOut());
+                    V_tth.add(value.getV());
+                    H_tth.add(value.getH2());
+                    Retain_tth.add(value.getRetain());
+                } else {
                     throw new RuntimeException("方案有误");
                 }
             }
 
-
-
             double a_lzz = BigDecimal.valueOf(FindMax(Retain_lzz)).setScale(2, RoundingMode.HALF_UP).doubleValue();
-            double b_lzz = BigDecimal.valueOf(7259.33-FindMax(V_lzz)).setScale(2, RoundingMode.HALF_UP).doubleValue();
-            double c_lzz = BigDecimal.valueOf(FindMax(Qin_lzz)-FindMax(Qout_lzz)).setScale(2, RoundingMode.HALF_UP).doubleValue();
+            double b_lzz = BigDecimal.valueOf(7259.33 - FindMax(V_lzz)).setScale(2, RoundingMode.HALF_UP).doubleValue();
+            double c_lzz = BigDecimal.valueOf(FindMax(Qin_lzz) - FindMax(Qout_lzz)).setScale(2, RoundingMode.HALF_UP).doubleValue();
 
             double a_tth = BigDecimal.valueOf(FindMax(Retain_tth)).setScale(2, RoundingMode.HALF_UP).doubleValue();
-            double b_tth = BigDecimal.valueOf(1297.03-FindMax(V_tth)).setScale(2, RoundingMode.HALF_UP).doubleValue();
-            double c_tth = BigDecimal.valueOf(FindMax(Qin_tth)-FindMax(Qout_tth)).setScale(2, RoundingMode.HALF_UP).doubleValue();
+            double b_tth = BigDecimal.valueOf(1297.03 - FindMax(V_tth)).setScale(2, RoundingMode.HALF_UP).doubleValue();
+            double c_tth = BigDecimal.valueOf(FindMax(Qin_tth) - FindMax(Qout_tth)).setScale(2, RoundingMode.HALF_UP).doubleValue();
 
-            retain_lzz.put(key,Math.max(a_lzz,0));
-            remain_lzz.put(key,Math.max(b_lzz,0));
-            peakShave_lzz.put(key,Math.max(0,c_lzz));
+            retain_lzz.put(key, Math.max(a_lzz, 0));
+            remain_lzz.put(key, Math.max(b_lzz, 0));
+            peakShave_lzz.put(key, Math.max(0, c_lzz));
 
-            retain_tth.put(key,Math.max(0,a_tth));
-            remain_tth.put(key,Math.max(0,b_tth));
-            peakShave_tth.put(key,Math.max(0,c_tth));
+            retain_tth.put(key, Math.max(0, a_tth));
+            remain_tth.put(key, Math.max(0, b_tth));
+            peakShave_tth.put(key, Math.max(0, c_tth));
 
             //计算方案评价
             double maxH_lzz = FindMax(H_lzz);
@@ -95,14 +88,13 @@ public class Containment {
             double maxQin = FindMax(Qin_tth);
             double maxH_tth = FindMax(H_tth);
             double maxQ_tth = FindMax(Qout_tth);
-            String str="楼庄子最大出库流量为"+maxQ_lzz+"立方米/秒,最大坝前水位为"+maxH_lzz+"米；" +
-                       "头屯河最大入库流量为"+maxQin+"立方米/秒，最大出库流量为"+maxQ_tth+"立方米/秒,最大坝前水位为"+maxH_tth+"米。";
-            Opinion.put(key,str);
+            String str = "楼庄子最大出库流量为" + maxQ_lzz + "立方米/秒,最大坝前水位为" + maxH_lzz + "米；" +
+                    "头屯河最大入库流量为" + maxQin + "立方米/秒，最大出库流量为" + maxQ_tth + "立方米/秒,最大坝前水位为" + maxH_tth + "米。";
+            Opinion.put(key, str);
 
             Key_num.add(key);
-            HAQ.add(new Double[]{maxH_lzz, maxQ_lzz,maxH_tth,maxQ_tth});
+            HAQ.add(new Double[]{maxH_lzz, maxQ_lzz, maxH_tth, maxQ_tth});
         }
-
         lzz.put("削减洪峰",peakShave_lzz);
         lzz.put("剩余库容",remain_lzz);
         lzz.put("拦蓄洪量",retain_lzz);

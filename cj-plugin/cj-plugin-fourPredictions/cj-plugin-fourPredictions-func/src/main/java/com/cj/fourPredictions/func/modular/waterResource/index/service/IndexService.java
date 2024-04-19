@@ -4,15 +4,15 @@ import com.cj.common.model.RestResponse;
 
 public interface IndexService {
 
-    RestResponse getTodayWaterDiversionInstruction();
+    RestResponse getTodayWaterDiversionInstruction(String time);
 
-    RestResponse getRealTimeWaterSituationOfTheReservoir(String reservoir);
+    RestResponse getRealTimeWaterSituationOfTheReservoir(String reservoir,String time);
 
-    RestResponse getRealTimeWaterLevel(String station);
+    RestResponse getRealTimeWaterLevel(String station,String time);
 
-    RestResponse getWaterSupplyStatistics(String station);
+    RestResponse getWaterSupplyStatistics(String time);
 
-    RestResponse getWaterFeeStatistics();
+    RestResponse getWaterFeeStatistics(String time);
 
-    RestResponse getTodayInspectionStatistics();
+    RestResponse getTodayInspectionStatistics(String time);
 }

@@ -39,8 +39,10 @@ import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.entity.W
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.service.WaterFeeStatisticsTotalService;
 import com.cj.waterresources.func.modular.waterResourceAllcation.entity.WaterResourceAllocation;
 import com.cj.waterresources.func.modular.waterResourceAllcation.service.WaterResourceAllocationService;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.bean.res.LzzReportFormsRes;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.entity.DayWaterSituationStatisticsTableLzz;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.service.DayWaterSituationStatisticsTableLzzService;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tth.bean.res.TthReportFormsRes;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tth.entity.DayWaterSituationStatisticsTableTth;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tth.service.DayWaterSituationStatisticsTableTthService;
 import com.cj.waterresources.func.modular.waterStorageScheduling.waterStorageSchedulingLzz.entity.WaterStorageSchedulingLzz;
@@ -50,6 +52,7 @@ import com.cj.waterresources.func.modular.waterStorageScheduling.waterStorageSch
 import com.cj.waterresources.func.modular.waterStorageScheduling.waterStorageSchedulingTth.entity.WaterStorageSchedulingTth;
 import com.cj.waterresources.func.modular.waterStorageScheduling.waterStorageSchedulingTth.service.WaterStorageSchedulingTthService;
 import lombok.AllArgsConstructor;
+import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -555,7 +558,7 @@ public class WaterResourceApiProvider implements WaterResourceApi {
     }
 
     @Override
-    public String getRealTimeWaterSituationOfTheReservoir(String reservoir) {
+    public String getRealTimeWaterSituationOfTheReservoir(String reservoir,String time) {
         String mk = (String) redisUtil.get("trendsTableParam:list");
         if(StringUtils.isEmpty(mk)){
             updateCache();
@@ -573,7 +576,7 @@ public class WaterResourceApiProvider implements WaterResourceApi {
             TrendsTableParam lzzKrTableParam = lzzTableParam.stream().filter(t -> t.getParamName().equals("库容")).collect(Collectors.toList()).get(0);
             TrendsTableParam lzzJkzdTableParam = lzzTableParam.stream().filter(t -> t.getParamName().equals("进库浊度")).collect(Collectors.toList()).get(0);
             TrendsTableParam lzzCkzdTableParam = lzzTableParam.stream().filter(t -> t.getParamName().equals("出库河道浊度")).collect(Collectors.toList()).get(0);
-            RestResponse<Map<String, List<DayWaterSituationStatisticsTableLzz>>> mapRestResponse = dayWaterSituationStatisticsTableLzzService.selectList(sdf.format(new Date()));
+            RestResponse<Map<String, List<DayWaterSituationStatisticsTableLzz>>> mapRestResponse = dayWaterSituationStatisticsTableLzzService.selectList(time);
             Map<String,Object> lzzResult = new HashMap<>();
             if(mapRestResponse.getCode()==200){
                 List<DayWaterSituationStatisticsTableLzz> dataList = new ArrayList<>();
@@ -611,7 +614,7 @@ public class WaterResourceApiProvider implements WaterResourceApi {
             TrendsTableParam tthKrTableParam = tthTableParam.stream().filter(t -> t.getParamName().equals("水库库容")).collect(Collectors.toList()).get(0);
             TrendsTableParam tthJkzdTableParam = tthTableParam.stream().filter(t -> t.getParamName().equals("进库浊度")).collect(Collectors.toList()).get(0);
             TrendsTableParam tthCkzdTableParam = tthTableParam.stream().filter(t -> t.getParamName().equals("河道浊度")).collect(Collectors.toList()).get(0);
-            RestResponse<Map<String, List<DayWaterSituationStatisticsTableTth>>> mapRestResponse1 = dayWaterSituationStatisticsTableTthService.selectList(sdf.format(new Date()));
+            RestResponse<Map<String, List<DayWaterSituationStatisticsTableTth>>> mapRestResponse1 = dayWaterSituationStatisticsTableTthService.selectList(time);
             Map<String,Object> tthResult = new HashMap<>();
             if(mapRestResponse1.getCode()==200){
                 List<DayWaterSituationStatisticsTableTth> dataList = new ArrayList<>();
@@ -644,46 +647,33 @@ public class WaterResourceApiProvider implements WaterResourceApi {
     }
 
     @Override
-    public String getRealTimeWaterLevel(String station) {
-        List<IrrigatedPlatformDataInfo> realTimeWaterLevel = irrigatedPlatformDataInfoService.getRealTimeWaterLevel(station);
+    public String getRealTimeWaterLevel(String station,String time) {
+        List<IrrigatedPlatformDataInfo> realTimeWaterLevel = irrigatedPlatformDataInfoService.getRealTimeWaterLevel(station,time);
         if(null != realTimeWaterLevel && realTimeWaterLevel.size()>0){
             return JSONObject.toJSONString(realTimeWaterLevel);
         }
         return null;
     }
 
+    @SneakyThrows
     @Override
-    public String getWaterSupplyStatistics(String station) {
-        Integer year = LocalDateTime.now().getYear();
+    public String getWaterSupplyStatistics(String time) {
         Map<String,Object> result = new HashMap<>();
-        Map<String,Object> waterUser = new HashMap<>();
-        RestResponse<List<WaterStorageOverviewRes>> listRestResponse = waterResourceHomePageService.waterStorageOverview(new Date());
-        if(listRestResponse.getCode()==200){
-            List<WaterStorageOverviewRes> data = listRestResponse.getData();
-            result.put("lzzSupply",data.stream().filter(t->t.getWaterStorageName().equals("楼庄子水库")).map(WaterStorageOverviewRes::getYearFloodRetentionCapacity).collect(Collectors.toList()).get(0));
-            result.put("tthSupply",data.stream().filter(t->t.getWaterStorageName().equals("头屯河水库")).map(WaterStorageOverviewRes::getYearFloodRetentionCapacity).collect(Collectors.toList()).get(0));
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        if(sdf.parse(time).compareTo(sdf.parse(sdf.format(new Date())))==0){
+            result.put("lzzSupply",formatDoubleForThreeDecimal((Double)redisUtil.get("floodRetentionCapacity:lzz")));
+            result.put("tthSupply",formatDoubleForThreeDecimal((Double)redisUtil.get("floodRetentionCapacity:tth")));
         }else {
-            result.put("lzzSupply",null);
-            result.put("lzzSupply",null);
-        }
-        List<IrrigationQuota> list = irrigationQuotaService.lambdaQuery().eq(IrrigationQuota::getStation, station).eq(IrrigationQuota::getYear,year).
-                eq(IrrigationQuota::getDel,0).list();
-        Map<String, List<IrrigationQuota>> collect = list.stream().collect(Collectors.groupingBy(IrrigationQuota::getWaterUser));
-        Set<String> strings = collect.keySet();
-        for(String s:strings){
-            Double aDouble = collect.get(s).stream().map(IrrigationQuota::getAccumulatedTotalIrrigationAmount).reduce(Double::sum).orElse(0.00);
-            waterUser.put(s,aDouble);
-        }
-        if(waterUser.size()>0){
-            result.put("waterUser",waterUser);
-        }else {
-            result.put("waterUser",null);
+            result.put("lzzSupply",floodRetentionCapacityLzz(time));
+            result.put("tthSupply",floodRetentionCapacityTth(time));
         }
         return JSONObject.toJSONString(result);
     }
 
+    @SneakyThrows
     @Override
-    public String getWaterFeeStatistics() {
+    public String getWaterFeeStatistics(String time) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         String mk = (String) redisUtil.get("trendsTableParam:list");
         if(StringUtils.isEmpty(mk)){
             updateCache();
@@ -691,9 +681,19 @@ public class WaterResourceApiProvider implements WaterResourceApi {
         }
         List<TrendsTableParam> trendsTableParamListTemp = JSONObject.parseArray(mk, TrendsTableParam.class);
         Map<String,WaterFeeStatisticsRes> result = new HashMap<>();
-        Integer year = LocalDateTime.now().getYear();
-        Integer month = LocalDateTime.now().getMonth().getValue();
-        Integer day = LocalDateTime.now().getDayOfMonth()-1;
+        Integer year =0;
+        Integer month =0;
+        Integer day=0 ;
+        if(sdf.parse(time).compareTo(sdf.parse(sdf.format(new Date())))==0){
+            year = LocalDateTime.now().getYear();
+            month = LocalDateTime.now().getMonth().getValue();
+            day = LocalDateTime.now().getDayOfMonth()-1;
+        }else {
+            String[] split = time.split("-");
+            year = Integer.valueOf(split[0]);
+            month = Integer.valueOf(split[1]);
+            day = Integer.valueOf(split[2]);
+        }
         List<TrendsTableParam> totalId = trendsTableParamListTemp.stream().filter(t->t.getPId().equals("0") && t.getUseType()==2 && t.getParamName().equals("合计") && !t.getUseStation().equals("城市工业")).collect(Collectors.toList());
         List<WaterFeeStatisticsTotal> waterFeeStatisticsTotalList = waterFeeStatisticsTotalService.lambdaQuery().
                 eq(WaterFeeStatisticsTotal::getYear, year).
@@ -719,15 +719,15 @@ public class WaterResourceApiProvider implements WaterResourceApi {
     }
 
     @Override
-    public String getTodayInspectionStatistics() {
+    public String getTodayInspectionStatistics(String time) {
         Map<String,Object> result = new HashMap<>();
-        List<AbnormalRes> abnormalList1 = inspectionInterface.getAbnormalList1();
+        List<AbnormalRes> abnormalList1 = inspectionInterface.getAbnormalList1(time);
         if(null != abnormalList1 && abnormalList1.size()>0){
             result.put("findProblem",abnormalList1.size());
         }else {
             result.put("findProblem",null);
         }
-        List<InspectionRes> inspectionList1 = inspectionInterface.getInspectionList1();
+        List<InspectionRes> inspectionList1 = inspectionInterface.getInspectionList1(time);
         if(null != inspectionList1 && inspectionList1.size()>0){
             Map<String,Object> inspectionMap = new HashMap<>();
             Map<String, List<InspectionRes>> collect = inspectionList1.stream().collect(Collectors.groupingBy(InspectionRes::getTaskFlag_dictText));
@@ -821,9 +821,40 @@ public class WaterResourceApiProvider implements WaterResourceApi {
     }
 
     private Double formatDoubleForThreeDecimal(Double value){
+        if(value==null){
+            return null;
+        }
         DecimalFormat df = new DecimalFormat("#0.00");
         String format = df.format(value);
         double v = Double.parseDouble(format);
         return v;
     }
+    public Double floodRetentionCapacityLzz(String time){
+        String[] split = time.split("-");
+        String startTime = split[0]+"-01-01";
+        List<LzzReportFormsRes> lzzReportFormsResList = dayWaterSituationStatisticsTableLzzService.selectReportForms(startTime, time).getData();
+        Double lzzYearFloodRetentionCapacity = 0.0;
+        for(int i=lzzReportFormsResList.size()-1;i>=1;i--){
+            Double tempValue = lzzReportFormsResList.get(i).getStorageCapacity()-lzzReportFormsResList.get(i-1).getStorageCapacity();
+            if(tempValue>0){
+                lzzYearFloodRetentionCapacity+=tempValue;
+            }
+        }
+        return lzzYearFloodRetentionCapacity;
+    }
+
+    public Double floodRetentionCapacityTth(String time){
+        String[] split = time.split("-");
+        String startTime = split[0]+"-01-01";
+        List<TthReportFormsRes> tthReportFormsResList = dayWaterSituationStatisticsTableTthService.selectReportForms(startTime, time).getData();
+        Double tthYearFloodRetentionCapacity = 0.0;
+        for(int i=tthReportFormsResList.size()-1;i>=1;i--){
+            Double tempValue = tthReportFormsResList.get(i).getStorageCapacity()-tthReportFormsResList.get(i-1).getStorageCapacity();
+            if(tempValue>0){
+                tthYearFloodRetentionCapacity+=tempValue;
+            }
+        }
+        return tthYearFloodRetentionCapacity;
+    }
+
 }

@@ -82,9 +82,17 @@ public class Option {
      */
     @Excel(name = "percentage2",width = 15,orderNum = "14")
     private double percentage2;
-
-    private List<Double> limits;
-
+    /**
+     * 汛限水位
+     */
     @Excel(name = "limits",width = 15,orderNum = "15")
     private String limitString;
+
+
+    private double remainQ;
+    private List<Double> limits;
+    private double min;
+    private double max;
+
+
 }

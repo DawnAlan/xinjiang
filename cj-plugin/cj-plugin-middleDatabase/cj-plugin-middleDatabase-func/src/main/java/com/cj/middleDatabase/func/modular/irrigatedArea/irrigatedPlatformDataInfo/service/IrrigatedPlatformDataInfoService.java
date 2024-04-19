@@ -38,7 +38,7 @@ public interface IrrigatedPlatformDataInfoService extends IService<IrrigatedPlat
 
     List<IrrigatedPlatformDataInfo> selectHistoryList(String name, String startTime, String endTime);
 
-    List<IrrigatedPlatformDataInfo> getRealTimeWaterLevel(String station);
+    List<IrrigatedPlatformDataInfo> getRealTimeWaterLevel(String station,String time);
 
     List<IrrigatedPlatformDataInfo> getCurrentDate(String startTime, String endTime);
 

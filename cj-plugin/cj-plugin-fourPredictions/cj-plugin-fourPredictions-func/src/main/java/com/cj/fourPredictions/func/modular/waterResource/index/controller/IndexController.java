@@ -25,42 +25,44 @@ public class IndexController {
     @ApiOperationSupport(order = 1)
     @ApiOperation("水库实时水情")
     @GetMapping("/getRealTimeWaterSituationOfTheReservoir")
-    public RestResponse getRealTimeWaterSituationOfTheReservoir(@RequestParam(value = "reservoir")String reservoir) {
-        return indexService.getRealTimeWaterSituationOfTheReservoir(reservoir);
+    public RestResponse getRealTimeWaterSituationOfTheReservoir(@RequestParam(value = "reservoir",required = true)String reservoir,
+                                                                @RequestParam(value = "time",required = true)String time) {
+        return indexService.getRealTimeWaterSituationOfTheReservoir(reservoir,time);
     }
 
     @ApiOperationSupport(order = 2)
     @ApiOperation("实时水位")
     @GetMapping("/getRealTimeWaterLevel")
-    public RestResponse getRealTimeWaterLevel(@RequestParam(value = "station")String station) {
-        return indexService.getRealTimeWaterLevel(station);
+    public RestResponse getRealTimeWaterLevel(@RequestParam(value = "station",required = true)String station,
+                                              @RequestParam(value = "time",required = true)String time) {
+        return indexService.getRealTimeWaterLevel(station,time);
     }
 
     @ApiOperationSupport(order = 3)
     @ApiOperation("今日调水指令")
     @GetMapping("/getTodayWaterDiversionInstruction")
-    public RestResponse getTodayWaterDiversionInstruction() {
-        return indexService.getTodayWaterDiversionInstruction();
+    public RestResponse getTodayWaterDiversionInstruction(@RequestParam(value = "time",required = true)String time) {
+        return indexService.getTodayWaterDiversionInstruction(time);
     }
 
     @ApiOperationSupport(order = 4)
     @ApiOperation("供水统计")
     @GetMapping("/getWaterSupplyStatistics")
-    public RestResponse getWaterSupplyStatistics(@RequestParam(value = "station")String station) {
-        return indexService.getWaterSupplyStatistics(station);
+    public RestResponse getWaterSupplyStatistics(@RequestParam(value = "time",required = true)String time) {
+        return indexService.getWaterSupplyStatistics(time);
     }
 
     @ApiOperationSupport(order = 5)
     @ApiOperation("水费统计")
     @GetMapping("/getWaterFeeStatistics")
-    public RestResponse getWaterFeeStatistics() {
-        return indexService.getWaterFeeStatistics();
+    public RestResponse getWaterFeeStatistics(@RequestParam(value = "time",required = true)String time) {
+        return indexService.getWaterFeeStatistics(time);
     }
 
     @ApiOperationSupport(order = 6)
     @ApiOperation("今日巡查统计")
     @GetMapping("/getTodayInspectionStatistics")
-    public RestResponse getTodayInspectionStatistics() {
-        return indexService.getTodayInspectionStatistics();
+    public RestResponse getTodayInspectionStatistics(@RequestParam(value = "time",required = true)String time) {
+        return indexService.getTodayInspectionStatistics(time);
     }
 }

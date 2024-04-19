@@ -45,8 +45,8 @@ public class TenDaysWaterBalanceController{
     @ApiOperation("四预水资源预告预警供水统计图表")
     @CommonLog(value = "四预水资源预告预警供水统计图表")
     @GetMapping("/selectTotalForIndexWarning")
-    public RestResponse selectTotalForIndexWarning(@RequestParam("stationName") String stationName) {
-        return tenDaysWaterBalanceService.selectTotalForIndexWarning(stationName);
+    public RestResponse selectTotalForIndexWarning(@RequestParam("stationName") String stationName,@RequestParam("time") String time) {
+        return tenDaysWaterBalanceService.selectTotalForIndexWarning(stationName,time);
     }
 }
 

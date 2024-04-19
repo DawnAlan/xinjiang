@@ -14,7 +14,7 @@ public class ApprovalApiContextBean implements ApprovalApi {
     private final ApprovalFeign approvalFeign;
 
     @Override
-    public String getTotalCount() {
-        return approvalFeign.getTotalCount();
+    public String getTotalCount(String time) {
+        return approvalFeign.getTotalCount(time);
     }
 }

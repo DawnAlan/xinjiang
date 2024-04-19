@@ -14,7 +14,7 @@ public class ApprovalFeignProvider implements ApprovalFeign {
     private final ApprovalApiProvider approvalApiProvider;
 
     @Override
-    public String getTotalCount() {
-        return approvalApiProvider.getTotalCount();
+    public String getTotalCount(String time) {
+        return approvalApiProvider.getTotalCount(time);
     }
 }

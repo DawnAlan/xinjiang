@@ -98,8 +98,8 @@ public class WaterFeeStatisticsDetailsController {
     @ApiOperation("四预水资源首页供水统计图表")
     @CommonLog(value = "四预水资源首页供水统计图表")
     @GetMapping("/selectTotalForIndex")
-    public RestResponse selectTotalForIndex(@RequestParam("stationName") String stationName) {
-        return waterFeeStatisticsDetailsService.selectTotalForIndex(stationName);
+    public RestResponse selectTotalForIndex(@RequestParam("stationName") String stationName,@RequestParam("time") String time) {
+        return waterFeeStatisticsDetailsService.selectTotalForIndex(stationName,time);
     }
 }
 

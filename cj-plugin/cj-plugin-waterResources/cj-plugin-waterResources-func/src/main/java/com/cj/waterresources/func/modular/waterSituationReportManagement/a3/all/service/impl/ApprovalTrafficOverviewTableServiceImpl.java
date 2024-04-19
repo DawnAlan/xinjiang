@@ -3,12 +3,17 @@ package com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cj.common.model.RestResponse;
+import com.cj.common.util.ExcelUtils;
 import com.cj.common.util.RedisUtil;
 import com.cj.common.util.UUIDUtils;
+import com.cj.model.func.core.util.MinioUtils;
+import com.cj.model.func.core.util.MultipartFileUtil;
+import com.cj.model.func.modular.watertransfer.entity.Excel2;
 import com.cj.waterresources.func.modular.trendsTable.entity.TrendsTableParam;
 import com.cj.waterresources.func.modular.trendsTable.service.TrendsTableParamService;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.dayWaterUsePlan.entity.DayWaterUsePlan;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.dayWaterUsePlan.service.DayWaterUsePlanService;
+import com.cj.waterresources.func.modular.waterResourceAllcation.entity.WaterResourceAllocation;
 import com.cj.waterresources.func.modular.waterResourceAllcation.service.WaterResourceAllocationService;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req.ApprovalTrafficOverviewTableAddReq;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.res.ApprovalTrafficRes;
@@ -42,7 +47,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -64,6 +71,9 @@ public class ApprovalTrafficOverviewTableServiceImpl extends ServiceImpl<Approva
 
     @Autowired
     private RedisUtil redisUtil;
+
+    @Autowired
+    private MinioUtils minioUtils;
 
     @Autowired
     private WaterResourceAllocationService waterResourceAllocationService;
@@ -337,10 +347,8 @@ public class ApprovalTrafficOverviewTableServiceImpl extends ServiceImpl<Approva
             resultList.addAll(approvalTrafficOverviewLzzList);
             resultMap.put("楼庄子水库",approvalTrafficOverviewLzzList);
         }
-        DayWaterUsePlan qs = dayWaterUsePlanService.lambdaQuery().eq(DayWaterUsePlan::getRecordTime, calculateDay(format,-1)).eq(DayWaterUsePlan::getArea, "渠首管理站").last("limit 1").one();
+        DayWaterUsePlan qs = dayWaterUsePlanService.lambdaQuery().eq(DayWaterUsePlan::getRecordTime, format).eq(DayWaterUsePlan::getArea, "渠首管理站").last("limit 1").one();
         if (null != qs) {
-            List<DayWaterSituationStatisticsTableQs> qsList = qsMapper.selectForApproval(format);
-            List<DayWaterSituationStatisticsTableQsLh> qsLhList = qsLhMapper.selectForApproval(format);
             List<ApprovalTrafficOverview> approvalTrafficOverviewQsList = new ArrayList<>();
             String json = qs.getV();
             List<ApprovalTrafficRes> approvalTrafficRes = JSONObject.parseArray(json, ApprovalTrafficRes.class);
@@ -351,9 +359,7 @@ public class ApprovalTrafficOverviewTableServiceImpl extends ServiceImpl<Approva
                 approvalTrafficOverview.setOverviewId(id);
                 approvalTrafficOverview.setStationPid(res.getPid());
                 approvalTrafficOverview.setStationName(res.getUnitName());
-                Double eightQs = qsList.stream().filter(t -> t.getTableHeadId().equals(res.getUnitId()) && t.getV() != null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00);
-                Double eightQsLh = qsLhList.stream().filter(t -> t.getTableHeadId().equals(res.getUnitId()) && t.getV() != null).map(DayWaterSituationStatisticsTableQsLh::getV).reduce(Double::sum).orElse(0.00);
-                approvalTrafficOverview.setEightFlow(eightQs+eightQsLh);
+                approvalTrafficOverview.setEightFlow(Double.parseDouble(res.getFlow()));
                 approvalTrafficOverview.setAddSubtractFlow(Double.parseDouble(StringUtils.isEmpty(res.getWaterPlan())?"0.00":res.getWaterPlan()));
                 approvalTrafficOverview.setPlanFlow(Double.parseDouble(StringUtils.isEmpty(res.getFlow())?"0.00":res.getFlow())+Double.parseDouble(StringUtils.isEmpty(res.getWaterPlan())?"0.00":res.getWaterPlan()));
                 approvalTrafficOverview.setReservoir("渠首管理站");
@@ -365,9 +371,7 @@ public class ApprovalTrafficOverviewTableServiceImpl extends ServiceImpl<Approva
                     approvalTrafficOverview1.setOverviewId(id);
                     approvalTrafficOverview1.setStationPid(res1.getPid());
                     approvalTrafficOverview1.setStationName(res1.getUnitName());
-                    Double eightQs1 = qsList.stream().filter(t -> t.getTableHeadId().equals(res1.getUnitId()) && t.getV() != null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00);
-                    Double eightQsLh1 = qsLhList.stream().filter(t -> t.getTableHeadId().equals(res1.getUnitId()) && t.getV() != null).map(DayWaterSituationStatisticsTableQsLh::getV).reduce(Double::sum).orElse(0.00);
-                    approvalTrafficOverview1.setEightFlow(eightQs1+eightQsLh1);
+                    approvalTrafficOverview1.setEightFlow(Double.parseDouble(res1.getFlow()));
                     approvalTrafficOverview1.setAddSubtractFlow(Double.parseDouble(StringUtils.isEmpty(res1.getWaterPlan())?"0.00":res1.getWaterPlan()));
                     approvalTrafficOverview1.setPlanFlow(Double.parseDouble(StringUtils.isEmpty(res1.getFlow())?"0.00":res1.getFlow())+Double.parseDouble(StringUtils.isEmpty(res1.getWaterPlan())?"0.00":res1.getWaterPlan()));
                     approvalTrafficOverview1.setReservoir("渠首管理站");
@@ -377,9 +381,8 @@ public class ApprovalTrafficOverviewTableServiceImpl extends ServiceImpl<Approva
             resultList.addAll(approvalTrafficOverviewQsList);
             resultMap.put("渠首管理站",approvalTrafficOverviewQsList);
         }
-        DayWaterUsePlan hd = dayWaterUsePlanService.lambdaQuery().eq(DayWaterUsePlan::getRecordTime, calculateDay(format,-1)).eq(DayWaterUsePlan::getArea, "河东管理站").last("limit 1").one();
+        DayWaterUsePlan hd = dayWaterUsePlanService.lambdaQuery().eq(DayWaterUsePlan::getRecordTime, format).eq(DayWaterUsePlan::getArea, "河东管理站").last("limit 1").one();
         if (null != hd) {
-            List<DayWaterSituationStatisticsTableHd> hdList = hdMapper.selectForApproval(format);
             List<ApprovalTrafficOverview> approvalTrafficOverviewHdList = new ArrayList<>();
             String json = hd.getV();
             List<ApprovalTrafficRes> approvalTrafficRes = JSONObject.parseArray(json, ApprovalTrafficRes.class);
@@ -390,8 +393,7 @@ public class ApprovalTrafficOverviewTableServiceImpl extends ServiceImpl<Approva
                 approvalTrafficOverview.setOverviewId(id);
                 approvalTrafficOverview.setStationPid(res.getPid());
                 approvalTrafficOverview.setStationName(res.getUnitName());
-                Double eightHd = hdList.stream().filter(t -> t.getTableHeadId().equals(res.getUnitId()) && t.getV() != null).map(DayWaterSituationStatisticsTableHd::getV).reduce(Double::sum).orElse(0.00);
-                approvalTrafficOverview.setEightFlow(eightHd);
+                approvalTrafficOverview.setEightFlow(Double.parseDouble(res.getFlow()));
                 approvalTrafficOverview.setAddSubtractFlow(Double.parseDouble(StringUtils.isEmpty(res.getWaterPlan())?"0.00":res.getWaterPlan()));
                 approvalTrafficOverview.setPlanFlow(Double.parseDouble(StringUtils.isEmpty(res.getFlow())?"0.00":res.getFlow())+Double.parseDouble(StringUtils.isEmpty(res.getWaterPlan())?"0.00":res.getWaterPlan()));
                 approvalTrafficOverview.setReservoir("河东管理站");
@@ -403,8 +405,7 @@ public class ApprovalTrafficOverviewTableServiceImpl extends ServiceImpl<Approva
                     approvalTrafficOverview1.setOverviewId(id);
                     approvalTrafficOverview1.setStationPid(res1.getPid());
                     approvalTrafficOverview1.setStationName(res1.getUnitName());
-                    Double eightHd1 = hdList.stream().filter(t -> t.getTableHeadId().equals(res1.getUnitId()) && t.getV() != null).map(DayWaterSituationStatisticsTableHd::getV).reduce(Double::sum).orElse(0.00);
-                    approvalTrafficOverview1.setEightFlow(eightHd1);
+                    approvalTrafficOverview1.setEightFlow(Double.parseDouble(res1.getFlow()));
                     approvalTrafficOverview1.setAddSubtractFlow(Double.parseDouble(StringUtils.isEmpty(res1.getWaterPlan())?"0.00":res1.getWaterPlan()));
                     approvalTrafficOverview1.setPlanFlow(Double.parseDouble(StringUtils.isEmpty(res1.getFlow())?"0.00":res1.getFlow())+Double.parseDouble(StringUtils.isEmpty(res1.getWaterPlan())?"0.00":res1.getWaterPlan()));
                     approvalTrafficOverview1.setReservoir("河东管理站");
@@ -414,9 +415,8 @@ public class ApprovalTrafficOverviewTableServiceImpl extends ServiceImpl<Approva
             resultList.addAll(approvalTrafficOverviewHdList);
             resultMap.put("河东管理站",approvalTrafficOverviewHdList);
         }
-        DayWaterUsePlan hx = dayWaterUsePlanService.lambdaQuery().eq(DayWaterUsePlan::getRecordTime, calculateDay(format,-1)).eq(DayWaterUsePlan::getArea, "河西管理站").last("limit 1").one();
+        DayWaterUsePlan hx = dayWaterUsePlanService.lambdaQuery().eq(DayWaterUsePlan::getRecordTime, format).eq(DayWaterUsePlan::getArea, "河西管理站").last("limit 1").one();
         if (null != hx) {
-            List<DayWaterSituationStatisticsTableHx> hxList = hxMapper.selectForApproval(format);
             List<ApprovalTrafficOverview> approvalTrafficOverviewHxList = new ArrayList<>();
             String json = hx.getV();
             List<ApprovalTrafficRes> approvalTrafficRes = JSONObject.parseArray(json, ApprovalTrafficRes.class);
@@ -427,8 +427,7 @@ public class ApprovalTrafficOverviewTableServiceImpl extends ServiceImpl<Approva
                 approvalTrafficOverview.setOverviewId(id);
                 approvalTrafficOverview.setStationPid(res.getPid());
                 approvalTrafficOverview.setStationName(res.getUnitName());
-                Double eightHx = hxList.stream().filter(t -> t.getTableHeadId().equals(res.getUnitId()) && t.getV() != null).map(DayWaterSituationStatisticsTableHx::getV).reduce(Double::sum).orElse(0.00);
-                approvalTrafficOverview.setEightFlow(eightHx);
+                approvalTrafficOverview.setEightFlow(Double.parseDouble(res.getFlow()));
                 approvalTrafficOverview.setAddSubtractFlow(Double.parseDouble(StringUtils.isEmpty(res.getWaterPlan())?"0.00":res.getWaterPlan()));
                 approvalTrafficOverview.setPlanFlow(Double.parseDouble(StringUtils.isEmpty(res.getFlow())?"0.00":res.getFlow())+Double.parseDouble(StringUtils.isEmpty(res.getWaterPlan())?"0.00":res.getWaterPlan()));
                 approvalTrafficOverview.setReservoir("河西管理站");
@@ -440,8 +439,7 @@ public class ApprovalTrafficOverviewTableServiceImpl extends ServiceImpl<Approva
                     approvalTrafficOverview1.setOverviewId(id);
                     approvalTrafficOverview1.setStationPid(res1.getPid());
                     approvalTrafficOverview1.setStationName(res1.getUnitName());
-                    Double eightHx1 = hxList.stream().filter(t -> t.getTableHeadId().equals(res1.getUnitId()) && t.getV() != null).map(DayWaterSituationStatisticsTableHx::getV).reduce(Double::sum).orElse(0.00);
-                    approvalTrafficOverview1.setEightFlow(eightHx1);
+                    approvalTrafficOverview1.setEightFlow(Double.parseDouble(res1.getFlow()));
                     approvalTrafficOverview1.setAddSubtractFlow(Double.parseDouble(StringUtils.isEmpty(res1.getWaterPlan())?"0.00":res1.getWaterPlan()));
                     approvalTrafficOverview1.setPlanFlow(Double.parseDouble(StringUtils.isEmpty(res1.getFlow())?"0.00":res1.getFlow())+Double.parseDouble(StringUtils.isEmpty(res1.getWaterPlan())?"0.00":res1.getWaterPlan()));
                     approvalTrafficOverview1.setReservoir("河西管理站");
@@ -451,6 +449,11 @@ public class ApprovalTrafficOverviewTableServiceImpl extends ServiceImpl<Approva
             resultList.addAll(approvalTrafficOverviewHxList);
             resultMap.put("河西管理站",approvalTrafficOverviewHxList);
         }
+        WaterResourceAllocation byId = waterResourceAllocationService.getById(modelId);
+        List<Excel2> excelList = getListFromMinio(byId.getAllocationDataCustomAddress(), Excel2.class);
+        resultList.forEach(t->{
+            t.setModelFlow(excelList.stream().filter(x->x.getUnitId() != null &&x.getUnitId().equals(t.getStationId())).map(Excel2::getFlow).reduce(Double::sum).orElse(0.00));
+        });
         return approvalTrafficOverviewService.saveBatch(resultList);
     }
 
@@ -468,6 +471,15 @@ public class ApprovalTrafficOverviewTableServiceImpl extends ServiceImpl<Approva
         calendar.add(Calendar.DAY_OF_MONTH,day);
         Date result = calendar.getTime();
         return sdf.format(result);
+    }
+
+    @SneakyThrows
+    private List getListFromMinio(String minioPath, Class clazz) {
+        String[] split = minioPath.split("/");
+        String[] split1 = split[split.length - 1].split("\\.");
+        InputStream is = minioUtils.getObject("tth", minioPath);
+        MultipartFile multipartFile = MultipartFileUtil.inputStreamToMultipartFile(is, split1[0]);
+        return ExcelUtils.importExcel(multipartFile, clazz);
     }
 }
 
