@@ -12,9 +12,9 @@ import java.util.Date;
 import java.util.List;
 
 public class rongXueTest {
-    TimeUtils timeUtils = new TimeUtils();
-    DataUtils dataUtils =new DataUtils();
-    public void main(String[] args) throws ParseException, IOException, InvalidFormatException {
+    static TimeUtils timeUtils = new TimeUtils();
+
+    public static void main(String[] args) throws ParseException, IOException, InvalidFormatException {
         /**
          * 融雪径流预报效果
          */

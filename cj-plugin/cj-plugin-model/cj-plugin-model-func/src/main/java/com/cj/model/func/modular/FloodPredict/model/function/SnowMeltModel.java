@@ -188,7 +188,9 @@ public class SnowMeltModel {
         }
         param.setInputIndex(inputIndex);//输入时段数
         //一些基础参数
-        param.setNetClass(param.getModel());
+        param.setNetClass("Elman神经网络");
+        param.setModel("Elman神经网络");
+        param.setPeriod("日");
         param.setMobp(10.0);
         param.setMinRate(0.0);
         param.setMaxRate(0.03);//这个会影响精度！！!
@@ -209,6 +211,8 @@ public class SnowMeltModel {
         param.setTestSetEndTime(testEndDate);//测试集结束时期
         //预报时段的确定
         param.setIsSnowMeltModel(true);
+        param.setIsRealtime(true);
+        param.setIsHistory(false);
         return param;
     }
 

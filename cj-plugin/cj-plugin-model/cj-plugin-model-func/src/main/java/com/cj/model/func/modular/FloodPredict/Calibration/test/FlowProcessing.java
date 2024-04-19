@@ -13,8 +13,8 @@ import java.util.Date;
 
 
 public class FlowProcessing {
-    TimeUtils timeUtils =new TimeUtils();
-    public void main(String[] args) throws IOException, ParseException, InvalidFormatException {
+    static TimeUtils timeUtils =new TimeUtils();
+    public static void main(String[] args) throws IOException, ParseException, InvalidFormatException {
         Object[][] inputObject = ExcelTool.readExcel("D:\\204\\2.头屯河\\资料\\3.场次数据\\楼庄子上游22年流量.xlsx","Sheet2");
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         String start = "06-01";

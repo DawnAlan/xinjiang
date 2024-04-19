@@ -2,9 +2,14 @@ package com.cj.model.func.modular.FloodPredict.model.function;
 
 
 
+import com.cj.model.func.modular.FloodPredict.Calibration.ShanBeiModel;
+import com.cj.model.func.modular.FloodPredict.Calibration.entity.ShanbeiParam;
 import com.cj.model.func.modular.FloodPredict.entity.ForecastInputParam;
 import com.cj.model.func.modular.FloodPredict.entity.PredictInputData;
+import com.cj.model.func.modular.FloodPredict.model.TouTunHe;
 import com.cj.model.func.modular.FloodPredict.utils.DataUtils;
+import com.cj.model.func.modular.FloodPredict.utils.ExcelTool;
+import com.cj.model.func.modular.FloodPredict.utils.InputUtils;
 import com.cj.model.func.modular.FloodPredict.utils.TimeUtils;
 import com.cj.model.func.modular.FloodPrevent.entity.Option;
 import com.cj.model.func.modular.FloodPrevent.model.ModelOfLZZ;
@@ -14,18 +19,20 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import static com.cj.model.func.modular.FloodPredict.utils.DataUtils.*;
+
 
 
 
 public class PhysicalForecast {
     String floodLevel="一年一遇";//洪水等级
 
-    static int before = 10;//前期落地雨时间
+
 
     DataUtils dataUtils = new DataUtils();
 
     TimeUtils timeUtils = new TimeUtils();
+    InputUtils inputUtils = new InputUtils();
+    int beforeHours = inputUtils.beforeHours;//前期落地雨时间
 
     /**
      * 获得场次洪水预报数据
@@ -64,12 +71,23 @@ public class PhysicalForecast {
                 historyRData[i][1]=param.getPreRainFall()/historyRDataList.size();
             }
         }
-        shanBeiModel.InputData(path,sheetPara,preREData,historyRData);
+        Object[][] params = ExcelTool.readExcel(path,sheetPara);
+        ShanbeiParam shanbeiparam = new ShanbeiParam();
+        shanbeiparam.setArea((double) params[0][0]);
+        shanbeiparam.setFB((double) params[0][1]);
+        shanbeiparam.setWM((double) params[0][2]);
+        shanbeiparam.setKC((double) params[0][3]);
+        shanbeiparam.setFC((double) params[0][4]);
+        shanbeiparam.setFM((double) params[0][5]);
+        shanbeiparam.setK((double) params[0][6]);
+        shanbeiparam.setB((double) params[0][7]);
+        shanbeiparam.setCS((double) params[0][8]);
+        shanBeiModel.InputData(shanbeiparam,preREData,historyRData);
         shanBeiModel.InitialMoistureContentCalculation();
         shanBeiModel.RunoffYieldCalculation_UnevenInfiltration();
         shanBeiModel.ConfluenceCalculation();
         //获得径流序列包含了降水融雪地下水
-        Object[][]shortFlow = mixedFlood(param, shanBeiModel.Q, shanBeiModel.L,Data,snowData);
+        Object[][]shortFlow = mixedFlood(param, shanBeiModel.Q, 10,Data,snowData);
 
 
         //将Object转化为Flood类型
@@ -132,7 +150,7 @@ public class PhysicalForecast {
             //连续列的赋值
             for (int i = 0; i < peakFloodXlsx.length; i++) {
                 peakFloodXlsx[i][5]=lzzOutList.get(i).getH1();
-                if(lzzOutList.get(i).getH1()>=1397.21)//是否超过防洪高水位
+                if(lzzOutList.get(i).getH1()>=1394.5)//是否超过汛限水位
                 {
                     peakFloodXlsx[i][14] = 1;
                 }else {
@@ -730,14 +748,14 @@ public class PhysicalForecast {
         List<PredictInputData> preFlow = Data.get(0);
         List<PredictInputData> preTemperature= dataUtils.pointToSurface(Data.get(1),"小时", param.getLocation());
         int preNumber = param.getPeriodStepNumber();
-        Object[][] result= new Object[shanBeiQ.length-before][2];
+        Object[][] result= new Object[param.getPeriodStepNumber()][2];
         //减去汇流滞时
         Date currentDate = param.getPreStartTime();
-        Date[][] dates = timeUtils.getDateList(currentDate, shanBeiQ.length-before, 0, 1);
+        Date[][] dates = timeUtils.getDateList(currentDate, param.getPeriodStepNumber(), 0, 1);
        //shanBeiq为实际预报的值
-        double[] shanBeiq = new double[shanBeiQ.length-before];
-        for (int i = L; i < shanBeiQ.length-before+L; i++) {
-            shanBeiq[i-L]=shanBeiQ[i];
+        double[] shanBeiq = new double[param.getPeriodStepNumber()];
+        for (int i = beforeHours; i < shanBeiQ.length- beforeHours; i++) {
+            shanBeiq[i-beforeHours]=shanBeiQ[i];
         }
         //基础流量
         Double baseAve = 0.0;
@@ -805,7 +823,7 @@ public class PhysicalForecast {
             }
             snowAverage = snowSum / snowFlow.length;
         }
-        double[] snowDistribution = flowDistribution(preNumber,L,snowAverage,baseAve,preTemperature);//融雪随温度分配曲线
+        double[] snowDistribution = flowDistribution(preNumber,snowAverage,baseAve,preTemperature);//融雪随温度分配曲线
 
 
 //        snowAverage = 0.0;
@@ -827,10 +845,10 @@ public class PhysicalForecast {
     /**
      * 融雪径流减去基流后，根据温度进行分布
      */
-    public double[] flowDistribution(int preNumber,int L,Double averageData,
+    public double[] flowDistribution(int preNumber,Double averageData,
                                             Double baseData, List<PredictInputData> input) {
 
-        int l = preNumber + before;
+        int l = preNumber + beforeHours;
         double[] temperature = new double[l];
         for (int i = 0; i < l; i++) {
             temperature[i] = input.get(i).getTemperature();
@@ -851,11 +869,8 @@ public class PhysicalForecast {
         double[] flow = new double[l];
         double[] result = new double[preNumber];
         if (number==0){
-            for (int i = 0; i < l; i++) {
-                flow[i] = averageData;
-                }
-            for (int i = L; i < preNumber+L; i++) {
-                result[i-L]=flow[i];
+            for (int i = 0; i < preNumber; i++) {
+                result[i]=baseData;
             }
             return result;
         }
@@ -879,8 +894,8 @@ public class PhysicalForecast {
                 flow[i] = baseData;
             }
         }
-        for (int i = L; i < preNumber+L; i++) {
-            result[i-L]=flow[i];
+        for (int i = beforeHours; i < preNumber + beforeHours; i++) {
+            result[i - beforeHours]=flow[i];
         }
         return result;
     }

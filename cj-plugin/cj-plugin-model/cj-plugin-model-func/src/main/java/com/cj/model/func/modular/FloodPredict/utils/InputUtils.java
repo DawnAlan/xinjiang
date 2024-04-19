@@ -18,6 +18,10 @@ public class InputUtils {
 
     TimeUtils timeUtils = new TimeUtils();
 
+    public int beforeDays = 30;
+
+    public int beforeHours = 10;
+
     /**
      * 判断需要从数据库获取哪些数据
      * @param
@@ -29,12 +33,12 @@ public class InputUtils {
         Object[][] historyInput = ExcelTool.readExcel("D:\\头屯河历史数据1.xlsx", "3号桥日");
         Date historyTime = (Date) historyInput[historyInput.length-1][0];
         int number = timeUtils.duration(historyTime,predictTime,"日");
-        if (number > 20){
+        if (number > beforeDays){
             result.add(historyTime);
         }else {
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(predictTime);
-            calendar.add(Calendar.DAY_OF_MONTH, -20);
+            calendar.add(Calendar.DAY_OF_MONTH, -beforeDays);
             Date startTime = calendar.getTime();
             result.add(startTime);
         }
@@ -96,13 +100,14 @@ public class InputUtils {
         Date predictTime = paramForecastInputParamNew.getPredictionTime();
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(predictTime);
-        calendar.add(Calendar.DAY_OF_MONTH, -20);
+
+        calendar.add(Calendar.DAY_OF_MONTH, -beforeDays);
         predictTime = calendar.getTime();
         //预报时间超过储存时间
         if (predictTime.after(historyTime))
         {
             //数据不足，补充新时段数据
-            TouTunHe touTunHe = new TouTunHe();
+            TouTunHe touTunHe =new TouTunHe();
             Map<String,List<List<PredictInputData>>> stationsData = touTunHe.getOneStationDataList(paramForecastInputParamNew);
             List<List<PredictInputData>> Three = stationsData.get("3号桥");
             List<List<PredictInputData>> Lou = stationsData.get("楼庄子");

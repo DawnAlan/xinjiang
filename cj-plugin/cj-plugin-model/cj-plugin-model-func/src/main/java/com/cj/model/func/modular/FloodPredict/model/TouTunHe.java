@@ -3,7 +3,6 @@ package com.cj.model.func.modular.FloodPredict.model;
 
 import com.cj.model.func.modular.FloodPredict.entity.*;
 import com.cj.model.func.modular.FloodPredict.model.function.MachineForecast;
-import com.cj.model.func.modular.FloodPredict.model.function.MachineModel;
 import com.cj.model.func.modular.FloodPredict.model.function.PhysicalForecast;
 import com.cj.model.func.modular.FloodPredict.model.function.SnowMeltModel;
 import com.cj.model.func.modular.FloodPredict.utils.DataUtils;
@@ -29,6 +28,8 @@ public class TouTunHe {
     TimeUtils timeUtils = new TimeUtils();
 
     InputUtils inputUtils =new InputUtils();
+
+
 
     public TemporaryXlsx getFloodList(ForecastInputParamNew forecastParam)
             throws IOException, ParseException, InvalidFormatException {
@@ -368,7 +369,7 @@ public class TouTunHe {
                 tthInXlsx[i][3]=tthIn[i][0];//时间
                 tthInXlsx[i][4]=Math.round((double) tthIn[i][1] * 100.0) / 100.0;//预报流量
                 tthInXlsx[i][5]=tthInList.get(i).getH1();//相应水位
-                if (tthInList.get(i).getH1()>988.46){//防洪高水位
+                if (tthInList.get(i).getH1()>987){//防洪高水位
                     tthInXlsx[i][14]=1;
                 }
                 else {

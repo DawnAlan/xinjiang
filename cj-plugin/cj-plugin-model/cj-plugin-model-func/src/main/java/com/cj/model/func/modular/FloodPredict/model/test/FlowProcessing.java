@@ -18,9 +18,9 @@ import static com.cj.model.func.modular.FloodPredict.utils.TimeUtils.*;
 import static com.cj.model.func.modular.FloodPredict.utils.Tools.AddObject;
 
 public class FlowProcessing {
-    TimeUtils timeUtils = new TimeUtils();
-    DataUtils dataUtils = new DataUtils();
-    public void main(String[] args) throws ParseException, IOException, InvalidFormatException {
+    static TimeUtils timeUtils = new TimeUtils();
+
+    public static void main(String[] args) throws ParseException, IOException, InvalidFormatException {
 
 //        int year = 2012;
 //        List<Object[][]> resultList = new ArrayList<>();

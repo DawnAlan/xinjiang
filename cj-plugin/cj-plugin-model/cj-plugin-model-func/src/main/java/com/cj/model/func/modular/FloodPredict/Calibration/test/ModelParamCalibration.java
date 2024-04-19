@@ -2,6 +2,7 @@ package com.cj.model.func.modular.FloodPredict.Calibration.test;
 
 
 import com.cj.model.func.modular.FloodPredict.Calibration.*;
+import com.cj.model.func.modular.FloodPredict.Calibration.entity.ShanbeiParam;
 import com.cj.model.func.modular.FloodPredict.Calibration.pso.*;
 import com.cj.model.func.modular.FloodPredict.utils.ExcelTool;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
@@ -41,41 +42,38 @@ public class ModelParamCalibration {
         Double area = 1174.0;
         Double preFlow = 6.5;
         Double preRain = 38.63;
-        String sheetName = "07-18~07-23";
+        String sheetName = "07-30~08-04";
 //        Object[][]Flood= ShanBeiCalibration(area,sheetName);
 //        ExcelTool.writeObjectExcel("D:\\204\\2.头屯河\\径流预报数据文件\\率定结果.xlsx",sheetName+"三号桥", Flood);
-        double[] shanbeiParams=new double[12];
-        shanbeiParams[0]=area;//Area
-        shanbeiParams[1]=0.008;//FB
-        shanbeiParams[2]=102;//WM张力水蓄水容量，或最大蓄水量 60-80mm
-        shanbeiParams[3]=1;//蒸散发折减系数 KC
-        shanbeiParams[4]=32;//fc流域土壤稳定下渗率 0.3-0.5 mm/min
-        shanbeiParams[5]=100;//fm流域土壤最大下渗率 1-2 mm/min
-        shanbeiParams[6]=0.022;//K霍尔顿下渗曲线方程
-        shanbeiParams[7]=0.3;//B反映下渗能力在透水面积上的分布特性
-        shanbeiParams[8]=0.966;//CS 为地面径流消退系数
-        shanbeiParams[9]=4;//L汇流滞时（时段数）
-        shanbeiParams[10]=preRain;//计算初始土壤含水量时，用到的前期天数
-        shanbeiParams[11]=1;
-        int L = (int) shanbeiParams[9];
+        ShanbeiParam shanbeiParam = new ShanbeiParam();
+        shanbeiParam.setArea(1174.0);//流域面积
+        shanbeiParam.setFB(0.08);//不透水面积的比例，透水面积比例为1-FB
+        shanbeiParam.setWM(102.0);//张力水蓄水容量，或最大蓄水量 60-80mm
+        shanbeiParam.setKC(1.0);//蒸散发折减系数 KC
+        shanbeiParam.setFC(32.0);//流域土壤稳定下渗率 0.3-0.5 mm/min
+        shanbeiParam.setFM(100.0);//流域土壤最大下渗率 1-2 mm/min
+        shanbeiParam.setK(0.022);//K,霍尔顿下渗曲线方程中的土质系数 0.04~0.05/min
+        shanbeiParam.setB(0.3);//B反映下渗能力在透水面积上的分布特性 1~5
+        shanbeiParam.setCS(0.966);//CS 为地面径流消退系数 0.1~1
+
 
         preREData = ExcelTool.readExcel("D:\\204\\2.头屯河\\径流预报数据文件\\陕北-DATA.xlsx",sheetName+"蒸发降雨");
         historyRData = ExcelTool.readExcel("D:\\204\\2.头屯河\\径流预报数据文件\\陕北-DATA.xlsx",sheetName+"前期雨量");
         historyFData = ExcelTool.readExcel("D:\\204\\2.头屯河\\径流预报数据文件\\陕北-DATA.xlsx",sheetName+"前期径流");
 //        洪水过程推演
-        shanbeiModel.InputData(shanbeiParams,preREData,historyRData);
-//        shanbeiModel.InitialMoistureContentCalculation();
+        shanbeiModel.InputData(shanbeiParam,preREData,historyRData);
+        shanbeiModel.InitialMoistureContentCalculation();
         shanbeiModel.RunoffYieldCalculation_UnevenInfiltration();
-//        shanbeiModel.RunoffYieldCalculation_UniformInfiltration();
         shanbeiModel.ConfluenceCalculation();
         //洪水过程对比
-        preData=new double[preREData.length-L];
-        hisData=new double[preREData.length-L];
-        for (int i = 0; i < preData.length; i++) {
-            preData[i]=shanbeiModel.Q[i+L]+preFlow;
+        int l = preREData.length - 10;
+        preData=new double[l];
+        hisData=new double[l];
+        for (int i = 0; i < l; i++) {
+            preData[i]=shanbeiModel.Q[i]+preFlow;
         }
-        for (int i = 0; i < preData.length; i++) {
-            hisData[i]=(double) historyFData[i+L][1];
+        for (int i = 10; i < historyFData.length; i++) {
+            hisData[i-10]=(double) historyFData[i][1];
         }
         Object[][] results =new Object[hisData.length][2];
         for (int i = 0; i < hisData.length; i++) {
@@ -129,23 +127,21 @@ public class ModelParamCalibration {
     // 定义PSO算法目标函数
     public double Evaluate(double[] params) {
         ParameterValidation parameterValidation = new ParameterValidation();
-        double[] shanbeiParams=new double[12];
+        ShanbeiParam shanbeiParam = new ShanbeiParam();
+        shanbeiParam.setArea(Area);//流域面积
+        shanbeiParam.setFB(params[0]);//不透水面积的比例，透水面积比例为1-FB
+        shanbeiParam.setWM(params[1]);//张力水蓄水容量，或最大蓄水量 60-80mm
+        shanbeiParam.setKC(params[2]);//蒸散发折减系数 KC
+        shanbeiParam.setFC(params[3]);//流域土壤稳定下渗率 0.3-0.5 mm/min
+        shanbeiParam.setFM(params[4]);//流域土壤最大下渗率 1-2 mm/min
+        shanbeiParam.setK(params[5]);//K,霍尔顿下渗曲线方程中的土质系数 0.04~0.05/min
+        shanbeiParam.setB(params[6]);//B反映下渗能力在透水面积上的分布特性 1~5
+        shanbeiParam.setCS(params[7]);//CS 为地面径流消退系数 0.1~1
+        int L = (int)params[8];
+        shanbeiParam.setL(L);//L为汇流滞时（时段数）
 
-        shanbeiParams[0]=Area;//流域面积
-        shanbeiParams[1]=params[0];//不透水面积的比例，透水面积比例为1-FB
-        shanbeiParams[2]=params[1];//张力水蓄水容量，或最大蓄水量 60-80mm
-        shanbeiParams[3]=params[2];//蒸散发折减系数 KC 为流
-        shanbeiParams[4]=params[3];//流域土壤稳定下渗率 0.3-0.5 mm/min
-        shanbeiParams[5]=params[4];//流域土壤最大下渗率 1-2 mm/min
-        shanbeiParams[6]=params[5];//K,霍尔顿下渗曲线方程中的土质系数 0.04~0.05/min
-        shanbeiParams[7]=params[6];//B反映下渗能力在透水面积上的分布特性 1~5
-        shanbeiParams[8]=params[7];//CS 为地面径流消退系数 0.1~1
-        shanbeiParams[9]=params[8];//L为汇流滞时（时段数）
-        shanbeiParams[10]=PreImpactdays;//计算初始土壤含水量时，用到的前期天数 20d
-        shanbeiParams[11]=PeriodLength;//1h
-        int L = (int)shanbeiParams[9];
         //洪水过程推演
-        shanbeiModel.InputData(shanbeiParams,preREData,historyRData)
+        shanbeiModel.InputData(shanbeiParam,preREData,historyRData)
                 .InitialMoistureContentCalculation()
                 .RunoffYieldCalculation_UnevenInfiltration()
                 .ConfluenceCalculation();

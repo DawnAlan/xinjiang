@@ -23,6 +23,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -79,7 +80,7 @@ public class IndustrialWaterFeeServiceImpl extends ServiceImpl<IndustrialWaterFe
             throw new IllegalArgumentException("水量分配错误。");
         }
         WaterManagementUrbanIndustry waterManagementUrbanIndustry = new WaterManagementUrbanIndustry();
-
+        DecimalFormat decimalFormat = new DecimalFormat("#.00");
 /*        LambdaQueryWrapper<IndustrialWaterFee> wrapper1 = Wrappers.lambdaQuery();
         wrapper1.eq(IndustrialWaterFee::getStation, input.getSiteName())
                 .eq(IndustrialWaterFee::getYear, input.getYear())
@@ -119,49 +120,49 @@ public class IndustrialWaterFeeServiceImpl extends ServiceImpl<IndustrialWaterFe
         waterManagementUrbanIndustry.setAnnualCumulativeWaterConsumption(round(annualCumulativeWaterConsumption, 3));
         //应交农业水费
         Double agriculturalWaterFeesPayable = annualCumulativeWaterConsumption * (input.getAgriculturalProportion() / 100.0) * input.getAgriculturalWaterPrice();
-        waterManagementUrbanIndustry.setAgriculturalWaterFeesPayable(round(agriculturalWaterFeesPayable, 3));
+        waterManagementUrbanIndustry.setAgriculturalWaterFeesPayable(formatDoubleForThreeDecimal(agriculturalWaterFeesPayable));
         //应交工业水费
         Double industrialWaterFeesPayable = annualCumulativeWaterConsumption * (input.getIndustrialProportion() / 100.0) * input.getIndustrialWaterPrice();
-        waterManagementUrbanIndustry.setIndustrialWaterFeesPayable(round(industrialWaterFeesPayable, 3));
+        waterManagementUrbanIndustry.setIndustrialWaterFeesPayable(formatDoubleForThreeDecimal(industrialWaterFeesPayable));
         //应交工业水资源费
         Double waterResourceWaterFeesPayable = annualCumulativeWaterConsumption * (input.getIndustrialProportion() / 100.0) * input.getWaterResourceTaxes();
-        waterManagementUrbanIndustry.setWaterResourceWaterFeesPayable(round(waterResourceWaterFeesPayable, 3));
+        waterManagementUrbanIndustry.setWaterResourceWaterFeesPayable(formatDoubleForThreeDecimal(waterResourceWaterFeesPayable));
         //应交水费合计
         Double totalWaterFeesPayable = agriculturalWaterFeesPayable + industrialWaterFeesPayable + waterResourceWaterFeesPayable;
-        waterManagementUrbanIndustry.setTotalWaterFeesPayable(round(totalWaterFeesPayable, 3));
+        waterManagementUrbanIndustry.setTotalWaterFeesPayable(formatDoubleForThreeDecimal(totalWaterFeesPayable));
         //已交水费合计
-        waterManagementUrbanIndustry.setTotalPaidWaterFees(totalPaidWaterFees);
+        waterManagementUrbanIndustry.setTotalPaidWaterFees(formatDoubleForThreeDecimal(totalPaidWaterFees));
         //已交农业水费 应交农业/应交水费合计*已交水费合计
         Double agriculturalPaidWaterFees = (totalWaterFeesPayable * totalPaidWaterFees) == 0.0 ? 0.0 : agriculturalWaterFeesPayable / totalWaterFeesPayable * totalPaidWaterFees;
-        waterManagementUrbanIndustry.setAgriculturalPaidWaterFees(round(agriculturalPaidWaterFees, 3));
+        waterManagementUrbanIndustry.setAgriculturalPaidWaterFees(formatDoubleForThreeDecimal(agriculturalPaidWaterFees));
         //已交工业水费
         Double industrialPaidWaterFees = (totalWaterFeesPayable * totalPaidWaterFees) == 0.0 ? 0.0 : industrialWaterFeesPayable / totalWaterFeesPayable * totalPaidWaterFees;
-        waterManagementUrbanIndustry.setIndustrialPaidWaterFees(round(industrialPaidWaterFees, 3));
+        waterManagementUrbanIndustry.setIndustrialPaidWaterFees(formatDoubleForThreeDecimal(industrialPaidWaterFees));
         //预交工业水资源费
         Double waterResourcePaidWaterFees = (totalWaterFeesPayable * totalPaidWaterFees) == 0.0 ? 0.0 : waterResourceWaterFeesPayable / totalWaterFeesPayable * totalPaidWaterFees;
-        waterManagementUrbanIndustry.setWaterResourcePaidWaterFees(round(waterResourcePaidWaterFees, 3));
+        waterManagementUrbanIndustry.setWaterResourcePaidWaterFees(formatDoubleForThreeDecimal(waterResourcePaidWaterFees));
         //盈余水费合计
         Double totalSurplusWaterFees = totalPaidWaterFees - totalWaterFeesPayable;
-        waterManagementUrbanIndustry.setTotalSurplusWaterFees(round(totalSurplusWaterFees, 3));
+        waterManagementUrbanIndustry.setTotalSurplusWaterFees(formatDoubleForThreeDecimal(totalSurplusWaterFees));
         //盈余农业水费
         Double agriculturalSurplusWaterFees = agriculturalPaidWaterFees - agriculturalWaterFeesPayable;
-        waterManagementUrbanIndustry.setAgriculturalSurplusWaterFees(round(agriculturalSurplusWaterFees, 3));
+        waterManagementUrbanIndustry.setAgriculturalSurplusWaterFees(formatDoubleForThreeDecimal(agriculturalSurplusWaterFees));
         //盈余工业水费
         Double industrialSurplusWaterFees = industrialPaidWaterFees - industrialWaterFeesPayable;
-        waterManagementUrbanIndustry.setIndustrialSurplusWaterFees(round(industrialSurplusWaterFees, 3));
+        waterManagementUrbanIndustry.setIndustrialSurplusWaterFees(formatDoubleForThreeDecimal(industrialSurplusWaterFees));
         //盈余水资源费
         Double waterResourceSurplusWaterFees = waterResourcePaidWaterFees - waterResourceWaterFeesPayable;
-        waterManagementUrbanIndustry.setWaterResourceSurplusWaterFees(round(waterResourceSurplusWaterFees, 3));
+        waterManagementUrbanIndustry.setWaterResourceSurplusWaterFees(formatDoubleForThreeDecimal(waterResourceSurplusWaterFees));
 
         //应交农业水费
         Double notAgriculturalWaterFeesPayable = annualCumulativeWaterConsumption * (input.getNotAgriculturalProportion() / 100.0) * input.getNotAgriculturalWaterPrice();
-        waterManagementUrbanIndustry.setNotAgriculturalWaterFeesPayable(round(notAgriculturalWaterFeesPayable, 3));
+        waterManagementUrbanIndustry.setNotAgriculturalWaterFeesPayable(formatDoubleForThreeDecimal(notAgriculturalWaterFeesPayable));
         //已交农业水费 应交农业/应交水费合计*已交水费合计
         Double notAgriculturalPaidWaterFees = (totalWaterFeesPayable * totalPaidWaterFees) == 0.0 ? 0.0 : notAgriculturalWaterFeesPayable / totalWaterFeesPayable * totalPaidWaterFees;
-        waterManagementUrbanIndustry.setNotAgriculturalPaidWaterFees(round(notAgriculturalPaidWaterFees, 3));
+        waterManagementUrbanIndustry.setNotAgriculturalPaidWaterFees(formatDoubleForThreeDecimal(notAgriculturalPaidWaterFees));
         //盈余农业水费
         Double notAgriculturalSurplusWaterFees = notAgriculturalPaidWaterFees - notAgriculturalWaterFeesPayable;
-        waterManagementUrbanIndustry.setNotAgriculturalSurplusWaterFees(round(notAgriculturalSurplusWaterFees, 3));
+        waterManagementUrbanIndustry.setNotAgriculturalSurplusWaterFees(formatDoubleForThreeDecimal(notAgriculturalSurplusWaterFees));
 
         Long count = waterManagementUrbanIndustryService.lambdaQuery()
                 .eq(WaterManagementUrbanIndustry::getSiteCode, input.getSiteCode())
@@ -201,6 +202,13 @@ public class IndustrialWaterFeeServiceImpl extends ServiceImpl<IndustrialWaterFe
         res1.setAgriculturalProportion(res.getAgriculturalProportion());
         res1.setNotAgriculturalProportion(res.getNotAgriculturalProportion());
         return res1;
+    }
+
+    private Double formatDoubleForThreeDecimal(Double value){
+        DecimalFormat df = new DecimalFormat("#0.00");
+        String format = df.format(value);
+        double v = Double.parseDouble(format);
+        return v;
     }
 }
 

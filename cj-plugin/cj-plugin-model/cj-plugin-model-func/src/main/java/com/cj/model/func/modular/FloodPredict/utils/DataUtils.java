@@ -4,6 +4,7 @@ import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInf
 import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.entity.LzzGaugingStation;
 import com.cj.middleDatabase.func.modular.lzz.lzzRainfallStation.entity.LzzRainfallStation;
 import com.cj.model.func.modular.FloodPredict.entity.*;
+import com.cj.model.func.modular.FloodPredict.model.TouTunHe;
 
 import java.math.BigDecimal;
 import java.text.ParseException;
@@ -19,8 +20,8 @@ import java.util.*;
  */
 public class DataUtils {
 	TimeUtils timeUtils = new TimeUtils();
-	private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-	int beforeHours = 10;
+	InputUtils inputUtils = new InputUtils();
+	private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 	/**
 	 * 从数据库导入的数据进行处理，包括对三号桥、楼庄子进库站异常流量的处理，上游雨量站温度空值的处理
@@ -231,9 +232,9 @@ public class DataUtils {
 		Date dateStart = param.getPredictionTime();
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(dateStart);
-		calendar.add(Calendar.HOUR_OF_DAY, -beforeHours);
+		calendar.add(Calendar.HOUR_OF_DAY, -inputUtils.beforeHours);
 		dateStart = calendar.getTime();//找到落地雨前n小时
-		int n = beforeHours + param.getPeriodTimeNum()* param.getPeriodTimeStep();//需要预报的时间长度
+		int n = inputUtils.beforeHours + param.getPeriodTimeNum()* param.getPeriodTimeStep();//需要预报的时间长度
 		calendar.add(Calendar.HOUR_OF_DAY, n);
 		Date dataEnd = calendar.getTime();//预报结束时间
 		String station = input.get(0).getLocation();
@@ -422,7 +423,7 @@ public class DataUtils {
 		}
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(dateStart);
-		calendar.add(Calendar.DAY_OF_MONTH, -20);
+		calendar.add(Calendar.DAY_OF_MONTH, -inputUtils.beforeDays);
 		Date dateStart_20 = calendar.getTime();//找到前二十天
 		Date inputDateEnd = input.get(input.size()-1).getDates();//数据库中最新时间
 		int d = timeUtils.findNearestTime(dateList,dateStart_20);//找到最贴近的时间
