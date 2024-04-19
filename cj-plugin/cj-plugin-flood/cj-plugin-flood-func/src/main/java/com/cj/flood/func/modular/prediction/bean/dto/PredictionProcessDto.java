@@ -1,5 +1,6 @@
 package com.cj.flood.func.modular.prediction.bean.dto;
 
+import cn.afterturn.easypoi.excel.annotation.Excel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -35,5 +36,18 @@ public class PredictionProcessDto implements Serializable {
 
     @ApiModelProperty(value = "调洪库容")
     private double regulatingStorageCapacityPercent;
+
+    @ApiModelProperty(value = "1号闸门流量")
+    private double q1;
+    /**
+     * 2号闸门流量
+     */
+    @ApiModelProperty(value = "2号闸门流量")
+    private double q2;
+    /**
+     * 3号闸门流量
+     */
+    @ApiModelProperty(value = "3号闸门流量")
+    private double q3;
 
 }

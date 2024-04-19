@@ -382,6 +382,9 @@ public class FloodControlOperationServiceImpl extends ServiceImpl<FloodControlOp
                 predictionProcessDto.setRetain(flood.getRetain());
                 predictionProcessDto.setQIn(flood.getQIn());
                 predictionProcessDto.setQOut(flood.getQOut());
+                predictionProcessDto.setQ1(flood.getQ1());
+                predictionProcessDto.setQ2(flood.getQ2());
+                predictionProcessDto.setQ3(flood.getQ3());
                 predictionProcessDto.setFloodStorageCapacityPercent(flood.getPercentage1());
                 predictionProcessDto.setRegulatingStorageCapacityPercent(flood.getPercentage2());
                 predictionProcess.add(predictionProcessDto);

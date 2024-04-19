@@ -837,7 +837,7 @@ public class ModelOfTTH {
                 break;
         }
     }
-    public static double[] getPercentage_tth(double V){
+    public double[] getPercentage_tth(double V){
         double[] result = new double[2];
         result[0]=100*Math.max(0,(V-1297.03))/223.816;
         result[1]=100*Math.max(0,(V-1297.03))/541.681;

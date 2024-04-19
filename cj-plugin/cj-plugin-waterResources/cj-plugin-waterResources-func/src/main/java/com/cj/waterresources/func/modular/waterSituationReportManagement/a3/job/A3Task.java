@@ -48,7 +48,7 @@ public class A3Task {
 
 
 
-    @Scheduled(cron="0 08 13 * * ?")//每天20:30
+    @Scheduled(cron="0 30 20 * * ?")//每天20:30
     public void createA3NotDkl(){
         log.info("--------------------------------执行定时插入A3（不包含对口率） 完8点后生成今日均数据----------------------------");
         tthService.insertTodayMeanValue();

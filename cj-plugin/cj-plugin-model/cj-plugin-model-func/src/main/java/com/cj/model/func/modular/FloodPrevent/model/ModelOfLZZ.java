@@ -618,7 +618,6 @@ public class ModelOfLZZ {
         }else{
             Volume=LV_Curve[1][n-1]+(level-LV_Curve[0][n-1])*(LV_Curve[1][n]-LV_Curve[1][n-1])/(LV_Curve[0][n]-LV_Curve[0][n-1]);
         }
-//        return BigDecimal.valueOf(Volume).setScale(2,RoundingMode.HALF_UP).doubleValue();
         return Volume;
     }
     public double GetH(double Volume){
@@ -643,7 +642,6 @@ public class ModelOfLZZ {
         }else{
             level=LV_Curve[0][n-1]+(Volume-LV_Curve[1][n-1])*(LV_Curve[0][n]-LV_Curve[0][n-1])/(LV_Curve[1][n]-LV_Curve[1][n-1]);
         }
-//        return BigDecimal.valueOf(level).setScale(2,RoundingMode.HALF_UP).doubleValue();
         return  level;
     }
     public double GetQ1(double level){
@@ -751,7 +749,7 @@ public class ModelOfLZZ {
                 break;
         }
     }
-    public static double[] getPercentage_lzz(double V){
+    public double[] getPercentage_lzz(double V){
 
         double[] result = new double[2];
         result[0]=100*Math.max(0,(V-6534.4))/724.93;
