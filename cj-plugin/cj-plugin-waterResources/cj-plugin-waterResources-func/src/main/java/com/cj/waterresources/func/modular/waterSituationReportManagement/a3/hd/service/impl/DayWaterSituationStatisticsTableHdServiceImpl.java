@@ -19,6 +19,7 @@ import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hd.e
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hd.service.DayWaterSituationStatisticsTableHdService;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hx.entity.DayWaterSituationStatisticsTableHx;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.entity.DayWaterSituationStatisticsTableLzz;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.entity.DayWaterSituationStatisticsTableQs;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -292,12 +293,12 @@ public class DayWaterSituationStatisticsTableHdServiceImpl extends ServiceImpl<D
 
     @Override
     public RestResponse insertTodayMeanValue() {
-        List<DayWaterSituationStatisticsTableHd> todayData = this.lambdaQuery().eq(DayWaterSituationStatisticsTableHd::getTime, "今日均").list();
+        List<DayWaterSituationStatisticsTableHd> dayWaterSituationStatisticsTableHds = this.baseMapper.selectList(sdf.format(new Date()));
+        List<DayWaterSituationStatisticsTableHd> todayData = dayWaterSituationStatisticsTableHds.stream().filter(t -> t.getTime().equals("今日均")).collect(Collectors.toList());
         if(!todayData.isEmpty()){
             return RestResponse.no("今日均数据已创建");
         }
         List<DayWaterSituationStatisticsTableHd> dayWaterSituationStatisticsTableHdList = new ArrayList<>();
-        List<DayWaterSituationStatisticsTableHd> dayWaterSituationStatisticsTableHds = this.baseMapper.selectList(sdf.format(new Date()));
         if(null!=dayWaterSituationStatisticsTableHds && dayWaterSituationStatisticsTableHds.size()>0){
             DayWaterSituationStatisticsTableHd dayWaterSituationStatisticsTableHd = dayWaterSituationStatisticsTableHds.get(0);
             String endTableList = dayWaterSituationStatisticsTableHd.getEndTableList();

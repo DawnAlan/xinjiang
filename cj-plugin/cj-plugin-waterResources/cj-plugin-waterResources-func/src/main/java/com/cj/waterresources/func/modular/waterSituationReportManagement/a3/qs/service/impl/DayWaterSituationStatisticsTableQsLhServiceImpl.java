@@ -338,12 +338,12 @@ public class DayWaterSituationStatisticsTableQsLhServiceImpl extends ServiceImpl
 
     @Override
     public RestResponse insertTodayMeanValue() {
-        List<DayWaterSituationStatisticsTableQsLh> todayData = this.lambdaQuery().eq(DayWaterSituationStatisticsTableQsLh::getTime, "今日均").list();
+        List<DayWaterSituationStatisticsTableQsLh> dayWaterSituationStatisticsTableQsLhs = this.baseMapper.selectList(sdf.format(new Date()));
+        List<DayWaterSituationStatisticsTableQsLh> todayData = dayWaterSituationStatisticsTableQsLhs.stream().filter(t -> t.getTime().equals("今日均")).collect(Collectors.toList());
         if(!todayData.isEmpty()){
             return RestResponse.no("今日均数据已创建");
         }
         List<DayWaterSituationStatisticsTableQsLh> dayWaterSituationStatisticsTableQsLhList = new ArrayList<>();
-        List<DayWaterSituationStatisticsTableQsLh> dayWaterSituationStatisticsTableQsLhs = this.baseMapper.selectList(sdf.format(new Date()));
         if(null!=dayWaterSituationStatisticsTableQsLhs && dayWaterSituationStatisticsTableQsLhs.size()>0){
             DayWaterSituationStatisticsTableQsLh dayWaterSituationStatisticsTableQs = dayWaterSituationStatisticsTableQsLhs.get(0);
             String endTableList = dayWaterSituationStatisticsTableQs.getEndTableList();

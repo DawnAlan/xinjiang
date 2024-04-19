@@ -10,7 +10,7 @@ import java.io.Serializable;
  * 陕北模型参数(ModelParameters)表实体类
  *
  * @author makejava
- * @since 2024-03-13 12:27:10
+ * @since 2024-04-19 14:25:17
  */
 @Data
 public class ModelParameters extends Model<ModelParameters> {
@@ -41,11 +41,14 @@ public class ModelParameters extends Model<ModelParameters> {
     //前期径流
     private Integer puelwpactdax;
     //降水系数
-    private String deriodiengthe;
+    private Double deriodiengthe;
     //时间
     private Date date;
     //合格率
-    private String rate;
-
-}
+    private Double rate;
+    //关联id
+    private String parentId;
+    //备注
+    private String remarks;
+    }
 

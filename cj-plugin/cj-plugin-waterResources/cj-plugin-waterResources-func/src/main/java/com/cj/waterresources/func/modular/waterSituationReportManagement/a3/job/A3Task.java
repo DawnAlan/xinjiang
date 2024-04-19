@@ -1,5 +1,6 @@
 package com.cj.waterresources.func.modular.waterSituationReportManagement.a3.job;
 
+import com.cj.common.util.RedisUtil;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.dkl.service.DayWaterSituationStatisticsTableDklService;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hd.service.DayWaterSituationStatisticsTableHdService;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hx.service.DayWaterSituationStatisticsTableHxService;
@@ -12,6 +13,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @EnableScheduling//开启定时任务
 @Component
@@ -38,9 +43,12 @@ public class A3Task {
     @Autowired
     private DayWaterSituationStatisticsTableQsLhService qsLhService;
 
+    @Autowired
+    private RedisUtil redisUtil;
 
 
-    @Scheduled(cron="0 30 20 * * ?")//每天20:30
+
+    @Scheduled(cron="0 08 13 * * ?")//每天20:30
     public void createA3NotDkl(){
         log.info("--------------------------------执行定时插入A3（不包含对口率） 完8点后生成今日均数据----------------------------");
         tthService.insertTodayMeanValue();
@@ -60,5 +68,14 @@ public class A3Task {
     public void createA3HaveDkl(){
         log.info("--------------------------------执行定时插入A3（仅对口率） 完8点后生成今日均数据----------------------------");
         dklService.insertTodayMeanValue();
+    }
+
+    @Scheduled(cron="0 59 23 * * ?")//每天23:59
+    public void deleteDayUseWaterPlan(){
+        Set<String> allKeys = redisUtil.getAllKeys("A3:dayUseWaterPlanChoseTime");
+        if(!allKeys.isEmpty()){
+            allKeys.forEach(t->redisUtil.del(t));
+            log.info("删除redis中A3:dayUseWaterPlanChoseTime数据成功");
+        }
     }
 }

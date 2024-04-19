@@ -38,13 +38,27 @@ public class InstructionViewingServiceImpl extends ServiceImpl<InstructionViewin
     public RestResponse updateInstructionStatus(String instructionId) {
         List<InstructionViewing> list = this.lambdaQuery().eq(InstructionViewing::getInstructionId, instructionId).list();
         Boolean flag = false;
-        for(InstructionViewing viewing:list){
+        Boolean flag1 = true;
+        long four = list.stream().filter(t -> t.getInstructionStatus() == 4).count();
+        long twoOrThreeOrFour = list.stream().filter(t -> t.getInstructionStatus() == 2 ||t.getInstructionStatus() == 3 ||t.getInstructionStatus() == 4).count();
+        if(four==list.size()){
+            flag=true;
+        }
+        if(twoOrThreeOrFour>0 && twoOrThreeOrFour<=list.size()){
+            flag1=false;
+        }
+      /*  for(InstructionViewing viewing:list){
             if(viewing.getInstructionStatus()==4){
                 flag = true;
             }else {
                 flag = false;
             }
         }
+        for(InstructionViewing viewing:list){
+            if(viewing.getInstructionStatus()==1){
+                flag1 = true;
+            }
+        }*/
         if(flag){
             boolean update = approvalManagementService.lambdaUpdate().set(ApprovalManagement::getCompleteTime,new Date()).
                     set(ApprovalManagement::getInstructionStatus, 3).eq(ApprovalManagement::getId, instructionId).update();
@@ -54,7 +68,7 @@ public class InstructionViewingServiceImpl extends ServiceImpl<InstructionViewin
                 return RestResponse.no("error");
             }
         }else {
-            boolean update = approvalManagementService.lambdaUpdate().set(ApprovalManagement::getInstructionStatus, 2).eq(ApprovalManagement::getId, instructionId).update();
+            boolean update = approvalManagementService.lambdaUpdate().set(ApprovalManagement::getInstructionStatus, flag1?1:2).eq(ApprovalManagement::getId, instructionId).update();
             if(update){
                 return RestResponse.ok("123");
             }else {

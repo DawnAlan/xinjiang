@@ -10,6 +10,7 @@ import com.cj.waterresources.func.modular.trendsTable.service.TrendsTableParamSe
 import com.cj.waterresources.func.modular.waterPrice.totalIdToStation.entity.TotalIdToStation;
 import com.cj.waterresources.func.modular.waterPrice.totalIdToStation.service.TotalIdToStationService;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.dkl.entity.DayWaterSituationStatisticsTableDkl;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.entity.DayWaterSituationStatisticsTableLzz;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.entity.DayWaterSituationStatisticsTableQsLh;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.mapper.DayWaterSituationStatisticsTableQsMapper;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.entity.DayWaterSituationStatisticsTableQs;
@@ -370,12 +371,12 @@ public class DayWaterSituationStatisticsTableQsServiceImpl extends ServiceImpl<D
 
     @Override
     public RestResponse insertTodayMeanValue() {
-        List<DayWaterSituationStatisticsTableQs> todayData = this.lambdaQuery().eq(DayWaterSituationStatisticsTableQs::getTime, "今日均").list();
+        List<DayWaterSituationStatisticsTableQs> dayWaterSituationStatisticsTableQss = this.baseMapper.selectList(sdf.format(new Date()));
+        List<DayWaterSituationStatisticsTableQs> todayData = dayWaterSituationStatisticsTableQss.stream().filter(t -> t.getTime().equals("今日均")).collect(Collectors.toList());
         if(!todayData.isEmpty()){
             return RestResponse.no("今日均数据已创建");
         }
         List<DayWaterSituationStatisticsTableQs> dayWaterSituationStatisticsTableQsList = new ArrayList<>();
-        List<DayWaterSituationStatisticsTableQs> dayWaterSituationStatisticsTableQss = this.baseMapper.selectList(sdf.format(new Date()));
         if(null!=dayWaterSituationStatisticsTableQss && dayWaterSituationStatisticsTableQss.size()>0){
             DayWaterSituationStatisticsTableQs dayWaterSituationStatisticsTableQs = dayWaterSituationStatisticsTableQss.get(0);
             String endTableList = dayWaterSituationStatisticsTableQs.getEndTableList();

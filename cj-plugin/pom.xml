@@ -44,6 +44,7 @@
         <module>cj-plugin-fourPredictions</module>
         <module>cj-plugin-business-log</module>
         <module>cj-plugin-xss</module>
+        <module>cj-plugin-msg</module>
     </modules>
 
 </project>
