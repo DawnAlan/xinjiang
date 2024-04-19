@@ -24,15 +24,13 @@ import com.cj.model.func.modular.FloodPredict.entity.LzzHydrologyParam;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.hpsf.GUID;
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.text.ParseException;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 
 /**
@@ -57,12 +55,12 @@ public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMappe
     @Autowired
     private ModelParametersDetailService modelParametersDetailService;
 
-    public List<ModelParameters> queryList(ModelParametersReq input) {
+    public Map<String, List<ModelParameters>> queryList() {
         List<ModelParameters> parametersList = this.lambdaQuery()
-                .like(!input.getSiteName().isEmpty(), ModelParameters::getSiteName, input.getSiteName())
-                .between(input.getStartTime() != null, ModelParameters::getDate, input.getStartTime(), input.getEndTime())
+//                .like(!input.getSiteName().isEmpty(), ModelParameters::getSiteName, input.getSiteName())
+//                .between(input.getStartTime() != null, ModelParameters::getDate, input.getStartTime(), input.getEndTime())
                 .list();
-        return parametersList;
+        return parametersList.stream().collect(Collectors.groupingByConcurrent(ModelParameters::getSiteName));
 
     }
 
@@ -220,6 +218,40 @@ public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMappe
             modelParametersDetailService.removeByMap(map);
         }
         return idDel > 0 ? true : false;
+    }
+
+    @Override
+    public boolean isDefault(ModelParametersReq input) {
+       List<ModelParameters> modelList = this.lambdaQuery().eq(ModelParameters::getSiteName,input.getSiteName())
+                .list();
+        for (int i = 0; i < modelList.size(); i++) {
+            modelList.get(i).setIsDefault(0);
+        }
+        this.baseMapper.deleteBatchIds(modelList);
+        ModelParameters model = this.baseMapper.selectById(input.getId());
+        model.setIsDefault(1);
+        this.baseMapper.updateById(model);
+        return true;
+    }
+
+    @Override
+    public boolean ls(ModelParametersReq input) {
+        // 获取当前日期的Calendar实例
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(input.getStartTime());
+        // 设置日期为当前日期的前20天
+//        calendar.add(Calendar.DAY_OF_MONTH, -30);
+        // 获取设置后的时间
+        Date startTime = calendar.getTime();
+        Date endTime = input.getEndTime();
+        LzzHydrologyParam lzzHydrologyParam = new LzzHydrologyParam();
+        lzzHydrologyParam.setThreeGaugingStation(lzzGaugingStationService.lambdaQuery().eq(LzzGaugingStation::getStationName, "3号桥水位站").between(LzzGaugingStation::getGatherTime, startTime, endTime).list());
+        lzzHydrologyParam.setLzzInput(lzzGaugingStationService.lambdaQuery().eq(LzzGaugingStation::getStationName, "天谷自动水位站").between(LzzGaugingStation::getGatherTime, startTime, endTime).list());
+
+        IrrigatedHydrologyParam irrigatedHydrologyParam = new IrrigatedHydrologyParam();
+
+        irrigatedHydrologyParam.setTthInput(irrigatedPlatformDataInfoService.lambdaQuery().eq(IrrigatedPlatformDataInfo::getMonitorName, "入库流量").between(IrrigatedPlatformDataInfo::getMonitorTime, startTime, endTime).list());
+        return false;
     }
 }
 

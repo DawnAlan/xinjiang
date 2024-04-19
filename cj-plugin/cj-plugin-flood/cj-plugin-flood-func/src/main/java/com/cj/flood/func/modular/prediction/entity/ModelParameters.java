@@ -53,5 +53,7 @@ public class ModelParameters extends Model<ModelParameters> {
     private Integer state;
     //备注
     private String remarks;
+
+    private  Integer isDefault;
     }
 

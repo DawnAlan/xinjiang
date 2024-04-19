@@ -4,8 +4,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.cj.flood.func.modular.prediction.bean.req.CalibrateReq;
 import com.cj.flood.func.modular.prediction.bean.req.ModelParametersReq;
 import com.cj.flood.func.modular.prediction.entity.ModelParameters;
-import com.cj.model.func.modular.FloodPredict.Calibration.entity.CalibrationOutput;
-import com.cj.model.func.modular.FloodPredict.Calibration.entity.CalibrationParam;
 
 import java.util.List;
 import java.util.Map;
@@ -18,11 +16,15 @@ import java.util.Map;
  */
 public interface ModelParametersService extends IService<ModelParameters> {
 
-    List<ModelParameters> queryList(ModelParametersReq input);
+    Map<String, List<ModelParameters>> queryList();
 
     ModelParameters calibrate(CalibrateReq input);
 
 
     Boolean del(List<String> input);
+
+    boolean isDefault(ModelParametersReq input);
+
+    boolean ls(ModelParametersReq input);
 }
 

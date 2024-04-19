@@ -29,8 +29,8 @@ public class ModelParametersController {
     @ApiOperationSupport(order = 1)
     @ApiOperation("模型率定数据查询")
     @PostMapping("/queryList")
-    public RestResponse queryList(@RequestBody ModelParametersReq input) {
-        return RestResponse.ok(modelParametersService.queryList(input));
+    public RestResponse queryList() {
+        return RestResponse.ok(modelParametersService.queryList());
     }
 
     @ApiOperationSupport(order = 2)
@@ -38,6 +38,29 @@ public class ModelParametersController {
     @PostMapping("/del")
     public RestResponse del(@RequestBody List<String> input) {
         if (modelParametersService.del(input)){
+            return RestResponse.ok(true);
+        }else {
+            return RestResponse.no("删除失败！");
+        }
+    }
+
+    @ApiOperationSupport(order = 2)
+    @ApiOperation("设置默认参数")
+    @PostMapping("/isDefault")
+    public RestResponse isDefault(@RequestBody ModelParametersReq input) {
+        if (modelParametersService.isDefault(input)){
+            return RestResponse.ok(true);
+        }else {
+            return RestResponse.no("删除失败！");
+        }
+    }
+
+
+    @ApiOperationSupport(order = 2)
+    @ApiOperation("历史来水过程")
+    @PostMapping("/ls")
+    public RestResponse ls(@RequestBody ModelParametersReq input) {
+        if (modelParametersService.ls(input)){
             return RestResponse.ok(true);
         }else {
             return RestResponse.no("删除失败！");

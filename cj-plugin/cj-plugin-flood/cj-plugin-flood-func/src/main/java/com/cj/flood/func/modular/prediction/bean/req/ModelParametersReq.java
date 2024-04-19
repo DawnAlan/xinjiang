@@ -16,4 +16,6 @@ public class ModelParametersReq {
 
     @ApiModelProperty(value = "断面名称")
     private String siteName;
+    @ApiModelProperty(value = "id")
+    private String id;
 }
