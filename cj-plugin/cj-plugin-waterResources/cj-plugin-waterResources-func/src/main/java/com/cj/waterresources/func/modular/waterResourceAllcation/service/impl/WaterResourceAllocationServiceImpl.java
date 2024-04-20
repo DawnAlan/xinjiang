@@ -786,7 +786,7 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
         waterTransferReq.setLevelEndTth(allocation.getLevelEndTth());
         waterTransferReq.setTimeCalStep(allocation.getBucketType());
         waterTransferReq.setData(data);
-        waterTransferReq.setWaterDemandData(setWaterNeedUnitId(waterNeed(allocation.getWaterDistributionStartTime())));
+        waterTransferReq.setWaterDemandData(waterNeed(allocation.getWaterDistributionStartTime()));
         waterTransferReq.setCurve(curveService.selectList());
         List<ResOption> calculator;
         try {
@@ -932,7 +932,7 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
                 }
             }
         }
-        demands.forEach(demand -> demand.setUnitId(useWaterManagementUnitIdMap.get(
+     /*   demands.forEach(demand -> demand.setUnitId(useWaterManagementUnitIdMap.get(
                 (demand.getUseWaterPlan().equals("year") ? "年用水计划"
                 : demand.getUseWaterPlan().equals("month") ? "月用水计划"
                 : demand.getUseWaterPlan().equals("tenDays") ? "旬用水计划"
@@ -940,7 +940,7 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
                 + "-" + demand.getArea()
                 + (demand.getUseWaterPlan().equals("day") ? "-" + demand.getUnit() : "")
                 + (demand.getUseWaterPlan().equals("day") ? "-" + demand.getSubArea() : "-" + demand.getUnit())
-        )));
+        )));*/
         return demands;
     }
 
@@ -1053,8 +1053,10 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
                         plan = Double.parseDouble(usePlanSub.getWaterPlan());
                     }
                     waterdemand.setWaterDemendData(flow + plan);
-                    waterdemand.setArea(usePlan.getArea());
-                    waterdemand.setUnit(usePlan.getUnitName());
+                    waterdemand.setArea(usePlanSub.getArea());
+                    waterdemand.setUnit(usePlanSub.getUnitName());
+                    waterdemand.setUnitId(usePlanSub.getUnitId());
+                    waterdemand.setUnitType(usePlanSub.getUnitType());
                     waterdemand.setSubArea(usePlanSub.getUnitName());
                     waterdemand.setColName("flow");
                     demands.add(waterdemand);

@@ -31,6 +31,10 @@ public class UseWaterManagementQueryRes implements Serializable {
     @ApiModelProperty(value = "单位Id")
     private String unitId;
 
+    //单位类型
+    @ApiModelProperty(value = "单位类型")
+    private String unitType;
+
     @ApiModelProperty(value = "子节点")
     private List<UseWaterManagementQueryRes> children;
 }

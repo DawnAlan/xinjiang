@@ -14,7 +14,7 @@ import java.io.Serializable;
  */
 @Data
 public class OverallMsg extends Model<OverallMsg> {
-    //主键ID  
+    //主键ID
     private String id;
     //分类
     private String category;

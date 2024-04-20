@@ -368,182 +368,174 @@ public class OutResult {
         if (step==4){
             Map<String, Object> dataDemand = new HashMap<>();
             dataDemand=Out1.get(0).getDataDemand();
-            String[][]nameAgricultureEastDay=(String[][]) dataDemand.get("河东灌溉子级站点名");
-            String[][]nameAgricultureWestDay=(String[][]) dataDemand.get("河西灌溉子级站点名");
-            String[][]nameGreenEastDay=(String[][]) dataDemand.get("河东绿化子级站点名");
-            String[][]nameGreenWestDay=(String[][]) dataDemand.get("河西绿化子级站点名");
-            String[][]nameGreenQushouDay=(String[][]) dataDemand.get("渠首绿化子级站点名");
-            String[][]nameAgricultureQushouDay=(String[][]) dataDemand.get("渠首农业子级站点名");
+            String[]nameAgricultureEastDay=(String[]) dataDemand.get("河东灌溉子级站点名");
+            String[]nameAgricultureWestDay=(String[]) dataDemand.get("河西灌溉子级站点名");
+            String[]nameGreenEastDay=(String[]) dataDemand.get("河东绿化子级站点名");
+            String[]nameGreenWestDay=(String[]) dataDemand.get("河西绿化子级站点名");
+            String[]nameGreenQushouDay=(String[]) dataDemand.get("渠首绿化子级站点名");
+            String[]nameAgricultureQushouDay=(String[]) dataDemand.get("渠首农业子级站点名");
 
-            String[][]idAgricultureEastDay=(String[][]) dataDemand.get("idAgricultureEastSub");
-            String[][]idAgricultureWestDay=(String[][]) dataDemand.get("idAgricultureWestSub");
-            String[][]idGreenEastDay=(String[][]) dataDemand.get("idGreenEastSub");
-            String[][]idGreenWestDay=(String[][]) dataDemand.get("idGreenWestSub");
-            String[][]idGreenQushouDay=(String[][]) dataDemand.get("idGreenQushouSub");
-            String[][]idAgricultureQushouDay=(String[][]) dataDemand.get("idAgricultureQushouSub");
+            String[]idAgricultureEastDay=(String[]) dataDemand.get("idAgricultureEastSub");
+            String[]idAgricultureWestDay=(String[]) dataDemand.get("idAgricultureWestSub");
+            String[]idGreenEastDay=(String[]) dataDemand.get("idGreenEastSub");
+            String[]idGreenWestDay=(String[]) dataDemand.get("idGreenWestSub");
+            String[]idGreenQushouDay=(String[]) dataDemand.get("idGreenQushouSub");
+            String[]idAgricultureQushouDay=(String[]) dataDemand.get("idAgricultureQushouSub");
 
-            double[][]demandAgricultureEastDay=(double[][]) dataDemand.get("河东灌溉子级需水");
-            double[][]demandAgricultureWestDay=(double[][]) dataDemand.get("河西灌溉子级需水");
-            double[][]demandGreenEastDay=(double[][]) dataDemand.get("河东绿化子级需水");
-            double[][]demandGreenWestDay=(double[][]) dataDemand.get("河西绿化子级需水");
-            double[][]demandGreenQushouDay=(double[][]) dataDemand.get("渠首绿化子级需水");
-            double[][]demandAgricultureQushouDay=(double[][]) dataDemand.get("渠首农业子级需水");
+            double[]demandAgricultureEastDay=(double[]) dataDemand.get("河东灌溉子级需水");
+            double[]demandAgricultureWestDay=(double[]) dataDemand.get("河西灌溉子级需水");
+            double[]demandGreenEastDay=(double[]) dataDemand.get("河东绿化子级需水");
+            double[]demandGreenWestDay=(double[]) dataDemand.get("河西绿化子级需水");
+            double[]demandGreenQushouDay=(double[]) dataDemand.get("渠首绿化子级需水");
+            double[]demandAgricultureQushouDay=(double[]) dataDemand.get("渠首农业子级需水");
 
-            double[][]waterAgricultureEastDay=(double[][]) dataDemand.get("河东农业供水");
-            double[][]waterAgricultureWestDay=(double[][]) dataDemand.get("河西农业供水");
-            double[][]waterGreenEastDay=(double[][]) dataDemand.get("河东绿化供水");
-            double[][]waterGreenWestDay=(double[][]) dataDemand.get("河西绿化供水");
-            double[][]waterGreenQushouDay=(double[][]) dataDemand.get("渠首绿化供水");
-            double[][]waterAgricultureQushouDay=(double[][]) dataDemand.get("渠首农业供水");
+            double[]waterAgricultureEastDay=(double[]) dataDemand.get("河东农业供水");
+            double[]waterAgricultureWestDay=(double[]) dataDemand.get("河西农业供水");
+            double[]waterGreenEastDay=(double[]) dataDemand.get("河东绿化供水");
+            double[]waterGreenWestDay=(double[]) dataDemand.get("河西绿化供水");
+            double[]waterGreenQushouDay=(double[]) dataDemand.get("渠首绿化供水");
+            double[]waterAgricultureQushouDay=(double[]) dataDemand.get("渠首农业供水");
             //河东农业
             for (int ii=0;ii<nameAgricultureEastDay.length;ii++){
-                for (int x=0;x<nameAgricultureEastDay[ii].length;x++)
-                {
+
                     for (int i = 0; i < length; i++)
                     {
                         Option_Water option = new Option_Water();
                         option.setTime(Out1.get(0).getTime()[i]);
                         option.setTypeName(req.getTypeName());
-                        option.setStationType(Out1.get(0).getNameAgricultureEast()[ii]);
-                        option.setStationName(nameAgricultureEastDay[ii][x]);
-                        option.setWater(waterAgricultureEastDay[ii][x]);
-                        if (demandAgricultureEastDay[ii][x]==0){
+                        option.setStationType("河东管理站");
+                        option.setStationName(nameAgricultureEastDay[ii]);
+                        option.setWater(waterAgricultureEastDay[ii]);
+                        if (demandAgricultureEastDay[ii]==0){
                             option.setProportion(p);
                         }
                         else {
-                            option.setProportion(Double.parseDouble(df.format(waterAgricultureEastDay[ii][x]/demandAgricultureEastDay[ii][x])));
+                            option.setProportion(Double.parseDouble(df.format(waterAgricultureEastDay[ii]/demandAgricultureEastDay[ii])));
                         }
-                        option.setWaterLack(Double.parseDouble(df.format(demandAgricultureEastDay[ii][x]-waterAgricultureEastDay[ii][x])));
-                        option.setFlow(Double.parseDouble(df.format(waterAgricultureEastDay[ii][x]/8.64)));
-                        option.setUnitId(idAgricultureEastDay[ii][x]);
+                        option.setWaterLack(Double.parseDouble(df.format(demandAgricultureEastDay[ii]-waterAgricultureEastDay[ii])));
+                        option.setFlow(Double.parseDouble(df.format(waterAgricultureEastDay[ii]/8.64)));
+                        option.setUnitId(idAgricultureEastDay[ii]);
                         option2.add(option);
                     }
-                }
             }
             //河西农业
             for (int ii=0;ii<nameAgricultureWestDay.length;ii++){
-                for (int x=0;x<nameAgricultureWestDay[ii].length;x++)
-                {
+
                     for (int i = 0; i < length; i++)
                     {
                         Option_Water option = new Option_Water();
                         option.setTime(Out1.get(0).getTime()[i]);
                         option.setTypeName(req.getTypeName());
-                        option.setStationType(Out1.get(0).getNameWest()[ii+1]);
-                        option.setStationName(nameAgricultureWestDay[ii][x]);
-                        option.setWater(waterAgricultureWestDay[ii][x]);
-                        if (demandAgricultureWestDay[ii][x]==0){
+                        option.setStationType("河西管理站");
+                        option.setStationName(nameAgricultureWestDay[ii]);
+                        option.setWater(waterAgricultureWestDay[ii]);
+                        if (demandAgricultureWestDay[ii]==0){
                             option.setProportion(p);
                         }
                         else {
-                            option.setProportion(Double.parseDouble(df.format(waterAgricultureWestDay[ii][x]/demandAgricultureWestDay[ii][x])));
+                            option.setProportion(Double.parseDouble(df.format(waterAgricultureWestDay[ii]/demandAgricultureWestDay[ii])));
                         }
-                        option.setWaterLack(Double.parseDouble(df.format(demandAgricultureWestDay[ii][x]-waterAgricultureWestDay[ii][x])));
-                        option.setFlow(Double.parseDouble(df.format(waterAgricultureWestDay[ii][x]/8.64)));
-                        option.setUnitId(idAgricultureWestDay[ii][x]);
+                        option.setWaterLack(Double.parseDouble(df.format(demandAgricultureWestDay[ii]-waterAgricultureWestDay[ii])));
+                        option.setFlow(Double.parseDouble(df.format(waterAgricultureWestDay[ii]/8.64)));
+                        option.setUnitId(idAgricultureWestDay[ii]);
                         option2.add(option);
                     }
-                }
+
             }
             //河东绿化
             for (int ii=0;ii<nameGreenEastDay.length;ii++){
-                for (int x=0;x<nameGreenEastDay[ii].length;x++)
-                {
+
                     for (int i = 0; i < length; i++)
                     {
                         Option_Water option = new Option_Water();
                         option.setTime(Out1.get(0).getTime()[i]);
                         option.setTypeName(req.getTypeName());
-                        option.setStationType(Out1.get(0).getNameGreenEast()[ii]);
-                        option.setStationName(nameGreenEastDay[ii][x]);
-                        option.setWater(waterGreenEastDay[ii][x]);
-                        if (demandGreenEastDay[ii][x]==0){
+                        option.setStationType("河东管理站");
+                        option.setStationName(nameGreenEastDay[ii]);
+                        option.setWater(waterGreenEastDay[ii]);
+                        if (demandGreenEastDay[ii]==0){
                             option.setProportion(p);
                         }
                         else {
-                            option.setProportion(Double.parseDouble(df.format(waterGreenEastDay[ii][x]/demandGreenEastDay[ii][x])));
+                            option.setProportion(Double.parseDouble(df.format(waterGreenEastDay[ii]/demandGreenEastDay[ii])));
                         }
-                        option.setWaterLack(Double.parseDouble(df.format(demandGreenEastDay[ii][x]-waterGreenEastDay[ii][x])));
-                        option.setFlow(Double.parseDouble(df.format(waterGreenEastDay[ii][x]/8.64)));
-                        option.setUnitId(idGreenEastDay[ii][x]);
+                        option.setWaterLack(Double.parseDouble(df.format(demandGreenEastDay[ii]-waterGreenEastDay[ii])));
+                        option.setFlow(Double.parseDouble(df.format(waterGreenEastDay[ii]/8.64)));
+                        option.setUnitId(idGreenEastDay[ii]);
                         option2.add(option);
                     }
-                }
+
             }
             //河西绿化
             for (int ii=0;ii<nameGreenWestDay.length;ii++){
-                for (int x=0;x<nameGreenWestDay[ii].length;x++)
-                {
+
                     for (int i = 0; i < length; i++)
                     {
                         Option_Water option = new Option_Water();
                         option.setTime(Out1.get(0).getTime()[i]);
                         option.setTypeName(req.getTypeName());
-                        option.setStationType(Out1.get(0).getNameGreenWest()[ii]);
-                        option.setStationName(nameGreenWestDay[ii][x]);
-                        option.setWater(waterGreenWestDay[ii][x]);
-                        if (demandGreenWestDay[ii][x]==0){
+                        option.setStationType("河西管理站");
+                        option.setStationName(nameGreenWestDay[ii]);
+                        option.setWater(waterGreenWestDay[ii]);
+                        if (demandGreenWestDay[ii]==0){
                             option.setProportion(p);
                         }
                         else {
-                            option.setProportion(Double.parseDouble(df.format(waterGreenWestDay[ii][x]/demandGreenWestDay[ii][x])));
+                            option.setProportion(Double.parseDouble(df.format(waterGreenWestDay[ii]/demandGreenWestDay[ii])));
                         }
-                        option.setWaterLack(Double.parseDouble(df.format(demandGreenWestDay[ii][x]-waterGreenWestDay[ii][x])));
-                        option.setFlow(Double.parseDouble(df.format(waterGreenWestDay[ii][x]/8.64)));
-                        option.setUnitId(idGreenWestDay[ii][x]);
+                        option.setWaterLack(Double.parseDouble(df.format(demandGreenWestDay[ii]-waterGreenWestDay[ii])));
+                        option.setFlow(Double.parseDouble(df.format(waterGreenWestDay[ii]/8.64)));
+                        option.setUnitId(idGreenWestDay[ii]);
                         option2.add(option);
                     }
-                }
+
             }
             //渠首绿化
             for (int ii=0;ii<nameGreenQushouDay.length;ii++){
-                for (int x=0;x<nameGreenQushouDay[ii].length;x++)
-                {
+
                     for (int i = 0; i < length; i++)
                     {
                         Option_Water option = new Option_Water();
                         option.setTime(Out1.get(0).getTime()[i]);
                         option.setTypeName(req.getTypeName());
-                        option.setStationType(Out1.get(0).getNameGreenQushou()[ii]);
-                        option.setStationName(nameGreenQushouDay[ii][x]);
-                        option.setWater(waterGreenQushouDay[ii][x]);
-                        if (demandGreenQushouDay[ii][x]==0){
+                        option.setStationType("渠首管理站");
+                        option.setStationName(nameGreenQushouDay[ii]);
+                        option.setWater(waterGreenQushouDay[ii]);
+                        if (demandGreenQushouDay[ii]==0){
                             option.setProportion(p);
                         }
                         else {
-                            option.setProportion(Double.parseDouble(df.format(waterGreenQushouDay[ii][x]/demandGreenQushouDay[ii][x])));
+                            option.setProportion(Double.parseDouble(df.format(waterGreenQushouDay[ii]/demandGreenQushouDay[ii])));
                         }
-                        option.setWaterLack(Double.parseDouble(df.format(demandGreenQushouDay[ii][x]-waterGreenQushouDay[ii][x])));
-                        option.setFlow(Double.parseDouble(df.format(waterGreenQushouDay[ii][x]/8.64)));
-                        option.setUnitId(idGreenQushouDay[ii][x]);
+                        option.setWaterLack(Double.parseDouble(df.format(demandGreenQushouDay[ii]-waterGreenQushouDay[ii])));
+                        option.setFlow(Double.parseDouble(df.format(waterGreenQushouDay[ii]/8.64)));
+                        option.setUnitId(idGreenQushouDay[ii]);
                         option2.add(option);
                     }
-                }
+
             }
             //渠首农业
             for (int ii=0;ii<nameAgricultureQushouDay.length;ii++){
-                for (int x=0;x<nameAgricultureQushouDay[ii].length;x++)
-                {
+
                     for (int i = 0; i < length; i++)
                     {
                         Option_Water option = new Option_Water();
                         option.setTime(Out1.get(0).getTime()[i]);
                         option.setTypeName(req.getTypeName());
-                        option.setStationType(Out1.get(0).getNameAgricultureQushou()[ii]);
-                        option.setStationName(nameAgricultureQushouDay[ii][x]);
-                        option.setWater(waterAgricultureQushouDay[ii][x]);
-                        if (demandAgricultureQushouDay[ii][x]==0){
+                        option.setStationType("渠首管理站");
+                        option.setStationName(nameAgricultureQushouDay[ii]);
+                        option.setWater(waterAgricultureQushouDay[ii]);
+                        if (demandAgricultureQushouDay[ii]==0){
                             option.setProportion(p);
                         }
                         else {
-                            option.setProportion(Double.parseDouble(df.format(waterAgricultureQushouDay[ii][x]/demandAgricultureQushouDay[ii][x])));
+                            option.setProportion(Double.parseDouble(df.format(waterAgricultureQushouDay[ii]/demandAgricultureQushouDay[ii])));
                         }
-                        option.setWaterLack(Double.parseDouble(df.format(demandAgricultureQushouDay[ii][x]-waterAgricultureQushouDay[ii][x])));
-                        option.setFlow(Double.parseDouble(df.format(waterAgricultureQushouDay[ii][x]/8.64)));
-                        option.setUnitId(idAgricultureQushouDay[ii][x]);
+                        option.setWaterLack(Double.parseDouble(df.format(demandAgricultureQushouDay[ii]-waterAgricultureQushouDay[ii])));
+                        option.setFlow(Double.parseDouble(df.format(waterAgricultureQushouDay[ii]/8.64)));
+                        option.setUnitId(idAgricultureQushouDay[ii]);
                         option2.add(option);
                     }
-                }
             }
         }
         Write(path1,option1);
@@ -685,6 +677,8 @@ public class OutResult {
         }catch (IOException e) {
             e.printStackTrace();
         }
+
+
     }
 
 

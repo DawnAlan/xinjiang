@@ -27,4 +27,8 @@ public class DayWaterUsePlanV {
     private String flow;
     @JsonProperty("waterPlan")
     private String waterPlan;
+    @JsonProperty("unitId")
+    private String unitId;
+    @JsonProperty("unitType")
+    private String unitType;
 }

@@ -686,58 +686,26 @@ public class InputWay {
         String[] nameGreenQushou = (String[]) dataMonth.get("渠首绿化站点名");
         Map<String, Object> data = new HashMap<>();
 
-        String[][] nameAgricultureEastDay = new String[nameAgricultureEast.length][1];
-        String[][] nameAgricultureWestDay = new String[nameAgricultureWest.length][1] ;
-        String[][] nameGreenEastDay = new String[nameGreenEast.length][1];
-        String[][] nameGreenWestDay = new String[nameGreenWest.length][1] ;
-        String[][] nameAgricultureQushouDay = new String[nameAgricultureQushou.length][1];
-        String[][] nameGreenQushouDay = new String[nameGreenQushou.length][1];
+        String[] nameAgricultureEastDay = getNameDay(waterDemandData,"河东管理站","河东农业")[0];
+        String[] nameAgricultureWestDay = getNameDay(waterDemandData,"河西管理站","河西农业")[0];
+        String[] nameGreenEastDay = getNameDay(waterDemandData,"河东管理站","河东绿化")[0];
+        String[] nameGreenWestDay = getNameDay(waterDemandData,"河西管理站","河西绿化")[0];
+        String[] nameAgricultureQushouDay =getNameDay(waterDemandData,"渠首管理站","渠首农业")[0];
+        String[] nameGreenQushouDay = getNameDay(waterDemandData,"渠首管理站","渠首绿化")[0];
 
-        String[][] idAgricultureEastDay = new String[nameAgricultureEast.length][1];
-        String[][] idAgricultureWestDay = new String[nameAgricultureWest.length][1] ;
-        String[][] idGreenEastDay = new String[nameGreenEast.length][1];
-        String[][] idGreenWestDay = new String[nameGreenWest.length][1] ;
-        String[][] idAgricultureQushouDay = new String[nameAgricultureQushou.length][1];
-        String[][] idGreenQushouDay = new String[nameGreenQushou.length][1];
+        String[] idAgricultureEastDay = getNameDay(waterDemandData,"河东管理站","河东农业")[1];
+        String[] idAgricultureWestDay = getNameDay(waterDemandData,"河西管理站","河西农业")[1];
+        String[] idGreenEastDay = getNameDay(waterDemandData,"河东管理站","河东绿化")[1];
+        String[] idGreenWestDay = getNameDay(waterDemandData,"河西管理站","河西绿化")[1] ;
+        String[] idAgricultureQushouDay = getNameDay(waterDemandData,"渠首管理站","渠首农业")[1];
+        String[] idGreenQushouDay = getNameDay(waterDemandData,"渠首管理站","渠首绿化")[1];
 
-        double[][] demandAgricultureEastDay = new double[nameAgricultureEast.length][1];
-        double[][] demandAgricultureWestDay = new double[nameAgricultureWest.length][1] ;
-        double[][] demandGreenEastDay = new double[nameGreenEast.length][1];
-        double[][] demandGreenWestDay = new double[nameGreenWest.length][1] ;
-        double[][] demandAgricultureQushouDay = new double[nameAgricultureQushou.length][1];
-        double[][] demandGreenQushouDay = new double[nameGreenQushou.length][1];
-        for (int i=0;i<nameAgricultureEastDay.length;i++){
-            nameAgricultureEastDay[i]=getNameDay(waterDemandData,"河东管理站",nameAgricultureEast[i])[0];
-            idAgricultureEastDay[i]=getNameDay(waterDemandData,"河东管理站",nameAgricultureEast[i])[1];
-            demandAgricultureEastDay[i]=getDemandDay(waterDemandData,"河东管理站",nameAgricultureEastDay[i]);
-        }
-
-        for (int i=0;i<nameAgricultureWestDay.length;i++){
-            nameAgricultureWestDay[i]=getNameDay(waterDemandData,"河西管理站",nameAgricultureWest[i])[0];
-            idAgricultureWestDay[i]=getNameDay(waterDemandData,"河西管理站",nameAgricultureWest[i])[1];
-            demandAgricultureWestDay[i]=getDemandDay(waterDemandData,"河西管理站",nameAgricultureWestDay[i]);
-        }
-        for (int i=0;i<nameGreenEastDay.length;i++){
-            nameGreenEastDay[i]=getNameDay(waterDemandData,"河东管理站",nameGreenEast[i])[0];
-            idGreenEastDay[i]=getNameDay(waterDemandData,"河东管理站",nameGreenEast[i])[1];
-            demandGreenEastDay[i]=getDemandDay(waterDemandData,"河东管理站",nameGreenEastDay[i]);
-        }
-        for (int i=0;i<nameGreenWestDay.length;i++){
-            nameGreenWestDay[i]=getNameDay(waterDemandData,"河西管理站",nameGreenWest[i])[0];
-            idGreenWestDay[i]=getNameDay(waterDemandData,"河西管理站",nameGreenWest[i])[1];
-            demandGreenWestDay[i]=getDemandDay(waterDemandData,"河西管理站",nameGreenWestDay[i]);
-
-        }
-        for (int i=0;i<nameAgricultureQushouDay.length;i++){
-            nameAgricultureQushouDay[i]=getNameDay(waterDemandData,"渠首管理站",nameAgricultureQushou[i])[0];
-            idAgricultureQushouDay[i]=getNameDay(waterDemandData,"渠首管理站",nameAgricultureQushou[i])[1];
-            demandAgricultureQushouDay[i]=getDemandDay(waterDemandData,"渠首管理站",nameAgricultureQushouDay[i]);
-        }
-        for (int i=0;i<nameGreenQushouDay.length;i++){
-            nameGreenQushouDay[i]=getNameDay(waterDemandData,"渠首管理站",nameGreenQushou[i])[0];
-            idGreenQushouDay[i]=getNameDay(waterDemandData,"渠首管理站",nameGreenQushou[i])[1];
-            demandGreenQushouDay[i]=getDemandDay(waterDemandData,"渠首管理站",nameGreenQushouDay[i]);
-        }
+        double[] demandAgricultureEastDay =getDemandDay(waterDemandData,"河东管理站",nameAgricultureEastDay);
+        double[] demandAgricultureWestDay = getDemandDay(waterDemandData,"河西管理站",nameAgricultureWestDay);
+        double[] demandGreenEastDay = getDemandDay(waterDemandData,"河东管理站",nameGreenEastDay);
+        double[] demandGreenWestDay = getDemandDay(waterDemandData,"河西管理站",nameGreenWestDay);
+        double[] demandAgricultureQushouDay = getDemandDay(waterDemandData,"渠首管理站",nameAgricultureQushouDay);
+        double[] demandGreenQushouDay = getDemandDay(waterDemandData,"渠首管理站",nameGreenQushouDay);
 
 
         double[] demand = (double[]) dataMonth.get("楼庄子水厂");
@@ -1163,7 +1131,7 @@ public class InputWay {
     public static double[] getDemandDay(List<Waterdemand> data, String tableName, String[] name) {
         double[] n  =new double[name.length];
         List<Double> demand = new ArrayList<>();
-        List<String> unitID = new ArrayList<>();
+
         for (int ii=0;ii<name.length;ii++) {
             double x = 0;
             for (int i = 0; i < data.size(); i++) {
@@ -1348,16 +1316,17 @@ public class InputWay {
      * @param tableName
      * @return
      */
-    public static String[][] getNameDay(List<Waterdemand> data, String tableName,String unit) {
+    public static String[][] getNameDay(List<Waterdemand> data, String tableName,String unitType) {
         List<String> demand = new ArrayList<>();
         List<String> demandID = new ArrayList<>();
-        demand = data.stream().filter(n -> n.getArea().equals(tableName)&&n.getUseWaterPlan().equals("day")&&n.getUnit().equals(unit)).map(Waterdemand::getSubArea).distinct().collect(Collectors.toList());
-        demandID=data.stream().filter(n -> n.getArea().equals(tableName)&&n.getUseWaterPlan().equals("day")&&n.getUnit().equals(unit)).map(Waterdemand::getUnitId).distinct().collect(Collectors.toList());
+        demand = data.stream().filter(n -> n.getArea().equals(tableName)&&n.getUseWaterPlan().equals("day")&&n.getUnitType().equals(unitType)).map(Waterdemand::getSubArea).distinct().collect(Collectors.toList());
+        demandID=data.stream().filter(n -> n.getArea().equals(tableName)&&n.getUseWaterPlan().equals("day")&&n.getUnitType().equals(unitType)).map(Waterdemand::getUnitId).distinct().collect(Collectors.toList());
         String[][] demanddata = new String[2][demand.size()];
-
-        for (int i = 0; i < demand.size(); i++) {
-            demanddata[0][i] = demand.get(i);
-            demanddata[1][i]=demandID.get(i);
+        if (demand.size()==demandID.size()){
+            for (int i = 0; i < demand.size(); i++) {
+                demanddata[0][i] = demand.get(i);
+                demanddata[1][i]=demandID.get(i);
+            }
         }
         return demanddata;
     }

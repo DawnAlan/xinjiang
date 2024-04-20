@@ -218,7 +218,7 @@ public class MachineForecast {
                 longFlood[i][9]=Math.round(3600*24*param.getPeriodStepSize()*(double)predict[i*param.getPeriodStepSize()][1]/10000 * 100.0) / 100.0;
             }
             if (param.getPeriod().equals("旬")){
-                int days = timeUtils.getDays(predict, param, i);
+                int days = 10;
                 longFlood[i][9]=Math.round(3600*24*days*(double)predict[i*param.getPeriodStepSize()][1]/10000 * 100.0) / 100.0;
             }
             if (param.getPeriod().equals("月")){
