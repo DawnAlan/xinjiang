@@ -147,7 +147,7 @@ public class PhysicalForecast {
             //连续列的赋值
             for (int i = 0; i < peakFloodXlsx.length; i++) {
                 peakFloodXlsx[i][5] = lzzOutList.get(i).getH1();
-                if (lzzOutList.get(i).getH1() >= 1394.5)//是否超过汛限水位
+                if (lzzOutList.get(i).getH1() > 1394.5)//是否超过汛限水位
                 {
                     peakFloodXlsx[i][14] = 1;
                 } else {
@@ -687,20 +687,9 @@ public class PhysicalForecast {
                 if (PreFlow.get(i).getFlow() == null) {
                     PreFlow.get(i).setFlow(0.0);
                 }
-                Date time = PreFlow.get(i).getDates();
-                int year = timeUtils.getSpecificDate(time).get("年");
-                Date time2 = param.getPreStartTime();
-                int year2 = timeUtils.getSpecificDate(time2).get("年");
-                if (year == year2) {
-                    Date time3 = PreFlow.get(i).getDates();
-                    int month = timeUtils.getSpecificDate(time3).get("月");
-                    if (month >= 1 && month <= 5) {
-                        preFlowSum = preFlowSum + PreFlow.get(i).getFlow();
-                        preFlowNum++;
-                    }
-                    preFlow = preFlowSum / preFlowNum * Q_shanbei.length;
-                }
+                preFlow += PreFlow.get(i).getFlow();
             }
+            preFlow = preFlowSum / PreFlow.size() * Q_shanbei.length;
             double Sum = preFlow + shanbeiFlow;
             double shanbei = Math.round((float) shanbeiFlow / Sum * 95) / 100.0;
             double rong = Math.round((float) preFlow / Sum * 95) / 100.0;

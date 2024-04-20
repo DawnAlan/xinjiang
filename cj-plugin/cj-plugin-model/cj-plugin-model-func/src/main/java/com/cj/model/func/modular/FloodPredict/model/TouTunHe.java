@@ -369,7 +369,7 @@ public class TouTunHe {
                 tthInXlsx[i][3]=tthIn[i][0];//时间
                 tthInXlsx[i][4]=Math.round((double) tthIn[i][1] * 100.0) / 100.0;//预报流量
                 tthInXlsx[i][5]=tthInList.get(i).getH1();//相应水位
-                if (tthInList.get(i).getH1()>987){//防洪高水位
+                if (tthInList.get(i).getH1()>988){//防洪高水位
                     tthInXlsx[i][14]=1;
                 }
                 else {

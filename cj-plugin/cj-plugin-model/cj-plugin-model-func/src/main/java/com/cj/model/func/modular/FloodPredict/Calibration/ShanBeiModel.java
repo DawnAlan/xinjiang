@@ -109,6 +109,7 @@ public class ShanBeiModel {
         }
         NumPeriod = input.length-zero;
 
+
         E = new double[NumPeriod]; // 输入数据
         P = new double[NumPeriod]; // 输入数据
         W = new double[NumPeriod + 1]; // 计算结果、输出数据,一般说时段初、时段末的W，所以+1
@@ -442,6 +443,7 @@ public class ShanBeiModel {
 
     // 汇流计算
     public ShanBeiModel ConfluenceCalculation() {
+        int hours = inputUtils.beforeHours;
         for (int j = 0; j < NumPeriod; j++) {
             if (P[j] >= 10){
                 L = 1;
@@ -462,11 +464,10 @@ public class ShanBeiModel {
                 Q[j] = CS * Q[j - 1] + (1 - CS) * I[j - L];
             }
         }
-        int hours = inputUtils.beforeHours;
-        double[] qResult = new double[NumPeriod - hours];
-        System.arraycopy(Q,hours,qResult,0,NumPeriod-hours);
+        double[] qResult = new double[NumPeriod + zero];
+        System.arraycopy(Q,0,qResult,zero,NumPeriod);
         Q = new double[zero + NumPeriod - hours];
-        System.arraycopy(qResult,0,Q,zero,qResult.length);
+        System.arraycopy(qResult,hours,Q,0,Q.length);
         return this;
     }
 

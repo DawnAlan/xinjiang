@@ -359,7 +359,7 @@ public class ApprovalTrafficOverviewTableServiceImpl extends ServiceImpl<Approva
                 approvalTrafficOverview.setOverviewId(id);
                 approvalTrafficOverview.setStationPid(res.getPid());
                 approvalTrafficOverview.setStationName(res.getUnitName());
-                approvalTrafficOverview.setEightFlow(Double.parseDouble(res.getFlow()));
+                approvalTrafficOverview.setEightFlow(Double.parseDouble(StringUtils.isEmpty(res.getFlow())?"0.00":res.getFlow()));
                 approvalTrafficOverview.setAddSubtractFlow(Double.parseDouble(StringUtils.isEmpty(res.getWaterPlan())?"0.00":res.getWaterPlan()));
                 approvalTrafficOverview.setPlanFlow(Double.parseDouble(StringUtils.isEmpty(res.getFlow())?"0.00":res.getFlow())+Double.parseDouble(StringUtils.isEmpty(res.getWaterPlan())?"0.00":res.getWaterPlan()));
                 approvalTrafficOverview.setReservoir("渠首管理站");
@@ -371,7 +371,7 @@ public class ApprovalTrafficOverviewTableServiceImpl extends ServiceImpl<Approva
                     approvalTrafficOverview1.setOverviewId(id);
                     approvalTrafficOverview1.setStationPid(res1.getPid());
                     approvalTrafficOverview1.setStationName(res1.getUnitName());
-                    approvalTrafficOverview1.setEightFlow(Double.parseDouble(res1.getFlow()));
+                    approvalTrafficOverview1.setEightFlow(Double.parseDouble(StringUtils.isEmpty(res1.getFlow())?"0.00":res1.getFlow()));
                     approvalTrafficOverview1.setAddSubtractFlow(Double.parseDouble(StringUtils.isEmpty(res1.getWaterPlan())?"0.00":res1.getWaterPlan()));
                     approvalTrafficOverview1.setPlanFlow(Double.parseDouble(StringUtils.isEmpty(res1.getFlow())?"0.00":res1.getFlow())+Double.parseDouble(StringUtils.isEmpty(res1.getWaterPlan())?"0.00":res1.getWaterPlan()));
                     approvalTrafficOverview1.setReservoir("渠首管理站");
@@ -393,7 +393,7 @@ public class ApprovalTrafficOverviewTableServiceImpl extends ServiceImpl<Approva
                 approvalTrafficOverview.setOverviewId(id);
                 approvalTrafficOverview.setStationPid(res.getPid());
                 approvalTrafficOverview.setStationName(res.getUnitName());
-                approvalTrafficOverview.setEightFlow(Double.parseDouble(res.getFlow()));
+                approvalTrafficOverview.setEightFlow(Double.parseDouble(StringUtils.isEmpty(res.getFlow())?"0.00":res.getFlow()));
                 approvalTrafficOverview.setAddSubtractFlow(Double.parseDouble(StringUtils.isEmpty(res.getWaterPlan())?"0.00":res.getWaterPlan()));
                 approvalTrafficOverview.setPlanFlow(Double.parseDouble(StringUtils.isEmpty(res.getFlow())?"0.00":res.getFlow())+Double.parseDouble(StringUtils.isEmpty(res.getWaterPlan())?"0.00":res.getWaterPlan()));
                 approvalTrafficOverview.setReservoir("河东管理站");
@@ -405,7 +405,7 @@ public class ApprovalTrafficOverviewTableServiceImpl extends ServiceImpl<Approva
                     approvalTrafficOverview1.setOverviewId(id);
                     approvalTrafficOverview1.setStationPid(res1.getPid());
                     approvalTrafficOverview1.setStationName(res1.getUnitName());
-                    approvalTrafficOverview1.setEightFlow(Double.parseDouble(res1.getFlow()));
+                    approvalTrafficOverview1.setEightFlow(Double.parseDouble(StringUtils.isEmpty(res1.getFlow())?"0.00":res1.getFlow()));
                     approvalTrafficOverview1.setAddSubtractFlow(Double.parseDouble(StringUtils.isEmpty(res1.getWaterPlan())?"0.00":res1.getWaterPlan()));
                     approvalTrafficOverview1.setPlanFlow(Double.parseDouble(StringUtils.isEmpty(res1.getFlow())?"0.00":res1.getFlow())+Double.parseDouble(StringUtils.isEmpty(res1.getWaterPlan())?"0.00":res1.getWaterPlan()));
                     approvalTrafficOverview1.setReservoir("河东管理站");
@@ -427,7 +427,7 @@ public class ApprovalTrafficOverviewTableServiceImpl extends ServiceImpl<Approva
                 approvalTrafficOverview.setOverviewId(id);
                 approvalTrafficOverview.setStationPid(res.getPid());
                 approvalTrafficOverview.setStationName(res.getUnitName());
-                approvalTrafficOverview.setEightFlow(Double.parseDouble(res.getFlow()));
+                approvalTrafficOverview.setEightFlow(Double.parseDouble(StringUtils.isEmpty(res.getFlow())?"0.00":res.getFlow()));
                 approvalTrafficOverview.setAddSubtractFlow(Double.parseDouble(StringUtils.isEmpty(res.getWaterPlan())?"0.00":res.getWaterPlan()));
                 approvalTrafficOverview.setPlanFlow(Double.parseDouble(StringUtils.isEmpty(res.getFlow())?"0.00":res.getFlow())+Double.parseDouble(StringUtils.isEmpty(res.getWaterPlan())?"0.00":res.getWaterPlan()));
                 approvalTrafficOverview.setReservoir("河西管理站");
@@ -439,7 +439,7 @@ public class ApprovalTrafficOverviewTableServiceImpl extends ServiceImpl<Approva
                     approvalTrafficOverview1.setOverviewId(id);
                     approvalTrafficOverview1.setStationPid(res1.getPid());
                     approvalTrafficOverview1.setStationName(res1.getUnitName());
-                    approvalTrafficOverview1.setEightFlow(Double.parseDouble(res1.getFlow()));
+                    approvalTrafficOverview1.setEightFlow(Double.parseDouble(StringUtils.isEmpty(res1.getFlow())?"0.00":res1.getFlow()));
                     approvalTrafficOverview1.setAddSubtractFlow(Double.parseDouble(StringUtils.isEmpty(res1.getWaterPlan())?"0.00":res1.getWaterPlan()));
                     approvalTrafficOverview1.setPlanFlow(Double.parseDouble(StringUtils.isEmpty(res1.getFlow())?"0.00":res1.getFlow())+Double.parseDouble(StringUtils.isEmpty(res1.getWaterPlan())?"0.00":res1.getWaterPlan()));
                     approvalTrafficOverview1.setReservoir("河西管理站");
@@ -449,11 +449,13 @@ public class ApprovalTrafficOverviewTableServiceImpl extends ServiceImpl<Approva
             resultList.addAll(approvalTrafficOverviewHxList);
             resultMap.put("河西管理站",approvalTrafficOverviewHxList);
         }
-        WaterResourceAllocation byId = waterResourceAllocationService.getById(modelId);
-        List<Excel2> excelList = getListFromMinio(byId.getAllocationDataCustomAddress(), Excel2.class);
-        resultList.forEach(t->{
-            t.setModelFlow(excelList.stream().filter(x->x.getUnitId() != null &&x.getUnitId().equals(t.getStationId())).map(Excel2::getFlow).reduce(Double::sum).orElse(0.00));
-        });
+        if(StringUtils.isNotEmpty(modelId)){
+            WaterResourceAllocation byId = waterResourceAllocationService.getById(modelId);
+            List<Excel2> excelList = getListFromMinio(byId.getAllocationDataCustomAddress(), Excel2.class);
+            resultList.forEach(t->{
+                t.setModelFlow(excelList.stream().filter(x->x.getUnitId() != null &&x.getUnitId().equals(t.getStationId())).map(Excel2::getFlow).reduce(Double::sum).orElse(0.00));
+            });
+        }
         return approvalTrafficOverviewService.saveBatch(resultList);
     }
 
