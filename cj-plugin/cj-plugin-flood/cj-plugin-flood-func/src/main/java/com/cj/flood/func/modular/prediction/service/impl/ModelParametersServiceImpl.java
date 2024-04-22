@@ -1,10 +1,8 @@
 package com.cj.flood.func.modular.prediction.service.impl;
 
-import cn.hutool.extra.spring.SpringUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cj.flood.func.modular.prediction.bean.req.CalibrateReq;
 import com.cj.flood.func.modular.prediction.bean.req.ModelParametersReq;
-import com.cj.flood.func.modular.prediction.entity.ModelParametersDetail;
 import com.cj.flood.func.modular.prediction.mapper.ModelParametersMapper;
 import com.cj.flood.func.modular.prediction.entity.ModelParameters;
 import com.cj.flood.func.modular.prediction.service.ModelParametersDetailService;
@@ -21,12 +19,13 @@ import com.cj.model.func.modular.FloodPredict.Calibration.entity.CalibrationPara
 import com.cj.model.func.modular.FloodPredict.Calibration.entity.ShanbeiParam;
 import com.cj.model.func.modular.FloodPredict.entity.IrrigatedHydrologyParam;
 import com.cj.model.func.modular.FloodPredict.entity.LzzHydrologyParam;
+
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.poi.hpsf.GUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -50,6 +49,7 @@ public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMappe
     @Autowired
     private LzzRainfallStationService lzzRainfallStationService;
 
+    private ShanBeiCalibration shanBeiCalibration = new ShanBeiCalibration();
     @Autowired
     private IrrigatedPlatformDataInfoService irrigatedPlatformDataInfoService;
     @Autowired
@@ -65,8 +65,7 @@ public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMappe
     }
 
     @Override
-    @SneakyThrows
-    public ModelParameters calibrate(CalibrateReq input) {
+    public List<ModelParameters> calibrate(CalibrateReq input) {
 
         // 获取当前日期的Calendar实例
         Calendar calendar = Calendar.getInstance();
@@ -148,65 +147,60 @@ public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMappe
         calibrationParam.setManualParam(manualParam);
         calibrationParam.setLzzHydrologyParam(lzzHydrologyParam);
         calibrationParam.setIrrigatedHydrologyParam(irrigatedHydrologyParam);
-        ModelParameters model = ModelParameters.builder()
-                .id(new GUID().toString())
-                .state(1)
-                .build();
-        this.baseMapper.insert(model);
-        ExecutorService pool = Executors.newSingleThreadExecutor();
-        pool.submit(new Runnable() {
-            private ShanBeiCalibration shanBeiCalibration = SpringUtil.getBean(ShanBeiCalibration.class);
-            @Autowired
-            private ModelParametersService modelParametersService = SpringUtil.getBean(ModelParametersService.class);
-            @Autowired
-            private ModelParametersDetailService modelParametersDetailService = SpringUtil.getBean(ModelParametersDetailService.class);
-            @Override
-            public void run() {
-                try {
-                    Map<String, CalibrationOutput> calibrationOutput = shanBeiCalibration.calibration(calibrationParam);
-                    calibrationOutput.forEach((key, value) -> {
-                        ModelParameters modelParameters = ModelParameters.builder()
-                                .id(model.getId())
-                                .siteName(key)
-                                .area(value.getParam().getArea())
-                                .b(value.getParam().getB())
-                                .cs(value.getParam().getCS())
-                                .date(new Date())
-                                .kc(value.getParam().getKC())
-                                .l(value.getParam().getL())
-                                .fc(value.getParam().getFC())
-                                .fm(value.getParam().getFM())
-                                .k(value.getParam().getK())
-                                .fb(value.getParam().getFB())
-                                .wm(value.getParam().getWM())
-                                .rate(value.getParam().getQC())
-                                .build();
-                        List<ModelParametersDetail> detailList = new ArrayList<>();
-                        for (int i = 0; i < value.getFlowList().size(); i++) {
-                            ModelParametersDetail detail = ModelParametersDetail.builder()
-                                    .id(new GUID().toString())
-                                    .parentId(modelParameters.getId())
-                                    .time(value.getFlowList().get(i).getTime())
-                                    .historyFlow(value.getFlowList().get(i).getHistoryFlow())
-                                    .preParamFlow(value.getFlowList().get(i).getPreParamFlow())
-                                    .newParamFlow(value.getFlowList().get(i).getNewParamFlow())
-                                    .build();
-                            detailList.add(detail);
-                        }
-                        modelParametersService.save(modelParameters);
-                        modelParametersDetailService.saveBatch(detailList);
-                    });
-                } catch (Exception e){
-                    ModelParameters modelParameters = ModelParameters.builder()
-                            .id(model.getId())
-                            .state(2)
-                            .build();
-                    modelParametersService.save(modelParameters);
-                }
-            }
-        });
+        List<ModelParameters> modelList = new ArrayList<>();
+        Map<String, CalibrationOutput> calibrationOutput = shanBeiCalibration.calibration(calibrationParam);
 
-        return model;
+        ExecutorService pool = Executors.newSingleThreadExecutor();
+//        pool.submit(new Runnable() {
+//            private ShanBeiCalibration shanBeiCalibration = SpringUtil.getBean(ShanBeiCalibration.class);
+//            @Autowired
+//            private ModelParametersService modelParametersService = SpringUtil.getBean(ModelParametersService.class);
+//            @Autowired
+//            private ModelParametersDetailService modelParametersDetailService = SpringUtil.getBean(ModelParametersDetailService.class);
+//            @Override
+//            public void run() {
+//                try {
+//                    Map<String, CalibrationOutput> calibrationOutput = shanBeiCalibration.calibration(calibrationParam);
+//                    calibrationOutput.forEach((key, value) -> {
+//                        ModelParameters modelParameters = ModelParameters.builder()
+//                                .id(UUID.randomUUID().toString())
+//                                .siteName(key)
+//                                .area(value.getParam().getArea())
+//                                .b(value.getParam().getB())
+//                                .cs(value.getParam().getCS())
+//                                .date(new Date())
+//                                .kc(value.getParam().getKC())
+//                                .l(value.getParam().getL())
+//                                .fc(value.getParam().getFC())
+//                                .fm(value.getParam().getFM())
+//                                .k(value.getParam().getK())
+//                                .fb(value.getParam().getFB())
+//                                .wm(value.getParam().getWM())
+//                                .rate(value.getParam().getQC())
+//                                .build();
+//                        List<ModelParametersDetail> detailList = new ArrayList<>();
+//                        for (int i = 0; i < value.getFlowList().size(); i++) {
+//                            ModelParametersDetail detail = ModelParametersDetail.builder()
+//                                    .id(UUID.randomUUID().toString())
+//                                    .parentId(modelParameters.getId())
+//                                    .time(value.getFlowList().get(i).getTime())
+//                                    .historyFlow(value.getFlowList().get(i).getHistoryFlow())
+//                                    .preParamFlow(value.getFlowList().get(i).getPreParamFlow())
+//                                    .newParamFlow(value.getFlowList().get(i).getNewParamFlow())
+//                                    .build();
+//                            detailList.add(detail);
+//                        }
+//                        modelList.add(modelParameters);
+//                        modelParametersService.save(modelParameters);
+//                        modelParametersDetailService.saveBatch(detailList);
+//                    });
+//                } catch (Exception e){
+//
+//                }
+//            }
+//        });
+
+        return modelList;
     }
 
     @Override
