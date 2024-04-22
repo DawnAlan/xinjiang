@@ -52,6 +52,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.YearMonth;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -149,57 +150,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
         }
         List<TrendsTableParam> trendsTableParamListTemp = JSONObject.parseArray(mk, TrendsTableParam.class);
         List<TrendsTableParam> trendsTableParamList = trendsTableParamListTemp.stream().filter(t -> t.getUseType() == 2).collect(Collectors.toList());
-        String station = waterFeeStatisticsDetails.get(0).getStation();
+        WaterFeeStatisticsDetails details = waterFeeStatisticsDetails.get(0);
+        Map<String, String> timeRange = getTimeRange(details.getYear(), details.getMonth(), details.getTenDays());
         String dateTemp = waterFeeStatisticsDetails.get(0).getYear()+"-"+waterFeeStatisticsDetails.get(0).getStatisticsDate().substring(0,2)+"-"+waterFeeStatisticsDetails.get(0).getStatisticsDate().substring(3,5);
-        /*if(station.equals("渠首管理站")){
-            waterFeeStatisticsDetails.forEach(t->{
-                Map<String, Double> lanternCanalInfoByDate = getLanternCanalInfoByDate(t.getYear(),t.getMonth(),t.getTenDays(),t.getStatisticsDate());
-                String paramName = (String)redisUtil.get("trendsTableParam:name:"+t.getTableHeadId());
-                if(paramName.equals("农业")){
-                    t.setV(lanternCanalInfoByDate ==null?null:lanternCanalInfoByDate.get("agricultureValue")==null?null:lanternCanalInfoByDate.get("agricultureValue"));
-                }
-                if(paramName.equals("工业")){
-                    t.setV(lanternCanalInfoByDate ==null?null:lanternCanalInfoByDate.get("industryValue")==null?null:lanternCanalInfoByDate.get("industryValue"));
-                }
-                if(paramName.equals("绿化")){
-                    t.setV(lanternCanalInfoByDate ==null?null:lanternCanalInfoByDate.get("greenValue")==null?null:lanternCanalInfoByDate.get("greenValue"));
-                }
-                t.setId(UUIDUtils.getUUID());
-                try {
-                    t.setRecordTime(sdf.parse(dateTemp));
-                } catch (ParseException e) {
-                    throw new RuntimeException(e);
-                }
-            });
-        }else {
-            waterFeeStatisticsDetails.forEach(t->{
-                if(!sdf.format(new Date()).equals(dateTemp)){
-                    String paramName = (String)redisUtil.get("trendsTableParam:name:"+t.getTableHeadId());
-                    if(!paramName.equals("合计")){
-                        String tableParamString = (String)redisUtil.get("trendsTableParam:object:"+t.getTableHeadId());
-                        TrendsTableParam tableParam = JSONObject.parseObject(tableParamString, TrendsTableParam.class);
-                        if(t.getStation().contains("河东")){
-                            Double v = (Double)redisUtil.get("A3:data:hd:yesterday:"+dateTemp+":"+tableParam.getUnitId());
-                            t.setV(v==null?null:v);
-                        }
-                        if(t.getStation().contains("河西")){
-                            Double v = (Double)redisUtil.get("A3:data:hx:yesterday:"+dateTemp+":"+tableParam.getUnitId());
-                            t.setV(v==null?null:v);
-                        }
-                        if(t.getStation().contains("渠首")){
-                            Double v = (Double)redisUtil.get("A3:data:qs:yesterday:"+dateTemp+":"+tableParam.getUnitId());
-                            t.setV(v==null?null:v);
-                        }
-                    }
-                }
-                t.setId(UUIDUtils.getUUID());
-                try {
-                    t.setRecordTime(sdf.parse(dateTemp));
-                } catch (ParseException e) {
-                    throw new RuntimeException(e);
-                }
-            });
-        }*/
         waterFeeStatisticsDetails.forEach(t->{
             if(!sdf.format(new Date()).equals(dateTemp)){
                 String paramName = (String)redisUtil.get("trendsTableParam:name:"+t.getTableHeadId());
@@ -286,56 +239,7 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                 }
             }
         }
-        /*if(station.equals("渠首管理站")){
-            Double laishui = 0.0;
-            Double yinshui = 0.0;
-            Double zonggan = 0.0;
 
-            for(WaterFeeStatisticsDetails details:waterFeeStatisticsDetails){
-                String paramName = (String)redisUtil.get("trendsTableParam:name:"+details.getTableHeadId());
-                //String paramName = trendsTableParamService.getById(details.getTableHeadId()).getParamName();
-                if(!paramName.equals("合计") && !paramName.equals("来水") && !paramName.equals("引水") && !paramName.equals("泄洪") && (paramName.equals("东干") || paramName.equals("西干") || paramName.equals("漏斗"))){
-                    zonggan += details.getV()==null?0.0:details.getV();
-                }
-            }
-            for(WaterFeeStatisticsDetails details:waterFeeStatisticsDetails){
-                String paramName = (String)redisUtil.get("trendsTableParam:name:"+details.getTableHeadId());
-                //String paramName = trendsTableParamService.getById(details.getTableHeadId()).getParamName();
-                if(paramName.equals("总干")){
-                    details.setV(zonggan);
-                }
-            }
-
-            for(WaterFeeStatisticsDetails details:waterFeeStatisticsDetails){
-                String paramName = (String)redisUtil.get("trendsTableParam:name:"+details.getTableHeadId());
-                //String paramName = trendsTableParamService.getById(details.getTableHeadId()).getParamName();
-                if(!paramName.equals("合计") && !paramName.equals("来水") && !paramName.equals("引水") && !paramName.equals("总干") && !paramName.equals("泄洪")){
-                    yinshui += details.getV()==null?0.0:details.getV();
-                }
-            }
-            for(WaterFeeStatisticsDetails details:waterFeeStatisticsDetails){
-                String paramName = (String)redisUtil.get("trendsTableParam:name:"+details.getTableHeadId());
-                //String paramName = trendsTableParamService.getById(details.getTableHeadId()).getParamName();
-                if(paramName.equals("引水")){
-                    details.setV(yinshui);
-                }
-            }
-
-            for(WaterFeeStatisticsDetails details:waterFeeStatisticsDetails){
-                String paramName = (String)redisUtil.get("trendsTableParam:name:"+details.getTableHeadId());
-                //String paramName = trendsTableParamService.getById(details.getTableHeadId()).getParamName();
-                if(!paramName.equals("合计") && (paramName.equals("引水") || paramName.equals("泄洪"))){
-                    laishui += details.getV()==null?0.0:details.getV();
-                }
-            }
-            for(WaterFeeStatisticsDetails details:waterFeeStatisticsDetails){
-                String paramName = (String)redisUtil.get("trendsTableParam:name:"+details.getTableHeadId());
-                //String paramName = trendsTableParamService.getById(details.getTableHeadId()).getParamName();
-                if(paramName.equals("来水")){
-                    details.setV(laishui);
-                }
-            }
-        }*/
         boolean b = this.saveBatch(waterFeeStatisticsDetails);
         //计算列合计
         if (b) {
@@ -400,8 +304,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                         Double paidWaterResource1 = 0.0;
                         Double paidWaterResource2 = 0.0;
                         List<PaymentWaterFees> list1 = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                eq(PaymentWaterFees::getWaterUserId, total.getTableHeadId()).eq(PaymentWaterFees::getType,"水资源费").list();
+                                
+                                eq(PaymentWaterFees::getWaterUserId, total.getTableHeadId()).eq(PaymentWaterFees::getType,"水资源费").
+                                apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                         if(null != list1 && list1.size()>0){
                             for(PaymentWaterFees fees:list1){
                                 paidWaterResource1+=fees.getPaymentAmount();
@@ -414,8 +319,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                 TrendsTableParam one = JSONObject.parseObject((String)redisUtil.get("trendsTableParam:object:"+byId1.getPId()),TrendsTableParam.class);
                                 //TrendsTableParam one = trendsTableParamService.getById(byId1.getPId());
                                 List<PaymentWaterFees> list2 = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                        eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                        eq(PaymentWaterFees::getWaterUserId, one.getId()).eq(PaymentWaterFees::getType,"水资源费").list();
+                                        
+                                        eq(PaymentWaterFees::getWaterUserId, one.getId()).eq(PaymentWaterFees::getType,"水资源费").
+                                        apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                 if(null!=list2 && list2.size()>0){
                                     for(PaymentWaterFees fees:list2){
                                         paidWaterResource2+=fees.getPaymentAmount();
@@ -498,8 +404,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                         eq(TrendsTableParam::getUseType,byId.getUseType()).
                                         list().stream().map(TrendsTableParam::getId).collect(Collectors.toList());*/
                                 List<PaymentWaterFees> paymentWaterFees = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                        eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                        in(PaymentWaterFees::getWaterUserId, collect1).eq(PaymentWaterFees::getType,"水资源费").list();
+                                        
+                                        in(PaymentWaterFees::getWaterUserId, collect1).eq(PaymentWaterFees::getType,"水资源费").
+                                        apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                 if(null != paymentWaterFees && paymentWaterFees.size()>0){
                                     for(PaymentWaterFees fees:paymentWaterFees){
                                         paidWaterResourceCount+=fees.getPaymentAmount();
@@ -517,8 +424,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                     //List<String> collect2 = trendsTableParamService.lambdaQuery().in(TrendsTableParam::getPId, collect1).list().stream().map(TrendsTableParam::getId).collect(Collectors.toList());
                                     if(null != collect2 && collect2.size()>0){
                                         List<PaymentWaterFees> paymentWaterFees2 = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                                eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                                in(PaymentWaterFees::getWaterUserId, collect2).eq(PaymentWaterFees::getType,"水资源费").list();
+                                                
+                                                in(PaymentWaterFees::getWaterUserId, collect2).eq(PaymentWaterFees::getType,"水资源费").
+                                                apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                         if(null != paymentWaterFees2 && paymentWaterFees2.size()>0){
                                             for(PaymentWaterFees fees:paymentWaterFees2){
                                                 paidWaterResourceCount+=fees.getPaymentAmount();
@@ -537,8 +445,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                         //List<String> collect3 = trendsTableParamService.lambdaQuery().in(TrendsTableParam::getPId, collect2).list().stream().map(TrendsTableParam::getId).collect(Collectors.toList());
                                         if(null != collect3 && collect3.size()>0){
                                             List<PaymentWaterFees> paymentWaterFees3= paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                                    eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                                    in(PaymentWaterFees::getWaterUserId, collect3).eq(PaymentWaterFees::getType,"水资源费").list();
+                                                    
+                                                    in(PaymentWaterFees::getWaterUserId, collect3).eq(PaymentWaterFees::getType,"水资源费").
+                                                    apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                             if(null != paymentWaterFees3 && paymentWaterFees3.size()>0){
                                                 for(PaymentWaterFees fees:paymentWaterFees3){
                                                     paidWaterResourceCount+=fees.getPaymentAmount();
@@ -561,12 +470,14 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                 }
                                 //List<String> collect1Son = trendsTableParamService.lambdaQuery().in(TrendsTableParam::getPId, collect1).list().stream().map(TrendsTableParam::getId).collect(Collectors.toList());
                                 List<PaymentWaterFees> paymentWaterFees = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                        eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                        in(PaymentWaterFees::getWaterUserId, collect1).eq(PaymentWaterFees::getType,"水资源费").list();
+                                        
+                                        in(PaymentWaterFees::getWaterUserId, collect1).eq(PaymentWaterFees::getType,"水资源费").
+                                        apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                 if(null!= collect1Son && collect1Son.size()>0){
                                     List<PaymentWaterFees> paymentWaterFeesSon = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                            eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                            in(PaymentWaterFees::getWaterUserId, collect1Son).eq(PaymentWaterFees::getType,"水资源费").list();
+                                            
+                                            in(PaymentWaterFees::getWaterUserId, collect1Son).eq(PaymentWaterFees::getType,"水资源费").
+                                            apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                     paymentWaterFees.addAll(paymentWaterFeesSon);
                                 }
                                 if(null != paymentWaterFees && paymentWaterFees.size()>0){
@@ -575,8 +486,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                     }
                                 }else {
                                     List<PaymentWaterFees> paymentWaterFees2 = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                            eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                            in(PaymentWaterFees::getWaterUserId, byId.getPId()).eq(PaymentWaterFees::getType,"水资源费").list();
+                                            
+                                            in(PaymentWaterFees::getWaterUserId, byId.getPId()).eq(PaymentWaterFees::getType,"水资源费").
+                                            apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                     if(null != paymentWaterFees2 && paymentWaterFees2.size()>0){
                                         for(PaymentWaterFees fees:paymentWaterFees2){
                                             paidWaterResourceCount+=fees.getPaymentAmount();
@@ -600,8 +512,8 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                     Double advancePaymentWaterFee1 = 0.0;
                     Double advancePaymentWaterFee2 = 0.0;
                     List<PaymentWaterFees> list1 = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                            eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                            eq(PaymentWaterFees::getWaterUserId, total.getTableHeadId()).eq(PaymentWaterFees::getType,"水费").list();
+                            eq(PaymentWaterFees::getWaterUserId, total.getTableHeadId()).eq(PaymentWaterFees::getType,"水费").
+                            apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                     if(null != list1 && list1.size()>0){
                         for(PaymentWaterFees fees:list1){
                             advancePaymentWaterFee1+=fees.getPaymentAmount();
@@ -614,8 +526,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                             TrendsTableParam one = JSONObject.parseObject((String)redisUtil.get("trendsTableParam:object:"+byId1.getPId()),TrendsTableParam.class);
                             //TrendsTableParam one = trendsTableParamService.getById(byId1.getPId());
                             List<PaymentWaterFees> list2 = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                    eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                    eq(PaymentWaterFees::getWaterUserId, one.getId()).eq(PaymentWaterFees::getType,"水费").list();
+                                    
+                                    eq(PaymentWaterFees::getWaterUserId, one.getId()).eq(PaymentWaterFees::getType,"水费").
+                                    apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                             if(null!=list2 && list2.size()>0){
                                 for(PaymentWaterFees fees:list2){
                                     advancePaymentWaterFee2+=fees.getPaymentAmount();
@@ -698,8 +611,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                     eq(TrendsTableParam::getUseType,byId.getUseType()).
                                     list().stream().map(TrendsTableParam::getId).collect(Collectors.toList());*/
                             List<PaymentWaterFees> paymentWaterFees = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                    eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                    in(PaymentWaterFees::getWaterUserId, collect1).eq(PaymentWaterFees::getType,"水费").list();
+                                    
+                                    in(PaymentWaterFees::getWaterUserId, collect1).eq(PaymentWaterFees::getType,"水费").
+                                    apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                             if(null != paymentWaterFees && paymentWaterFees.size()>0){
                                 for(PaymentWaterFees fees:paymentWaterFees){
                                     advancePaymentWaterFeeCount+=fees.getPaymentAmount();
@@ -717,8 +631,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                 //List<String> collect2 = trendsTableParamService.lambdaQuery().in(TrendsTableParam::getPId, collect1).list().stream().map(TrendsTableParam::getId).collect(Collectors.toList());
                                 if(null != collect2 && collect2.size()>0){
                                     List<PaymentWaterFees> paymentWaterFees2 = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                            eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                            in(PaymentWaterFees::getWaterUserId, collect2).eq(PaymentWaterFees::getType,"水费").list();
+                                            
+                                            in(PaymentWaterFees::getWaterUserId, collect2).eq(PaymentWaterFees::getType,"水费").
+                                            apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                     if(null != paymentWaterFees2 && paymentWaterFees2.size()>0){
                                         for(PaymentWaterFees fees:paymentWaterFees2){
                                             advancePaymentWaterFeeCount+=fees.getPaymentAmount();
@@ -737,8 +652,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                     //List<String> collect3 = trendsTableParamService.lambdaQuery().in(TrendsTableParam::getPId, collect2).list().stream().map(TrendsTableParam::getId).collect(Collectors.toList());
                                     if(null != collect3 && collect3.size()>0){
                                         List<PaymentWaterFees> paymentWaterFees3= paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                                eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                                in(PaymentWaterFees::getWaterUserId, collect3).eq(PaymentWaterFees::getType,"水费").list();
+                                                
+                                                in(PaymentWaterFees::getWaterUserId, collect3).eq(PaymentWaterFees::getType,"水费").
+                                                apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                         if(null != paymentWaterFees3 && paymentWaterFees3.size()>0){
                                             for(PaymentWaterFees fees:paymentWaterFees3){
                                                 advancePaymentWaterFeeCount+=fees.getPaymentAmount();
@@ -761,12 +677,14 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                             }
                             //List<String> collect1Son = trendsTableParamService.lambdaQuery().in(TrendsTableParam::getPId, collect1).list().stream().map(TrendsTableParam::getId).collect(Collectors.toList());
                             List<PaymentWaterFees> paymentWaterFees = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                    eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                    in(PaymentWaterFees::getWaterUserId, collect1).eq(PaymentWaterFees::getType,"水费").list();
+                                    
+                                    in(PaymentWaterFees::getWaterUserId, collect1).eq(PaymentWaterFees::getType,"水费").
+                                    apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                             if(null!= collect1Son && collect1Son.size()>0){
                                 List<PaymentWaterFees> paymentWaterFeesSon = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                        eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                        in(PaymentWaterFees::getWaterUserId, collect1Son).eq(PaymentWaterFees::getType,"水费").list();
+                                        
+                                        in(PaymentWaterFees::getWaterUserId, collect1Son).eq(PaymentWaterFees::getType,"水费").
+                                        apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                 paymentWaterFees.addAll(paymentWaterFeesSon);
                             }
                             if(null != paymentWaterFees && paymentWaterFees.size()>0){
@@ -775,8 +693,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                 }
                             }else {
                                 List<PaymentWaterFees> paymentWaterFees2 = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                        eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                        in(PaymentWaterFees::getWaterUserId, byId.getPId()).eq(PaymentWaterFees::getType,"水费").list();
+                                        
+                                        in(PaymentWaterFees::getWaterUserId, byId.getPId()).eq(PaymentWaterFees::getType,"水费").
+                                        apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                 if(null != paymentWaterFees2 && paymentWaterFees2.size()>0){
                                     for(PaymentWaterFees fees:paymentWaterFees2){
                                         advancePaymentWaterFeeCount+=fees.getPaymentAmount();
@@ -896,8 +815,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                         Double paidWaterResource1 = 0.0;
                         Double paidWaterResource2 = 0.0;
                         List<PaymentWaterFees> list1 = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                eq(PaymentWaterFees::getWaterUserId, total.getTableHeadId()).eq(PaymentWaterFees::getType,"水资源费").list();
+                                
+                                eq(PaymentWaterFees::getWaterUserId, total.getTableHeadId()).eq(PaymentWaterFees::getType,"水资源费").
+                                apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                         if(null != list1 && list1.size()>0){
                             for(PaymentWaterFees fees:list1){
                                 paidWaterResource1+=fees.getPaymentAmount();
@@ -910,8 +830,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                 TrendsTableParam one = JSONObject.parseObject((String)redisUtil.get("trendsTableParam:object:"+byId1.getPId()),TrendsTableParam.class);
                                 //TrendsTableParam one = trendsTableParamService.getById(byId1.getPId());
                                 List<PaymentWaterFees> list2 = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                        eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                        eq(PaymentWaterFees::getWaterUserId, one.getId()).eq(PaymentWaterFees::getType,"水资源费").list();
+                                        
+                                        eq(PaymentWaterFees::getWaterUserId, one.getId()).eq(PaymentWaterFees::getType,"水资源费").
+                                        apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                 if(null!=list2 && list2.size()>0){
                                     for(PaymentWaterFees fees:list2){
                                         paidWaterResource2+=fees.getPaymentAmount();
@@ -994,8 +915,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                         eq(TrendsTableParam::getUseType,byId.getUseType()).
                                         list().stream().map(TrendsTableParam::getId).collect(Collectors.toList());*/
                                 List<PaymentWaterFees> paymentWaterFees = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                        eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                        in(PaymentWaterFees::getWaterUserId, collect1).eq(PaymentWaterFees::getType,"水资源费").list();
+                                        
+                                        in(PaymentWaterFees::getWaterUserId, collect1).eq(PaymentWaterFees::getType,"水资源费").
+                                        apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                 if(null != paymentWaterFees && paymentWaterFees.size()>0){
                                     for(PaymentWaterFees fees:paymentWaterFees){
                                         paidWaterResourceCount+=fees.getPaymentAmount();
@@ -1013,8 +935,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                     //List<String> collect2 = trendsTableParamService.lambdaQuery().in(TrendsTableParam::getPId, collect1).list().stream().map(TrendsTableParam::getId).collect(Collectors.toList());
                                     if(null != collect2 && collect2.size()>0){
                                         List<PaymentWaterFees> paymentWaterFees2 = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                                eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                                in(PaymentWaterFees::getWaterUserId, collect2).eq(PaymentWaterFees::getType,"水资源费").list();
+                                                
+                                                in(PaymentWaterFees::getWaterUserId, collect2).eq(PaymentWaterFees::getType,"水资源费").
+                                                apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                         if(null != paymentWaterFees2 && paymentWaterFees2.size()>0){
                                             for(PaymentWaterFees fees:paymentWaterFees2){
                                                 paidWaterResourceCount+=fees.getPaymentAmount();
@@ -1033,8 +956,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                         //List<String> collect3 = trendsTableParamService.lambdaQuery().in(TrendsTableParam::getPId, collect2).list().stream().map(TrendsTableParam::getId).collect(Collectors.toList());
                                         if(null != collect3 && collect3.size()>0){
                                             List<PaymentWaterFees> paymentWaterFees3= paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                                    eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                                    in(PaymentWaterFees::getWaterUserId, collect3).eq(PaymentWaterFees::getType,"水资源费").list();
+                                                    
+                                                    in(PaymentWaterFees::getWaterUserId, collect3).eq(PaymentWaterFees::getType,"水资源费").
+                                                    apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                             if(null != paymentWaterFees3 && paymentWaterFees3.size()>0){
                                                 for(PaymentWaterFees fees:paymentWaterFees3){
                                                     paidWaterResourceCount+=fees.getPaymentAmount();
@@ -1057,12 +981,14 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                 }
                                 //List<String> collect1Son = trendsTableParamService.lambdaQuery().in(TrendsTableParam::getPId, collect1).list().stream().map(TrendsTableParam::getId).collect(Collectors.toList());
                                 List<PaymentWaterFees> paymentWaterFees = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                        eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                        in(PaymentWaterFees::getWaterUserId, collect1).eq(PaymentWaterFees::getType,"水资源费").list();
+                                        
+                                        in(PaymentWaterFees::getWaterUserId, collect1).eq(PaymentWaterFees::getType,"水资源费").
+                                        apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                 if(null!= collect1Son && collect1Son.size()>0){
                                     List<PaymentWaterFees> paymentWaterFeesSon = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                            eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                            in(PaymentWaterFees::getWaterUserId, collect1Son).eq(PaymentWaterFees::getType,"水资源费").list();
+                                            
+                                            in(PaymentWaterFees::getWaterUserId, collect1Son).eq(PaymentWaterFees::getType,"水资源费").
+                                            apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                     paymentWaterFees.addAll(paymentWaterFeesSon);
                                 }
                                 if(null != paymentWaterFees && paymentWaterFees.size()>0){
@@ -1071,8 +997,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                     }
                                 }else {
                                     List<PaymentWaterFees> paymentWaterFees2 = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                            eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                            in(PaymentWaterFees::getWaterUserId, byId.getPId()).eq(PaymentWaterFees::getType,"水资源费").list();
+                                            
+                                            in(PaymentWaterFees::getWaterUserId, byId.getPId()).eq(PaymentWaterFees::getType,"水资源费").
+                                            apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                     if(null != paymentWaterFees2 && paymentWaterFees2.size()>0){
                                         for(PaymentWaterFees fees:paymentWaterFees2){
                                             paidWaterResourceCount+=fees.getPaymentAmount();
@@ -1096,8 +1023,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                     Double advancePaymentWaterFee1 = 0.0;
                     Double advancePaymentWaterFee2 = 0.0;
                     List<PaymentWaterFees> list1 = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                            eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                            eq(PaymentWaterFees::getWaterUserId, total.getTableHeadId()).eq(PaymentWaterFees::getType,"水费").list();
+                            
+                            eq(PaymentWaterFees::getWaterUserId, total.getTableHeadId()).eq(PaymentWaterFees::getType,"水费").
+                            apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                     if(null != list1 && list1.size()>0){
                         for(PaymentWaterFees fees:list1){
                             advancePaymentWaterFee1+=fees.getPaymentAmount();
@@ -1110,8 +1038,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                             TrendsTableParam one = JSONObject.parseObject((String)redisUtil.get("trendsTableParam:object:"+byId1.getPId()),TrendsTableParam.class);
                             //TrendsTableParam one = trendsTableParamService.getById(byId1.getPId());
                             List<PaymentWaterFees> list2 = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                    eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                    eq(PaymentWaterFees::getWaterUserId, one.getId()).eq(PaymentWaterFees::getType,"水费").list();
+                                    
+                                    eq(PaymentWaterFees::getWaterUserId, one.getId()).eq(PaymentWaterFees::getType,"水费").
+                                    apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                             if(null!=list2 && list2.size()>0){
                                 for(PaymentWaterFees fees:list2){
                                     advancePaymentWaterFee2+=fees.getPaymentAmount();
@@ -1194,8 +1123,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                     eq(TrendsTableParam::getUseType,byId.getUseType()).
                                     list().stream().map(TrendsTableParam::getId).collect(Collectors.toList());*/
                             List<PaymentWaterFees> paymentWaterFees = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                    eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                    in(PaymentWaterFees::getWaterUserId, collect1).eq(PaymentWaterFees::getType,"水费").list();
+                                    
+                                    in(PaymentWaterFees::getWaterUserId, collect1).eq(PaymentWaterFees::getType,"水费").
+                                    apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                             if(null != paymentWaterFees && paymentWaterFees.size()>0){
                                 for(PaymentWaterFees fees:paymentWaterFees){
                                     advancePaymentWaterFeeCount+=fees.getPaymentAmount();
@@ -1213,8 +1143,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                 //List<String> collect2 = trendsTableParamService.lambdaQuery().in(TrendsTableParam::getPId, collect1).list().stream().map(TrendsTableParam::getId).collect(Collectors.toList());
                                 if(null != collect2 && collect2.size()>0){
                                     List<PaymentWaterFees> paymentWaterFees2 = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                            eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                            in(PaymentWaterFees::getWaterUserId, collect2).eq(PaymentWaterFees::getType,"水费").list();
+                                            
+                                            in(PaymentWaterFees::getWaterUserId, collect2).eq(PaymentWaterFees::getType,"水费").
+                                            apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                     if(null != paymentWaterFees2 && paymentWaterFees2.size()>0){
                                         for(PaymentWaterFees fees:paymentWaterFees2){
                                             advancePaymentWaterFeeCount+=fees.getPaymentAmount();
@@ -1233,8 +1164,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                     //List<String> collect3 = trendsTableParamService.lambdaQuery().in(TrendsTableParam::getPId, collect2).list().stream().map(TrendsTableParam::getId).collect(Collectors.toList());
                                     if(null != collect3 && collect3.size()>0){
                                         List<PaymentWaterFees> paymentWaterFees3= paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                                eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                                in(PaymentWaterFees::getWaterUserId, collect3).eq(PaymentWaterFees::getType,"水费").list();
+                                                
+                                                in(PaymentWaterFees::getWaterUserId, collect3).eq(PaymentWaterFees::getType,"水费").
+                                                apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                         if(null != paymentWaterFees3 && paymentWaterFees3.size()>0){
                                             for(PaymentWaterFees fees:paymentWaterFees3){
                                                 advancePaymentWaterFeeCount+=fees.getPaymentAmount();
@@ -1257,12 +1189,14 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                             }
                             //List<String> collect1Son = trendsTableParamService.lambdaQuery().in(TrendsTableParam::getPId, collect1).list().stream().map(TrendsTableParam::getId).collect(Collectors.toList());
                             List<PaymentWaterFees> paymentWaterFees = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                    eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                    in(PaymentWaterFees::getWaterUserId, collect1).eq(PaymentWaterFees::getType,"水费").list();
+                                    
+                                    in(PaymentWaterFees::getWaterUserId, collect1).eq(PaymentWaterFees::getType,"水费").
+                                    apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                             if(null!= collect1Son && collect1Son.size()>0){
                                 List<PaymentWaterFees> paymentWaterFeesSon = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                        eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                        in(PaymentWaterFees::getWaterUserId, collect1Son).eq(PaymentWaterFees::getType,"水费").list();
+                                        
+                                        in(PaymentWaterFees::getWaterUserId, collect1Son).eq(PaymentWaterFees::getType,"水费").
+                                        apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                 paymentWaterFees.addAll(paymentWaterFeesSon);
                             }
                             if(null != paymentWaterFees && paymentWaterFees.size()>0){
@@ -1271,8 +1205,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                 }
                             }else {
                                 List<PaymentWaterFees> paymentWaterFees2 = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                        eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                        in(PaymentWaterFees::getWaterUserId, byId.getPId()).eq(PaymentWaterFees::getType,"水费").list();
+                                        
+                                        in(PaymentWaterFees::getWaterUserId, byId.getPId()).eq(PaymentWaterFees::getType,"水费").
+                                        apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                 if(null != paymentWaterFees2 && paymentWaterFees2.size()>0){
                                     for(PaymentWaterFees fees:paymentWaterFees2){
                                         advancePaymentWaterFeeCount+=fees.getPaymentAmount();
@@ -1491,6 +1426,7 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
             Double payableWaterResourceCount = 0.0;
             Double waterResourceSurplusCount = 0.0;
             WaterFeeStatisticsDetails tempObj = waterFeeStatisticsDetails.get(0);
+            Map<String, String> timeRange = getTimeRange(tempObj.getYear(), tempObj.getMonth(), tempObj.getTenDays());
             List<WaterFeeStatisticsDetails> totaDetailslList = this.lambdaQuery().eq(WaterFeeStatisticsDetails::getStation, tempObj.getStation()).
                     eq(WaterFeeStatisticsDetails::getYear, tempObj.getYear()).
                     eq(WaterFeeStatisticsDetails::getMonth, tempObj.getMonth()).
@@ -1550,8 +1486,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                     Double paidWaterResource1 = 0.0;
                     Double paidWaterResource2 = 0.0;
                     List<PaymentWaterFees> list1 = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                            eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                            eq(PaymentWaterFees::getWaterUserId, total.getTableHeadId()).eq(PaymentWaterFees::getType,"水资源费").list();
+                            
+                            eq(PaymentWaterFees::getWaterUserId, total.getTableHeadId()).eq(PaymentWaterFees::getType,"水资源费").
+                            apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                     if(null != list1 && list1.size()>0){
                         for(PaymentWaterFees fees:list1){
                             paidWaterResource1+=fees.getPaymentAmount();
@@ -1564,8 +1501,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                             TrendsTableParam one = JSONObject.parseObject((String)redisUtil.get("trendsTableParam:object:"+byId1.getPId()),TrendsTableParam.class);
                             //TrendsTableParam one = trendsTableParamService.getById(byId1.getPId());
                             List<PaymentWaterFees> list2 = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                    eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                    eq(PaymentWaterFees::getWaterUserId, one.getId()).eq(PaymentWaterFees::getType,"水资源费").list();
+                                    
+                                    eq(PaymentWaterFees::getWaterUserId, one.getId()).eq(PaymentWaterFees::getType,"水资源费").
+                                    apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                             if(null!=list2 && list2.size()>0){
                                 for(PaymentWaterFees fees:list2){
                                     paidWaterResource2+=fees.getPaymentAmount();
@@ -1639,8 +1577,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                     filter(t->t.getUseStation().equals(byId.getUseStation())).
                                     filter(t->t.getUseType()==byId.getUseType()).collect(Collectors.toList()).stream().map(TrendsTableParam::getId).collect(Collectors.toList());
                             List<PaymentWaterFees> paymentWaterFees = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                    eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                    in(PaymentWaterFees::getWaterUserId, collect1).eq(PaymentWaterFees::getType,"水资源费").list();
+                                    
+                                    in(PaymentWaterFees::getWaterUserId, collect1).eq(PaymentWaterFees::getType,"水资源费").
+                                    apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                             if(null != paymentWaterFees && paymentWaterFees.size()>0){
                                 for(PaymentWaterFees fees:paymentWaterFees){
                                     paidWaterResourceCount+=fees.getPaymentAmount();
@@ -1657,8 +1596,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                 }
                                 if(null != collect2 && collect2.size()>0){
                                     List<PaymentWaterFees> paymentWaterFees2 = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                            eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                            in(PaymentWaterFees::getWaterUserId, collect2).eq(PaymentWaterFees::getType,"水资源费").list();
+                                            
+                                            in(PaymentWaterFees::getWaterUserId, collect2).eq(PaymentWaterFees::getType,"水资源费").
+                                            apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                     if(null != paymentWaterFees2 && paymentWaterFees2.size()>0){
                                         for(PaymentWaterFees fees:paymentWaterFees2){
                                             paidWaterResourceCount+=fees.getPaymentAmount();
@@ -1676,8 +1616,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                     }
                                     if(null != collect3 && collect3.size()>0){
                                         List<PaymentWaterFees> paymentWaterFees3= paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                                eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                                in(PaymentWaterFees::getWaterUserId, collect3).eq(PaymentWaterFees::getType,"水资源费").list();
+                                                
+                                                in(PaymentWaterFees::getWaterUserId, collect3).eq(PaymentWaterFees::getType,"水资源费").
+                                                apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                         if(null != paymentWaterFees3 && paymentWaterFees3.size()>0){
                                             for(PaymentWaterFees fees:paymentWaterFees3){
                                                 paidWaterResourceCount+=fees.getPaymentAmount();
@@ -1698,12 +1639,14 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                 }
                             }
                             List<PaymentWaterFees> paymentWaterFees = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                    eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                    in(PaymentWaterFees::getWaterUserId, collect1).eq(PaymentWaterFees::getType,"水资源费").list();
+                                    
+                                    in(PaymentWaterFees::getWaterUserId, collect1).eq(PaymentWaterFees::getType,"水资源费").
+                                    apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                             if(null!= collect1Son && collect1Son.size()>0){
                                 List<PaymentWaterFees> paymentWaterFeesSon = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                        eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                        in(PaymentWaterFees::getWaterUserId, collect1Son).eq(PaymentWaterFees::getType,"水资源费").list();
+                                        
+                                        in(PaymentWaterFees::getWaterUserId, collect1Son).eq(PaymentWaterFees::getType,"水资源费").
+                                        apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                 paymentWaterFees.addAll(paymentWaterFeesSon);
                             }
                             if(null != paymentWaterFees && paymentWaterFees.size()>0){
@@ -1712,8 +1655,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                 }
                             }else {
                                 List<PaymentWaterFees> paymentWaterFees2 = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                        eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                        in(PaymentWaterFees::getWaterUserId, byId.getPId()).eq(PaymentWaterFees::getType,"水资源费").list();
+                                        
+                                        in(PaymentWaterFees::getWaterUserId, byId.getPId()).eq(PaymentWaterFees::getType,"水资源费").
+                                        apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                 if(null != paymentWaterFees2 && paymentWaterFees2.size()>0){
                                     for(PaymentWaterFees fees:paymentWaterFees2){
                                         paidWaterResourceCount+=fees.getPaymentAmount();
@@ -1737,8 +1681,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                 Double advancePaymentWaterFee1 = 0.0;
                 Double advancePaymentWaterFee2 = 0.0;
                 List<PaymentWaterFees> list1 = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                        eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                        eq(PaymentWaterFees::getWaterUserId, total.getTableHeadId()).eq(PaymentWaterFees::getType,"水费").list();
+                        
+                        eq(PaymentWaterFees::getWaterUserId, total.getTableHeadId()).eq(PaymentWaterFees::getType,"水费").
+                        apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                 if(null != list1 && list1.size()>0){
                     for(PaymentWaterFees fees:list1){
                         advancePaymentWaterFee1+=fees.getPaymentAmount();
@@ -1751,8 +1696,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                         TrendsTableParam one = JSONObject.parseObject((String)redisUtil.get("trendsTableParam:object:"+byId1.getPId()),TrendsTableParam.class);
                         //TrendsTableParam one = trendsTableParamService.getById(byId1.getPId());
                         List<PaymentWaterFees> list2 = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                eq(PaymentWaterFees::getWaterUserId, one.getId()).eq(PaymentWaterFees::getType,"水费").list();
+                                
+                                eq(PaymentWaterFees::getWaterUserId, one.getId()).eq(PaymentWaterFees::getType,"水费").
+                                apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                         if(null!=list2 && list2.size()>0){
                             for(PaymentWaterFees fees:list2){
                                 advancePaymentWaterFee2+=fees.getPaymentAmount();
@@ -1835,8 +1781,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                 eq(TrendsTableParam::getUseType,byId.getUseType()).
                                 list().stream().map(TrendsTableParam::getId).collect(Collectors.toList());*/
                         List<PaymentWaterFees> paymentWaterFees = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                in(PaymentWaterFees::getWaterUserId, collect1).eq(PaymentWaterFees::getType,"水费").list();
+                                
+                                in(PaymentWaterFees::getWaterUserId, collect1).eq(PaymentWaterFees::getType,"水费").
+                                apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                         if(null != paymentWaterFees && paymentWaterFees.size()>0){
                             for(PaymentWaterFees fees:paymentWaterFees){
                                 advancePaymentWaterFeeCount+=fees.getPaymentAmount();
@@ -1854,8 +1801,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                             //List<String> collect2 = trendsTableParamService.lambdaQuery().in(TrendsTableParam::getPId, collect1).list().stream().map(TrendsTableParam::getId).collect(Collectors.toList());
                             if(null != collect2 && collect2.size()>0){
                                 List<PaymentWaterFees> paymentWaterFees2 = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                        eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                        in(PaymentWaterFees::getWaterUserId, collect2).eq(PaymentWaterFees::getType,"水费").list();
+                                        
+                                        in(PaymentWaterFees::getWaterUserId, collect2).eq(PaymentWaterFees::getType,"水费").
+                                        apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                 if(null != paymentWaterFees2 && paymentWaterFees2.size()>0){
                                     for(PaymentWaterFees fees:paymentWaterFees2){
                                         advancePaymentWaterFeeCount+=fees.getPaymentAmount();
@@ -1874,8 +1822,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                 //List<String> collect3 = trendsTableParamService.lambdaQuery().in(TrendsTableParam::getPId, collect2).list().stream().map(TrendsTableParam::getId).collect(Collectors.toList());
                                 if(null != collect3 && collect3.size()>0){
                                     List<PaymentWaterFees> paymentWaterFees3= paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                            eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                            in(PaymentWaterFees::getWaterUserId, collect3).eq(PaymentWaterFees::getType,"水费").list();
+                                            
+                                            in(PaymentWaterFees::getWaterUserId, collect3).eq(PaymentWaterFees::getType,"水费").
+                                            apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                     if(null != paymentWaterFees3 && paymentWaterFees3.size()>0){
                                         for(PaymentWaterFees fees:paymentWaterFees3){
                                             advancePaymentWaterFeeCount+=fees.getPaymentAmount();
@@ -1898,12 +1847,14 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                         }
                         //List<String> collect1Son = trendsTableParamService.lambdaQuery().in(TrendsTableParam::getPId, collect1).list().stream().map(TrendsTableParam::getId).collect(Collectors.toList());
                         List<PaymentWaterFees> paymentWaterFees = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                in(PaymentWaterFees::getWaterUserId, collect1).eq(PaymentWaterFees::getType,"水费").list();
+                                
+                                in(PaymentWaterFees::getWaterUserId, collect1).eq(PaymentWaterFees::getType,"水费").
+                                apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                         if(null!= collect1Son && collect1Son.size()>0){
                             List<PaymentWaterFees> paymentWaterFeesSon = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                    eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                    in(PaymentWaterFees::getWaterUserId, collect1Son).eq(PaymentWaterFees::getType,"水费").list();
+                                    
+                                    in(PaymentWaterFees::getWaterUserId, collect1Son).eq(PaymentWaterFees::getType,"水费").
+                                    apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                             paymentWaterFees.addAll(paymentWaterFeesSon);
                         }
                         if(null != paymentWaterFees && paymentWaterFees.size()>0){
@@ -1912,8 +1863,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                             }
                         }else {
                             List<PaymentWaterFees> paymentWaterFees2 = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                    eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                    in(PaymentWaterFees::getWaterUserId, byId.getPId()).eq(PaymentWaterFees::getType,"水费").list();
+                                    
+                                    in(PaymentWaterFees::getWaterUserId, byId.getPId()).eq(PaymentWaterFees::getType,"水费").
+                                    apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                             if(null != paymentWaterFees2 && paymentWaterFees2.size()>0){
                                 for(PaymentWaterFees fees:paymentWaterFees2){
                                     advancePaymentWaterFeeCount+=fees.getPaymentAmount();
@@ -2151,53 +2103,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
             long ee = System.currentTimeMillis();
             log.warn("方法耗时：" + (ee - ss) + "ms");
             for(List<WaterFeeStatisticsDetails> waterFeeStatisticsDetails:waterFeeStatisticsDetailsList){
-                String station = waterFeeStatisticsDetails.get(0).getStation();
+                WaterFeeStatisticsDetails details = waterFeeStatisticsDetails.get(0);
+                Map<String, String> timeRange = getTimeRange(details.getYear(), details.getMonth(), details.getTenDays());
                 String dateTemp = waterFeeStatisticsDetails.get(0).getYear()+"-"+waterFeeStatisticsDetails.get(0).getStatisticsDate().substring(0,2)+"-"+waterFeeStatisticsDetails.get(0).getStatisticsDate().substring(3,5);
-                /*if(station.equals("渠首管理站")){
-                    waterFeeStatisticsDetails.forEach(t->{
-                        Map<String, Double> lanternCanalInfoByDate = getLanternCanalInfoByDate(t.getYear(),t.getMonth(),t.getTenDays(),t.getStatisticsDate());
-                        String paramName = (String)redisUtil.get("trendsTableParam:name:"+t.getTableHeadId());
-                        if(paramName.equals("农业")){
-                            t.setV(lanternCanalInfoByDate ==null?null:lanternCanalInfoByDate.get("agricultureValue")==null?null:lanternCanalInfoByDate.get("agricultureValue"));
-                        }
-                        if(paramName.equals("工业")){
-                            t.setV(lanternCanalInfoByDate ==null?null:lanternCanalInfoByDate.get("industryValue")==null?null:lanternCanalInfoByDate.get("industryValue"));
-                        }
-                        if(paramName.equals("绿化")){
-                            t.setV(lanternCanalInfoByDate ==null?null:lanternCanalInfoByDate.get("greenValue")==null?null:lanternCanalInfoByDate.get("greenValue"));
-                        }
-                        t.setId(UUIDUtils.getUUID());
-                    });
-                }else {
-                    waterFeeStatisticsDetails.forEach(t->{
-                        if(!sdf.format(new Date()).equals(dateTemp)){
-                            String paramName = (String)redisUtil.get("trendsTableParam:name:"+t.getTableHeadId());
-                            if(!paramName.equals("合计")){
-                                String tableParamString = (String)redisUtil.get("trendsTableParam:object:"+t.getTableHeadId());
-                                TrendsTableParam tableParam = JSONObject.parseObject(tableParamString, TrendsTableParam.class);
-                                if(t.getStation().contains("河东")){
-                                    Double v = (Double)redisUtil.get("A3:data:hd:yesterday:"+dateTemp+":"+tableParam.getUnitId());
-                                    t.setV(v==null?null:v);
-                                }
-                                if(t.getStation().contains("河西")){
-                                    Double v = (Double)redisUtil.get("A3:data:hx:yesterday:"+dateTemp+":"+tableParam.getUnitId());
-                                    t.setV(v==null?null:v);
-                                }
-                                if(t.getStation().contains("渠首")){
-                                    Double v = (Double)redisUtil.get("A3:data:qs:yesterday:"+dateTemp+":"+tableParam.getUnitId());
-                                    t.setV(v==null?null:v);
-                                }
-                            }
-                        }
-                        try {
-                            t.setRecordTime(sdf.parse(dateTemp));
-                        } catch (ParseException e) {
-                            throw new RuntimeException(e);
-                        }
-                        t.setId(UUIDUtils.getUUID());
-                    });
-                }*/
-
                 waterFeeStatisticsDetails.forEach(t->{
                     if(!sdf.format(new Date()).equals(dateTemp)){
                         String paramName = (String)redisUtil.get("trendsTableParam:name:"+t.getTableHeadId());
@@ -2284,56 +2192,6 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                         }
                     }
                 }
-                /*if(station.equals("渠首管理站")){
-                    Double laishui = 0.0;
-                    Double yinshui = 0.0;
-                    Double zonggan = 0.0;
-
-                    for(WaterFeeStatisticsDetails details:waterFeeStatisticsDetails){
-                        String paramName = (String)redisUtil.get("trendsTableParam:name:"+details.getTableHeadId());
-                        //String paramName = trendsTableParamService.getById(details.getTableHeadId()).getParamName();
-                        if(!paramName.equals("合计") && !paramName.equals("来水") && !paramName.equals("引水") && !paramName.equals("泄洪") && (paramName.equals("东干") || paramName.equals("西干") || paramName.equals("漏斗"))){
-                            zonggan += details.getV()==null?0.0:details.getV();
-                        }
-                    }
-                    for(WaterFeeStatisticsDetails details:waterFeeStatisticsDetails){
-                        String paramName = (String)redisUtil.get("trendsTableParam:name:"+details.getTableHeadId());
-                        //String paramName = trendsTableParamService.getById(details.getTableHeadId()).getParamName();
-                        if(paramName.equals("总干")){
-                            details.setV(zonggan);
-                        }
-                    }
-
-                    for(WaterFeeStatisticsDetails details:waterFeeStatisticsDetails){
-                        String paramName = (String)redisUtil.get("trendsTableParam:name:"+details.getTableHeadId());
-                        //String paramName = trendsTableParamService.getById(details.getTableHeadId()).getParamName();
-                        if(!paramName.equals("合计") && !paramName.equals("来水") && !paramName.equals("引水") && !paramName.equals("总干") && !paramName.equals("泄洪")){
-                            yinshui += details.getV()==null?0.0:details.getV();
-                        }
-                    }
-                    for(WaterFeeStatisticsDetails details:waterFeeStatisticsDetails){
-                        String paramName = (String)redisUtil.get("trendsTableParam:name:"+details.getTableHeadId());
-                        //String paramName = trendsTableParamService.getById(details.getTableHeadId()).getParamName();
-                        if(paramName.equals("引水")){
-                            details.setV(yinshui);
-                        }
-                    }
-
-                    for(WaterFeeStatisticsDetails details:waterFeeStatisticsDetails){
-                        String paramName = (String)redisUtil.get("trendsTableParam:name:"+details.getTableHeadId());
-                        //String paramName = trendsTableParamService.getById(details.getTableHeadId()).getParamName();
-                        if(!paramName.equals("合计") && (paramName.equals("引水") || paramName.equals("泄洪"))){
-                            laishui += details.getV()==null?0.0:details.getV();
-                        }
-                    }
-                    for(WaterFeeStatisticsDetails details:waterFeeStatisticsDetails){
-                        String paramName = (String)redisUtil.get("trendsTableParam:name:"+details.getTableHeadId());
-                        //String paramName = trendsTableParamService.getById(details.getTableHeadId()).getParamName();
-                        if(paramName.equals("来水")){
-                            details.setV(laishui);
-                        }
-                    }
-                }*/
                 boolean b = this.saveBatch(waterFeeStatisticsDetails);
                 //计算列合计
                 if (b) {
@@ -2398,8 +2256,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                 Double paidWaterResource1 = 0.0;
                                 Double paidWaterResource2 = 0.0;
                                 List<PaymentWaterFees> list1 = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                        eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                        eq(PaymentWaterFees::getWaterUserId, total.getTableHeadId()).eq(PaymentWaterFees::getType,"水资源费").list();
+                                        
+                                        eq(PaymentWaterFees::getWaterUserId, total.getTableHeadId()).eq(PaymentWaterFees::getType,"水资源费").
+                                        apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                 if(null != list1 && list1.size()>0){
                                     for(PaymentWaterFees fees:list1){
                                         paidWaterResource1+=fees.getPaymentAmount();
@@ -2412,8 +2271,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                         TrendsTableParam one = JSONObject.parseObject((String)redisUtil.get("trendsTableParam:object:"+byId1.getPId()),TrendsTableParam.class);
                                         //TrendsTableParam one = trendsTableParamService.getById(byId1.getPId());
                                         List<PaymentWaterFees> list2 = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                                eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                                eq(PaymentWaterFees::getWaterUserId, one.getId()).eq(PaymentWaterFees::getType,"水资源费").list();
+                                                
+                                                eq(PaymentWaterFees::getWaterUserId, one.getId()).eq(PaymentWaterFees::getType,"水资源费").
+                                                apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                         if(null!=list2 && list2.size()>0){
                                             for(PaymentWaterFees fees:list2){
                                                 paidWaterResource2+=fees.getPaymentAmount();
@@ -2496,8 +2356,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                         eq(TrendsTableParam::getUseType,byId.getUseType()).
                                         list().stream().map(TrendsTableParam::getId).collect(Collectors.toList());*/
                                         List<PaymentWaterFees> paymentWaterFees = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                                eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                                in(PaymentWaterFees::getWaterUserId, collect1).eq(PaymentWaterFees::getType,"水资源费").list();
+                                                
+                                                in(PaymentWaterFees::getWaterUserId, collect1).eq(PaymentWaterFees::getType,"水资源费").
+                                                apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                         if(null != paymentWaterFees && paymentWaterFees.size()>0){
                                             for(PaymentWaterFees fees:paymentWaterFees){
                                                 paidWaterResourceCount+=fees.getPaymentAmount();
@@ -2515,8 +2376,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                             //List<String> collect2 = trendsTableParamService.lambdaQuery().in(TrendsTableParam::getPId, collect1).list().stream().map(TrendsTableParam::getId).collect(Collectors.toList());
                                             if(null != collect2 && collect2.size()>0){
                                                 List<PaymentWaterFees> paymentWaterFees2 = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                                        eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                                        in(PaymentWaterFees::getWaterUserId, collect2).eq(PaymentWaterFees::getType,"水资源费").list();
+                                                        
+                                                        in(PaymentWaterFees::getWaterUserId, collect2).eq(PaymentWaterFees::getType,"水资源费").
+                                                        apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                                 if(null != paymentWaterFees2 && paymentWaterFees2.size()>0){
                                                     for(PaymentWaterFees fees:paymentWaterFees2){
                                                         paidWaterResourceCount+=fees.getPaymentAmount();
@@ -2535,8 +2397,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                                 //List<String> collect3 = trendsTableParamService.lambdaQuery().in(TrendsTableParam::getPId, collect2).list().stream().map(TrendsTableParam::getId).collect(Collectors.toList());
                                                 if(null != collect3 && collect3.size()>0){
                                                     List<PaymentWaterFees> paymentWaterFees3= paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                                            eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                                            in(PaymentWaterFees::getWaterUserId, collect3).eq(PaymentWaterFees::getType,"水资源费").list();
+                                                            
+                                                            in(PaymentWaterFees::getWaterUserId, collect3).eq(PaymentWaterFees::getType,"水资源费").
+                                                            apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                                     if(null != paymentWaterFees3 && paymentWaterFees3.size()>0){
                                                         for(PaymentWaterFees fees:paymentWaterFees3){
                                                             paidWaterResourceCount+=fees.getPaymentAmount();
@@ -2559,12 +2422,14 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                         }
                                         //List<String> collect1Son = trendsTableParamService.lambdaQuery().in(TrendsTableParam::getPId, collect1).list().stream().map(TrendsTableParam::getId).collect(Collectors.toList());
                                         List<PaymentWaterFees> paymentWaterFees = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                                eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                                in(PaymentWaterFees::getWaterUserId, collect1).eq(PaymentWaterFees::getType,"水资源费").list();
+                                                
+                                                in(PaymentWaterFees::getWaterUserId, collect1).eq(PaymentWaterFees::getType,"水资源费").
+                                                apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                         if(null!= collect1Son && collect1Son.size()>0){
                                             List<PaymentWaterFees> paymentWaterFeesSon = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                                    eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                                    in(PaymentWaterFees::getWaterUserId, collect1Son).eq(PaymentWaterFees::getType,"水资源费").list();
+                                                    
+                                                    in(PaymentWaterFees::getWaterUserId, collect1Son).eq(PaymentWaterFees::getType,"水资源费").
+                                                    apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                             paymentWaterFees.addAll(paymentWaterFeesSon);
                                         }
                                         if(null != paymentWaterFees && paymentWaterFees.size()>0){
@@ -2573,8 +2438,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                             }
                                         }else {
                                             List<PaymentWaterFees> paymentWaterFees2 = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                                    eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                                    in(PaymentWaterFees::getWaterUserId, byId.getPId()).eq(PaymentWaterFees::getType,"水资源费").list();
+                                                    
+                                                    in(PaymentWaterFees::getWaterUserId, byId.getPId()).eq(PaymentWaterFees::getType,"水资源费").
+                                                    apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                             if(null != paymentWaterFees2 && paymentWaterFees2.size()>0){
                                                 for(PaymentWaterFees fees:paymentWaterFees2){
                                                     paidWaterResourceCount+=fees.getPaymentAmount();
@@ -2598,8 +2464,8 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                             Double advancePaymentWaterFee1 = 0.0;
                             Double advancePaymentWaterFee2 = 0.0;
                             List<PaymentWaterFees> list1 = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                    eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                    eq(PaymentWaterFees::getWaterUserId, total.getTableHeadId()).eq(PaymentWaterFees::getType,"水费").list();
+                                    eq(PaymentWaterFees::getWaterUserId, total.getTableHeadId()).eq(PaymentWaterFees::getType,"水费").
+                                    apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                             if(null != list1 && list1.size()>0){
                                 for(PaymentWaterFees fees:list1){
                                     advancePaymentWaterFee1+=fees.getPaymentAmount();
@@ -2612,8 +2478,8 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                     TrendsTableParam one = JSONObject.parseObject((String)redisUtil.get("trendsTableParam:object:"+byId1.getPId()),TrendsTableParam.class);
                                     //TrendsTableParam one = trendsTableParamService.getById(byId1.getPId());
                                     List<PaymentWaterFees> list2 = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                            eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                            eq(PaymentWaterFees::getWaterUserId, one.getId()).eq(PaymentWaterFees::getType,"水费").list();
+                                            eq(PaymentWaterFees::getWaterUserId, one.getId()).eq(PaymentWaterFees::getType,"水费").
+                                            apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                     if(null!=list2 && list2.size()>0){
                                         for(PaymentWaterFees fees:list2){
                                             advancePaymentWaterFee2+=fees.getPaymentAmount();
@@ -2696,8 +2562,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                     eq(TrendsTableParam::getUseType,byId.getUseType()).
                                     list().stream().map(TrendsTableParam::getId).collect(Collectors.toList());*/
                                     List<PaymentWaterFees> paymentWaterFees = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                            eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                            in(PaymentWaterFees::getWaterUserId, collect1).eq(PaymentWaterFees::getType,"水费").list();
+                                            
+                                            in(PaymentWaterFees::getWaterUserId, collect1).eq(PaymentWaterFees::getType,"水费").
+                                            apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                     if(null != paymentWaterFees && paymentWaterFees.size()>0){
                                         for(PaymentWaterFees fees:paymentWaterFees){
                                             advancePaymentWaterFeeCount+=fees.getPaymentAmount();
@@ -2715,8 +2582,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                         //List<String> collect2 = trendsTableParamService.lambdaQuery().in(TrendsTableParam::getPId, collect1).list().stream().map(TrendsTableParam::getId).collect(Collectors.toList());
                                         if(null != collect2 && collect2.size()>0){
                                             List<PaymentWaterFees> paymentWaterFees2 = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                                    eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                                    in(PaymentWaterFees::getWaterUserId, collect2).eq(PaymentWaterFees::getType,"水费").list();
+                                                    
+                                                    in(PaymentWaterFees::getWaterUserId, collect2).eq(PaymentWaterFees::getType,"水费").
+                                                    apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                             if(null != paymentWaterFees2 && paymentWaterFees2.size()>0){
                                                 for(PaymentWaterFees fees:paymentWaterFees2){
                                                     advancePaymentWaterFeeCount+=fees.getPaymentAmount();
@@ -2735,8 +2603,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                             //List<String> collect3 = trendsTableParamService.lambdaQuery().in(TrendsTableParam::getPId, collect2).list().stream().map(TrendsTableParam::getId).collect(Collectors.toList());
                                             if(null != collect3 && collect3.size()>0){
                                                 List<PaymentWaterFees> paymentWaterFees3= paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                                        eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                                        in(PaymentWaterFees::getWaterUserId, collect3).eq(PaymentWaterFees::getType,"水费").list();
+                                                        
+                                                        in(PaymentWaterFees::getWaterUserId, collect3).eq(PaymentWaterFees::getType,"水费").
+                                                        apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                                 if(null != paymentWaterFees3 && paymentWaterFees3.size()>0){
                                                     for(PaymentWaterFees fees:paymentWaterFees3){
                                                         advancePaymentWaterFeeCount+=fees.getPaymentAmount();
@@ -2759,12 +2628,14 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                     }
                                     //List<String> collect1Son = trendsTableParamService.lambdaQuery().in(TrendsTableParam::getPId, collect1).list().stream().map(TrendsTableParam::getId).collect(Collectors.toList());
                                     List<PaymentWaterFees> paymentWaterFees = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                            eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                            in(PaymentWaterFees::getWaterUserId, collect1).eq(PaymentWaterFees::getType,"水费").list();
+                                            
+                                            in(PaymentWaterFees::getWaterUserId, collect1).eq(PaymentWaterFees::getType,"水费").
+                                            apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                     if(null!= collect1Son && collect1Son.size()>0){
                                         List<PaymentWaterFees> paymentWaterFeesSon = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                                eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                                in(PaymentWaterFees::getWaterUserId, collect1Son).eq(PaymentWaterFees::getType,"水费").list();
+                                                
+                                                in(PaymentWaterFees::getWaterUserId, collect1Son).eq(PaymentWaterFees::getType,"水费").
+                                                apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                         paymentWaterFees.addAll(paymentWaterFeesSon);
                                     }
                                     if(null != paymentWaterFees && paymentWaterFees.size()>0){
@@ -2773,8 +2644,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                         }
                                     }else {
                                         List<PaymentWaterFees> paymentWaterFees2 = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                                eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                                in(PaymentWaterFees::getWaterUserId, byId.getPId()).eq(PaymentWaterFees::getType,"水费").list();
+                                                
+                                                in(PaymentWaterFees::getWaterUserId, byId.getPId()).eq(PaymentWaterFees::getType,"水费").
+                                                apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                         if(null != paymentWaterFees2 && paymentWaterFees2.size()>0){
                                             for(PaymentWaterFees fees:paymentWaterFees2){
                                                 advancePaymentWaterFeeCount+=fees.getPaymentAmount();
@@ -2894,8 +2766,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                 Double paidWaterResource1 = 0.0;
                                 Double paidWaterResource2 = 0.0;
                                 List<PaymentWaterFees> list1 = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                        eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                        eq(PaymentWaterFees::getWaterUserId, total.getTableHeadId()).eq(PaymentWaterFees::getType,"水资源费").list();
+                                        
+                                        eq(PaymentWaterFees::getWaterUserId, total.getTableHeadId()).eq(PaymentWaterFees::getType,"水资源费").
+                                        apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                 if(null != list1 && list1.size()>0){
                                     for(PaymentWaterFees fees:list1){
                                         paidWaterResource1+=fees.getPaymentAmount();
@@ -2908,8 +2781,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                         TrendsTableParam one = JSONObject.parseObject((String)redisUtil.get("trendsTableParam:object:"+byId1.getPId()),TrendsTableParam.class);
                                         //TrendsTableParam one = trendsTableParamService.getById(byId1.getPId());
                                         List<PaymentWaterFees> list2 = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                                eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                                eq(PaymentWaterFees::getWaterUserId, one.getId()).eq(PaymentWaterFees::getType,"水资源费").list();
+                                                
+                                                eq(PaymentWaterFees::getWaterUserId, one.getId()).eq(PaymentWaterFees::getType,"水资源费").
+                                                apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                         if(null!=list2 && list2.size()>0){
                                             for(PaymentWaterFees fees:list2){
                                                 paidWaterResource2+=fees.getPaymentAmount();
@@ -2992,8 +2866,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                         eq(TrendsTableParam::getUseType,byId.getUseType()).
                                         list().stream().map(TrendsTableParam::getId).collect(Collectors.toList());*/
                                         List<PaymentWaterFees> paymentWaterFees = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                                eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                                in(PaymentWaterFees::getWaterUserId, collect1).eq(PaymentWaterFees::getType,"水资源费").list();
+                                                
+                                                in(PaymentWaterFees::getWaterUserId, collect1).eq(PaymentWaterFees::getType,"水资源费").
+                                                apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                         if(null != paymentWaterFees && paymentWaterFees.size()>0){
                                             for(PaymentWaterFees fees:paymentWaterFees){
                                                 paidWaterResourceCount+=fees.getPaymentAmount();
@@ -3011,8 +2886,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                             //List<String> collect2 = trendsTableParamService.lambdaQuery().in(TrendsTableParam::getPId, collect1).list().stream().map(TrendsTableParam::getId).collect(Collectors.toList());
                                             if(null != collect2 && collect2.size()>0){
                                                 List<PaymentWaterFees> paymentWaterFees2 = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                                        eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                                        in(PaymentWaterFees::getWaterUserId, collect2).eq(PaymentWaterFees::getType,"水资源费").list();
+                                                        
+                                                        in(PaymentWaterFees::getWaterUserId, collect2).eq(PaymentWaterFees::getType,"水资源费").
+                                                        apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                                 if(null != paymentWaterFees2 && paymentWaterFees2.size()>0){
                                                     for(PaymentWaterFees fees:paymentWaterFees2){
                                                         paidWaterResourceCount+=fees.getPaymentAmount();
@@ -3031,8 +2907,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                                 //List<String> collect3 = trendsTableParamService.lambdaQuery().in(TrendsTableParam::getPId, collect2).list().stream().map(TrendsTableParam::getId).collect(Collectors.toList());
                                                 if(null != collect3 && collect3.size()>0){
                                                     List<PaymentWaterFees> paymentWaterFees3= paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                                            eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                                            in(PaymentWaterFees::getWaterUserId, collect3).eq(PaymentWaterFees::getType,"水资源费").list();
+                                                            
+                                                            in(PaymentWaterFees::getWaterUserId, collect3).eq(PaymentWaterFees::getType,"水资源费").
+                                                            apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                                     if(null != paymentWaterFees3 && paymentWaterFees3.size()>0){
                                                         for(PaymentWaterFees fees:paymentWaterFees3){
                                                             paidWaterResourceCount+=fees.getPaymentAmount();
@@ -3055,12 +2932,14 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                         }
                                         //List<String> collect1Son = trendsTableParamService.lambdaQuery().in(TrendsTableParam::getPId, collect1).list().stream().map(TrendsTableParam::getId).collect(Collectors.toList());
                                         List<PaymentWaterFees> paymentWaterFees = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                                eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                                in(PaymentWaterFees::getWaterUserId, collect1).eq(PaymentWaterFees::getType,"水资源费").list();
+                                                
+                                                in(PaymentWaterFees::getWaterUserId, collect1).eq(PaymentWaterFees::getType,"水资源费").
+                                                apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                         if(null!= collect1Son && collect1Son.size()>0){
                                             List<PaymentWaterFees> paymentWaterFeesSon = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                                    eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                                    in(PaymentWaterFees::getWaterUserId, collect1Son).eq(PaymentWaterFees::getType,"水资源费").list();
+                                                    
+                                                    in(PaymentWaterFees::getWaterUserId, collect1Son).eq(PaymentWaterFees::getType,"水资源费").
+                                                    apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                             paymentWaterFees.addAll(paymentWaterFeesSon);
                                         }
                                         if(null != paymentWaterFees && paymentWaterFees.size()>0){
@@ -3069,8 +2948,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                             }
                                         }else {
                                             List<PaymentWaterFees> paymentWaterFees2 = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                                    eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                                    in(PaymentWaterFees::getWaterUserId, byId.getPId()).eq(PaymentWaterFees::getType,"水资源费").list();
+                                                    
+                                                    in(PaymentWaterFees::getWaterUserId, byId.getPId()).eq(PaymentWaterFees::getType,"水资源费").
+                                                    apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                             if(null != paymentWaterFees2 && paymentWaterFees2.size()>0){
                                                 for(PaymentWaterFees fees:paymentWaterFees2){
                                                     paidWaterResourceCount+=fees.getPaymentAmount();
@@ -3094,8 +2974,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                             Double advancePaymentWaterFee1 = 0.0;
                             Double advancePaymentWaterFee2 = 0.0;
                             List<PaymentWaterFees> list1 = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                    eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                    eq(PaymentWaterFees::getWaterUserId, total.getTableHeadId()).eq(PaymentWaterFees::getType,"水费").list();
+                                    
+                                    eq(PaymentWaterFees::getWaterUserId, total.getTableHeadId()).eq(PaymentWaterFees::getType,"水费").
+                                    apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                             if(null != list1 && list1.size()>0){
                                 for(PaymentWaterFees fees:list1){
                                     advancePaymentWaterFee1+=fees.getPaymentAmount();
@@ -3108,8 +2989,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                     TrendsTableParam one = JSONObject.parseObject((String)redisUtil.get("trendsTableParam:object:"+byId1.getPId()),TrendsTableParam.class);
                                     //TrendsTableParam one = trendsTableParamService.getById(byId1.getPId());
                                     List<PaymentWaterFees> list2 = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                            eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                            eq(PaymentWaterFees::getWaterUserId, one.getId()).eq(PaymentWaterFees::getType,"水费").list();
+                                            
+                                            eq(PaymentWaterFees::getWaterUserId, one.getId()).eq(PaymentWaterFees::getType,"水费").
+                                            apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                     if(null!=list2 && list2.size()>0){
                                         for(PaymentWaterFees fees:list2){
                                             advancePaymentWaterFee2+=fees.getPaymentAmount();
@@ -3192,8 +3074,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                     eq(TrendsTableParam::getUseType,byId.getUseType()).
                                     list().stream().map(TrendsTableParam::getId).collect(Collectors.toList());*/
                                     List<PaymentWaterFees> paymentWaterFees = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                            eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                            in(PaymentWaterFees::getWaterUserId, collect1).eq(PaymentWaterFees::getType,"水费").list();
+                                            
+                                            in(PaymentWaterFees::getWaterUserId, collect1).eq(PaymentWaterFees::getType,"水费").
+                                            apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                     if(null != paymentWaterFees && paymentWaterFees.size()>0){
                                         for(PaymentWaterFees fees:paymentWaterFees){
                                             advancePaymentWaterFeeCount+=fees.getPaymentAmount();
@@ -3211,8 +3094,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                         //List<String> collect2 = trendsTableParamService.lambdaQuery().in(TrendsTableParam::getPId, collect1).list().stream().map(TrendsTableParam::getId).collect(Collectors.toList());
                                         if(null != collect2 && collect2.size()>0){
                                             List<PaymentWaterFees> paymentWaterFees2 = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                                    eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                                    in(PaymentWaterFees::getWaterUserId, collect2).eq(PaymentWaterFees::getType,"水费").list();
+                                                    
+                                                    in(PaymentWaterFees::getWaterUserId, collect2).eq(PaymentWaterFees::getType,"水费").
+                                                    apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                             if(null != paymentWaterFees2 && paymentWaterFees2.size()>0){
                                                 for(PaymentWaterFees fees:paymentWaterFees2){
                                                     advancePaymentWaterFeeCount+=fees.getPaymentAmount();
@@ -3231,8 +3115,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                             //List<String> collect3 = trendsTableParamService.lambdaQuery().in(TrendsTableParam::getPId, collect2).list().stream().map(TrendsTableParam::getId).collect(Collectors.toList());
                                             if(null != collect3 && collect3.size()>0){
                                                 List<PaymentWaterFees> paymentWaterFees3= paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                                        eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                                        in(PaymentWaterFees::getWaterUserId, collect3).eq(PaymentWaterFees::getType,"水费").list();
+                                                        
+                                                        in(PaymentWaterFees::getWaterUserId, collect3).eq(PaymentWaterFees::getType,"水费").
+                                                        apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                                 if(null != paymentWaterFees3 && paymentWaterFees3.size()>0){
                                                     for(PaymentWaterFees fees:paymentWaterFees3){
                                                         advancePaymentWaterFeeCount+=fees.getPaymentAmount();
@@ -3255,12 +3140,14 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                     }
                                     //List<String> collect1Son = trendsTableParamService.lambdaQuery().in(TrendsTableParam::getPId, collect1).list().stream().map(TrendsTableParam::getId).collect(Collectors.toList());
                                     List<PaymentWaterFees> paymentWaterFees = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                            eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                            in(PaymentWaterFees::getWaterUserId, collect1).eq(PaymentWaterFees::getType,"水费").list();
+                                            
+                                            in(PaymentWaterFees::getWaterUserId, collect1).eq(PaymentWaterFees::getType,"水费").
+                                            apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                     if(null!= collect1Son && collect1Son.size()>0){
                                         List<PaymentWaterFees> paymentWaterFeesSon = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                                eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                                in(PaymentWaterFees::getWaterUserId, collect1Son).eq(PaymentWaterFees::getType,"水费").list();
+                                                
+                                                in(PaymentWaterFees::getWaterUserId, collect1Son).eq(PaymentWaterFees::getType,"水费").
+                                                apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                         paymentWaterFees.addAll(paymentWaterFeesSon);
                                     }
                                     if(null != paymentWaterFees && paymentWaterFees.size()>0){
@@ -3269,8 +3156,9 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                                         }
                                     }else {
                                         List<PaymentWaterFees> paymentWaterFees2 = paymentWaterFeesService.lambdaQuery().eq(PaymentWaterFees::getDel,0).
-                                                eq(PaymentWaterFees::getYear, waterFeeStatisticsDetails.get(0).getYear()).
-                                                in(PaymentWaterFees::getWaterUserId, byId.getPId()).eq(PaymentWaterFees::getType,"水费").list();
+                                                
+                                                in(PaymentWaterFees::getWaterUserId, byId.getPId()).eq(PaymentWaterFees::getType,"水费").
+                                                apply("PAYMENT_TIME BETWEEN '"+timeRange.get("startTime")+"' and '"+timeRange.get("endTime")+"'").list();
                                         if(null != paymentWaterFees2 && paymentWaterFees2.size()>0){
                                             for(PaymentWaterFees fees:paymentWaterFees2){
                                                 advancePaymentWaterFeeCount+=fees.getPaymentAmount();
@@ -3785,6 +3673,25 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
         String format = df.format(value);
         double v = Double.parseDouble(format);
         return v;
+    }
+
+    private Map<String,String> getTimeRange(Integer year, Integer month, String tenDays){
+        Map<String,String> resultMap = new HashMap<>();
+        String startTime = year+"-01-01";
+        String endTime = year+"-"+month;
+        if(tenDays.equals("上旬")){
+            endTime = endTime + "-10";
+        }
+        if(tenDays.equals("中旬")){
+            endTime = endTime + "-20";
+        }
+        if(tenDays.equals("下旬")){
+            Integer yearMonth = YearMonth.of(year, month).lengthOfMonth();
+            endTime = endTime + "-"+yearMonth;
+        }
+        resultMap.put("startTime",startTime);
+        resultMap.put("endTime",endTime);
+        return resultMap;
     }
 }
 

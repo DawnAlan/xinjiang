@@ -212,7 +212,7 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
                                         eq(InstructionViewing::getUnitId, orgId).one();
                                 String msgContext = "您有一条待执行的指令";
                                 saveMsg(saBaseLoginUser,msgContext,s,one.getId());
-                                WebSocketServer.sendInfo(msgContext+","+one.getId(),s);
+                                WebSocketServer.sendInfo(msgContext+"id:"+one.getId(),s);
                             }
                         }else {
                             String[] lssuedById = byId1.getLssuedById().split(",");

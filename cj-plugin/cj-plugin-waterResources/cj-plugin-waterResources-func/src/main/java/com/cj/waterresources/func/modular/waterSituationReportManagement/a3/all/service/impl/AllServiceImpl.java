@@ -503,7 +503,7 @@ public class AllServiceImpl implements AllService {
                 String dateTemp = date.toString();
                 List<SelectListForIndustrialWaterFeeRes> collect = resList.stream().filter(t -> {
                     try {
-                        return t.getRecordTime().compareTo(sdf.parse(dateTemp)) == 0;
+                        return sdf.parse(sdf.format(t.getRecordTime())).compareTo(sdf.parse(dateTemp)) == 0;
                     } catch (ParseException e) {
                         throw new RuntimeException(e);
                     }

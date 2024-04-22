@@ -213,9 +213,6 @@ public class IrrigatedAreaServiceImpl implements IrrigatedAreaService {
                     continue;
                 }
                 List<QueryRealTimeDataDto> queryRealTimeData = IrrigatedAreaInvoke.getQueryRealTimeData(node.getId());
-                if(node.getName().equals("昌吉市鸿远博兴建材有限责任公司")){
-                    log.error("queryRealTimeData---------------------------------------------------------------------------"+queryRealTimeData.toString());
-                }
                 if(null != queryRealTimeData && queryRealTimeData.size()>0){
                     IrrigatedPlatformDataInfo info = new IrrigatedPlatformDataInfo();
                     QueryRealTimeDataDto dto = queryRealTimeData.get(0);
@@ -253,8 +250,8 @@ public class IrrigatedAreaServiceImpl implements IrrigatedAreaService {
                     List<OverallSituationUnitMgrDto> collect = overallSituationUnitMgrDtoList.stream().filter(t -> t.getMonitorId().equals(dto.getID())).collect(Collectors.toList());
                     if(!collect.isEmpty()){
                         OverallSituationUnitMgrDto overallSituationUnitMgrDto = collect.get(0);
-                        redisUtil.set("irrigatedPlatform:today:"+overallSituationUnitMgrDto.getId(),info.getAvgFlow(),3600*24*2);
-                        redisUtil.set("irrigatedPlatform:sq:date:id:"+info.getMonitorTime()+":"+overallSituationUnitMgrDto.getId(),info.getSqMonitorFlow(),3600*24*2);
+                        redisUtil.set("irrigatedPlatform:today:"+overallSituationUnitMgrDto.getId(),info.getAvgFlow(),3600*24);
+                        redisUtil.set("irrigatedPlatform:sq:date:id:"+info.getMonitorTime()+":"+overallSituationUnitMgrDto.getId(),info.getSqMonitorFlow(),3600*24);
                     }
                     if(info.getMonitorName().equals("头屯河水库水位")){
                         redisUtil.set("irrigatedPlatform:sq:tth:waterLevel:"+sdf.format(info.getMonitorTime()),info.getSqWaterLevel(),3600*24*2);

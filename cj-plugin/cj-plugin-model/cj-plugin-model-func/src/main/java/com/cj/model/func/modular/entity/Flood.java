@@ -95,5 +95,10 @@ public class Flood implements Serializable {
     @Excel(name = "WARNING_TIME",width = 15,orderNum = "10")
     private Integer warningTime;
 
+    @ApiModelProperty("预警时段")
+    @TableField(value = "RAIN_PROCESS")
+    @Excel(name = "RAIN_PROCESS",width = 15,orderNum = "10")
+    private Double rainProcess;
+
 }
 
