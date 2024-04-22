@@ -166,19 +166,19 @@ public class ResourceOptimizationshort_DayAheadTest
         String[]nameAgricultureQushou=(String[]) dataDemand.get("渠首农业站点名");
 
 
-        String[][]nameAgricultureEastDay=(String[][]) dataDemand.get("河东灌溉子级站点名");
-        String[][]nameAgricultureWestDay=(String[][]) dataDemand.get("河西灌溉子级站点名");
-        String[][]nameGreenEastDay=(String[][]) dataDemand.get("河东绿化子级站点名");
-        String[][]nameGreenWestDay=(String[][]) dataDemand.get("河西绿化子级站点名");
-        String[][]nameGreenQushouDay=(String[][]) dataDemand.get("渠首绿化子级站点名");
-        String[][]nameAgricultureQushouDay=(String[][]) dataDemand.get("渠首农业子级站点名");
+        String[]nameAgricultureEastDay=(String[]) dataDemand.get("河东灌溉子级站点名");
+        String[]nameAgricultureWestDay=(String[]) dataDemand.get("河西灌溉子级站点名");
+        String[]nameGreenEastDay=(String[]) dataDemand.get("河东绿化子级站点名");
+        String[]nameGreenWestDay=(String[]) dataDemand.get("河西绿化子级站点名");
+        String[]nameGreenQushouDay=(String[]) dataDemand.get("渠首绿化子级站点名");
+        String[]nameAgricultureQushouDay=(String[]) dataDemand.get("渠首农业子级站点名");
 
-        double[][]waterAgricultureEastDay=(double[][]) dataDemand.get("河东灌溉子级需水");
-        double[][]waterAgricultureWestDay=(double[][]) dataDemand.get("河西灌溉子级需水");
-        double[][]waterGreenEastDay=(double[][]) dataDemand.get("河东绿化子级需水");
-        double[][]waterGreenWestDay=(double[][]) dataDemand.get("河西绿化子级需水");
-        double[][]waterGreenQushouDay=(double[][]) dataDemand.get("渠首绿化子级需水");
-        double[][]waterAgricultureQushouDay=(double[][]) dataDemand.get("渠首农业子级需水");
+        double[]waterAgricultureEastDay=(double[]) dataDemand.get("河东灌溉子级需水");
+        double[]waterAgricultureWestDay=(double[]) dataDemand.get("河西灌溉子级需水");
+        double[]waterGreenEastDay=(double[]) dataDemand.get("河东绿化子级需水");
+        double[]waterGreenWestDay=(double[]) dataDemand.get("河西绿化子级需水");
+        double[]waterGreenQushouDay=(double[]) dataDemand.get("渠首绿化子级需水");
+        double[]waterAgricultureQushouDay=(double[]) dataDemand.get("渠首农业子级需水");
 
         double[][] waterDemand1= new double[5][calStep];
 
@@ -739,42 +739,21 @@ public class ResourceOptimizationshort_DayAheadTest
         if (waterDemand[4][0]-waterdemand4[0][0]-waterdemand4[1][0]!=0){
             eastAgriculture=(waterSupply[4][0]-waterSupply4[0][0]-waterSupply4[1][0]) / (waterDemand[4][0]-waterdemand4[0][0]-waterdemand4[1][0]);
         }
+
+        //日计划
         //河东农业
-        for (int i=0;i<waterAgricultureEastDay.length;i++){
-            for (int ii=0;ii<waterAgricultureEastDay[i].length;ii++){
-                waterAgricultureEastDay[i][ii]=eastAgriculture*waterAgricultureEastDay[i][ii];
-            }
-        }
+        multiplyByEastAgriculture(waterAgricultureEastDay,eastAgriculture);
         //河西农业
-        for (int i=0;i<waterAgricultureWestDay.length;i++){
-            for (int ii=0;ii<waterAgricultureWestDay[i].length;ii++){
-                waterAgricultureWestDay[i][ii]=westAgriculture*waterAgricultureWestDay[i][ii];
-            }
-        }
+        multiplyByEastAgriculture(waterAgricultureWestDay,westAgriculture);
         //河东绿化
-        for (int i=0;i<waterGreenEastDay.length;i++){
-            for (int ii=0;ii<waterGreenEastDay[i].length;ii++){
-                waterGreenEastDay[i][ii]=eastGreen*waterGreenEastDay[i][ii];
-            }
-        }
+        multiplyByEastAgriculture(waterGreenEastDay,eastGreen);
         //河西绿化
-        for (int i=0;i<waterGreenWestDay.length;i++){
-            for (int ii=0;ii<waterGreenWestDay[i].length;ii++){
-                waterGreenWestDay[i][ii]=westGreen*waterGreenWestDay[i][ii];
-            }
-        }
+        multiplyByEastAgriculture(waterGreenWestDay,westGreen);
         //渠首绿化
-        for (int i=0;i<waterGreenQushouDay.length;i++){
-            for (int ii=0;ii<waterGreenQushouDay[i].length;ii++){
-                waterGreenQushouDay[i][ii]=eastGreen*waterGreenQushouDay[i][ii];
-            }
-        }
+        multiplyByEastAgriculture(waterGreenQushouDay,eastGreen);
         //渠首农业
-        for (int i=0;i<waterAgricultureQushouDay.length;i++){
-            for (int ii=0;ii<waterAgricultureQushouDay[i].length;ii++){
-                waterAgricultureQushouDay[i][ii]=eastAgriculture*waterAgricultureQushouDay[i][ii];
-            }
-        }
+        multiplyByEastAgriculture(waterAgricultureQushouDay,eastAgriculture);
+
         dataDemand.put("河东农业供水",waterAgricultureEastDay);
         dataDemand.put("河西农业供水",waterAgricultureWestDay);
         dataDemand.put("河东绿化供水",waterGreenEastDay);
@@ -1214,6 +1193,18 @@ public class ResourceOptimizationshort_DayAheadTest
         return result;
 
     }
+
+    /**
+     * 获得每日配水
+     * @param waterAgricultureEastDay
+     * @param eastAgriculture
+     */
+    public static void multiplyByEastAgriculture(double[] waterAgricultureEastDay, double eastAgriculture) {
+        for (int i = 0; i < waterAgricultureEastDay.length; i++) {
+                waterAgricultureEastDay[i] *= eastAgriculture;
+        }
+    }
+
     /**
      * 获得供水比例
      * @param waterSupplyGreenEast

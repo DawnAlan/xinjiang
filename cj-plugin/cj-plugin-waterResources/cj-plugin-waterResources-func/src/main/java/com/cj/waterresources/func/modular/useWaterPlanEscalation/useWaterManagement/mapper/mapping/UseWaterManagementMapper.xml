@@ -5,7 +5,7 @@
 <mapper namespace="com.cj.waterresources.func.modular.useWaterPlanEscalation.useWaterManagement.mapper.UseWaterManagementMapper">
 
     <select id="selectListByReq" parameterType="com.cj.waterresources.func.modular.useWaterPlanEscalation.useWaterManagement.bean.req.UseWaterManagementQueryReq" resultType="com.cj.waterresources.func.modular.useWaterPlanEscalation.useWaterManagement.bean.res.UseWaterManagementQueryRes">
-        SELECT ID,USE_WATER_PLAN,AREA,P_ID,UNIT_NAME,UNIT_ID
+        SELECT ID,USE_WATER_PLAN,AREA,P_ID,UNIT_NAME,UNIT_ID,UNIT_TYPE
         FROM USE_WATER_MANAGEMENT
         <where>
             <if test="req.useWaterPlan != null and req.useWaterPlan != ''">

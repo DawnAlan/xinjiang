@@ -70,7 +70,7 @@ public class Containment {
             double c_lzz = BigDecimal.valueOf(FindMax(Qin_lzz) - FindMax(Qout_lzz)).setScale(2, RoundingMode.HALF_UP).doubleValue();
 
             double a_tth = BigDecimal.valueOf(FindMax(Retain_tth)).setScale(2, RoundingMode.HALF_UP).doubleValue();
-            double b_tth = BigDecimal.valueOf(1297.03 - FindMax(V_tth)).setScale(2, RoundingMode.HALF_UP).doubleValue();
+            double b_tth = BigDecimal.valueOf(1520.85 - FindMax(V_tth)).setScale(2, RoundingMode.HALF_UP).doubleValue();
             double c_tth = BigDecimal.valueOf(FindMax(Qin_tth) - FindMax(Qout_tth)).setScale(2, RoundingMode.HALF_UP).doubleValue();
 
             retain_lzz.put(key, Math.max(a_lzz, 0));

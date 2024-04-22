@@ -68,14 +68,14 @@ public class UseWaterManagementServiceImpl extends ServiceImpl<UseWaterManagemen
 
     @Override
     public RestResponse delete(String id,String useWaterPlan) {
-        List<UseWaterManagement> list = this.lambdaQuery().eq(UseWaterManagement::getPId, id).eq(UseWaterManagement::getDel,0).list();
+        List<UseWaterManagement> list = this.lambdaQuery().eq(UseWaterManagement::getPId, id).list();
         boolean update = false;
         if(list.isEmpty()){
-            update = this.lambdaUpdate().set(UseWaterManagement::getDel, 1).eq(UseWaterManagement::getId, id).update();
+            update = this.lambdaUpdate().eq(UseWaterManagement::getId, id).remove();
         }else {
             List<String> strings = list.stream().map(UseWaterManagement::getId).collect(Collectors.toList());
             strings.add(id);
-            update = this.lambdaUpdate().set(UseWaterManagement::getDel, 1).in(UseWaterManagement::getId, strings).update();
+            update = this.lambdaUpdate().in(UseWaterManagement::getId, strings).remove();
         }
         if(update){
             return RestResponse.ok("删除成功");

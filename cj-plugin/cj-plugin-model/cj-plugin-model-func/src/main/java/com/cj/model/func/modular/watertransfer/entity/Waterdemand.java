@@ -23,5 +23,6 @@ public class Waterdemand {
     //子节点
     private int children;
     private String unitId;
+    private String unitType;
 
 }
