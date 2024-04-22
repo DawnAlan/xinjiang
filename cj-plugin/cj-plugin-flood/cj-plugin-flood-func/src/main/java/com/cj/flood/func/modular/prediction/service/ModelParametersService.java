@@ -18,7 +18,7 @@ public interface ModelParametersService extends IService<ModelParameters> {
 
     Map<String, List<ModelParameters>> queryList();
 
-    ModelParameters calibrate(CalibrateReq input);
+    List<ModelParameters> calibrate(CalibrateReq input);
 
 
     Boolean del(List<String> input);

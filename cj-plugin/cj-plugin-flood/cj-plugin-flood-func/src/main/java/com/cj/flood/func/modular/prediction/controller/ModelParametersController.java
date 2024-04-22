@@ -37,9 +37,9 @@ public class ModelParametersController {
     @ApiOperation("模型率定数据删除")
     @PostMapping("/del")
     public RestResponse del(@RequestBody List<String> input) {
-        if (modelParametersService.del(input)){
+        if (modelParametersService.del(input)) {
             return RestResponse.ok(true);
-        }else {
+        } else {
             return RestResponse.no("删除失败！");
         }
     }
@@ -48,9 +48,9 @@ public class ModelParametersController {
     @ApiOperation("设置默认参数")
     @PostMapping("/isDefault")
     public RestResponse isDefault(@RequestBody ModelParametersReq input) {
-        if (modelParametersService.isDefault(input)){
+        if (modelParametersService.isDefault(input)) {
             return RestResponse.ok(true);
-        }else {
+        } else {
             return RestResponse.no("删除失败！");
         }
     }
@@ -60,9 +60,9 @@ public class ModelParametersController {
     @ApiOperation("历史来水过程")
     @PostMapping("/ls")
     public RestResponse ls(@RequestBody ModelParametersReq input) {
-        if (modelParametersService.ls(input)){
+        if (modelParametersService.ls(input)) {
             return RestResponse.ok(true);
-        }else {
+        } else {
             return RestResponse.no("删除失败！");
         }
     }
@@ -71,7 +71,12 @@ public class ModelParametersController {
     @ApiOperation("模型率定")
     @PostMapping("/calibrate")
     public RestResponse calibrate(@RequestBody CalibrateReq input) {
-        return RestResponse.ok(modelParametersService.calibrate(input));
+        try{
+            return RestResponse.ok(modelParametersService.calibrate(input));
+        }
+        catch (Exception ex){
+            return RestResponse.no(ex.getMessage());
+        }
     }
 }
 
