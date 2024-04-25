@@ -96,7 +96,7 @@ public class WaterFeeTask {
         }
     }
 
-    public JobRes getTableHeadIdHaveQs(){
+    /*public JobRes getTableHeadIdHaveQs(){
         try {
             JobRes res = new JobRes();
             String mk = (String) redisUtil.get("trendsTableParam:list");
@@ -155,10 +155,10 @@ public class WaterFeeTask {
             log.error(e.getLocalizedMessage());
             return null;
         }
-    }
+    }*/
     @Scheduled(cron="0 30 08 * * ?")//每天8:30
     public void createWaterFeeTableNoHaveQs(){
-        log.info("--------------------------------执行定时插入水费表操作(无渠首管理站)----------------------------");
+        log.info("--------------------------------执行定时插入水费表操作----------------------------");
         JobRes tableHeadId = getTableHeadIdNoHaveQs();
         if(null != tableHeadId) {
             List<String> collect = tableHeadId.getCollect();
@@ -190,7 +190,7 @@ public class WaterFeeTask {
         }
     }
 
-    @Scheduled(cron="0 32 08 * * ?")//每天8:35
+/*    @Scheduled(cron="0 32 08 * * ?")//每天8:35
     public void createWaterFeeTableHaveQs(){
         log.info("--------------------------------执行定时插入水费表操作（仅渠首管理站）----------------------------");
         JobRes tableHeadId = getTableHeadIdHaveQs();
@@ -222,7 +222,7 @@ public class WaterFeeTask {
                 waterFeeStatisticsDetailsService.add(result);
             }
         }
-    }
+    }*/
 
     public String determineTenDays(Integer day){
         if(day<=10){

@@ -57,14 +57,16 @@ public class DayWaterUsePlanServiceImpl extends ServiceImpl<DayWaterUsePlanMappe
 
     @SneakyThrows
     @Override
-    public RestResponse update(DayWaterUsePlan dayWaterUsePlan) {
+    public RestResponse update(DayWaterUsePlan dayWaterUsePlan,Boolean flag) {
         dayWaterUsePlan.setUpdateTime(new Date());
         boolean b = this.updateById(dayWaterUsePlan);
         if(b){
             String gskOrg = sysOrgApi.getIdByName("供水科");
             List<String> userIdListByOrgIdList = sysUserApi.getUserIdListByOrgIdList(Arrays.asList(gskOrg));
-            for(String s :userIdListByOrgIdList){
-                WebSocketServer.sendInfo(dayWaterUsePlan.getArea()+"已填报日用水计划，请查收",s);
+            if(flag){
+                for(String s :userIdListByOrgIdList){
+                    WebSocketServer.sendInfo(dayWaterUsePlan.getArea()+"已填报日用水计划，请查收",s);
+                }
             }
             return RestResponse.ok("更新成功");
         }else {

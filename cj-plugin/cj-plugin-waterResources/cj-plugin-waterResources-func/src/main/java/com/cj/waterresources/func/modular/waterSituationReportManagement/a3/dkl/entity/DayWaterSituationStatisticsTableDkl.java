@@ -21,7 +21,7 @@ public class DayWaterSituationStatisticsTableDkl extends Model<DayWaterSituation
     //主键ID
     private String id;
     //记录日期
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private Date recordTime;
     //时刻
     private String time;

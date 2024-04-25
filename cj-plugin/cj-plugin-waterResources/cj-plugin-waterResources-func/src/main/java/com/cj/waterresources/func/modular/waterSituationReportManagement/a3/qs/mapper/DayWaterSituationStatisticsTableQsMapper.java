@@ -3,10 +3,7 @@ package com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req.A3StatisticsReq;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.res.A3StatisticsRes;
-import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hd.entity.DayWaterSituationStatisticsTableHd;
-import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.entity.DayWaterSituationStatisticsTableLzz;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.entity.DayWaterSituationStatisticsTableQs;
-import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.entity.DayWaterSituationStatisticsTableQsLh;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -53,5 +50,10 @@ public interface DayWaterSituationStatisticsTableQsMapper extends BaseMapper<Day
 
     @Select("select ID,RECORD_TIME,TIME,TABLE_HEAD_ID,V,END_TABLE_LIST from DAY_WATER_SITUATION_STATISTICS_TABLE_QS WHERE RECORD_TIME = #{recordTime}  and TIME = '18:00'")
     List<DayWaterSituationStatisticsTableQs> selectForApproval(@Param("recordTime")String recordTime);
+
+    List<DayWaterSituationStatisticsTableQs> selectListByTime(@Param("waterLevelIds")List<String> waterLevelIds, @Param("startTime")String startTime, @Param("endTime")String endTime);
+
+    @Select("select END_TABLE_LIST from DAY_WATER_SITUATION_STATISTICS_TABLE_QS WHERE RECORD_TIME = #{time}  and TIME = '08:00' order by time desc limit 1")
+    String selectEndTableList(@Param("time")String time);
 }
 

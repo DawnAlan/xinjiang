@@ -51,7 +51,7 @@ public class LzzTask {
     private Date calculateTime(Date time,int hour){
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(time);
-        calendar.add(Calendar.HOUR,hour);
+        calendar.add(Calendar.DATE,hour);
         Date date = calendar.getTime();
         return date;
     }

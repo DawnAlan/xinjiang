@@ -5,15 +5,14 @@ import com.cj.business.log.modular.log.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.cj.fourPredictions.func.modular.flood.video.bean.dto.GetRegionsDto;
 import com.cj.fourPredictions.func.modular.flood.video.bean.dto.RegionIndexCodeDto;
+import com.cj.fourPredictions.func.modular.flood.video.bean.vo.PtzVo;
+import com.cj.fourPredictions.func.modular.flood.video.bean.vo.SelZoomVo;
 import com.cj.fourPredictions.func.modular.flood.video.service.ArtemisPost;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 
@@ -70,12 +69,25 @@ public class VideoController {
         }
     }
 
-    @ApiOperation(value="防洪兴利-视频监控分页禁获取监控点资源", notes="分页禁获取监控点资源")
-    @CommonLog(value = "防洪兴利-视频监控分页禁获取监控点资源")
-    @GetMapping(value = "/getCameras")
-    public RestResponse getCameras(@RequestParam("pageNo")String pageNo,@RequestParam("pageSize")String pageSize){
+    @ApiOperation(value="防洪兴利-云台", notes="云台")
+    @CommonLog(value = "防洪兴利-云台")
+    @PostMapping(value = "/ptz")
+    public RestResponse ptz(@RequestBody PtzVo vo){
         try {
-            String regions = artemisPost.get_cameras(pageNo, pageSize);
+            String regions = artemisPost.ptz(vo);
+            return RestResponse.ok(regions);
+        }catch (Exception e){
+            e.printStackTrace();
+            return RestResponse.no("错误");
+        }
+    }
+
+    @ApiOperation(value="防洪兴利-根据监控点编号进行3D放大", notes="根据监控点编号进行3D放大")
+    @CommonLog(value = "防洪兴利-根据监控点编号进行3D放大")
+    @PostMapping(value = "/selZoom")
+    public RestResponse selZoom(@RequestBody SelZoomVo vo ){
+        try {
+            String regions = artemisPost.selZoom(vo);
             return RestResponse.ok(regions);
         }catch (Exception e){
             e.printStackTrace();

@@ -2,6 +2,7 @@ package com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.cj.common.model.RestResponse;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.bean.req.selectListFlowReq;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.entity.DayWaterSituationStatisticsTableQs;
 
 import java.util.List;
@@ -24,6 +25,8 @@ public interface DayWaterSituationStatisticsTableQsService extends IService<DayW
     RestResponse update(List<DayWaterSituationStatisticsTableQs> dayWaterSituationStatisticsTableQsList);
 
     RestResponse insertTodayMeanValue();
+
+    RestResponse selectListFlow(selectListFlowReq req);
 
 }
 

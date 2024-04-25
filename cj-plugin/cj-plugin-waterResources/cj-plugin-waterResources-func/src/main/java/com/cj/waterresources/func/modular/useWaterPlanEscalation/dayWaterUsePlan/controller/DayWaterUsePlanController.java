@@ -46,8 +46,8 @@ public class DayWaterUsePlanController {
     @ApiOperation("日用水计划模块修改")
     @CommonLog(value = "日用水计划模块修改")
     @PostMapping("/update")
-    public RestResponse update(@RequestBody DayWaterUsePlan dayWaterUsePlan) {
-        return dayWaterUsePlanService.update(dayWaterUsePlan);
+    public RestResponse update(@RequestBody DayWaterUsePlan dayWaterUsePlan,@RequestParam(value = "flag") Boolean flag) {
+        return dayWaterUsePlanService.update(dayWaterUsePlan,flag);
     }
 
     @ApiOperationSupport(order = 4)

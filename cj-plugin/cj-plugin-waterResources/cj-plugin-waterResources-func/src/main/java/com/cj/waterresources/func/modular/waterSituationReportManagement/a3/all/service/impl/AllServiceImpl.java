@@ -776,8 +776,9 @@ public class AllServiceImpl implements AllService {
         }
         List<TrendsTableParam> trendsTableParamList = JSONObject.parseArray(mk, TrendsTableParam.class);
         if(saBaseLoginUser.getOrgName().equals("河东管理站")){
-            List<TrendsTableParam> hdTableParam = trendsTableParamList.stream().filter(t -> t.getUseType() == 1 && t.getUseStation().equals("河东管理站")).collect(Collectors.toList());
-            List<DayWaterSituationStatisticsTableHd> dayWaterSituationStatisticsTableHds = dayWaterSituationStatisticsTableHdMapper.selectListForTodayWaterSituation(date, hdTableParam.size());
+            String hd = dayWaterSituationStatisticsTableHdMapper.selectEndTableList(date);
+            Integer hdSize = hd.split(",").length;
+            List<DayWaterSituationStatisticsTableHd> dayWaterSituationStatisticsTableHds = dayWaterSituationStatisticsTableHdMapper.selectListForTodayWaterSituation(date, hdSize);
             if(dayWaterSituationStatisticsTableHds.isEmpty()){
                 return RestResponse.no("河东管理站今日暂无数据，请到A3水情日报表填写相关信息后再查询");
             }
@@ -800,8 +801,9 @@ public class AllServiceImpl implements AllService {
             return RestResponse.ok(resMap);
         }
         if(saBaseLoginUser.getOrgName().equals("河西管理站")){
-            List<TrendsTableParam> hxTableParam = trendsTableParamList.stream().filter(t -> t.getUseType() == 1 && t.getUseStation().equals("河西管理站")).collect(Collectors.toList());
-            List<DayWaterSituationStatisticsTableHx> dayWaterSituationStatisticsTableHxs = dayWaterSituationStatisticsTableHxMapper.selectListForTodayWaterSituation(date, hxTableParam.size());
+            String hx = dayWaterSituationStatisticsTableHxMapper.selectEndTableList(date);
+            Integer hxSize = hx.split(",").length;
+            List<DayWaterSituationStatisticsTableHx> dayWaterSituationStatisticsTableHxs = dayWaterSituationStatisticsTableHxMapper.selectListForTodayWaterSituation(date, hxSize);
             if(dayWaterSituationStatisticsTableHxs.isEmpty()){
                 return RestResponse.no("河西管理站今日暂无数据，请到A3水情日报表填写相关信息后再查询");
             }
@@ -824,8 +826,9 @@ public class AllServiceImpl implements AllService {
             return RestResponse.ok(resMap);
         }
         if(saBaseLoginUser.getOrgName().equals("渠首管理站")){
-            List<TrendsTableParam> qsTableParam = trendsTableParamList.stream().filter(t -> t.getUseType() == 1 && t.getUseStation().equals("渠首管理站")).collect(Collectors.toList());
-            List<DayWaterSituationStatisticsTableQs> dayWaterSituationStatisticsTableQss = dayWaterSituationStatisticsTableQsMapper.selectListForTodayWaterSituation(date, qsTableParam.size());
+            String qs = dayWaterSituationStatisticsTableQsMapper.selectEndTableList(date);
+            Integer qsSize = qs.split(",").length;
+            List<DayWaterSituationStatisticsTableQs> dayWaterSituationStatisticsTableQss = dayWaterSituationStatisticsTableQsMapper.selectListForTodayWaterSituation(date, qsSize);
             if(dayWaterSituationStatisticsTableQss.isEmpty()){
                 return RestResponse.no("渠首管理站今日暂无数据，请到A3水情日报表填写相关信息后再查询");
             }
@@ -848,8 +851,9 @@ public class AllServiceImpl implements AllService {
             return RestResponse.ok(resMap);
         }
         if(saBaseLoginUser.getOrgName().equals("头屯河水库")){
-            List<TrendsTableParam> tthTableParam = trendsTableParamList.stream().filter(t -> t.getUseType() == 1 && t.getUseStation().equals("头屯河水库")).collect(Collectors.toList());
-            List<DayWaterSituationStatisticsTableTth> dayWaterSituationStatisticsTableTths = dayWaterSituationStatisticsTableTthMapper.selectListForTodayWaterSituation(date, tthTableParam.size());
+            String tth = dayWaterSituationStatisticsTableTthMapper.selectEndTableList(date);
+            Integer tthSize = tth.split(",").length;
+            List<DayWaterSituationStatisticsTableTth> dayWaterSituationStatisticsTableTths = dayWaterSituationStatisticsTableTthMapper.selectListForTodayWaterSituation(date, tthSize);
             if(dayWaterSituationStatisticsTableTths.isEmpty()){
                 return RestResponse.no("头屯河水库今日暂无数据，请到A3水情日报表填写相关信息后再查询");
             }
@@ -872,8 +876,9 @@ public class AllServiceImpl implements AllService {
             return RestResponse.ok(resMap);
         }
         if(saBaseLoginUser.getOrgName().equals("楼庄子水库")){
-            List<TrendsTableParam> lzzTableParam = trendsTableParamList.stream().filter(t -> t.getUseType() == 1 && t.getUseStation().equals("楼庄子水库")).collect(Collectors.toList());
-            List<DayWaterSituationStatisticsTableLzz> dayWaterSituationStatisticsTableLzzs = dayWaterSituationStatisticsTableLzzMapper.selectListForTodayWaterSituation(date, lzzTableParam.size());
+            String lzz = dayWaterSituationStatisticsTableLzzMapper.selectEndTableList(date);
+            Integer lzzSize = lzz.split(",").length;
+            List<DayWaterSituationStatisticsTableLzz> dayWaterSituationStatisticsTableLzzs = dayWaterSituationStatisticsTableLzzMapper.selectListForTodayWaterSituation(date,lzzSize);
             if(dayWaterSituationStatisticsTableLzzs.isEmpty()){
                 return RestResponse.no("头屯河水库今日暂无数据，请到A3水情日报表填写相关信息后再查询");
             }
@@ -895,7 +900,7 @@ public class AllServiceImpl implements AllService {
             resMap.put("楼庄子",resList);
             return RestResponse.ok(resMap);
         }
-        Map<String, List<TodayWaterSituationRes>> stringListMap = allData(trendsTableParamList, date);
+        Map<String, List<TodayWaterSituationRes>> stringListMap = allData(date);
         if(stringListMap !=null){
             return RestResponse.ok(stringListMap);
         }else {
@@ -1504,15 +1509,16 @@ public class AllServiceImpl implements AllService {
         }
     }
 
-    private Map<String,List<TodayWaterSituationRes>> allData(List<TrendsTableParam> trendsTableParamList,String date){
+    private Map<String,List<TodayWaterSituationRes>> allData(String date){
         Map<String,List<TodayWaterSituationRes>> resMap = new LinkedHashMap<>();
         List<TodayWaterSituationRes> hdList = new ArrayList<>();
         List<TodayWaterSituationRes> hxList = new ArrayList<>();
         List<TodayWaterSituationRes> qsList = new ArrayList<>();
         List<TodayWaterSituationRes> tthList = new ArrayList<>();
         List<TodayWaterSituationRes> lzzList = new ArrayList<>();
-        List<TrendsTableParam> lzzTableParam = trendsTableParamList.stream().filter(t -> t.getUseType() == 1 && t.getUseStation().equals("楼庄子水库")).collect(Collectors.toList());
-        List<DayWaterSituationStatisticsTableLzz> dayWaterSituationStatisticsTableLzzs = dayWaterSituationStatisticsTableLzzMapper.selectListForTodayWaterSituation(date, lzzTableParam.size());
+        String lzz = dayWaterSituationStatisticsTableLzzMapper.selectEndTableList(date);
+        Integer lzzSize = lzz.split(",").length;
+        List<DayWaterSituationStatisticsTableLzz> dayWaterSituationStatisticsTableLzzs = dayWaterSituationStatisticsTableLzzMapper.selectListForTodayWaterSituation(date,lzzSize);
         if(dayWaterSituationStatisticsTableLzzs.isEmpty()){
             resMap.put("楼庄子",null);
         }else {
@@ -1533,8 +1539,9 @@ public class AllServiceImpl implements AllService {
             }
             resMap.put("楼庄子",lzzList);
         }
-        List<TrendsTableParam> tthTableParam = trendsTableParamList.stream().filter(t -> t.getUseType() == 1 && t.getUseStation().equals("头屯河水库")).collect(Collectors.toList());
-        List<DayWaterSituationStatisticsTableTth> dayWaterSituationStatisticsTableTths = dayWaterSituationStatisticsTableTthMapper.selectListForTodayWaterSituation(date, tthTableParam.size());
+        String tth = dayWaterSituationStatisticsTableTthMapper.selectEndTableList(date);
+        Integer tthSize = tth.split(",").length;
+        List<DayWaterSituationStatisticsTableTth> dayWaterSituationStatisticsTableTths = dayWaterSituationStatisticsTableTthMapper.selectListForTodayWaterSituation(date, tthSize);
         if(dayWaterSituationStatisticsTableTths.isEmpty()){
             resMap.put("头屯河",null);
         }else {
@@ -1555,8 +1562,9 @@ public class AllServiceImpl implements AllService {
             }
             resMap.put("头屯河",tthList);
         }
-        List<TrendsTableParam> qsTableParam = trendsTableParamList.stream().filter(t -> t.getUseType() == 1 && t.getUseStation().equals("渠首管理站")).collect(Collectors.toList());
-        List<DayWaterSituationStatisticsTableQs> dayWaterSituationStatisticsTableQss = dayWaterSituationStatisticsTableQsMapper.selectListForTodayWaterSituation(date, qsTableParam.size());
+        String qs = dayWaterSituationStatisticsTableQsMapper.selectEndTableList(date);
+        Integer qsSize = qs.split(",").length;
+        List<DayWaterSituationStatisticsTableQs> dayWaterSituationStatisticsTableQss = dayWaterSituationStatisticsTableQsMapper.selectListForTodayWaterSituation(date, qsSize);
         if(dayWaterSituationStatisticsTableQss.isEmpty()){
             resMap.put("渠首",null);
         }else {
@@ -1577,8 +1585,9 @@ public class AllServiceImpl implements AllService {
             }
             resMap.put("渠首",qsList);
         }
-        List<TrendsTableParam> hdTableParam = trendsTableParamList.stream().filter(t -> t.getUseType() == 1 && t.getUseStation().equals("河东管理站")).collect(Collectors.toList());
-        List<DayWaterSituationStatisticsTableHd> dayWaterSituationStatisticsTableHds = dayWaterSituationStatisticsTableHdMapper.selectListForTodayWaterSituation(date, hdTableParam.size());
+        String hd = dayWaterSituationStatisticsTableHdMapper.selectEndTableList(date);
+        Integer hdSize = hd.split(",").length;
+        List<DayWaterSituationStatisticsTableHd> dayWaterSituationStatisticsTableHds = dayWaterSituationStatisticsTableHdMapper.selectListForTodayWaterSituation(date, hdSize);
         if(dayWaterSituationStatisticsTableHds.isEmpty()){
             resMap.put("河东",null);
         }else {
@@ -1599,8 +1608,9 @@ public class AllServiceImpl implements AllService {
             }
             resMap.put("河东",hdList);
         }
-        List<TrendsTableParam> hxTableParam = trendsTableParamList.stream().filter(t -> t.getUseType() == 1 && t.getUseStation().equals("河西管理站")).collect(Collectors.toList());
-        List<DayWaterSituationStatisticsTableHx> dayWaterSituationStatisticsTableHxs = dayWaterSituationStatisticsTableHxMapper.selectListForTodayWaterSituation(date, hxTableParam.size());
+        String hx = dayWaterSituationStatisticsTableHxMapper.selectEndTableList(date);
+        Integer hxSize = hx.split(",").length;
+        List<DayWaterSituationStatisticsTableHx> dayWaterSituationStatisticsTableHxs = dayWaterSituationStatisticsTableHxMapper.selectListForTodayWaterSituation(date, hxSize);
         if(dayWaterSituationStatisticsTableHxs.isEmpty()){
             resMap.put("河西",null);
         }else {

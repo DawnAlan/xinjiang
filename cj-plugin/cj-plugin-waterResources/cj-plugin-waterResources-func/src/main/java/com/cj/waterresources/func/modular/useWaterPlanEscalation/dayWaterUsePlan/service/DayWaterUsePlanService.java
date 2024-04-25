@@ -21,7 +21,7 @@ public interface DayWaterUsePlanService extends IService<DayWaterUsePlan> {
 
     RestResponse add(DayWaterUsePlan dayWaterUsePlan);
 
-    RestResponse update(DayWaterUsePlan dayWaterUsePlan);
+    RestResponse update(DayWaterUsePlan dayWaterUsePlan,Boolean flag);
 
     RestResponse<DayWaterUsePlan> select(DayWaterUsePlanSelectReq req);
 

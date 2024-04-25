@@ -49,5 +49,8 @@ public interface DayWaterSituationStatisticsTableHdMapper extends BaseMapper<Day
     @Select("select ID,RECORD_TIME,TIME,TABLE_HEAD_ID,V,END_TABLE_LIST from DAY_WATER_SITUATION_STATISTICS_TABLE_HD WHERE RECORD_TIME = #{recordTime}  and TIME = '18:00'")
     List<DayWaterSituationStatisticsTableHd> selectForApproval(@Param("recordTime")String recordTime);
 
+    @Select("select END_TABLE_LIST from DAY_WATER_SITUATION_STATISTICS_TABLE_HD WHERE RECORD_TIME = #{time}  and TIME = '08:00' order by time desc limit 1")
+    String selectEndTableList(@Param("time")String time);
+
 }
 

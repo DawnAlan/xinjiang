@@ -11,6 +11,9 @@ import com.cj.waterresources.func.modular.waterPrice.totalIdToStation.entity.Tot
 import com.cj.waterresources.func.modular.waterPrice.totalIdToStation.service.TotalIdToStationService;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.dkl.entity.DayWaterSituationStatisticsTableDkl;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.entity.DayWaterSituationStatisticsTableLzz;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.bean.req.selectListFlowReq;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.bean.res.selectListFlowRes;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.bean.vo.QsFlowListTotalVo;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.entity.DayWaterSituationStatisticsTableQsLh;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.mapper.DayWaterSituationStatisticsTableQsMapper;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.entity.DayWaterSituationStatisticsTableQs;
@@ -507,6 +510,52 @@ public class DayWaterSituationStatisticsTableQsServiceImpl extends ServiceImpl<D
             return RestResponse.no("error");
         }
     }
+
+    @Override
+    public RestResponse selectListFlow(selectListFlowReq req) {
+        selectListFlowRes res = new selectListFlowRes();
+        String thisYearStartTime = req.getEndTime().split("-")[0]+"-01-01";
+        String[] startTimeTemp = req.getStartTime().split("-");
+        String[] endTimeTemp = req.getEndTime().split("-");
+        String lastYearStartTime = String.valueOf(Integer.parseInt(startTimeTemp[0])-1)+"-"+startTimeTemp[1]+"-"+startTimeTemp[2];
+        String lastYearEndTime = String.valueOf(Integer.parseInt(endTimeTemp[0])-1)+"-"+endTimeTemp[1]+"-"+endTimeTemp[2];
+        String mk = (String) redisUtil.get("trendsTableParam:list");
+        if(StringUtils.isEmpty(mk)){
+            updateCache();
+            mk = (String) redisUtil.get("trendsTableParam:list");
+        }
+        List<TrendsTableParam> trendsTableParamListTemp = JSONObject.parseArray(mk, TrendsTableParam.class);
+        List<TrendsTableParam> trendsTableParamList = trendsTableParamListTemp.stream().filter(t -> t.getUseType() == 1 && t.getUseStation().equals("渠首管理站")).collect(Collectors.toList());
+        List<QsFlowListTotalVo>  qsFlowListTotalVoList = new ArrayList<>();
+        List<String> waterLevelIdList = trendsTableParamList.stream().filter(t -> t.getParamName().contains("水位")).map(TrendsTableParam::getId).collect(Collectors.toList());
+
+        List<DayWaterSituationStatisticsTableQs> thisTenDaysList = this.baseMapper.selectListByTime(waterLevelIdList,req.getStartTime(),req.getEndTime());
+        Map<Date, List<DayWaterSituationStatisticsTableQs>> topForTimeMap = thisTenDaysList.stream().collect(Collectors.groupingBy(DayWaterSituationStatisticsTableQs::getRecordTime));
+        Map<String, List<DayWaterSituationStatisticsTableQs>> topForTableIdMap = thisTenDaysList.stream().collect(Collectors.groupingBy(DayWaterSituationStatisticsTableQs::getTableHeadId));
+
+        List<DayWaterSituationStatisticsTableQs> thisYearList = this.baseMapper.selectListByTime(waterLevelIdList,thisYearStartTime,req.getEndTime());
+        Map<String, List<DayWaterSituationStatisticsTableQs>> thisYearMap = thisYearList.stream().collect(Collectors.groupingBy(DayWaterSituationStatisticsTableQs::getTableHeadId));
+
+        List<DayWaterSituationStatisticsTableQs> lastTenDaysList = this.baseMapper.selectListByTime(waterLevelIdList,lastYearStartTime,lastYearEndTime);
+        Map<String, List<DayWaterSituationStatisticsTableQs>> lastTenDaysMap = lastTenDaysList.stream().collect(Collectors.groupingBy(DayWaterSituationStatisticsTableQs::getTableHeadId));
+        Set<String> ids = topForTableIdMap.keySet();
+        for(String s:ids){
+            QsFlowListTotalVo vo = new QsFlowListTotalVo();
+            vo.setTableHeaderId(s);
+            Double thisTenDaysflow = topForTableIdMap.size()==0?0.00:topForTableIdMap.get(s).stream().filter(t -> t.getV() != null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00);
+            vo.setCurrentWaterFlow(thisTenDaysflow);
+            vo.setCurrentWaterVolume(thisTenDaysflow*86400);
+            Double thisYearTotalFlow = thisYearMap.size()==0?0.00:thisYearMap.get(s).stream().filter(t -> t.getV() != null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00);
+            vo.setAccumulatedWaterVolume(thisYearTotalFlow*86400);
+            Double thisYearTenDaysflow = lastTenDaysMap.size()==0?0.00:lastTenDaysMap.get(s).stream().filter(t -> t.getV() != null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00);
+            vo.setWaterVolumeDuringLastYear(thisYearTenDaysflow*86400);
+            qsFlowListTotalVoList.add(vo);
+        }
+        res.setFlowDetail(topForTimeMap);
+        res.setFlowTotal(qsFlowListTotalVoList);
+        return RestResponse.ok(res);
+    }
+
     private void updateYesterdayData(Date now,List<DayWaterSituationStatisticsTableQs> qsList){
         List<DayWaterSituationStatisticsTableQs> dayWaterSituationStatisticsTableQsList = this.baseMapper.selectInfoAfterDayList(getDate(now,1));
         if(!dayWaterSituationStatisticsTableQsList.isEmpty()){

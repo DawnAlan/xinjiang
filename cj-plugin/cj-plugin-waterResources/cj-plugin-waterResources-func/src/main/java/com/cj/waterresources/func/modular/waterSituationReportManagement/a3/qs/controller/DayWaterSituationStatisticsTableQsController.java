@@ -2,6 +2,7 @@ package com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.
 
 import com.cj.business.log.modular.log.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.bean.req.selectListFlowReq;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.entity.DayWaterSituationStatisticsTableQs;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.service.DayWaterSituationStatisticsTableQsService;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
@@ -64,5 +65,12 @@ public class DayWaterSituationStatisticsTableQsController {
         return dayWaterSituationStatisticsTableQsService.update(list);
     }
 
+    @ApiOperationSupport(order = 5)
+    @ApiOperation("渠首管理站查询流量列表")
+    @CommonLog("渠首管理站查询流量列表")
+    @PostMapping("/selectListFlow")
+    public RestResponse selectListFlow(@RequestBody selectListFlowReq req) {
+        return dayWaterSituationStatisticsTableQsService.selectListFlow(req);
+    }
 }
 

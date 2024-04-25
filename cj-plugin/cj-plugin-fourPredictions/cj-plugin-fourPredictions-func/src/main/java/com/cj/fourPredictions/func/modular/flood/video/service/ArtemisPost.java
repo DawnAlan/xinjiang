@@ -2,8 +2,11 @@ package com.cj.fourPredictions.func.modular.flood.video.service;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.cj.common.util.RestTemplateUtil;
 import com.cj.fourPredictions.func.modular.flood.video.bean.dto.GetRegionsDto;
 import com.cj.fourPredictions.func.modular.flood.video.bean.dto.RegionIndexCodeDto;
+import com.cj.fourPredictions.func.modular.flood.video.bean.vo.PtzVo;
+import com.cj.fourPredictions.func.modular.flood.video.bean.vo.SelZoomVo;
 import com.cj.fourPredictions.func.modular.flood.video.common.VideoURL;
 import com.hikvision.artemis.sdk.ArtemisHttpUtil;
 import com.hikvision.artemis.sdk.config.ArtemisConfig;
@@ -134,5 +137,48 @@ public class ArtemisPost {
         };
         return ArtemisHttpUtil.doPostStringArtemis(config,path, body, null, null, "application/json");
     }
+
+    public String ptz(PtzVo vo) throws Exception {
+        ArtemisConfig config = new ArtemisConfig();
+        config.setHost(host); // 代理API网关nginx服务器ip端口
+        config.setAppKey(appKey);  // 秘钥appkey
+        config.setAppSecret(appSecret);// 秘钥appSecret
+        final String getCamsApi = VideoURL.PTZ;
+        Map<String, Object> paramMap = new HashMap<String, Object>();// post请求Form表单参数
+        paramMap.put("cameraIndexCode", vo.getCameraIndexCode());
+        paramMap.put("action", vo.getAction());
+        paramMap.put("command", vo.getCommand());
+        paramMap.put("speed", vo.getSpeed());
+        paramMap.put("presetIndex", vo.getPresetIndex());
+        String body = JSON.toJSON(paramMap).toString();
+        Map<String, String> path = new HashMap<String, String>(2) {
+            {
+                put("https://", getCamsApi);
+            }
+        };
+        return ArtemisHttpUtil.doPostStringArtemis(config,path, body, null, null, "application/json");
+    }
+
+    public String selZoom(SelZoomVo vo) throws Exception {
+        ArtemisConfig config = new ArtemisConfig();
+        config.setHost(host); // 代理API网关nginx服务器ip端口
+        config.setAppKey(appKey);  // 秘钥appkey
+        config.setAppSecret(appSecret);// 秘钥appSecret
+        final String getCamsApi = VideoURL.SEL_ZOOM;
+        Map<String, Object> paramMap = new HashMap<String, Object>();// post请求Form表单参数
+        paramMap.put("cameraIndexCode", vo.getCameraIndexCode());
+        paramMap.put("startX", vo.getStartX());
+        paramMap.put("startY", vo.getStartY());
+        paramMap.put("endX", vo.getEndX());
+        paramMap.put("endY", vo.getEndY());
+        String body = JSON.toJSON(paramMap).toString();
+        Map<String, String> path = new HashMap<String, String>(2) {
+            {
+                put("https://", getCamsApi);
+            }
+        };
+        return ArtemisHttpUtil.doPostStringArtemis(config,path, body, null, null, "application/json");
+    }
+
 
 }

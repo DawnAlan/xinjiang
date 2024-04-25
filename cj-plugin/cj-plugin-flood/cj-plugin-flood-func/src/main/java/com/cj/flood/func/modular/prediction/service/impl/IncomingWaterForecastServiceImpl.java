@@ -566,7 +566,6 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
             }else {
                 return RestResponse.no("查无数据");
             }
-
         }catch (Exception e) {
             e.printStackTrace();
             return RestResponse.no(e.getMessage());
@@ -716,7 +715,7 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                 incomingWaterForecastViewDto.setPeakFlood(null);
                 incomingWaterForecastViewDto.setPeakVolume(null);
             }
-            List<Date> overAlarmProcess = threeBridge.stream().filter(t -> t.getWarningTime() == 1).map(Flood::getTime).collect(Collectors.toList());
+            List<Date> overAlarmProcess = threeBridge.stream().filter(t ->t.getWarningTime() != null && t.getWarningTime() == 1).map(Flood::getTime).collect(Collectors.toList());
             incomingWaterForecastViewDto.setOverAlarmProcess(overAlarmProcess);
             return incomingWaterForecastViewDto;
         }else {

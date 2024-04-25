@@ -651,8 +651,8 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
 
     @Override
     public RestResponse insertGaugingStationBetweenTime(Date startTime, Date endTime) {
-        RestResponse waterLevel = this.insertGaugingStationWaterLevelBetweenTime(startTime, endTime);
         RestResponse flow = this.insertGaugingStationFlowBetweenTime(startTime, endTime);
+        RestResponse waterLevel = this.insertGaugingStationWaterLevelBetweenTime(startTime, endTime);
         RestResponse temperature= this.insertGaugingStationTemperatureBetweenTime(startTime, endTime);
         if(waterLevel.getCode()==200 && temperature.getCode()==200 && flow.getCode()==200){
             return RestResponse.ok("ok");

@@ -565,7 +565,7 @@ public class ResourceOptimizationshort_DayTest
             waterdemand_all[n1]=waterDemand[0][n1]+waterDemand[1][n1]+waterDemand[2][n1]+waterDemand[3][n1]+waterDemand[4][n1];
             waterSupply_all[n1]=waterSupply[0][n1]+waterSupply[1][n1]+waterSupply[2][n1]+waterSupply[3][n1]+waterSupply[4][n1];
             ReservoirWaterdemand[0][n1]=waterDemand[0][n1];
-            ReservoirWaterdemand[1][n1]= waterdemand_all[n1]-waterDemand[0][n1];
+            ReservoirWaterdemand[1][n1]= waterdemand_all[n1]-waterDemand[0][n1]+ecologyWaterNeed[1][n1];
             ReservoirWatersupply[0][n1]=Double.parseDouble(da.format(watersupply_lzz[n1]+ecologyWater[0][n1]));
             ReservoirWatersupply[1][n1]=Double.parseDouble(da.format(waterSupply_all[n1]-waterSupply[0][n1]+ecologyWater[1][n1]));
         }
@@ -764,7 +764,7 @@ public class ResourceOptimizationshort_DayTest
                     inflowWater_supply[r][t]=inflowwater_toutunhe[t]-ReservoirWatersupply[r][t];
 
                 }
-
+                outflow_term[r][t]=Double.parseDouble(da1.format(outflow_term[r][t]));
             }
 
         }
@@ -895,8 +895,8 @@ public class ResourceOptimizationshort_DayTest
             double termOutflow = deltaV * 1e4 / (delatT) + inflow[0][t];//水量平衡计算
 
             double Outflowmax = FindValue.FindV2ByV1(reservoir[0].wlob_wl, reservoir[0].wlob_ob, wl_term[0][t]);
-            DecimalFormat da1=new DecimalFormat("#.00");
-            outflow_term[0][t] = Double.parseDouble(da1.format(termOutflow));
+
+            outflow_term[0][t] = termOutflow;
             //出流赋值
         }
 
@@ -927,8 +927,8 @@ public class ResourceOptimizationshort_DayTest
                 inflow_toutunhe[t]=inflow[1][t];
             }
             double Outflowmax = FindValue.FindV2ByV1(reservoir[1].wlob_wl, reservoir[1].wlob_ob, wl_term[1][t]);
-            DecimalFormat da1=new DecimalFormat("#.00");
-            outflow_term[1][t] = Double.parseDouble(da1.format(termOutflow));
+
+            outflow_term[1][t] = termOutflow;
             //出流赋值
 
         }

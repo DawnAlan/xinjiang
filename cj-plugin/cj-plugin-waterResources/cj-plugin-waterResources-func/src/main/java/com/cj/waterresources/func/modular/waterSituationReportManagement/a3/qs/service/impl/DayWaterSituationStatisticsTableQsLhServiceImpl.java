@@ -372,7 +372,7 @@ public class DayWaterSituationStatisticsTableQsLhServiceImpl extends ServiceImpl
             mk = (String) redisUtil.get("trendsTableParam:list");
         }
         List<TrendsTableParam> trendsTableParamListTemp = JSONObject.parseArray(mk, TrendsTableParam.class);
-        List<TrendsTableParam> trendsTableParamList = trendsTableParamListTemp.stream().filter(t -> t.getUseType() == 1).collect(Collectors.toList());
+        List<TrendsTableParam> trendsTableParamList = trendsTableParamListTemp.stream().filter(t -> t.getUseType() == 1 && t.getUseStation().equals("灯笼渠绿化")).collect(Collectors.toList());
         //计算行合计
         if(null != totalIdToStationList && totalIdToStationList.size()>0){
             Double total = 0.0;

@@ -18,4 +18,10 @@ public interface VideoURL {
     public static String GET_PREVIEW_URL = "/artemis/api/video/v1/cameras/previewURLs";
 
     public static String GET_CAMERAS = "/artemis/api/resource/v1/cameras";
+
+    //云台
+    public static String PTZ = "/artemis/api/video/v1/ptzs/controlling";
+
+    //根据监控点编号进行3D放大
+    public static String SEL_ZOOM = "/artemis/api/video/v1/ptzs/selZoom";
 }
