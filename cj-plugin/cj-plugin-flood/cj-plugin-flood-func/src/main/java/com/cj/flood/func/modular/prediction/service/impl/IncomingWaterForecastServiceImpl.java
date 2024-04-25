@@ -676,6 +676,7 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                 predictionProcessDto.setWaterLevel(flood.getWaterLevel());
                 predictionProcessDto.setOutQ(flood.getOutQ());
                 predictionProcessDto.setFloodVolume(flood.getFloodVolume());
+                predictionProcessDto.setRainfall(flood.getRainProcess());
                 predictionProcess.add(predictionProcessDto);
             }
             incomingWaterForecastViewDto.setPredictionProcess(predictionProcess);

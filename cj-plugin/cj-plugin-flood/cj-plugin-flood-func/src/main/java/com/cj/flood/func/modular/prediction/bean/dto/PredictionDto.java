@@ -25,4 +25,7 @@ public class PredictionDto implements Serializable {
 
     @ApiModelProperty("洪量")
     private Double floodVolume;
+
+    @ApiModelProperty(value = "降雨量")
+    private Double rainfall;
 }
