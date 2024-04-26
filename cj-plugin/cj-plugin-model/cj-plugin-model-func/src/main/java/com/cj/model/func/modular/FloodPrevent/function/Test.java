@@ -16,7 +16,7 @@ import java.util.Map;
 public class Test {
 
     public static void main(String[] args) throws Exception {
-        String dataPath = "C:\\Users\\22627\\Desktop\\1.xlsx";
+        String dataPath = "C:\\Users\\22627\\Desktop\\典型洪水.xlsx";
         String curvePath = "C:\\Users\\22627\\Desktop\\曲线表.xlsx";
 
         ReqFloodPrevent reqFloodPrevent = new ReqFloodPrevent();

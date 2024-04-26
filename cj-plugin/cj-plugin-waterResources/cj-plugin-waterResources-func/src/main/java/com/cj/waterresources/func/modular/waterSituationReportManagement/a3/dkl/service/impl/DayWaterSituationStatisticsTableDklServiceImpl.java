@@ -348,10 +348,11 @@ public class DayWaterSituationStatisticsTableDklServiceImpl extends ServiceImpl<
     }
 
     @Override
-    public RestResponse insertTodayMeanValue() {
-        List<DayWaterSituationStatisticsTableDkl> dayWaterSituationStatisticsTableDkls = this.baseMapper.selectList(sdf.format(new Date()));
+    public RestResponse insertTodayMeanValue(Date date) {
+        List<DayWaterSituationStatisticsTableDkl> dayWaterSituationStatisticsTableDkls = this.baseMapper.selectList(sdf.format(date));
         List<DayWaterSituationStatisticsTableDkl> todayData = dayWaterSituationStatisticsTableDkls.stream().filter(t -> t.getTime().equals("今日均")).collect(Collectors.toList());
         if(!todayData.isEmpty()){
+            log.warn("对口率今日均数据已创建");
             return RestResponse.no("今日均数据已创建");
         }
         List<DayWaterSituationStatisticsTableDkl> dayWaterSituationStatisticsTableDklList = new ArrayList<>();
@@ -365,7 +366,7 @@ public class DayWaterSituationStatisticsTableDklServiceImpl extends ServiceImpl<
                 dkl.setV(null);
                 dkl.setTime("今日均");
                 try {
-                    dkl.setRecordTime(sdf.parse(sdf.format(new Date())));
+                    dkl.setRecordTime(sdf.parse(sdf.format(date)));
                 } catch (ParseException e) {
                     throw new RuntimeException(e);
                 }

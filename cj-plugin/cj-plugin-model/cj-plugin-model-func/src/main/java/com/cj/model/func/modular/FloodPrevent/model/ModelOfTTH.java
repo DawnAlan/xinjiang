@@ -2,6 +2,7 @@ package com.cj.model.func.modular.FloodPrevent.model;
 
 
 
+import com.cj.model.func.modular.FloodPredict.utils.TimeUtils;
 import com.cj.model.func.modular.FloodPrevent.entity.DataFloodPrevent;
 import com.cj.model.func.modular.FloodPrevent.bean.req.ReqFloodPrevent;
 import com.cj.model.func.modular.FloodPrevent.entity.CurveParam;
@@ -69,7 +70,10 @@ public class ModelOfTTH {
             }
 
         }
-        H_begin=988;
+
+        TimeUtils timeUtils = new TimeUtils();
+        int month = timeUtils.getSpecificDate((Date) pre[0][0]).get("月");
+        H_begin = month == 7 ? 987 : 988;
         T_Delta=delta;
 
         LV_Curve=new double[][]{{   955,   956,   957,   958,   959,   960,   961,   962,   963,   964,   966,   968,   970,   972,   974,   976,   978,   980,   982,   984,   986,   988,   990,   992,   },
@@ -393,19 +397,18 @@ public class ModelOfTTH {
         double Retain;
         double p1;
         double p2;
-
         double[] Limit;
 
-
-
         double decline=H_begin;
-
         List<List<Option>> all = new ArrayList<>();
         while (decline>=DeadLevel){
-            List<Option> options = new ArrayList<>();
+            //判断是否达成最低水位
             boolean judge=false;
+            List<Option> options = new ArrayList<>();
             for (int i = 0; i < Time.size(); i++) {
+                //获取当前时段时间、入库、生态流量、初水位等参数
                 time=Time.get(i);
+                UpdateLimitLevel(time);
                 Q_in=Q_Input.get(i);
                 Q_eco=MinQ.get(i);
                 if(i==0){
@@ -419,30 +422,40 @@ public class ModelOfTTH {
                 option.setQIn(Q_in);
                 option.setH1(H1);
                 option.setTime(Time.get(i));
-                UpdateLimitLevel(time);
+
                 //泄流能力限制
                 Limit =H_LimitFront(H1,Q_in,Q_eco);
                 //水位变化速率限制
                 double[] H_delta = new double[2];
                 H_delta[0] = H1- (double) T_Delta /3600/24*2;
                 H_delta[1] = H1+ (double) T_Delta /3600/24*2;
-                //计算本时段末水位、流量
+
+                //达到最低水位之前，尽力泄流
                 if(!judge){
                     H2 = Math.max(Math.max(Limit[0],H_delta[0]),decline);
                     Q_out=OnceBalance2(H1,Q_in,H2);
-                    if(H2==decline){
+                    if(H2<=decline){
                         judge=true;
                     }
                 }
+                //达到最低水位之后
                 else{
-                    Q_out=FlexibleCalculate(H1,Q_in,Q_eco)[0];
-                    H2=OnceBalance1(H1,Q_in,Q_out);
+                    //水位未达到汛限水位，维持低水位
+                    if(H1<=LimitLevel){
+                        double Q_max=MaxQ_out(H1,Q_in);
+                        Q_out=Math.min(Q_in,Q_max);
+                        H2=OnceBalance1(H1,Q_in,Q_out);
+                    }
+                    //水位超过汛限水位，按灵活调度进行
+                    else {
+                        Q_out=FlexibleCalculate(H1,Q_in,Q_eco)[0];
+                        H2=OnceBalance1(H1,Q_in,Q_out);
+                    }
                 }
                 option.setH2(H2);
                 option.setQOut(Q_out);
                 options.add(option);
             }
-
             all.add(options);
             decline=decline-0.1;
         }
@@ -484,8 +497,6 @@ public class ModelOfTTH {
             option.setLimits(limits);
         }
 
-
-
         return all.get(num);
     }
 
@@ -505,20 +516,27 @@ public class ModelOfTTH {
 
         //最大下泄能力
         double MaxQ;
-        if(Q_Input>=590||level>=ProofLevel){
+        if(Q_Input>=590){
             MaxQ=GetQ1(level)+GetQ2(level)+GetQ3(level);
         }
-        else if(Q_Input>=120){
-            if(level>=HeightLevel){
+        else{
+            if(level>=DesignLevel){
                 MaxQ=GetQ1(level)+GetQ2(level)+GetQ3(level);
             }
-            else{
-                MaxQ=GetQ1(level)+GetQ2(level);
+            else if(level>=HeightLevel){
+                if(Q_Input>=120){
+                    MaxQ=Math.min(Q_Input,GetQ1(level)+GetQ2(level)+GetQ3(level));
+                }
+                else {
+                    MaxQ=Math.min(120,GetQ1(level)+GetQ2(level)+GetQ3(level));
+                }
+            }
+            else if(level>=LimitLevel){
                 MaxQ=Math.min(GetQ1(level)+GetQ2(level),120);
             }
-        }
-        else{
-            MaxQ=Math.min(GetQ1(level),120);
+            else{
+                MaxQ=Math.min(GetQ1(level),120);
+            }
         }
 
         //恢复至汛限水位所需下泄流量
@@ -549,12 +567,26 @@ public class ModelOfTTH {
 
         //最大下泄能力
         double MaxQ;
-        if(Q_Input>=590||level>=HeightLevel){
+        if(Q_Input>=590){
             MaxQ=GetQ1(level)+GetQ2(level)+GetQ3(level);
         }
         else{
-            MaxQ=Math.min(GetQ1(level)+GetQ2(level)+GetQ3(level),120);
+            if(level>=DesignLevel){
+                MaxQ=GetQ1(level)+GetQ2(level)+GetQ3(level);
+            }
+            else if(level>=HeightLevel){
+                if(Q_Input>=120){
+                    MaxQ=Math.min(Q_Input,GetQ1(level)+GetQ2(level)+GetQ3(level));
+                }
+                else{
+                    MaxQ=Math.min(GetQ1(level)+GetQ2(level)+GetQ3(level),120);
+                }
+            }
+            else{
+                MaxQ=Math.min(GetQ1(level)+GetQ2(level)+GetQ3(level),120);
+            }
         }
+
 
         //恢复至汛限水位所需下泄流量
         double Q_limit=(GetV(level)-LimitVolume)*coefficient/T_Delta+Q_Input;
@@ -881,19 +913,28 @@ public class ModelOfTTH {
      * 计算目标函数
      */
     public double Value(List<Option> options){
-        double delta;
-        double over;
         double value;
         int min = MinLevel(options);
         int max = MaxLevel(options);
+        double maxLevel=options.get(max).getH2();
+        double minLevel=options.get(min).getH2();
 
-        delta=options.get(max).getH2()-options.get(min).getH2();
-        over=Math.max(0,options.get(max).getH2()-LimitLevel);
-        value=delta+10*over;
+        double over=maxLevel-LimitLevel;
+        double delta=maxLevel-minLevel;
+        value=100*Step*delta+over;
+
+        if(maxLevel>=ProofLevel){
+            value=value+1000000*(maxLevel-ProofLevel);
+        }
+        else if(maxLevel>=DesignLevel){
+            value=value+10000*(maxLevel-DesignLevel);
+        }
+        else if(maxLevel<LimitLevel){
+            value=value+100*(LimitLevel-maxLevel);
+        }
 
         return value;
     }
-
     /**
      * 设定入库流量
      */

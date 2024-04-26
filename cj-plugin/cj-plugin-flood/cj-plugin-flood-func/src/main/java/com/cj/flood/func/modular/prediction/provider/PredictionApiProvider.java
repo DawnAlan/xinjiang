@@ -82,7 +82,7 @@ public class PredictionApiProvider implements PredictionApi {
 
     @Override
     public String getProgrammeList() {
-        List<IncomingWaterForecast> list = incomingWaterForecastService.lambdaQuery().eq(IncomingWaterForecast::getModelType,3).list();
+        List<IncomingWaterForecast> list = incomingWaterForecastService.lambdaQuery().eq(IncomingWaterForecast::getModelType,3).orderByDesc(IncomingWaterForecast::getCreateTime).list();
         if(null != list && list.size() > 0) {
             return JSONObject.toJSONString(list);
         }

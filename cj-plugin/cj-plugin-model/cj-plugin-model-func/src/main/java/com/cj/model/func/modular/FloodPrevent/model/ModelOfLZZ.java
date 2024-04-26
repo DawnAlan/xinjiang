@@ -251,7 +251,7 @@ public class ModelOfLZZ {
             Q_out=Q[0];
             Q_1=Q[1];
             Q_2=Q[2];
-            Q_3=0;
+            Q_3=Q[3];
             endH=OnceBalance1(beginH,Q_in,Q_out);
             V=GetV(endH);
             retain=Math.max(0,V-GetV(H_begin));
@@ -312,7 +312,7 @@ public class ModelOfLZZ {
             Q_out=Q[0];
             Q_1=Q[1];
             Q_2=Q[2];
-            Q_3=0;
+            Q_3=Q[3];
             endH=OnceBalance1(beginH,Q_in,Q_out);
             V=GetV(endH);
             retain=Math.max(0,V-GetV(H_begin));
@@ -361,15 +361,14 @@ public class ModelOfLZZ {
         double p2;
         double[] Limit;
 
-
-
         double decline=H_begin;
-
         List<List<Option>> all = new ArrayList<>();
         while (decline>=DeadLevel){
-            List<Option> options = new ArrayList<>();
+            //判断是否达成最低水位
             boolean judge=false;
+            List<Option> options = new ArrayList<>();
             for (int i = 0; i < Time.size(); i++) {
+                //获取当前时段时间、入库、生态流量、初水位等参数
                 time=Time.get(i);
                 UpdateLimitLevel(time);
                 Q_in=Q_Input.get(i);
@@ -392,7 +391,8 @@ public class ModelOfLZZ {
                 double[] H_delta = new double[2];
                 H_delta[0] = H1- (double) T_Delta /3600/24*2;
                 H_delta[1] = H1+ (double) T_Delta /3600/24*2;
-                //计算本时段末水位、流量
+
+                //达到最低水位之前，尽力泄流
                 if(!judge){
                     H2 = Math.max(Math.max(Limit[0],H_delta[0]),decline);
                     Q_out=OnceBalance2(H1,Q_in,H2);
@@ -400,15 +400,24 @@ public class ModelOfLZZ {
                         judge=true;
                     }
                 }
+                //达到最低水位之后
                 else{
-                    Q_out=FlexibleCalculate(H1,Q_in,Q_eco)[0];
-                    H2=OnceBalance1(H1,Q_in,Q_out);
+                    //水位未达到汛限水位，维持低水位
+                    if(H1<=LimitLevel){
+                        double Q_max=MaxQ_out(H1,Q_in);
+                        Q_out=Math.min(Q_in,Q_max);
+                        H2=OnceBalance1(H1,Q_in,Q_out);
+                    }
+                    //水位超过汛限水位，按灵活调度进行
+                    else {
+                        Q_out=FlexibleCalculate(H1,Q_in,Q_eco)[0];
+                        H2=OnceBalance1(H1,Q_in,Q_out);
+                    }
                 }
                 option.setH2(H2);
                 option.setQOut(Q_out);
                 options.add(option);
             }
-
             all.add(options);
             decline=decline-0.1;
         }
@@ -428,9 +437,9 @@ public class ModelOfLZZ {
             H1=option.getH1();
             H2=option.getH2();
             Q_out= option.getQOut();
-            Q1=Math.min(Q_out,GetQ1((H1+H2)/2));
-            Q2=Q_out-Q1;
-            Q3=0;
+            Q3=Math.min(14,Q_out);
+            Q1=Math.min(Q_out-Q3,GetQ1(H1));
+            Q2=Q_out-Q1-Q3;
             V=GetV(H2);
             Retain=Math.max(0,V-GetV(H_begin));
             p1=getPercentage_lzz(V)[0];
@@ -464,14 +473,16 @@ public class ModelOfLZZ {
         //最大下泄能力
         double MaxQ;
         if(Q_Input<=750){
-            if(level>=1397.41){
+            if(level>=DesignLevel){
                 MaxQ=GetQ1(level)+GetQ2(level);
             }
-            else if (level>=1397.21) {
-                MaxQ=Math.min(GetQ1(level)+GetQ2(level),125);
-            }
-            else if (level>=1394.5) {
-                MaxQ=Math.min(GetQ1(level),125);
+            else if (level>=HeightLevel) {
+                if(Q_Input>=125){
+                    MaxQ=Math.min(GetQ1(level)+GetQ2(level),Q_Input);
+                }
+                else{
+                    MaxQ=Math.min(GetQ1(level)+GetQ2(level),125);
+                }
             }
             else{
                 MaxQ=Math.min(GetQ1(level),125);
@@ -485,17 +496,15 @@ public class ModelOfLZZ {
 
         if(MinQ<=Q_limit&&Q_limit<=MaxQ){
             Q[0]=Q_limit;
-            Q[1]=Math.min(Q[0],GetQ1(level));
         }
         else if(Q_limit<=MinQ){
             Q[0]=MinQ;
-            Q[1]=MinQ;
         }else{
             Q[0]=MaxQ;
-            Q[1]=GetQ1(level);
         }
-        Q[2]=Q[0]-Q[1];
-        Q[3]=0;
+        Q[1]=Math.min(Q[0],GetQ1(level));
+        Q[2]=Math.min(Q[0]-Q[1],GetQ2(level));
+        Q[3]=Q[0]-Q[1]-Q[2];
         return Q;
     }
     /**
@@ -507,8 +516,17 @@ public class ModelOfLZZ {
         //最大下泄能力
         double MaxQ;
         if(Q_Input<=750){
-            if (level>=HeightLevel) {
+            if(level>=DesignLevel){
                 MaxQ=GetQ1(level)+GetQ2(level);
+            }
+            else if (level>=HeightLevel) {
+                if(Q_Input>=125){
+                    MaxQ=Math.min(GetQ1(level)+GetQ2(level),Q_Input);
+                }
+                else{
+                    MaxQ=Math.min(GetQ1(level)+GetQ2(level),125);
+                }
+
             }
             else{
                 MaxQ=Math.min(GetQ1(level)+GetQ2(level),125);
@@ -522,17 +540,15 @@ public class ModelOfLZZ {
 
         if(MinQ<=Q_limit&&Q_limit<=MaxQ){
             Q[0]=Q_limit;
-            Q[1]=Math.min(Q[0],GetQ1(level));
         }
         else if(Q_limit<=MinQ){
             Q[0]=MinQ;
-            Q[1]=MinQ;
         }else{
             Q[0]=MaxQ;
-            Q[1]=GetQ1(level);
         }
-        Q[2]=Q[0]-Q[1];
-        Q[3]=0;
+        Q[1]=Math.min(Q[0],GetQ1(level));
+        Q[2]=Math.min(Q[0]-Q[1],GetQ2(level));
+        Q[3]=Q[0]-Q[1]-Q[2];
         return Q;
     }
     /**
@@ -793,15 +809,25 @@ public class ModelOfLZZ {
      * 计算目标函数
      */
     public double Value(List<Option> options){
-        double delta;
-        double over;
         double value;
         int min = MinLevel(options);
         int max = MaxLevel(options);
+        double maxLevel=options.get(max).getH2();
+        double minLevel=options.get(min).getH2();
 
-        delta=options.get(max).getH2()-options.get(min).getH2();
-        over=Math.max(0,options.get(max).getH2()-LimitLevel);
-        value=delta+10*over;
+        double over=maxLevel-LimitLevel;
+        double delta=maxLevel-minLevel;
+        value=100*Step*delta+over;
+
+        if(maxLevel>=ProofLevel){
+            value=value+1000000*(maxLevel-ProofLevel);
+        }
+        else if(maxLevel>=DesignLevel){
+            value=value+10000*(maxLevel-DesignLevel);
+        }
+        else if(maxLevel<LimitLevel){
+            value=value+100*(LimitLevel-maxLevel);
+        }
 
         return value;
     }

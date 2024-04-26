@@ -29,7 +29,7 @@ public class Params {
 	public double shiftError = 0.001;
 	
 	public int[] dnnNet = {inputLayerNum, 30, outputLayerNum};
-	
+
 	public int[] elmanNet = {inputLayerNum, 10,10, outputLayerNum};
 	
 	public double rate = 0.1;
@@ -62,18 +62,17 @@ public class Params {
 	
 	public void paramSet(ForecastInputParam forecastInputParam) {
 
-		Params params = new Params();
-		
+
 		if(forecastInputParam.getNetClass().equals("Elman神经网络")){
 			if (forecastInputParam.getERROR() != 0) {
-				params.epsilon = forecastInputParam.getERROR();
+				epsilon = forecastInputParam.getERROR();
 			}
 
 			if (forecastInputParam.getTrainNum() != 0) {
-				params.TRAINING_REPS = forecastInputParam.getTrainNum();
+				TRAINING_REPS = forecastInputParam.getTrainNum();
 			}
 			if (forecastInputParam.getMaxRate() != 0) {
-				params.LEARN_RATE = forecastInputParam.getMaxRate();
+				LEARN_RATE = forecastInputParam.getMaxRate();
 			}
 		}
 		
@@ -83,58 +82,59 @@ public class Params {
 			for(int i = 0; i < layer.length; i++){
 				layers[i] = Integer.parseInt(layer[i]);
 			}
-			params.hiddenLayerNum = layers[1];
-			params.outputLayerNum = layers[layers.length-1];
-			params.dnnNet = layers;
-			params.elmanNet = layers;
+			hiddenLayerNum = layers[1];
+			outputLayerNum = layers[layers.length-1];
+			dnnNet = layers;
+			elmanNet = layers;
+
 		}
 		
 		if(forecastInputParam.getInputIndex() != null){
-			params.inputLayerNum = forecastInputParam.getInputIndex().length;
-			params.dnnNet[0] = forecastInputParam.getInputIndex().length;
+			inputLayerNum = forecastInputParam.getInputIndex().length;
+			dnnNet[0] = forecastInputParam.getInputIndex().length;
 		}
 
 		if(forecastInputParam.getClusterMethod() != null && !forecastInputParam.getClusterMethod().equals("")){
-			params.cluster = forecastInputParam.getClusterMethod();
+			cluster = forecastInputParam.getClusterMethod();
 		}
 		
 		if (forecastInputParam.getERROR() != 0) {
-			params.ERROR = forecastInputParam.getERROR();
+			ERROR = forecastInputParam.getERROR();
 		}
 
 		if (forecastInputParam.getTrainNum() != 0) {
-			params.trainNum = forecastInputParam.getTrainNum();
+			trainNum = forecastInputParam.getTrainNum();
 		}
 		if (forecastInputParam.getWidth() != 0) {
-			params.width = forecastInputParam.getWidth();
+			width = forecastInputParam.getWidth();
 		}
 		if (forecastInputParam.getShiftError() != 0) {
-			params.shiftError = forecastInputParam.getShiftError();
+			shiftError = forecastInputParam.getShiftError();
 		}
 		if (forecastInputParam.getRate() != 0) {
-			params.rate = forecastInputParam.getRate();
+			rate = forecastInputParam.getRate();
 		}
 		if (forecastInputParam.getMobp() != 0) {
-			params.mobp = forecastInputParam.getMobp();
+			mobp = forecastInputParam.getMobp();
 		}
 		if (forecastInputParam.getMaxRate() != 0) {
-			params.maxRate = forecastInputParam.getMaxRate();
+			maxRate = forecastInputParam.getMaxRate();
 		}
 		if (forecastInputParam.getMinRate() != 0) {
-			params.minRate = forecastInputParam.getMinRate();
+			minRate = forecastInputParam.getMinRate();
 		}
 		
 		if(forecastInputParam.getMaxGamma() != 0){
-			params.maxGamma = forecastInputParam.getMaxGamma();
+			maxGamma = forecastInputParam.getMaxGamma();
 		}
 		if(forecastInputParam.getMinGamma() != 0){
-			params.minGamma = forecastInputParam.getMinGamma();
+			minGamma = forecastInputParam.getMinGamma();
 		}
 		if(forecastInputParam.getMaxC() != 0){
-			params.maxC = forecastInputParam.getMaxC();
+			maxC = forecastInputParam.getMaxC();
 		}
 		if(forecastInputParam.getMinC() != 0){
-			params.minC = forecastInputParam.getMinC();
+			minC = forecastInputParam.getMinC();
 		}
 
 	}

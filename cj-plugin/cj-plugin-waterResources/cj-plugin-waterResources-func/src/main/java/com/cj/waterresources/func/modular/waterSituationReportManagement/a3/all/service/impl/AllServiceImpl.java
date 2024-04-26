@@ -7,6 +7,7 @@ import com.cj.auth.core.util.StpLoginUserUtil;
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.RedisUtil;
 import com.cj.common.util.RestTemplateUtil;
+import com.cj.common.util.UUIDUtils;
 import com.cj.flood.api.PredictionApi;
 import com.cj.middleDatabase.func.modular.dto.RealTimeRainfallRes;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.entity.IrrigatedPlatformDataInfo;
@@ -25,7 +26,9 @@ import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.res
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req.*;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.res.*;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.service.AllService;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.dkl.entity.DayWaterSituationStatisticsTableDkl;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.dkl.mapper.DayWaterSituationStatisticsTableDklMapper;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.dkl.service.DayWaterSituationStatisticsTableDklService;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hd.entity.DayWaterSituationStatisticsTableHd;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hd.mapper.DayWaterSituationStatisticsTableHdMapper;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hd.service.DayWaterSituationStatisticsTableHdService;
@@ -51,6 +54,7 @@ import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tth.
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.zcc.mapper.DayWaterSituationStatisticsTableZccMapper;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,6 +75,7 @@ import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class AllServiceImpl implements AllService {
 
     private final DayWaterSituationStatisticsTableDklMapper dayWaterSituationStatisticsTableDklMapper;
@@ -91,12 +96,11 @@ public class AllServiceImpl implements AllService {
     private final DayWaterSituationStatisticsTableHxService dayWaterSituationStatisticsTableHxService;
     private final DayWaterSituationStatisticsTableQsService dayWaterSituationStatisticsTableQsService;
     private final DayWaterSituationStatisticsTableQsLhService dayWaterSituationStatisticsTableQsLhService;
+    private final DayWaterSituationStatisticsTableDklService dayWaterSituationStatisticsTableDklService;
     private final OverallSituationUnitMgrService overallSituationUnitMgrService;
     private final IrrigatedPlatformDataInfoMapper irrigatedPlatformDataInfoMapper;
     private final LzzGaugingStationMapper lzzGaugingStationMapper;
     private final PredictionApi predictionApi;
-    private final LzzGaugingStationService lzzGaugingStationService;
-    private final IrrigatedPlatformDataInfoService irrigatedPlatformDataInfoService;
 
 
     @Override
@@ -1065,6 +1069,219 @@ public class AllServiceImpl implements AllService {
         return RestResponse.ok();
     }
 
+    @SneakyThrows
+    @Override
+    public RestResponse updateDkl(String startTime,String endTime) {
+        String mk = (String) redisUtil.get("trendsTableParam:list");
+        if(StringUtils.isEmpty(mk)){
+            trendsTableParamService.updateCache();
+            mk = (String) redisUtil.get("trendsTableParam:list");
+        }
+        String[] start= startTime.split("-");
+        String[] end = endTime.split("-");
+        List<TrendsTableParam> trendsTableParamListTemp = JSONObject.parseArray(mk, TrendsTableParam.class);
+        List<TrendsTableParam> trendsTableParamList = trendsTableParamListTemp.stream().filter(t -> t.getUseType() == 1).collect(Collectors.toList());
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        LocalDate startDate = LocalDate.of(Integer.valueOf(start[0]), Integer.valueOf(start[1]), Integer.valueOf(start[2]));
+        LocalDate endDate = LocalDate.of(Integer.valueOf(end[0]), Integer.parseInt(end[1]),Integer.valueOf(end[2]));
+        for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
+            String dateTemp = date.toString();
+            List<DayWaterSituationStatisticsTableDkl> dayWaterSituationStatisticsTableDkls = this.dayWaterSituationStatisticsTableDklMapper.selectList(dateTemp);
+            List<DayWaterSituationStatisticsTableDkl> todayData = dayWaterSituationStatisticsTableDkls.stream().filter(t -> t.getTime().equals("今日均")).collect(Collectors.toList());
+            if(!todayData.isEmpty()){
+                //计算对口率
+                for(DayWaterSituationStatisticsTableDkl dkl:todayData){
+                    TrendsTableParam tableParam = JSONObject.parseObject((String)redisUtil.get("trendsTableParam:object:"+dkl.getTableHeadId()),TrendsTableParam.class);
+                    if(tableParam.getParamName().equals("楼庄子-头屯河")){
+                        try {
+                            List<TrendsTableParam> lzzParamList = trendsTableParamList.stream().filter(t->t.getUseStation().equals("楼庄子水库")).filter(t->t.getUseType()==1).collect(Collectors.toList());
+                            TrendsTableParam lzzCkParam = lzzParamList.stream().filter(t -> t.getPId().equals("0") &&t.getParamName().equals("出库")).collect(Collectors.toList()).get(0);
+                            TrendsTableParam lzzLlParam = lzzParamList.stream().filter(t -> t.getPId().equals(lzzCkParam.getId())).filter(t -> t.getParamName().equals("流量")).collect(Collectors.toList()).get(0);
+                            TrendsTableParam lzzParam = lzzParamList.stream().filter(t -> t.getParamName().equals("河道") && t.getPId().equals(lzzLlParam.getId())).collect(Collectors.toList()).get(0);
+                            Double lzz = dayWaterSituationStatisticsTableLzzService.selectList(dateTemp).getData().get("今日均").
+                                    stream().filter(t -> t.getTableHeadId().equals(lzzParam.getId())).filter(t->t.getV()!=null).map(DayWaterSituationStatisticsTableLzz::getV).reduce(Double::sum).orElse(0.00);
+                            List<TrendsTableParam> tthParamList = trendsTableParamList.stream().filter(t->t.getUseStation().equals("头屯河水库")).filter(t->t.getUseType()==1).collect(Collectors.toList());
+                            TrendsTableParam tthJkParam = tthParamList.stream().filter(t -> t.getPId().equals("0")).filter(t -> t.getParamName().equals("进库流量")).collect(Collectors.toList()).get(0);
+                            TrendsTableParam tthJkLlParam = tthParamList.stream().filter(t -> t.getPId().equals(tthJkParam.getId())).filter(t -> t.getParamName().equals("流量")).collect(Collectors.toList()).get(0);
+                            TrendsTableParam tthParam = trendsTableParamList.stream().filter(t -> t.getParamName().equals("合计")).filter(t->t.getPId().equals(tthJkLlParam.getId())).collect(Collectors.toList()).get(0);
+                            Double tth = dayWaterSituationStatisticsTableTthService.selectList(dateTemp).getData().get("今日均").
+                                    stream().filter(t -> t.getTableHeadId().equals(tthParam.getId())).filter(t->t.getV()!=null).map(DayWaterSituationStatisticsTableTth::getV).reduce(Double::sum).orElse(0.00);
+                            dkl.setV((lzz==null || lzz==0)?0.00:(tth/lzz)*100);
+                        }catch (Exception e){
+                            e.printStackTrace();
+                            log.error("头屯河水库对口率生成参数缺失，请检查参数后再生成！");
+                        }
+                    }
+                    if(tableParam.getParamName().equals("头屯河-渠首")){
+                        try {
+                            List<TrendsTableParam> tthParamList = trendsTableParamList.stream().filter(t->t.getUseStation().equals("头屯河水库")).filter(t->t.getUseType()==1).collect(Collectors.toList());
+                            TrendsTableParam tthJkParam = tthParamList.stream().filter(t -> t.getPId().equals("0")).filter(t -> t.getParamName().equals("出库流量")).collect(Collectors.toList()).get(0);
+                            TrendsTableParam hd = tthParamList.stream().filter(t -> t.getPId().equals(tthJkParam.getId())).filter(t -> t.getParamName().equals("河道流量")).collect(Collectors.toList()).get(0);
+                            Double tth = dayWaterSituationStatisticsTableTthService.selectList(dateTemp).getData().get("今日均").
+                                    stream().filter(t -> t.getTableHeadId().equals(hd.getId())).filter(t->t.getV()!=null).map(DayWaterSituationStatisticsTableTth::getV).reduce(Double::sum).orElse(0.00);
+                            List<DayWaterSituationStatisticsTableQs> dayWaterSituationStatisticsTableQs = dayWaterSituationStatisticsTableQsService.selectList(dateTemp).getData().get("今日均");
+                            List<TrendsTableParam> qsParamList = trendsTableParamList.stream().filter(t->t.getUseStation().equals("渠首管理站")).filter(t->t.getUseType()==1).collect(Collectors.toList());
+                            TrendsTableParam qhParam = qsParamList.stream().filter(t -> t.getParamName().equals("全河")).filter(t -> t.getPId().equals("0")).collect(Collectors.toList()).get(0);
+                            Double qh = dayWaterSituationStatisticsTableQs==null?0.00:dayWaterSituationStatisticsTableQs.stream().filter(t -> t.getTableHeadId().equals(qhParam.getId())).filter(t->t.getV()!=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00);
+                            dkl.setV((qh==null || qh==0.00)?0.00:(qh/tth)*100);
+                        }catch (Exception e){
+                            e.printStackTrace();
+                            log.error("渠首管理站对口率生成参数缺失，请检查参数后再生成！");
+                        }
+                    }
+                    if(tableParam.getParamName().equals("渠首-河东")){
+                        try {
+                            TrendsTableParam dgqParamList = trendsTableParamList.stream().filter(t->t.getUseStation().equals("渠首管理站")).filter(t->t.getUseType()==1).collect(Collectors.toList())
+                                    .stream().filter(t -> t.getParamName().equals("东岸")).filter(t -> t.getPId().equals("0")).collect(Collectors.toList()).get(0);
+                            TrendsTableParam dgqParamTemp = trendsTableParamList.stream().filter(t->t.getParamName().equals("东干渠")).filter(t->t.getPId().equals(dgqParamList.getId())).collect(Collectors.toList()).get(0);
+                            TrendsTableParam dgqParam = trendsTableParamList.stream().filter(t->t.getParamName().equals("东干渠流量")).filter(t->t.getPId().equals(dgqParamTemp.getId())).collect(Collectors.toList()).get(0);
+                            Double dgq = dayWaterSituationStatisticsTableQsService.selectList(dateTemp).getData().get("今日均").stream().filter(t -> t.getTableHeadId().equals(dgqParam.getId())).filter(t->t.getV()!=null).
+                                    map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00);
+                            TrendsTableParam hdParam = trendsTableParamList.stream().filter(t->t.getUseStation().equals("河东管理站")).filter(t->t.getUseType()==1).collect(Collectors.toList())
+                                    .stream().filter(t->t.getParamName().equals("合计")).filter(t->t.getPId().equals("0")).collect(Collectors.toList()).get(0);
+                            Double hd = dayWaterSituationStatisticsTableHdService.selectList(dateTemp).getData().get("今日均").stream().filter(t -> t.getTableHeadId().equals(hdParam.getId())).filter(t->t.getV()!=null).
+                                    map(DayWaterSituationStatisticsTableHd::getV).reduce(Double::sum).orElse(0.00);
+                            dkl.setV((dgq==null || dgq ==0.00)?0.00:(hd/dgq)*100);
+                        }catch (Exception e){
+                            e.printStackTrace();
+                            log.error("河东管理站对口率生成参数缺失，请检查参数后再生成！");
+                        }
+                    }
+                    if(tableParam.getParamName().equals("渠首-河西")){
+                        try {
+                            TrendsTableParam xgqParamList = trendsTableParamList.stream().filter(t->t.getUseStation().equals("渠首管理站")).filter(t->t.getUseType()==1).collect(Collectors.toList())
+                                    .stream().filter(t -> t.getParamName().equals("西岸")).filter(t -> t.getPId().equals("0")).collect(Collectors.toList()).get(0);
+                            TrendsTableParam xgqParam = trendsTableParamList.stream().filter(t->t.getParamName().equals("西干渠流量")).filter(t->t.getPId().equals(xgqParamList.getId())).collect(Collectors.toList()).get(0);
+                            Double xgq = dayWaterSituationStatisticsTableQsService.selectList(dateTemp).getData().get("今日均").stream().filter(t -> t.getTableHeadId().equals(xgqParam.getId())).filter(t->t.getV()!=null).
+                                    map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00);
+                            TrendsTableParam hxParam = trendsTableParamList.stream().filter(t->t.getUseStation().equals("河西管理站")).filter(t->t.getUseType()==1).collect(Collectors.toList())
+                                    .stream().filter(t->t.getParamName().equals("合计")).filter(t->t.getPId().equals("0")).collect(Collectors.toList()).get(0);
+                            Double hx = dayWaterSituationStatisticsTableHxService.selectList(dateTemp).getData().get("今日均").stream().filter(t -> t.getTableHeadId().equals(hxParam.getId())).filter(t->t.getV()!=null).
+                                    map(DayWaterSituationStatisticsTableHx::getV).reduce(Double::sum).orElse(0.00);
+                            dkl.setV((xgq==null || xgq ==0.00)?0.00:(hx/xgq)*100);
+                        }catch (Exception e){
+                            e.printStackTrace();
+                            log.error("河西管理站对口率生成参数缺失，请检查参数后再生成！");
+                        }
+                    }
+                }
+                boolean b = dayWaterSituationStatisticsTableDklService.saveOrUpdateBatch(todayData);
+                if (b) {
+                    updateYesterdayData(sdf.parse(dateTemp),todayData);
+                    log.info("修改今日均成功");
+                }else {
+                    log.info("修改今日均失败");
+                }
+            }else {
+                List<DayWaterSituationStatisticsTableDkl> dayWaterSituationStatisticsTableDklList = new ArrayList<>();
+                if(null!=dayWaterSituationStatisticsTableDkls && dayWaterSituationStatisticsTableDkls.size()>0){
+                    DayWaterSituationStatisticsTableDkl dayWaterSituationStatisticsTableDkl = dayWaterSituationStatisticsTableDkls.get(0);
+                    String endTableList = dayWaterSituationStatisticsTableDkl.getEndTableList();
+                    String[] split = endTableList.split(",");
+                    for(String t :split){
+                        DayWaterSituationStatisticsTableDkl dkl = new DayWaterSituationStatisticsTableDkl();
+                        dkl.setId(UUIDUtils.getUUID());
+                        dkl.setV(null);
+                        dkl.setTime("今日均");
+                        try {
+                            dkl.setRecordTime(sdf.parse(dateTemp));
+                        } catch (ParseException e) {
+                            throw new RuntimeException(e);
+                        }
+                        dkl.setTableHeadId(t);
+                        dkl.setFrontTableList(dayWaterSituationStatisticsTableDkl.getFrontTableList());
+                        dkl.setEndTableList(dayWaterSituationStatisticsTableDkl.getEndTableList());
+                        dayWaterSituationStatisticsTableDklList.add(dkl);
+                    }
+                }
+                //计算对口率
+                for(DayWaterSituationStatisticsTableDkl dkl:dayWaterSituationStatisticsTableDklList){
+                    TrendsTableParam tableParam = JSONObject.parseObject((String)redisUtil.get("trendsTableParam:object:"+dkl.getTableHeadId()),TrendsTableParam.class);
+                    if(tableParam.getParamName().equals("楼庄子-头屯河")){
+                        try {
+                            List<TrendsTableParam> lzzParamList = trendsTableParamList.stream().filter(t->t.getUseStation().equals("楼庄子水库")).filter(t->t.getUseType()==1).collect(Collectors.toList());
+                            TrendsTableParam lzzCkParam = lzzParamList.stream().filter(t -> t.getPId().equals("0") &&t.getParamName().equals("出库")).collect(Collectors.toList()).get(0);
+                            TrendsTableParam lzzLlParam = lzzParamList.stream().filter(t -> t.getPId().equals(lzzCkParam.getId())).filter(t -> t.getParamName().equals("流量")).collect(Collectors.toList()).get(0);
+                            TrendsTableParam lzzParam = lzzParamList.stream().filter(t -> t.getParamName().equals("河道") && t.getPId().equals(lzzLlParam.getId())).collect(Collectors.toList()).get(0);
+                            Double lzz = dayWaterSituationStatisticsTableLzzService.selectList(dateTemp).getData().get("今日均").
+                                    stream().filter(t -> t.getTableHeadId().equals(lzzParam.getId())).filter(t->t.getV()!=null).map(DayWaterSituationStatisticsTableLzz::getV).reduce(Double::sum).orElse(0.00);
+                            List<TrendsTableParam> tthParamList = trendsTableParamList.stream().filter(t->t.getUseStation().equals("头屯河水库")).filter(t->t.getUseType()==1).collect(Collectors.toList());
+                            TrendsTableParam tthJkParam = tthParamList.stream().filter(t -> t.getPId().equals("0")).filter(t -> t.getParamName().equals("进库流量")).collect(Collectors.toList()).get(0);
+                            TrendsTableParam tthJkLlParam = tthParamList.stream().filter(t -> t.getPId().equals(tthJkParam.getId())).filter(t -> t.getParamName().equals("流量")).collect(Collectors.toList()).get(0);
+                            TrendsTableParam tthParam = trendsTableParamList.stream().filter(t -> t.getParamName().equals("合计")).filter(t->t.getPId().equals(tthJkLlParam.getId())).collect(Collectors.toList()).get(0);
+                            Double tth = dayWaterSituationStatisticsTableTthService.selectList(dateTemp).getData().get("今日均").
+                                    stream().filter(t -> t.getTableHeadId().equals(tthParam.getId())).filter(t->t.getV()!=null).map(DayWaterSituationStatisticsTableTth::getV).reduce(Double::sum).orElse(0.00);
+                            dkl.setV((lzz==null || lzz==0)?0.00:(tth/lzz)*100);
+                        }catch (Exception e){
+                            e.printStackTrace();
+                            log.error("头屯河水库对口率生成参数缺失，请检查参数后再生成！");
+                        }
+                    }
+                    if(tableParam.getParamName().equals("头屯河-渠首")){
+                        try {
+                            List<TrendsTableParam> tthParamList = trendsTableParamList.stream().filter(t->t.getUseStation().equals("头屯河水库")).filter(t->t.getUseType()==1).collect(Collectors.toList());
+                            TrendsTableParam tthJkParam = tthParamList.stream().filter(t -> t.getPId().equals("0")).filter(t -> t.getParamName().equals("出库流量")).collect(Collectors.toList()).get(0);
+                            TrendsTableParam hd = tthParamList.stream().filter(t -> t.getPId().equals(tthJkParam.getId())).filter(t -> t.getParamName().equals("河道流量")).collect(Collectors.toList()).get(0);
+                            Double tth = dayWaterSituationStatisticsTableTthService.selectList(dateTemp).getData().get("今日均").
+                                    stream().filter(t -> t.getTableHeadId().equals(hd.getId())).filter(t->t.getV()!=null).map(DayWaterSituationStatisticsTableTth::getV).reduce(Double::sum).orElse(0.00);
+                            List<DayWaterSituationStatisticsTableQs> dayWaterSituationStatisticsTableQs = dayWaterSituationStatisticsTableQsService.selectList(sdf.format(dkl.getRecordTime())).getData().get("今日均");
+                            List<TrendsTableParam> qsParamList = trendsTableParamList.stream().filter(t->t.getUseStation().equals("渠首管理站")).filter(t->t.getUseType()==1).collect(Collectors.toList());
+                            TrendsTableParam qhParam = qsParamList.stream().filter(t -> t.getParamName().equals("全河")).filter(t -> t.getPId().equals("0")).collect(Collectors.toList()).get(0);
+                            Double qh = dayWaterSituationStatisticsTableQs.stream().filter(t -> t.getTableHeadId().equals(qhParam.getId())).filter(t->t.getV()!=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00);
+                            dkl.setV((qh==null || qh==0.00)?0.00:(qh/tth)*100);
+                        }catch (Exception e){
+                            e.printStackTrace();
+                            log.error("渠首管理站对口率生成参数缺失，请检查参数后再生成！");
+                        }
+                    }
+                    if(tableParam.getParamName().equals("渠首-河东")){
+                        try {
+                            TrendsTableParam dgqParamList = trendsTableParamList.stream().filter(t->t.getUseStation().equals("渠首管理站")).filter(t->t.getUseType()==1).collect(Collectors.toList())
+                                    .stream().filter(t -> t.getParamName().equals("东岸")).filter(t -> t.getPId().equals("0")).collect(Collectors.toList()).get(0);
+                            TrendsTableParam dgqParamTemp = trendsTableParamList.stream().filter(t->t.getParamName().equals("东干渠")).filter(t->t.getPId().equals(dgqParamList.getId())).collect(Collectors.toList()).get(0);
+                            TrendsTableParam dgqParam = trendsTableParamList.stream().filter(t->t.getParamName().equals("东干渠流量")).filter(t->t.getPId().equals(dgqParamTemp.getId())).collect(Collectors.toList()).get(0);
+                            Double dgq = dayWaterSituationStatisticsTableQsService.selectList(dateTemp).getData().get("今日均").stream().filter(t -> t.getTableHeadId().equals(dgqParam.getId())).filter(t->t.getV()!=null).
+                                    map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00);
+                            TrendsTableParam hdParam = trendsTableParamList.stream().filter(t->t.getUseStation().equals("河东管理站")).filter(t->t.getUseType()==1).collect(Collectors.toList())
+                                    .stream().filter(t->t.getParamName().equals("合计")).filter(t->t.getPId().equals("0")).collect(Collectors.toList()).get(0);
+                            Double hd = dayWaterSituationStatisticsTableHdService.selectList(dateTemp).getData().get("今日均").stream().filter(t -> t.getTableHeadId().equals(hdParam.getId())).filter(t->t.getV()!=null).
+                                    map(DayWaterSituationStatisticsTableHd::getV).reduce(Double::sum).orElse(0.00);
+                            dkl.setV((dgq==null || dgq ==0.00)?0.00:(hd/dgq)*100);
+                        }catch (Exception e){
+                            e.printStackTrace();
+                            log.error("河东管理站对口率生成参数缺失，请检查参数后再生成！");
+                        }
+                    }
+                    if(tableParam.getParamName().equals("渠首-河西")){
+                        try {
+                            TrendsTableParam xgqParamList = trendsTableParamList.stream().filter(t->t.getUseStation().equals("渠首管理站")).filter(t->t.getUseType()==1).collect(Collectors.toList())
+                                    .stream().filter(t -> t.getParamName().equals("西岸")).filter(t -> t.getPId().equals("0")).collect(Collectors.toList()).get(0);
+                            TrendsTableParam xgqParam = trendsTableParamList.stream().filter(t->t.getParamName().equals("西干渠流量")).filter(t->t.getPId().equals(xgqParamList.getId())).collect(Collectors.toList()).get(0);
+                            Double xgq = dayWaterSituationStatisticsTableQsService.selectList(dateTemp).getData().get("今日均").stream().filter(t -> t.getTableHeadId().equals(xgqParam.getId())).filter(t->t.getV()!=null).
+                                    map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00);
+                            TrendsTableParam hxParam = trendsTableParamList.stream().filter(t->t.getUseStation().equals("河西管理站")).filter(t->t.getUseType()==1).collect(Collectors.toList())
+                                    .stream().filter(t->t.getParamName().equals("合计")).filter(t->t.getPId().equals("0")).collect(Collectors.toList()).get(0);
+                            Double hx = dayWaterSituationStatisticsTableHxService.selectList(dateTemp).getData().get("今日均").stream().filter(t -> t.getTableHeadId().equals(hxParam.getId())).filter(t->t.getV()!=null).
+                                    map(DayWaterSituationStatisticsTableHx::getV).reduce(Double::sum).orElse(0.00);
+                            dkl.setV((xgq==null || xgq ==0.00)?0.00:(hx/xgq)*100);
+                        }catch (Exception e){
+                            e.printStackTrace();
+                            log.error("河西管理站对口率生成参数缺失，请检查参数后再生成！");
+                        }
+                    }
+                }
+                boolean b = dayWaterSituationStatisticsTableDklService.saveBatch(dayWaterSituationStatisticsTableDklList);
+                if (b) {
+                    updateYesterdayData(sdf.parse(dateTemp),dayWaterSituationStatisticsTableDklList);
+                    log.info("新增今日均成功");
+                }else {
+                    log.info("新增今日均失败");
+                }
+            }
+        }
+        return RestResponse.ok();
+    }
+
     @Override
     public RestResponse selectTodayWaterSituationSelectById(SelectTodayWaterSituationSelectByIdReq req) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
@@ -1773,5 +1990,15 @@ public class AllServiceImpl implements AllService {
         String s = RestTemplateUtil.getBySaToken(url,token);
         BigDecimal value = (BigDecimal) JSONObject.parseObject(s).get("data");
         return value.doubleValue();
+    }
+
+    private void updateYesterdayData(Date now,List<DayWaterSituationStatisticsTableDkl> dklList){
+        List<DayWaterSituationStatisticsTableDkl> dayWaterSituationStatisticsTableDklList = dayWaterSituationStatisticsTableDklMapper.selectInfoAfterDayList(getDate(now,1));
+        if(!dayWaterSituationStatisticsTableDklList.isEmpty()){
+            dayWaterSituationStatisticsTableDklList.forEach(t->{
+                t.setV(dklList.stream().filter(p->p.getTableHeadId().equals(t.getTableHeadId()) && p.getV() !=null).map(DayWaterSituationStatisticsTableDkl::getV).reduce(Double::sum).orElse(0.00));
+            });
+            dayWaterSituationStatisticsTableDklService.updateBatchById(dayWaterSituationStatisticsTableDklList);
+        }
     }
 }

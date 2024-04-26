@@ -71,8 +71,8 @@ public class A3Task {
 
     @Scheduled(cron="0 00 23 * * ?")//每天23:00
     public void createA3HaveDkl(){
-        log.info("--------------------------------执行定时插入A3（仅对口率） 完8点后生成今日均数据----------------------------");
-        dklService.insertTodayMeanValue();
+        log.info("--------------------------------执行定时插入A3（仅对口率） 晚8点后生成今日均数据----------------------------");
+        dklService.insertTodayMeanValue(new Date());
     }
 
     @Scheduled(cron="0 00 09 * * ?")//每天08:40

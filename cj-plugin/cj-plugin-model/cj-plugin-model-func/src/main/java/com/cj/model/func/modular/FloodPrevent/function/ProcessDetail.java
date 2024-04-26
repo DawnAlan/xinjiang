@@ -17,10 +17,12 @@ public class ProcessDetail {
         Map<String, List<Object>> Q_out_lzz = new LinkedHashMap<>();
         Map<String, List<Object>> Q_in_lzz = new LinkedHashMap<>();
 
+
         Map<String, List<Object>> Time_tth = new LinkedHashMap<>();
         Map<String, List<Object>> H_tth = new LinkedHashMap<>();
         Map<String, List<Object>> Q_out_tth = new LinkedHashMap<>();
         Map<String, List<Object>> Q_in_tth = new LinkedHashMap<>();
+
 
         Set<String> keySet = options.keySet();
         Iterator<String> keys = keySet.iterator();
@@ -33,10 +35,12 @@ public class ProcessDetail {
             List<Object> Out_lzz = new ArrayList<>();
             List<Object> In_lzz = new ArrayList<>();
 
+
             List<Object> time_tth = new ArrayList<>();
             List<Object> Height_tth = new ArrayList<>();
             List<Object> Out_tth = new ArrayList<>();
             List<Object> In_tth = new ArrayList<>();
+
 
             for (int i = 0; i < option.size(); i++) {
                 String name = option.get(i).getName();
@@ -45,6 +49,8 @@ public class ProcessDetail {
                     Height_lzz.add(option.get(i).getH2());
                     Out_lzz.add(option.get(i).getQOut());
                     In_lzz.add(option.get(i).getQIn());
+
+
                 }
                 else if(name.equals("头屯河")){
                     time_tth.add(option.get(i).getTime());
@@ -61,20 +67,26 @@ public class ProcessDetail {
             H_lzz.put(key,Height_lzz);
             Q_out_lzz.put(key,Out_lzz);
             Q_in_lzz.put(key,In_lzz);
+
+
+
             Time_tth.put(key,time_tth);
             H_tth.put(key,Height_tth);
             Q_out_tth.put(key,Out_tth);
             Q_in_tth.put(key,In_tth);
+
         }
         lzz.put("时间",Time_lzz);
         lzz.put("水位过程",H_lzz);
         lzz.put("流量过程",Q_out_lzz);
         lzz.put("入库流量",Q_in_lzz);
 
+
         tth.put("时间",Time_tth);
         tth.put("水位过程",H_tth);
         tth.put("流量过程",Q_out_tth);
         tth.put("入库流量",Q_in_tth);
+
 
         result.put("楼庄子",lzz);
         result.put("头屯河",tth);

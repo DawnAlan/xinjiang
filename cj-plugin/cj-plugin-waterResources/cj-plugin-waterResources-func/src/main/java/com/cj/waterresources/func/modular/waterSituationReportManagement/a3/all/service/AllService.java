@@ -34,6 +34,8 @@ public interface AllService {
 
     RestResponse updateInfoDate();
 
+    RestResponse updateDkl(String startTime,String endTime);
+
     RestResponse selectTodayWaterSituationSelectById(SelectTodayWaterSituationSelectByIdReq req);
 
     RestResponse selectReservoirHistoryList(SelectReservoirHistoryListReq req);

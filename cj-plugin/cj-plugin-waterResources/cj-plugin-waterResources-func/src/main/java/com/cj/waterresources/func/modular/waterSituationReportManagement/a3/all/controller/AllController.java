@@ -136,4 +136,12 @@ public class AllController {
     public RestResponse getRealTimeWaterLevelData(@RequestBody GetRealTimeWaterLevelDataReq req) {
         return allService.getRealTimeWaterLevelData(req.getDate());
     }
+
+    @ApiOperationSupport(order =12)
+    @ApiOperation("A3表更新对口率今日均")
+    @CommonLog(value = "A3表更新对口率今日均")
+    @GetMapping("/updateDklInfoDate")
+    public RestResponse updateDklInfoDate(@RequestParam(value = "startTime") String startTime,@RequestParam(value = "endTime") String endTime) {
+        return allService.updateDkl(startTime,endTime);
+    }
 }

@@ -5,6 +5,7 @@ import com.cj.common.model.RestResponse;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.dkl.entity.DayWaterSituationStatisticsTableDkl;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.entity.DayWaterSituationStatisticsTableLzz;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -23,6 +24,6 @@ public interface DayWaterSituationStatisticsTableDklService extends IService<Day
 
     RestResponse update(List<DayWaterSituationStatisticsTableDkl> dayWaterSituationStatisticsTableDklList);
 
-    RestResponse insertTodayMeanValue();
+    RestResponse insertTodayMeanValue(Date date);
 }
 

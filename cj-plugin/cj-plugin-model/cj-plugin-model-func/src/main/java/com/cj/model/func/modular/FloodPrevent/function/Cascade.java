@@ -150,25 +150,4 @@ public class Cascade{
         }
     }
 
-
-
-
-
-
-
-
-
-
-//    public static List<ResOption> calculator(ReqFloodPrevent reqFloodPrevent) throws ExecutionException, InterruptedException {
-//        Calculate a = new Calculate();
-//        a.setReqFloodPrevent(reqFloodPrevent);
-//        FutureTask<List<ResOption>> futureTask = new FutureTask<>(a);
-//
-//        Thread t = new Thread(futureTask);
-//        t.start();
-//
-//        List<ResOption> result = futureTask.get();
-//
-//        return result;
-//    }
 }

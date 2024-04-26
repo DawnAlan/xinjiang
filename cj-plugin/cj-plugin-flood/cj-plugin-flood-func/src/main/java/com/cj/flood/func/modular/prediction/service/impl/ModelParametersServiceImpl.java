@@ -64,6 +64,7 @@ public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMappe
 
     }
 
+    @SneakyThrows
     @Override
     public List<ModelParameters> calibrate(CalibrateReq input) {
 

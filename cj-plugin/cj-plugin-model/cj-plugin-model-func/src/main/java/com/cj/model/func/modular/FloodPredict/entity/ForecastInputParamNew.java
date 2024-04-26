@@ -34,4 +34,6 @@ public class ForecastInputParamNew {
     private Double preRainFall;
     //是否为模拟降雨
     private Boolean isSimulation;
+
+    private String filePath;
 }

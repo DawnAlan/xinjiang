@@ -193,7 +193,7 @@ public class SurfaceWaterService extends ServiceImpl<SurfaceWaterMapper, Surface
         List<Integer> yearlist = new ArrayList<>();
         // 获取当前日期
         LocalDate currentDate = LocalDate.now();
-        for (int i = 1989; i < currentDate.getYear(); i++) {
+        for (int i = 1990; i < currentDate.getYear(); i++) {
             yearlist.add(i);
         }
 

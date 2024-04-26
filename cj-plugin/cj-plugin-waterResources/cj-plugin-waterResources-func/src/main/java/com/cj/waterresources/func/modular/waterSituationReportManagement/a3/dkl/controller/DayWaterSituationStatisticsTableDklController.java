@@ -9,10 +9,12 @@ import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSupport;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 
@@ -62,6 +64,16 @@ public class DayWaterSituationStatisticsTableDklController{
     @PostMapping("/update")
     public RestResponse update(@RequestBody List<DayWaterSituationStatisticsTableDkl> list) {
         return dayWaterSituationStatisticsTableDklService.update(list);
+    }
+
+    @SneakyThrows
+    @ApiOperationSupport(order = 3)
+    @ApiOperation("对口率新增今日均")
+    @CommonLog("对口率新增今日均")
+    @GetMapping("/insertTodayMeanValue")
+    public RestResponse insertTodayMeanValue(@RequestParam(value = "date") String date) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        return dayWaterSituationStatisticsTableDklService.insertTodayMeanValue(sdf.parse(date));
     }
 }
 

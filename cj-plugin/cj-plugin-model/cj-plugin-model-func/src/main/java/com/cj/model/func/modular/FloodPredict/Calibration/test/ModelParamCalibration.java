@@ -47,8 +47,8 @@ public class ModelParamCalibration {
 //        ExcelTool.writeObjectExcel("D:\\204\\2.头屯河\\径流预报数据文件\\率定结果.xlsx",sheetName+"三号桥", Flood);
         ShanbeiParam shanbeiParam = new ShanbeiParam();
         shanbeiParam.setArea(1174.0);//流域面积
-        shanbeiParam.setFB(0.08);//不透水面积的比例，透水面积比例为1-FB
-        shanbeiParam.setWM(102.0);//张力水蓄水容量，或最大蓄水量 60-80mm
+        shanbeiParam.setFB(0.008);//不透水面积的比例，透水面积比例为1-FB
+        shanbeiParam.setWM(120.0);//张力水蓄水容量，或最大蓄水量 60-80mm
         shanbeiParam.setKC(1.0);//蒸散发折减系数 KC
         shanbeiParam.setFC(32.0);//流域土壤稳定下渗率 0.3-0.5 mm/min
         shanbeiParam.setFM(100.0);//流域土壤最大下渗率 1-2 mm/min

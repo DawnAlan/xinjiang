@@ -491,4 +491,27 @@ public class TimeUtils {
 		return result;
 	}
 
+	/**
+	 * 添加时间
+	 * @param startDate
+	 * @return
+	 */
+	public Date addCalendar(Date startDate,String period,int l){
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(startDate);
+		switch (period){
+			case "月":
+				cal.add(Calendar.MONTH,l);
+				break;
+			case "日":
+				cal.add(Calendar.DAY_OF_MONTH,l);
+				break;
+			case "小时":
+				cal.add(Calendar.HOUR_OF_DAY,l);
+				break;
+		}
+		Date endDate = cal.getTime();
+		return endDate;
+	}
+
 }
