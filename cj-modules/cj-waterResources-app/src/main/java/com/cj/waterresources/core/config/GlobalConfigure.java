@@ -153,9 +153,7 @@ public class GlobalConfigure implements WebMvcConfigurer {
             "/actuator",
             "/actuator/**",
             "/water/org/**",
-            "/msg/**",
-            "**",
-            "/**"
+            "/msg/**"
     };
 
     /**
