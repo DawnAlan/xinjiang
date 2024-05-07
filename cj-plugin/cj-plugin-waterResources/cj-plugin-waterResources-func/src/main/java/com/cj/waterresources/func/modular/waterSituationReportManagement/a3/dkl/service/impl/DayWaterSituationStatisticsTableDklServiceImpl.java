@@ -471,6 +471,7 @@ public class DayWaterSituationStatisticsTableDklServiceImpl extends ServiceImpl<
                 }
             }
         }
+        log.debug("*********************************************************************对口率今日均插入数据："+JSONObject.toJSONString(dayWaterSituationStatisticsTableDklList));
         boolean b = this.saveBatch(dayWaterSituationStatisticsTableDklList);
         if (b) {
             return RestResponse.ok();

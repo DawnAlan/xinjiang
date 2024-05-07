@@ -114,7 +114,7 @@ public class IrrigationQuotaServiceImpl extends ServiceImpl<IrrigationQuotaMappe
                             (irrigationQuota.getNovemberLateOctoberIrrigationWaterVolume() == null ? 0.0 : irrigationQuota.getNovemberLateOctoberIrrigationWaterVolume())
             );
             irrigationQuota.setIrrigationQuota(irrigationQuota.getTotalPlannedIrrigationArea() == null ? null : irrigationQuota.getAccumulatedTotalIrrigationAmount() / irrigationQuota.getTotalPlannedIrrigationArea());
-            irrigationQuota.setAverageIrrigationAmount(irrigationQuota.getAccumulatedIrrigationArea() == 0.0 ? null : irrigationQuota.getAccumulatedTotalIrrigationAmount() / irrigationQuota.getAccumulatedIrrigationArea());
+            irrigationQuota.setAverageIrrigationAmount(irrigationQuota.getAccumulatedIrrigationArea() == 0.0 ? null : (irrigationQuota.getAccumulatedTotalIrrigationAmount() / irrigationQuota.getAccumulatedIrrigationArea())*10000);
 
             irrigationQuota.setAprilEarlyOctoberId(UUIDUtils.getUUID());
             IrrigationQuotaDetails AprilEarlyOctober = new IrrigationQuotaDetails();
@@ -534,7 +534,7 @@ public class IrrigationQuotaServiceImpl extends ServiceImpl<IrrigationQuotaMappe
                         (irrigationQuota.getNovemberLateOctoberIrrigationWaterVolume() == null ? 0.0 : irrigationQuota.getNovemberLateOctoberIrrigationWaterVolume())
         );
         irrigationQuota.setIrrigationQuota(irrigationQuota.getTotalPlannedIrrigationArea() == null ? null : irrigationQuota.getAccumulatedTotalIrrigationAmount() / irrigationQuota.getTotalPlannedIrrigationArea());
-        irrigationQuota.setAverageIrrigationAmount(irrigationQuota.getAccumulatedIrrigationArea() == 0.0 ? null : irrigationQuota.getAccumulatedTotalIrrigationAmount() / irrigationQuota.getAccumulatedIrrigationArea());
+        irrigationQuota.setAverageIrrigationAmount(irrigationQuota.getAccumulatedIrrigationArea() == 0.0 ? null : (irrigationQuota.getAccumulatedTotalIrrigationAmount() / irrigationQuota.getAccumulatedIrrigationArea())*10000);
         int i = this.baseMapper.updateById(irrigationQuota);
         if (i>0) {
             List<IrrigationQuotaDetails> irrigationQuotaDetailsList = new ArrayList<>();

@@ -30,7 +30,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -74,6 +76,10 @@ public class WaterSituationStatisticsTableTodayServiceImpl extends ServiceImpl<W
 
     @Override
     public RestResponse add(WaterSituationStatisticsTableToday waterSituationStatisticsTableToday) {
+        Calendar calendar = new GregorianCalendar();
+        calendar.setTime(new Date());
+        calendar.add(calendar.DATE, -1);
+        String yesterday= sdf.format(calendar.getTime());
         String today= sdf.format(new Date());
         waterSituationStatisticsTableToday.setId(UUIDUtils.getUUID());
         String mk = (String) redisUtil.get("trendsTableParam:list");
@@ -106,9 +112,9 @@ public class WaterSituationStatisticsTableTodayServiceImpl extends ServiceImpl<W
             TrendsTableParam lzzscgd2 = lzzTableParam.stream().filter(t -> t.getPId().equals(ckllTemp.getId()) && t.getParamName().equals("楼庄子水厂管道2")).collect(Collectors.toList()).get(0);
             TrendsTableParam hd = lzzTableParam.stream().filter(t -> t.getPId().equals(ckllTemp.getId()) && t.getParamName().equals("河道")).collect(Collectors.toList()).get(0);
             TrendsTableParam hj = lzzTableParam.stream().filter(t -> t.getPId().equals(ckllTemp.getId()) && t.getParamName().equals("合计")).collect(Collectors.toList()).get(0);
-            waterSituationStatisticsTableToday.setLzzKsw(data_8.stream().filter(t->t.getTableHeadId().equals(sw.getId())).map(DayWaterSituationStatisticsTableLzz::getV).collect(Collectors.toList()).get(0));
+            waterSituationStatisticsTableToday.setLzzKsw(data_8.stream().filter(t->t.getTableHeadId().equals(sw.getId()) && t.getV() !=null).map(DayWaterSituationStatisticsTableLzz::getV).reduce(Double::sum).orElse(0.00));
             waterSituationStatisticsTableToday.setLzzKr(data_8.stream().filter(t->t.getTableHeadId().equals(kr.getId())).map(DayWaterSituationStatisticsTableLzz::getV).collect(Collectors.toList()).get(0));
-            waterSituationStatisticsTableToday.setLzzRkll(data_8.stream().filter(t->t.getTableHeadId().equals(rkll.getId())).map(DayWaterSituationStatisticsTableLzz::getV).collect(Collectors.toList()).get(0));
+            waterSituationStatisticsTableToday.setLzzRkll(data_8.stream().filter(t->t.getTableHeadId().equals(rkll.getId()) && t.getV() !=null).map(DayWaterSituationStatisticsTableLzz::getV).reduce(Double::sum).orElse(0.00));
             waterSituationStatisticsTableToday.setLzzCkllHd(data_8.stream().filter(t->t.getTableHeadId().equals(hd.getId())).map(DayWaterSituationStatisticsTableLzz::getV).collect(Collectors.toList()).get(0));
             waterSituationStatisticsTableToday.setLzzCkllLzzsc(
                     data_8.stream().filter(t->t.getTableHeadId().equals(lzzscgd1.getId()) && t.getV()!=null).map(DayWaterSituationStatisticsTableLzz::getV).reduce(Double::sum).orElse(0.00)+
@@ -117,6 +123,8 @@ public class WaterSituationStatisticsTableTodayServiceImpl extends ServiceImpl<W
             waterSituationStatisticsTableToday.setLzzCkllHj(data_8.stream().filter(t->t.getTableHeadId().equals(hj.getId())).map(DayWaterSituationStatisticsTableLzz::getV).collect(Collectors.toList()).get(0));
         }
         List<DayWaterSituationStatisticsTableTth> dayWaterSituationStatisticsTableTthList = dayWaterSituationStatisticsTableTthMapper.selectList(today);
+        Double todayTthSwValue = 0.00;
+        Double todayTthRkValue = 0.00;
         if(null != dayWaterSituationStatisticsTableTthList && dayWaterSituationStatisticsTableTthList.size()>0){
             List<DayWaterSituationStatisticsTableTth> data_8 = dayWaterSituationStatisticsTableTthList.stream().filter(t -> t.getTime().equals("08:00")).collect(Collectors.toList());
             List<TrendsTableParam> tthTableParam = trendsTableParamList.stream().filter(t -> t.getUseType() == 1 && t.getUseStation().equals("头屯河水库")).collect(Collectors.toList());
@@ -133,15 +141,16 @@ public class WaterSituationStatisticsTableTodayServiceImpl extends ServiceImpl<W
             TrendsTableParam hy = tthTableParam.stream().filter(t -> t.getPId().equals(ckTemp.getId()) && t.getParamName().equals("红岩流量")).collect(Collectors.toList()).get(0);
             TrendsTableParam bgllTemp = tthTableParam.stream().filter(t -> t.getPId().equals(ckTemp.getId()) && t.getParamName().equals("八钢流量")).collect(Collectors.toList()).get(0);
             TrendsTableParam bgCount = tthTableParam.stream().filter(t -> t.getPId().equals(bgllTemp.getId()) && t.getParamName().equals("合计")).collect(Collectors.toList()).get(0);
-
             TrendsTableParam ckzdTemp = tthTableParam.stream().filter(t -> t.getPId().equals("0") && t.getParamName().equals("出库浊度")).collect(Collectors.toList()).get(0);
             TrendsTableParam ckzd = tthTableParam.stream().filter(t -> t.getPId().equals(ckzdTemp.getId()) && t.getParamName().equals("河道浊度")).collect(Collectors.toList()).get(0);
             TrendsTableParam aqzd = tthTableParam.stream().filter(t -> t.getPId().equals(ckzdTemp.getId()) && t.getParamName().equals("暗渠浊度")).collect(Collectors.toList()).get(0);
-            waterSituationStatisticsTableToday.setTthKsw(data_8.stream().filter(t->t.getTableHeadId().equals(sw.getId())).map(DayWaterSituationStatisticsTableTth::getV).collect(Collectors.toList()).get(0));
+            todayTthSwValue = data_8.stream().filter(t -> t.getTableHeadId().equals(sw.getId()) && t.getV() != null).map(DayWaterSituationStatisticsTableTth::getV).reduce(Double::sum).orElse(0.00);
+            todayTthRkValue = data_8.stream().filter(t -> t.getTableHeadId().equals(jkhj.getId()) && t.getV() != null).map(DayWaterSituationStatisticsTableTth::getV).reduce(Double::sum).orElse(0.00);
+            waterSituationStatisticsTableToday.setTthKsw(todayTthSwValue);
             waterSituationStatisticsTableToday.setTthKr(data_8.stream().filter(t->t.getTableHeadId().equals(kr.getId())).map(DayWaterSituationStatisticsTableTth::getV).collect(Collectors.toList()).get(0));
             waterSituationStatisticsTableToday.setTthJkRk(data_8.stream().filter(t->t.getTableHeadId().equals(jkll.getId())).map(DayWaterSituationStatisticsTableTth::getV).collect(Collectors.toList()).get(0));
             waterSituationStatisticsTableToday.setTthJkGyy(data_8.stream().filter(t->t.getTableHeadId().equals(lkll.getId())).map(DayWaterSituationStatisticsTableTth::getV).collect(Collectors.toList()).get(0));
-            waterSituationStatisticsTableToday.setTthJkHj(data_8.stream().filter(t->t.getTableHeadId().equals(jkhj.getId())).map(DayWaterSituationStatisticsTableTth::getV).collect(Collectors.toList()).get(0));
+            waterSituationStatisticsTableToday.setTthJkHj(todayTthRkValue);
             waterSituationStatisticsTableToday.setTthCkHd(data_8.stream().filter(t->t.getTableHeadId().equals(hd.getId())).map(DayWaterSituationStatisticsTableTth::getV).collect(Collectors.toList()).get(0));
             waterSituationStatisticsTableToday.setTthCkBg(data_8.stream().filter(t->t.getTableHeadId().equals(bgCount.getId())).map(DayWaterSituationStatisticsTableTth::getV).collect(Collectors.toList()).get(0));
             waterSituationStatisticsTableToday.setTthCkHysk(data_8.stream().filter(t->t.getTableHeadId().equals(hy.getId())).map(DayWaterSituationStatisticsTableTth::getV).collect(Collectors.toList()).get(0));
@@ -297,6 +306,23 @@ public class WaterSituationStatisticsTableTodayServiceImpl extends ServiceImpl<W
             waterSituationStatisticsTableToday.setHxJgd(data_8.stream().filter(t->t.getTableHeadId().equals(jgd.getId())).map(DayWaterSituationStatisticsTableHx::getV).collect(Collectors.toList()).get(0));
             waterSituationStatisticsTableToday.setHxXghj(data_8.stream().filter(t->t.getTableHeadId().equals(xgHj.getId())).map(DayWaterSituationStatisticsTableHx::getV).collect(Collectors.toList()).get(0));
         }
+        List<DayWaterSituationStatisticsTableTth> dayWaterSituationStatisticsTableTthYesterdayList = dayWaterSituationStatisticsTableTthMapper.selectList(yesterday);
+        Double yesterdayTthSwValue = 0.00;
+        Double yesterdayTthRkValue = 0.00;
+        if(!dayWaterSituationStatisticsTableTthYesterdayList.isEmpty()){
+            List<DayWaterSituationStatisticsTableTth> data_8 = dayWaterSituationStatisticsTableTthYesterdayList.stream().filter(t -> t.getTime().equals("08:00")).collect(Collectors.toList());
+            List<TrendsTableParam> tthTableParam = trendsTableParamList.stream().filter(t -> t.getUseType() == 1 && t.getUseStation().equals("头屯河水库")).collect(Collectors.toList());
+            TrendsTableParam sw = tthTableParam.stream().filter(t -> t.getPId().equals("0") && t.getParamName().equals("库水位")).collect(Collectors.toList()).get(0);
+            TrendsTableParam jkTemp = tthTableParam.stream().filter(t -> t.getPId().equals("0") && t.getParamName().equals("进库流量")).collect(Collectors.toList()).get(0);
+            TrendsTableParam jkllTemp = tthTableParam.stream().filter(t -> t.getPId().equals(jkTemp.getId()) && t.getParamName().equals("流量")).collect(Collectors.toList()).get(0);
+            TrendsTableParam jkhj = tthTableParam.stream().filter(t -> t.getPId().equals(jkllTemp.getId()) && t.getParamName().equals("合计")).collect(Collectors.toList()).get(0);
+            yesterdayTthSwValue = data_8.stream().filter(t -> t.getTableHeadId().equals(sw.getId()) && t.getV() != null).map(DayWaterSituationStatisticsTableTth::getV).reduce(Double::sum).orElse(0.00);
+            yesterdayTthRkValue = data_8.stream().filter(t -> t.getTableHeadId().equals(jkhj.getId()) && t.getV() != null).map(DayWaterSituationStatisticsTableTth::getV).reduce(Double::sum).orElse(0.00);
+        }
+        Double swFlag = todayTthSwValue-yesterdayTthSwValue;
+        Double rkFlag = todayTthRkValue-yesterdayTthRkValue;
+        waterSituationStatisticsTableToday.setTthKswss(swFlag>0?"涨":swFlag==0?"平":"落");
+        waterSituationStatisticsTableToday.setTthJkSs(rkFlag>0?"涨":rkFlag==0?"平":"落");
         boolean save = this.save(waterSituationStatisticsTableToday);
         if(save){
             return RestResponse.ok();

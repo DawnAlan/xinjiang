@@ -14,7 +14,7 @@ public class QsFlowListTotalVo implements Serializable {
 
     //本旬水量
     @ApiModelProperty(value = "本旬水量")
-    private Double currentWaterVolume;
+    private Long currentWaterVolume;
 
     //本旬流量
     @ApiModelProperty(value = "本旬流量")
@@ -22,9 +22,9 @@ public class QsFlowListTotalVo implements Serializable {
 
     //累计水量
     @ApiModelProperty(value = "累计水量")
-    private Double accumulatedWaterVolume;
+    private Long accumulatedWaterVolume;
 
     //去年同期水量
     @ApiModelProperty(value = "去年同期水量")
-    private Double waterVolumeDuringLastYear;
+    private Long waterVolumeDuringLastYear;
 }

@@ -544,11 +544,11 @@ public class DayWaterSituationStatisticsTableQsServiceImpl extends ServiceImpl<D
             vo.setTableHeaderId(s);
             Double thisTenDaysflow = topForTableIdMap.size()==0?0.00:topForTableIdMap.get(s).stream().filter(t -> t.getV() != null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00);
             vo.setCurrentWaterFlow(thisTenDaysflow);
-            vo.setCurrentWaterVolume(thisTenDaysflow*86400);
+            vo.setCurrentWaterVolume(Math.round(thisTenDaysflow*86400));
             Double thisYearTotalFlow = thisYearMap.size()==0?0.00:thisYearMap.get(s).stream().filter(t -> t.getV() != null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00);
-            vo.setAccumulatedWaterVolume(thisYearTotalFlow*86400);
+            vo.setAccumulatedWaterVolume(Math.round(thisYearTotalFlow*86400));
             Double thisYearTenDaysflow = lastTenDaysMap.size()==0?0.00:lastTenDaysMap.get(s).stream().filter(t -> t.getV() != null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00);
-            vo.setWaterVolumeDuringLastYear(thisYearTenDaysflow*86400);
+            vo.setWaterVolumeDuringLastYear(Math.round(thisYearTenDaysflow*86400));
             qsFlowListTotalVoList.add(vo);
         }
         res.setFlowDetail(topForTimeMap);
