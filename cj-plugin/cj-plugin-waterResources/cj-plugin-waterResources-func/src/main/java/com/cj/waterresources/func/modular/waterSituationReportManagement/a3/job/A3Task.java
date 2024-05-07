@@ -69,10 +69,23 @@ public class A3Task {
         qsLhService.insertTodayMeanValue();
     }
 
+    //@Scheduled(cron="0 00 23 * * ?")//每天23:00
+    //@Scheduled(cron="0 0 0/1 * * ?")//每小时执行一次，以空格分隔
+    public void createA3HaveDklForTime(){
+        log.info("--------------------------------执行定时插入A3（仅对口率） 当前时刻生成数据----------------------------");
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
+        Date date = new Date();
+        dklService.insertTodayMeanValue(date,sdf.format(date));
+        log.info("--------------------------------完成定时插入A3（仅对口率） 当前时刻生成数据----------------------------");
+    }
+
     @Scheduled(cron="0 00 23 * * ?")//每天23:00
-    public void createA3HaveDkl(){
+    //@Scheduled(cron="0 0 0/1 * * ?")//每小时执行一次，以空格分隔
+    public void createA3HaveDklForToday(){
         log.info("--------------------------------执行定时插入A3（仅对口率） 晚8点后生成今日均数据----------------------------");
-        dklService.insertTodayMeanValue(new Date());
+        Date date = new Date();
+        dklService.insertTodayMeanValue(date,"今日均");
+        log.info("--------------------------------完成定时插入A3（仅对口率） 晚8点后生成今日均数据----------------------------");
     }
 
     @Scheduled(cron="0 00 09 * * ?")//每天08:40

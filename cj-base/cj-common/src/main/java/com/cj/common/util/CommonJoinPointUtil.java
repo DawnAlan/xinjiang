@@ -4,6 +4,7 @@ import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
+import com.alibaba.fastjson2.JSONObject;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.Signature;
 import org.aspectj.lang.reflect.MethodSignature;
@@ -37,7 +38,7 @@ public class CommonJoinPointUtil {
         for (int i = 0; i < args.length; i++) {
             if(ObjectUtil.isNotEmpty(args[i]) && isUsefulParam(args[i])) {
                 if(JSONUtil.isTypeJSON(StrUtil.toString(args[i]))) {
-                    map.put(parameterNames[i], JSONUtil.parseObj(args[i]));
+                    map.put(parameterNames[i], JSONUtil.toJsonStr(args[i]));
                 } else {
                     map.put(parameterNames[i], JSONUtil.toJsonStr(args[i]));
                 }

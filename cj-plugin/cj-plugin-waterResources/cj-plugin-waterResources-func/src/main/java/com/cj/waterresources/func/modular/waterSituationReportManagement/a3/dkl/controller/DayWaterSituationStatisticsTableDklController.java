@@ -73,7 +73,7 @@ public class DayWaterSituationStatisticsTableDklController{
     @GetMapping("/insertTodayMeanValue")
     public RestResponse insertTodayMeanValue(@RequestParam(value = "date") String date) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        return dayWaterSituationStatisticsTableDklService.insertTodayMeanValue(sdf.parse(date));
+        return dayWaterSituationStatisticsTableDklService.insertTodayMeanValue(sdf.parse(date),"今日均");
     }
 }
 

@@ -24,6 +24,6 @@ public interface DayWaterSituationStatisticsTableDklService extends IService<Day
 
     RestResponse update(List<DayWaterSituationStatisticsTableDkl> dayWaterSituationStatisticsTableDklList);
 
-    RestResponse insertTodayMeanValue(Date date);
+    RestResponse insertTodayMeanValue(Date date,String time);
 }
 

@@ -17,6 +17,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cj.business.log.modular.log.enums.DevLogCategoryEnum;
 import com.cj.business.log.modular.log.mapper.DevLogMapper;
 import com.cj.business.log.modular.log.service.DevLogService;
+import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
 import com.cj.common.enums.CommonSortOrderEnum;
 import com.cj.common.page.CommonPageRequest;
@@ -28,9 +29,14 @@ import com.cj.business.log.modular.log.result.DevLogOpPieChartDataResult;
 import com.cj.business.log.modular.log.result.DevLogVisLineChartDataResult;
 import com.cj.business.log.modular.log.result.DevLogVisPieChartDataResult;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static java.util.Arrays.stream;
 
 /**
  * 日志Service接口实现类
@@ -40,6 +46,8 @@ import java.util.stream.Collectors;
  */
 @Service
 public class DevLogServiceImpl extends ServiceImpl<DevLogMapper, DevLog> implements DevLogService {
+
+    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
     @Override
     public Page<DevLog> page(DevLogPageParam devLogPageParam) {
@@ -67,11 +75,10 @@ public class DevLogServiceImpl extends ServiceImpl<DevLogMapper, DevLog> impleme
 
     @Override
     public List<DevLogVisLineChartDataResult> visLogLineChartData() {
-        DateTime lastWeek = DateUtil.lastWeek();
-        DateTime now = DateTime.now();
-        Map<String, List<JSONObject>> listMap = this.list(new LambdaQueryWrapper<DevLog>().in(DevLog::getCategory, DevLogCategoryEnum.LOGIN.getValue(),
-                DevLogCategoryEnum.LOGOUT.getValue()).between(DevLog::getOpTime, lastWeek, now).orderByAsc(DevLog::getOpTime))
-                .stream().map(devLog -> JSONUtil.parseObj(devLog).set("date", DateUtil.formatDate(devLog.getOpTime())))
+        Date now = new Date();
+        Date lastWeek = calculateTime(now,-24);
+        List<DevLog> list = this.lambdaQuery().between(DevLog::getOpTime, sdf.format(lastWeek), sdf.format(now)).list();
+        Map<String, List<JSONObject>> listMap =list.stream().map(devLog -> JSONUtil.parseObj(devLog).set("date", DateUtil.formatDate(devLog.getOpTime())))
                 .collect(Collectors.groupingBy(jsonObject -> jsonObject.getStr("date")));
         long between = DateUtil.between(lastWeek, now, DateUnit.DAY);
         List<DevLogVisLineChartDataResult> resultList = CollectionUtil.newArrayList();
@@ -113,11 +120,10 @@ public class DevLogServiceImpl extends ServiceImpl<DevLogMapper, DevLog> impleme
 
     @Override
     public List<DevLogOpBarChartDataResult> opLogBarChartData() {
-        DateTime lastWeek = DateUtil.lastWeek();
-        DateTime now = DateTime.now();
-        Map<String, List<JSONObject>> listMap = this.list(new LambdaQueryWrapper<DevLog>().in(DevLog::getCategory, DevLogCategoryEnum.OPERATE.getValue(),
-                DevLogCategoryEnum.EXCEPTION.getValue()).between(DevLog::getOpTime, lastWeek, now).orderByAsc(DevLog::getOpTime))
-                .stream().map(devLog -> JSONUtil.parseObj(devLog).set("date", DateUtil.formatDate(devLog.getOpTime())))
+        Date now = new Date();
+        Date lastWeek = getWeekByDate(now);
+        List<DevLog> list = this.lambdaQuery().between(DevLog::getOpTime, sdf.format(lastWeek), sdf.format(now)).select(DevLog::getOpTime,DevLog::getCategory).list();
+        Map<String, List<JSONObject>> listMap =list.stream().map(devLog -> JSONUtil.parseObj(devLog).set("date", DateUtil.formatDate(devLog.getOpTime())))
                 .collect(Collectors.groupingBy(jsonObject -> jsonObject.getStr("date")));
         long between = DateUtil.between(lastWeek, now, DateUnit.DAY);
         List<DevLogOpBarChartDataResult> resultList = CollectionUtil.newArrayList();
@@ -160,5 +166,28 @@ public class DevLogServiceImpl extends ServiceImpl<DevLogMapper, DevLog> impleme
                 .eq(DevLog::getCategory, DevLogCategoryEnum.EXCEPTION.getValue())));
         resultList.add(devLogExceptionPieChartDataResult);
         return resultList;
+    }
+
+    @SneakyThrows
+    private Date getWeekByDate(Date date){
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        int dayWeek = cal.get(Calendar.DAY_OF_WEEK);
+        if(1== dayWeek){
+            cal.add(Calendar.DAY_OF_MONTH,-1);
+        }
+        cal.setFirstDayOfWeek(Calendar.MONDAY);
+        int day = cal.get(Calendar.DAY_OF_WEEK);
+        cal.add(Calendar.DATE,cal.getFirstDayOfWeek()-day);
+        Date time = cal.getTime();
+        return sdf.parse(sdf.format(time));
+    }
+
+    private Date calculateTime(Date time,int hour){
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(time);
+        calendar.add(Calendar.HOUR,hour);
+        Date date = calendar.getTime();
+        return date;
     }
 }
