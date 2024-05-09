@@ -26,7 +26,7 @@ public class WaterDistributionRatio extends Model<WaterDistributionRatio> {
     //旬
     private String tenDays;
     //表头ID
-    private String tableBeadId;
+    private String tableHeadId;
     //配水值
     @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double v;

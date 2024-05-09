@@ -54,6 +54,9 @@ public class DayWaterSituationStatisticsTableQsLhServiceImpl extends ServiceImpl
     @Value("${dayUseWaterPlanChoseTime}")
     private String dayUseWaterPlanChoseTime;
 
+    @Value("${dayWaterBalanceChoseTime}")
+    private String dayWaterBalanceChoseTime;
+
     @Override
     public RestResponse<Map<String, List<DayWaterSituationStatisticsTableQsLh>>> selectList(String date) {
         try {
@@ -185,6 +188,13 @@ public class DayWaterSituationStatisticsTableQsLhServiceImpl extends ServiceImpl
                     redisUtil.set("A3:dayUseWaterPlanChoseTime:qs:"+t.getTableHeadId(),t.getV());
                 });
             }
+            if(result.get(0).getTime().equals(dayWaterBalanceChoseTime.length()==1?"0"+dayWaterBalanceChoseTime+":00":dayWaterBalanceChoseTime+":00")){
+                dayWaterSituationStatisticsTableQsLhList.forEach(t->{
+                    String tableParamString = (String)redisUtil.get("trendsTableParam:object:"+t.getTableHeadId());
+                    TrendsTableParam tableParam = JSONObject.parseObject(tableParamString, TrendsTableParam.class);
+                    redisUtil.set("A3:dayWaterBalanceChoseTime:qs:"+tableParam.getUnitId(),t.getV());
+                });
+            }
             List<TrendsTableParam> trendsTableParamQsList = trendsTableParamListTemp.stream().filter(t -> t.getUseType() == 1 && t.getUseStation().equals("渠首管理站")).collect(Collectors.toList());
             TrendsTableParam dlqlhTableParam = trendsTableParamQsList.stream().filter(t -> t.getParamName().equals("灯笼渠绿化")).collect(Collectors.toList()).get(0);
             TrendsTableParam hjTableParam = trendsTableParamList.stream().filter(t -> t.getParamName().equals("合计") && t.getPId().equals("0")).collect(Collectors.toList()).get(0);
@@ -304,6 +314,13 @@ public class DayWaterSituationStatisticsTableQsLhServiceImpl extends ServiceImpl
             if(dayWaterSituationStatisticsTableQsLhList.get(0).getTime().equals(dayUseWaterPlanChoseTime+":00")){
                 dayWaterSituationStatisticsTableQsLhList.forEach(t->{
                     redisUtil.set("A3:dayUseWaterPlanChoseTime:qs:"+t.getTableHeadId(),t.getV());
+                });
+            }
+            if(dayWaterSituationStatisticsTableQsLhList.get(0).getTime().equals(dayWaterBalanceChoseTime.length()==1?"0"+dayWaterBalanceChoseTime+":00":dayWaterBalanceChoseTime+":00")){
+                dayWaterSituationStatisticsTableQsLhList.forEach(t->{
+                    String tableParamString = (String)redisUtil.get("trendsTableParam:object:"+t.getTableHeadId());
+                    TrendsTableParam tableParam = JSONObject.parseObject(tableParamString, TrendsTableParam.class);
+                    redisUtil.set("A3:dayWaterBalanceChoseTime:qs:"+tableParam.getUnitId(),t.getV());
                 });
             }
             List<DayWaterSituationStatisticsTableQs> qdList = dayWaterSituationStatisticsTableQsMapper.selectListForLh(qsLh.getTime(),sdf.format(qsLh.getRecordTime()));

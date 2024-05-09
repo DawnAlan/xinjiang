@@ -99,10 +99,15 @@ public class A3Task {
 
     @Scheduled(cron="0 59 23 * * ?")//每天23:59
     public void deleteDayUseWaterPlan(){
-        Set<String> allKeys = redisUtil.getAllKeys("A3:dayUseWaterPlanChoseTime");
-        if(!allKeys.isEmpty()){
-            allKeys.forEach(t->redisUtil.del(t));
+        Set<String> dayUseWaterPlanChoseTimeAllKeys = redisUtil.getAllKeys("A3:dayUseWaterPlanChoseTime");
+        if(!dayUseWaterPlanChoseTimeAllKeys.isEmpty()){
+            dayUseWaterPlanChoseTimeAllKeys.forEach(t->redisUtil.del(t));
             log.info("删除redis中A3:dayUseWaterPlanChoseTime数据成功");
+        }
+        Set<String> dayWaterBalanceChoseTimeAllKeys = redisUtil.getAllKeys("A3:dayWaterBalanceChoseTime");
+        if(!dayWaterBalanceChoseTimeAllKeys.isEmpty()){
+            dayWaterBalanceChoseTimeAllKeys.forEach(t->redisUtil.del(t));
+            log.info("删除redis中A3:dayWaterBalanceChoseTime数据成功");
         }
     }
 

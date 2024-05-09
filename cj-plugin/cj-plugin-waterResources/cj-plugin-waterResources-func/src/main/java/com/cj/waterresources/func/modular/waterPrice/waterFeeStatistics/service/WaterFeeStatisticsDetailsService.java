@@ -37,6 +37,5 @@ public interface WaterFeeStatisticsDetailsService extends IService<WaterFeeStati
 
     RestResponse selectTotalForIndex(String stationName,String time);
 
-
 }
 

@@ -1,6 +1,8 @@
 package com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.service;
 
 import com.cj.common.model.RestResponse;
+import com.cj.waterresources.func.modular.quotaStatisticsManagement.dayWaterBalance.entity.DayWaterBalance;
+import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.entity.WaterFeeStatisticsDetails;
 import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.req.SelectInfoListNewReq;
 import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.req.SelectInfoListReq;
 import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.res.HydrographRes;
@@ -43,4 +45,6 @@ public interface AllService {
     RestResponse<List<RealTimeEngineeringSituationDataRes>> getRealTimeWaterLevelData(String date);
 
     RestResponse selectCapacityOutPutDetail(String date, String ids);
+
+    RestResponse<List<DayWaterBalance>> selectTodayDayWaterBalance(List<WaterFeeStatisticsDetails> waterFeeStatisticsDetails);
 }

@@ -1,6 +1,7 @@
 package com.cj.common.util;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,6 +49,16 @@ public class NumberUtil {
             e.printStackTrace();
             return null;
         }
+    }
+
+    public static Double holdDecimal(Double v, Integer digit){
+        // 使用BigDecimal.valueOf方法避免double的精度问题
+        BigDecimal bd = BigDecimal.valueOf(v);
+        // 设置小数点后保留的位数
+        bd = bd.setScale(digit, RoundingMode.HALF_UP);
+        // 转换回double类型
+        Double newValue = bd.doubleValue();
+        return newValue;
     }
 
     public static void main(String[] args) {

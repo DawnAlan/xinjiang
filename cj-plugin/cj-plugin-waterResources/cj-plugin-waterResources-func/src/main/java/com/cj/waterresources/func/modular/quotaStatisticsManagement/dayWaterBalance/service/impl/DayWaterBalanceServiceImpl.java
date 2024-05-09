@@ -2,6 +2,7 @@ package com.cj.waterresources.func.modular.quotaStatisticsManagement.dayWaterBal
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cj.common.model.RestResponse;
+import com.cj.common.util.NumberUtil;
 import com.cj.common.util.UUIDUtils;
 import com.cj.waterresources.func.modular.quotaStatisticsManagement.dayWaterBalance.bean.req.DayWaterBalanceSelectListReq;
 import com.cj.waterresources.func.modular.quotaStatisticsManagement.dayWaterBalance.mapper.DayWaterBalanceMapper;
@@ -53,6 +54,7 @@ public class DayWaterBalanceServiceImpl extends ServiceImpl<DayWaterBalanceMappe
     public RestResponse addFirst(List<WaterFeeStatisticsDetails> detailsList, Integer day) {
         List<DayWaterBalance> result = new ArrayList<>();
         Double actualWaterReceived = 0.00;
+        Double totalRatio = 0.00;
         for(WaterFeeStatisticsDetails details:detailsList){
             TrendsTableParam param = trendsTableParamService.lambdaQuery().
                     eq(TrendsTableParam::getId, details.getTableHeadId()).
@@ -75,15 +77,23 @@ public class DayWaterBalanceServiceImpl extends ServiceImpl<DayWaterBalanceMappe
                         eq(WaterDistributionRatio::getYear, details.getYear()).
                         eq(WaterDistributionRatio::getMonth, details.getMonth()).
                         eq(WaterDistributionRatio::getTenDays, details.getTenDays()).
-                        eq(WaterDistributionRatio::getTableBeadId, details.getTableHeadId()).one();
+                        eq(WaterDistributionRatio::getTableHeadId, details.getTableHeadId()).one();
                 if(null != ratio){
                     //按比例水量
-                    balance.setProportionalWaterQuantity(((ratio.getV()==null?0.0:ratio.getV())/100)*(balance.getActualWaterReceived()==null?0.0:balance.getActualWaterReceived()));
+                    balance.setProportionalWaterQuantity(NumberUtil.holdDecimal((balance.getActualWaterReceived()==null?0.0:balance.getActualWaterReceived()),3));
+                    totalRatio = ratio.getV()==null?0.0:ratio.getV();
                 }
                 //实际水量
-                balance.setActualWaterVolume(balance.getActualWaterReceived()==null?0.0:balance.getActualWaterReceived());
+                balance.setActualWaterVolume(NumberUtil.holdDecimal(balance.getActualWaterReceived()==null?0.0:balance.getActualWaterReceived(),3));
                 result.add(balance);
-            }else {
+            }
+        }
+        for(WaterFeeStatisticsDetails details:detailsList){
+            TrendsTableParam param = trendsTableParamService.lambdaQuery().
+                    eq(TrendsTableParam::getId, details.getTableHeadId()).
+                    eq(TrendsTableParam::getPId, "0").
+                    eq(TrendsTableParam::getParamName, "合计").one();
+            if(null== param){
                 DayWaterBalance balance = new DayWaterBalance();
                 balance.setId(UUIDUtils.getUUID());
                 balance.setDel(0);
@@ -99,17 +109,16 @@ public class DayWaterBalanceServiceImpl extends ServiceImpl<DayWaterBalanceMappe
                         eq(WaterDistributionRatio::getYear, details.getYear()).
                         eq(WaterDistributionRatio::getMonth, details.getMonth()).
                         eq(WaterDistributionRatio::getTenDays, details.getTenDays()).
-                        eq(WaterDistributionRatio::getTableBeadId, details.getTableHeadId()).one();
+                        eq(WaterDistributionRatio::getTableHeadId, details.getTableHeadId()).one();
                 if(null != ratio){
                     //按比例水量
-                    balance.setProportionalWaterQuantity(((ratio.getV()==null?0.0:ratio.getV())/100)* actualWaterReceived);
+                    balance.setProportionalWaterQuantity(totalRatio==0.00?null:NumberUtil.holdDecimal(((ratio.getV()==null?0.0:ratio.getV())/totalRatio)* actualWaterReceived,3));
                 }
                 //实际水量
-                balance.setActualWaterVolume(details.getV());
+                balance.setActualWaterVolume(details.getV()==null?null:NumberUtil.holdDecimal(details.getV(),3));
                 result.add(balance);
             }
         }
-
         boolean b = this.saveBatch(result);
         if(b){
             return RestResponse.ok();
@@ -121,98 +130,68 @@ public class DayWaterBalanceServiceImpl extends ServiceImpl<DayWaterBalanceMappe
     @Override
     public RestResponse update(List<WaterFeeStatisticsDetails> detailsList, Integer day) {
         WaterFeeStatisticsDetails detailTemp = detailsList.get(0);
+        Double actualWaterReceived = 0.00;
+        Double totalRatio = 0.00;
         List<DayWaterBalance> list = this.lambdaQuery().eq(DayWaterBalance::getStation, detailTemp.getStation()).
                 eq(DayWaterBalance::getYear, detailTemp.getYear()).
                 eq(DayWaterBalance::getMonth, detailTemp.getMonth()).
                 eq(DayWaterBalance::getDay, day).list();
         if(null != list && list.size()>0){
             List<DayWaterBalance> result = new ArrayList<>();
-            if(detailsList.get(0).getStation().equals("渠首管理站")){
-                for(DayWaterBalance balance:list){
-                    for(WaterFeeStatisticsDetails details:detailsList){
-                        if(balance.getTableHeadId().equals(details.getTableHeadId())){
-                            String paramName = trendsTableParamService.getById(details.getTableHeadId()).getParamName();
-                            if(paramName.equals("引水")){
-                                balance.setUpdateTime(new Date());
-                                ////总实收水量
-                                balance.setActualWaterReceived(details.getV());
-                                WaterDistributionRatio ratio = waterDistributionRatioService.lambdaQuery().eq(WaterDistributionRatio::getStation, details.getStation()).
-                                        eq(WaterDistributionRatio::getYear, details.getYear()).
-                                        eq(WaterDistributionRatio::getMonth, details.getMonth()).
-                                        eq(WaterDistributionRatio::getTenDays, details.getTenDays()).
-                                        eq(WaterDistributionRatio::getTableBeadId, details.getTableHeadId()).one();
-                                if(null != ratio){
-                                    //按比例水量
-                                    balance.setProportionalWaterQuantity(((ratio.getV()==null?0.0:ratio.getV())/100)*(balance.getActualWaterReceived()==null?0.0:balance.getActualWaterReceived()));
-                                }else {
-                                    balance.setProportionalWaterQuantity(null);
-                                }
-                                //实际水量
-                                balance.setActualWaterVolume(balance.getActualWaterReceived()==null?0.0:balance.getActualWaterReceived());
-                                result.add(balance);
+            for(DayWaterBalance balance:list){
+                for(WaterFeeStatisticsDetails details:detailsList){
+                    if(balance.getTableHeadId().equals(details.getTableHeadId())){
+                        TrendsTableParam param = trendsTableParamService.lambdaQuery().
+                                eq(TrendsTableParam::getId, details.getTableHeadId()).
+                                eq(TrendsTableParam::getPId, "0").
+                                eq(TrendsTableParam::getParamName, "合计").one();
+                        if(null!= param){
+                            balance.setUpdateTime(new Date());
+                            ////总实收水量
+                            actualWaterReceived = details.getV();
+                            balance.setActualWaterReceived(details.getV());
+                            WaterDistributionRatio ratio = waterDistributionRatioService.lambdaQuery().eq(WaterDistributionRatio::getStation, details.getStation()).
+                                    eq(WaterDistributionRatio::getYear, details.getYear()).
+                                    eq(WaterDistributionRatio::getMonth, details.getMonth()).
+                                    eq(WaterDistributionRatio::getTenDays, details.getTenDays()).
+                                    eq(WaterDistributionRatio::getTableHeadId, details.getTableHeadId()).one();
+                            if(null != ratio){
+                                //按比例水量
+                                balance.setProportionalWaterQuantity(NumberUtil.holdDecimal((balance.getActualWaterReceived()==null?0.0:balance.getActualWaterReceived()),3));
+                                totalRatio = ratio.getV()==null?0.0:ratio.getV();
                             }else {
-                                balance.setUpdateTime(new Date());
-                                WaterDistributionRatio ratio = waterDistributionRatioService.lambdaQuery().eq(WaterDistributionRatio::getStation, details.getStation()).
-                                        eq(WaterDistributionRatio::getYear, details.getYear()).
-                                        eq(WaterDistributionRatio::getMonth, details.getMonth()).
-                                        eq(WaterDistributionRatio::getTenDays, details.getTenDays()).
-                                        eq(WaterDistributionRatio::getTableBeadId, details.getTableHeadId()).one();
-                                if(null != ratio){
-                                    //按比例水量
-                                    balance.setProportionalWaterQuantity(((ratio.getV()==null?0.0:ratio.getV())/100)* (details.getV()==null?0.0:details.getV()));
-                                }else {
-                                    balance.setProportionalWaterQuantity(null);
-                                }
-                                //实际水量
-                                balance.setActualWaterVolume(details.getV());
-                                result.add(balance);
+                                balance.setProportionalWaterQuantity(null);
                             }
+                            //实际水量
+                            balance.setActualWaterVolume(NumberUtil.holdDecimal(balance.getActualWaterReceived()==null?0.0:balance.getActualWaterReceived(),3));
+                            result.add(balance);
                         }
                     }
                 }
-            }else {
-                for(DayWaterBalance balance:list){
-                    for(WaterFeeStatisticsDetails details:detailsList){
-                        if(balance.getTableHeadId().equals(details.getTableHeadId())){
-                            TrendsTableParam param = trendsTableParamService.lambdaQuery().
-                                    eq(TrendsTableParam::getId, details.getTableHeadId()).
-                                    eq(TrendsTableParam::getPId, "0").
-                                    eq(TrendsTableParam::getParamName, "合计").one();
-                            if(null!= param){
-                                balance.setUpdateTime(new Date());
-                                ////总实收水量
-                                balance.setActualWaterReceived(details.getV());
-                                WaterDistributionRatio ratio = waterDistributionRatioService.lambdaQuery().eq(WaterDistributionRatio::getStation, details.getStation()).
-                                        eq(WaterDistributionRatio::getYear, details.getYear()).
-                                        eq(WaterDistributionRatio::getMonth, details.getMonth()).
-                                        eq(WaterDistributionRatio::getTenDays, details.getTenDays()).
-                                        eq(WaterDistributionRatio::getTableBeadId, details.getTableHeadId()).one();
-                                if(null != ratio){
-                                    //按比例水量
-                                    balance.setProportionalWaterQuantity(((ratio.getV()==null?0.0:ratio.getV())/100)*(balance.getActualWaterReceived()==null?0.0:balance.getActualWaterReceived()));
-                                }else {
-                                    balance.setProportionalWaterQuantity(null);
-                                }
-                                //实际水量
-                                balance.setActualWaterVolume(balance.getActualWaterReceived()==null?0.0:balance.getActualWaterReceived());
-                                result.add(balance);
+            }
+            for(DayWaterBalance balance:list){
+                for(WaterFeeStatisticsDetails details:detailsList){
+                    if(balance.getTableHeadId().equals(details.getTableHeadId())){
+                        TrendsTableParam param = trendsTableParamService.lambdaQuery().
+                                eq(TrendsTableParam::getId, details.getTableHeadId()).
+                                eq(TrendsTableParam::getPId, "0").
+                                eq(TrendsTableParam::getParamName, "合计").one();
+                        if(null== param){
+                            balance.setUpdateTime(new Date());
+                            WaterDistributionRatio ratio = waterDistributionRatioService.lambdaQuery().eq(WaterDistributionRatio::getStation, details.getStation()).
+                                    eq(WaterDistributionRatio::getYear, details.getYear()).
+                                    eq(WaterDistributionRatio::getMonth, details.getMonth()).
+                                    eq(WaterDistributionRatio::getTenDays, details.getTenDays()).
+                                    eq(WaterDistributionRatio::getTableHeadId, details.getTableHeadId()).one();
+                            if(null != ratio){
+                                //按比例水量
+                                balance.setProportionalWaterQuantity(totalRatio==0.00?null:NumberUtil.holdDecimal(((ratio.getV()==null?0.0:ratio.getV())/totalRatio)* actualWaterReceived,3));
                             }else {
-                                balance.setUpdateTime(new Date());
-                                WaterDistributionRatio ratio = waterDistributionRatioService.lambdaQuery().eq(WaterDistributionRatio::getStation, details.getStation()).
-                                        eq(WaterDistributionRatio::getYear, details.getYear()).
-                                        eq(WaterDistributionRatio::getMonth, details.getMonth()).
-                                        eq(WaterDistributionRatio::getTenDays, details.getTenDays()).
-                                        eq(WaterDistributionRatio::getTableBeadId, details.getTableHeadId()).one();
-                                if(null != ratio){
-                                    //按比例水量
-                                    balance.setProportionalWaterQuantity(((ratio.getV()==null?0.0:ratio.getV())/100)* (details.getV()==null?0.0:details.getV()));
-                                }else {
-                                    balance.setProportionalWaterQuantity(null);
-                                }
-                                //实际水量
-                                balance.setActualWaterVolume(details.getV());
-                                result.add(balance);
+                                balance.setProportionalWaterQuantity(null);
                             }
+                            //实际水量
+                            balance.setActualWaterVolume(details.getV()==null?null:NumberUtil.holdDecimal(details.getV(),3));
+                            result.add(balance);
                         }
                     }
                 }

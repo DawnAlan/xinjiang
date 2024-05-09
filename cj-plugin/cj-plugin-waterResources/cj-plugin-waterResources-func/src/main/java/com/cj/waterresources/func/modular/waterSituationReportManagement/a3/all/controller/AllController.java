@@ -2,6 +2,8 @@ package com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all
 
 import com.cj.business.log.modular.log.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
+import com.cj.waterresources.func.modular.quotaStatisticsManagement.dayWaterBalance.entity.DayWaterBalance;
+import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.entity.WaterFeeStatisticsDetails;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req.*;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.service.AllService;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hd.entity.DayWaterSituationStatisticsTableHd;
@@ -143,5 +145,13 @@ public class AllController {
     @GetMapping("/updateDklInfoDate")
     public RestResponse updateDklInfoDate(@RequestParam(value = "startTime") String startTime,@RequestParam(value = "endTime") String endTime) {
         return allService.updateDkl(startTime,endTime);
+    }
+
+    @ApiOperationSupport(order =13)
+    @ApiOperation("查询今日日水量平衡")
+    @CommonLog(value = "查询今日日水量平衡")
+    @PostMapping("/selectTodayDayWaterBalance")
+    public RestResponse<List<DayWaterBalance>> selectTodayDayWaterBalance(@RequestBody List<WaterFeeStatisticsDetails> waterFeeStatisticsDetails) {
+        return allService.selectTodayDayWaterBalance(waterFeeStatisticsDetails);
     }
 }

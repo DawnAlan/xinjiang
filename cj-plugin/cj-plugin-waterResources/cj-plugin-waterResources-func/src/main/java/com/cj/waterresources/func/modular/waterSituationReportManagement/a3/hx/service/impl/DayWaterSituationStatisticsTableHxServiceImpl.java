@@ -46,6 +46,9 @@ public class DayWaterSituationStatisticsTableHxServiceImpl extends ServiceImpl<D
     @Value("${dayUseWaterPlanChoseTime}")
     private String dayUseWaterPlanChoseTime;
 
+    @Value("${dayWaterBalanceChoseTime}")
+    private String dayWaterBalanceChoseTime;
+
     @Override
     public RestResponse<Map<String, List<DayWaterSituationStatisticsTableHx>>> selectList(String date) {
         try {
@@ -174,6 +177,13 @@ public class DayWaterSituationStatisticsTableHxServiceImpl extends ServiceImpl<D
                     redisUtil.set("A3:dayUseWaterPlanChoseTime:hx:"+t.getTableHeadId(),t.getV());
                 });
             }
+            if(result.get(0).getTime().equals(dayWaterBalanceChoseTime.length()==1?"0"+dayWaterBalanceChoseTime+":00":dayWaterBalanceChoseTime+":00")){
+                dayWaterSituationStatisticsTableHxList.forEach(t->{
+                    String tableParamString = (String)redisUtil.get("trendsTableParam:object:"+t.getTableHeadId());
+                    TrendsTableParam tableParam = JSONObject.parseObject(tableParamString, TrendsTableParam.class);
+                    redisUtil.set("A3:dayWaterBalanceChoseTime:hx:"+tableParam.getUnitId(),t.getV());
+                });
+            }
             return RestResponse.ok();
         }else {
             return RestResponse.no("error");
@@ -275,6 +285,13 @@ public class DayWaterSituationStatisticsTableHxServiceImpl extends ServiceImpl<D
             if(dayWaterSituationStatisticsTableHxList.get(0).getTime().equals(dayUseWaterPlanChoseTime+":00")){
                 dayWaterSituationStatisticsTableHxList.forEach(t->{
                     redisUtil.set("A3:dayUseWaterPlanChoseTime:hx:"+t.getTableHeadId(),t.getV());
+                });
+            }
+            if(dayWaterSituationStatisticsTableHxList.get(0).getTime().equals(dayWaterBalanceChoseTime.length()==1?"0"+dayWaterBalanceChoseTime+":00":dayWaterBalanceChoseTime+":00")){
+                dayWaterSituationStatisticsTableHxList.forEach(t->{
+                    String tableParamString = (String)redisUtil.get("trendsTableParam:object:"+t.getTableHeadId());
+                    TrendsTableParam tableParam = JSONObject.parseObject(tableParamString, TrendsTableParam.class);
+                    redisUtil.set("A3:dayWaterBalanceChoseTime:hx:"+tableParam.getUnitId(),t.getV());
                 });
             }
             return RestResponse.ok();

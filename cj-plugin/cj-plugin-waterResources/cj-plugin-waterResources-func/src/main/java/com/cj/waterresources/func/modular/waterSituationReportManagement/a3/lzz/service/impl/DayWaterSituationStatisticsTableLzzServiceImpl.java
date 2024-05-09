@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.text.DecimalFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -444,21 +445,24 @@ public class DayWaterSituationStatisticsTableLzzServiceImpl extends ServiceImpl<
         Set<Date> dates = collect1.keySet();
         for(Date date: dates){
             Date lastYearDate = sdf.parse(getLastYearTime(sdf.format(date)));
+            String lastYearDay = sdf.format(lastYearDate).split("-")[2];
+            String thisYearDay = sdf.format(date).split("-")[2];
+            Boolean flag = lastYearDay.equals(thisYearDay);
             LzzReportFormsRes res = new LzzReportFormsRes();
             res.setDate(date);
             res.setWaterLevel(dayWaterSituationStatisticsListThisYear.stream().filter(t->t.getTableHeadId().equals(kswTableId) && t.getTime().equals("08:00") && t.getV()!=null && t.getRecordTime().compareTo(date)==0).map(DayWaterSituationStatisticsTableLzz::getV).reduce(Double::sum).orElse(0.00));
             res.setStorageCapacity(dayWaterSituationStatisticsListThisYear.stream().filter(t->t.getTableHeadId().equals(krTableId) && t.getTime().equals("08:00") && t.getV()!=null && t.getRecordTime().compareTo(date)==0).map(DayWaterSituationStatisticsTableLzz::getV).reduce(Double::sum).orElse(0.00));
             res.setInputFlowThisYear(dayWaterSituationStatisticsListThisYear.stream().filter(t->t.getTableHeadId().equals(jkllTableId) && t.getTime().equals("今日均") && t.getV()!=null && t.getRecordTime().compareTo(date)==0).map(DayWaterSituationStatisticsTableLzz::getV).reduce(Double::sum).orElse(0.00));
-            res.setInputFlowLastYear(dayWaterSituationStatisticsListLastYear.stream().filter(t->t.getTableHeadId().equals(jkllTableId) && t.getTime().equals("今日均") && t.getV()!=null && t.getRecordTime().compareTo(lastYearDate)==0).map(DayWaterSituationStatisticsTableLzz::getV).reduce(Double::sum).orElse(0.00));
+            res.setInputFlowLastYear(dayWaterSituationStatisticsListLastYear.stream().filter(t->t.getTableHeadId().equals(jkllTableId) && t.getTime().equals("今日均") && t.getV()!=null && t.getRecordTime().compareTo(lastYearDate)==0 && flag).map(DayWaterSituationStatisticsTableLzz::getV).reduce(Double::sum).orElse(0.00));
             res.setOutputFlowThisYear(dayWaterSituationStatisticsListThisYear.stream().filter(t->t.getTableHeadId().equals(ckllTableId) && t.getTime().equals("今日均") && t.getV()!=null && t.getRecordTime().compareTo(date)==0).map(DayWaterSituationStatisticsTableLzz::getV).reduce(Double::sum).orElse(0.00));
-            res.setOutputFlowLastYear(dayWaterSituationStatisticsListLastYear.stream().filter(t->t.getTableHeadId().equals(ckllTableId) && t.getTime().equals("今日均") && t.getV()!=null && t.getRecordTime().compareTo(lastYearDate)==0).map(DayWaterSituationStatisticsTableLzz::getV).reduce(Double::sum).orElse(0.00));
+            res.setOutputFlowLastYear(dayWaterSituationStatisticsListLastYear.stream().filter(t->t.getTableHeadId().equals(ckllTableId) && t.getTime().equals("今日均") && t.getV()!=null && t.getRecordTime().compareTo(lastYearDate)==0 && flag).map(DayWaterSituationStatisticsTableLzz::getV).reduce(Double::sum).orElse(0.00));
             res.setScThisYear(formatDoubleForThreeDecimal(
                     (dayWaterSituationStatisticsListThisYear.stream().filter(t->t.getTableHeadId().equals(scgdOneTableId) && t.getTime().equals("今日均") && t.getV()!=null && t.getRecordTime().compareTo(date)==0).map(DayWaterSituationStatisticsTableLzz::getV).reduce(Double::sum).orElse(0.00))+
                     (dayWaterSituationStatisticsListThisYear.stream().filter(t->t.getTableHeadId().equals(scgdTwoTableId) && t.getTime().equals("今日均") && t.getV()!=null && t.getRecordTime().compareTo(date)==0).map(DayWaterSituationStatisticsTableLzz::getV).reduce(Double::sum).orElse(0.00))
             ));
             res.setScLastYear(formatDoubleForThreeDecimal(
-                    (dayWaterSituationStatisticsListLastYear.stream().filter(t->t.getTableHeadId().equals(scgdOneTableId) && t.getTime().equals("今日均") && t.getV()!=null && t.getRecordTime().compareTo(lastYearDate)==0).map(DayWaterSituationStatisticsTableLzz::getV).reduce(Double::sum).orElse(0.00))+
-                    (dayWaterSituationStatisticsListLastYear.stream().filter(t->t.getTableHeadId().equals(scgdTwoTableId) && t.getTime().equals("今日均") && t.getV()!=null && t.getRecordTime().compareTo(lastYearDate)==0).map(DayWaterSituationStatisticsTableLzz::getV).reduce(Double::sum).orElse(0.00))
+                    (dayWaterSituationStatisticsListLastYear.stream().filter(t->t.getTableHeadId().equals(scgdOneTableId) && t.getTime().equals("今日均") && t.getV()!=null && t.getRecordTime().compareTo(lastYearDate)==0 && flag).map(DayWaterSituationStatisticsTableLzz::getV).reduce(Double::sum).orElse(0.00))+
+                    (dayWaterSituationStatisticsListLastYear.stream().filter(t->t.getTableHeadId().equals(scgdTwoTableId) && t.getTime().equals("今日均") && t.getV()!=null && t.getRecordTime().compareTo(lastYearDate)==0 && flag).map(DayWaterSituationStatisticsTableLzz::getV).reduce(Double::sum).orElse(0.00))
             ));
             resList.add(res);
         }
