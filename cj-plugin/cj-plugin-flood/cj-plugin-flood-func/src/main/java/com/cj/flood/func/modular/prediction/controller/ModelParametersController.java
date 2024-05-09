@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -51,7 +50,7 @@ public class ModelParametersController {
         if (modelParametersService.isDefault(input)) {
             return RestResponse.ok(true);
         } else {
-            return RestResponse.no("删除失败！");
+            return RestResponse.no("设置默认参数失败！");
         }
     }
 

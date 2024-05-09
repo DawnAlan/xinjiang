@@ -4,7 +4,6 @@ import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInf
 import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.entity.LzzGaugingStation;
 import com.cj.middleDatabase.func.modular.lzz.lzzRainfallStation.entity.LzzRainfallStation;
 import com.cj.model.func.modular.FloodPredict.entity.*;
-import com.cj.model.func.modular.FloodPredict.model.TouTunHe;
 
 import java.math.BigDecimal;
 import java.text.ParseException;
@@ -229,9 +228,9 @@ public class DataUtils {
             param.setIsSimulation(false);
         }
         if (param.getIsSimulation()) {
-            List<RainFallDto> oneStationRain =new ArrayList<>();
+            List<RainFallDto> oneStationRain = new ArrayList<>();
             for (int i = 0; i < rainPre.size(); i++) {
-                if (station.equals(rainPre.get(i).getArea())){
+                if (station.equals(rainPre.get(i).getArea())) {
                     oneStationRain.add(rainPre.get(i));
                 }
             }
@@ -563,23 +562,23 @@ public class DataUtils {
                 for (int j = 0; j < hourDatalist.size(); j++) {
                     if (location.equals("3号桥")) {
                         if (hourDatalist.get(j).getLocation().equals("八一林场自动雨量站")) {
-                            rainFall += hourDatalist.get(j).getRainfall() * 0.454164;
+                            rainFall += hourDatalist.get(j).getRainfall() * 0.344401;
                             temperature += hourDatalist.get(j).getTemperature();
                         }
                         if (hourDatalist.get(j).getLocation().equals("加普沙自动雨量站")) {
-                            rainFall += hourDatalist.get(j).getRainfall() * 0.194604;
+                            rainFall += hourDatalist.get(j).getRainfall() * 0.147571;
                             temperature += hourDatalist.get(j).getTemperature();
                         }
                         if (hourDatalist.get(j).getLocation().equals("东南沟自动雨量站")) {
-                            rainFall += hourDatalist.get(j).getRainfall() * 0.205747;
+                            rainFall += hourDatalist.get(j).getRainfall() * 0.156022;
                             temperature += hourDatalist.get(j).getTemperature();
                         }
                         if (hourDatalist.get(j).getLocation().equals("宰尔德自动雨量站")) {
-                            rainFall += hourDatalist.get(j).getRainfall() * 0.055963;
+                            rainFall += hourDatalist.get(j).getRainfall() * 0.042438;
                             temperature += hourDatalist.get(j).getTemperature();
                         }
                         if (hourDatalist.get(j).getLocation().equals("无名沟自动雨量站")) {
-                            rainFall += hourDatalist.get(j).getRainfall() * 0.025386;
+                            rainFall += hourDatalist.get(j).getRainfall() * 0.019251;
                             temperature += hourDatalist.get(j).getTemperature();
                         }
                         if (hourDatalist.get(j).getLocation().equals("萨尔达万自动雨量站")) {
@@ -587,7 +586,7 @@ public class DataUtils {
                             temperature += hourDatalist.get(j).getTemperature();
                         }
                         if (hourDatalist.get(j).getLocation().equals("煤矿沟自动雨量站")) {
-                            rainFall += hourDatalist.get(j).getRainfall() * 0.039224;
+                            rainFall += hourDatalist.get(j).getRainfall() * 0.018891;
                             temperature += hourDatalist.get(j).getTemperature();
                         }
                     } else if (location.equals("楼庄子")) {
@@ -1436,6 +1435,65 @@ public class DataUtils {
     }
 
     /**
+     * 区间数据尺度转化
+     * @param inputData
+     * @return
+     */
+    public IrrigatedHydrologyParam irrigateMinuteToHour(IrrigatedHydrologyParam inputData){
+        IrrigatedHydrologyParam result = new IrrigatedHydrologyParam();
+        List<IrrigatedPlatformDataInfo> xqzStation = inputData.getXqzGaugingStation();
+        List<IrrigatedPlatformDataInfo> tjydStation = inputData.getTjydGaugingStation();
+        List<IrrigatedPlatformDataInfo> tthStation = inputData.getTthGaugingStation();
+        List<IrrigatedPlatformDataInfo> tthInput = inputData.getTthInput();
+        result.setXqzGaugingStation(irrigateListMinuteToHour(xqzStation));
+        result.setTjydGaugingStation(irrigateListMinuteToHour(tjydStation));
+        result.setTthGaugingStation(irrigateListMinuteToHour(tthStation));
+        result.setTthInput(irrigateListMinuteToHour(tthInput));
+        return result;
+    }
+
+    /**
+     * 区间雨量站和水文站数据从5min转为小时尺度
+     * @param inputList
+     * @return
+     */
+    public List<IrrigatedPlatformDataInfo> irrigateListMinuteToHour(List<IrrigatedPlatformDataInfo> inputList){
+        Double rainFall = 0.0;
+        Double monitorFlow =0.0;
+        int number = 0;
+        List<IrrigatedPlatformDataInfo> resultList = new ArrayList<>();
+        for (int i = 0; i < inputList.size()-1; i++) {
+            IrrigatedPlatformDataInfo info = new IrrigatedPlatformDataInfo();
+            Boolean isSameHour = timeUtils.DateCompare(inputList.get(i).getMonitorTime(),inputList.get(i+1).getMonitorTime(),"小时");
+            info.setId(inputList.get(i).getId());
+            info.setYesterdayAvgFlow(inputList.get(i).getYesterdayAvgFlow());
+            info.setMonitorName(inputList.get(i).getMonitorName());
+            info.setMonitorId(inputList.get(i).getMonitorId());
+            info.setMonitorTime(inputList.get(i).getMonitorTime());
+            if (inputList.get(i).getSqMonitorFlow()==null){
+                inputList.get(i).setSqMonitorFlow(0.0);
+            }if (inputList.get(i).getYqRainFallOne()==null){
+                inputList.get(i).setYqRainFallOne(0.0);
+            }
+            if (isSameHour){
+                rainFall += inputList.get(i).getYqRainFallOne();
+                monitorFlow += inputList.get(i).getSqMonitorFlow();
+                number++;
+            }else {
+                if (number==0){//该小时只有一个时段
+                    info.setSqMonitorFlow(inputList.get(i).getSqMonitorFlow());
+                    info.setYqRainFallOne(inputList.get(i).getYqRainFallOne());
+                }else {
+                    info.setSqMonitorFlow(rainFall/number);
+                    info.setYqRainFallOne(monitorFlow/number);
+                }
+                resultList.add(info);
+            }
+        }
+        return resultList;
+    }
+
+    /**
      * 温度值和降雨量的处理
      */
 
@@ -1974,11 +2032,11 @@ public class DataUtils {
         int factor = 3;
         List<Object[]> snowData = new ArrayList<>();
         for (int i = 0; i < input.length; i++) {
-//			snowData.add(input[i]);
             if (!(input[i][3] instanceof String)) {
-                if ((double) input[i][3] == 0.0) {
-                    snowData.add(input[i]);
-                }
+//                if ((double) input[i][3] == 0.0) {
+//                    snowData.add(input[i]);
+//                }
+                snowData.add(input[i]);
             }
         }
         for (int i = 0; i < snowData.size(); i++) {

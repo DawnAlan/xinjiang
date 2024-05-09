@@ -200,7 +200,7 @@ public class SnowMeltModel {
 
         Object[] result = new Object[2];//把前面predict的最后一行去掉
         for (int j = 0; j < 2; j++) {
-            result[j]=predict[1][j];
+            result[j]=predict[0][j];
         }
         return result;
     }
