@@ -8,4 +8,6 @@ public class TemporaryXlsx {
     private String path;//文件路径
 
     private String sheetName;//Sheet名称
+
+    private String updateFilePath;
 }

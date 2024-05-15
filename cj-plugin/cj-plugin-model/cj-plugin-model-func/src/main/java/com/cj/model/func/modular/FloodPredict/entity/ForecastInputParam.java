@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
 
@@ -62,7 +63,13 @@ public class ForecastInputParam {
     public Integer history_factor;
     //前期天数
     public Integer history_day;
-
+    //文件路径
+    public String filePath;
+    //文件
+    public InputStream machineParam;//机器模型参数
+    public InputStream machineMaxMin;//机器模型最大最小值
+    public InputStream historyData;//模型历史参数
+    public InputStream hortonParam;//超渗产流模型参数
 
     private String netClass;//神经网络模式，必要
 

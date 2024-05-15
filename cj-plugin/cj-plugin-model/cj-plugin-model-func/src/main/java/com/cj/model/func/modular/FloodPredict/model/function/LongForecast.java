@@ -7,6 +7,7 @@ import com.cj.model.func.modular.FloodPredict.model.network.DNN_ADAM;
 import com.cj.model.func.modular.FloodPredict.model.network.Elman;
 import com.cj.model.func.modular.FloodPredict.model.network.NeuralNetwork;
 import com.cj.model.func.modular.FloodPredict.utils.DataUtils;
+import com.cj.model.func.modular.FloodPredict.utils.MachineDataUtils;
 import com.cj.model.func.modular.FloodPredict.utils.MathUtils;
 import com.cj.model.func.modular.FloodPredict.utils.TimeUtils;
 
@@ -19,6 +20,8 @@ import static com.cj.model.func.modular.FloodPredict.utils.Tools.array2String;
 
 public class LongForecast {
     DataUtils dataUtils = new DataUtils();
+
+    MachineDataUtils machineDataUtils = new MachineDataUtils();
 
     TimeUtils timeUtils = new TimeUtils();
 
@@ -154,10 +157,10 @@ public class LongForecast {
         if (param.getIsSnowMeltModel()) {
             try {
                 if (isRealTime) {
-                    data = dataUtils.inputData_Real_Snow(datalist, param);
+                    data = machineDataUtils.inputData_Real_Snow(datalist, param);
                 } else {
-                    trainData = dataUtils.inputData_Train_Snow(datalist, param, false);
-                    testData = dataUtils.inputData_Train_Snow(datalist, param, true);
+                    trainData = machineDataUtils.inputData_Train_Snow(datalist, param, false);
+                    testData = machineDataUtils.inputData_Train_Snow(datalist, param, true);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -167,10 +170,10 @@ public class LongForecast {
         else {
             try {
                 if (isRealTime) {
-                    data = dataUtils.inputData_Real(datalist, param);
+                    data = machineDataUtils.inputData_Real(datalist, param);
                 } else {
-                    trainData = dataUtils.inputData_Train(datalist, param, false);
-                    testData = dataUtils.inputData_Train(datalist, param, true);
+                    trainData = machineDataUtils.inputData_Train(datalist, param, false);
+                    testData = machineDataUtils.inputData_Train(datalist, param, true);
                 }
             } catch (Exception e) {
                 e.printStackTrace();

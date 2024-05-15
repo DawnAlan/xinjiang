@@ -90,6 +90,9 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
     @Value("${minio.url}")
     private String url;
 
+    @Value("${approvalFilepath}")
+    private String approvalFilepath;
+
     @Autowired
     private OverallMsgService overallMsgService;
 
@@ -371,9 +374,11 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
                 redisUtil.set(year + ":wordNum", wordNum);
             }
             String fileName = "调度指令";
-            String filepath = "D:\\tth_system\\end\\file\\approvalManagement.docx";
+            String netWorkFilepath = url+approvalFilepath+"approvalManagement.docx";
+            String savePath = System.getProperty("java.io.tmpdir")+"approvalManagement"+ UUIDUtils.getUUID() +".xlsx";
+            downloadFile(netWorkFilepath,savePath);
             // 通过 XWPFTemplate 编译文件并渲染数据到模板中
-            XWPFTemplate template = XWPFTemplate.compile(filepath).render(
+            XWPFTemplate template = XWPFTemplate.compile(savePath).render(
                     new HashMap<String, Object>() {{
                         put("wordNum", (String) redisUtil.get(year + ":wordNum"));
                         put("dispatchingUnit", byId.getDispatchingUnit());
@@ -565,6 +570,19 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
         sendMsgRes.setSendContent(msgContext);
         msg.setContent(com.alibaba.fastjson2.JSONObject.toJSONString(sendMsgRes));
         overallMsgService.save(msg);
+    }
+
+    @SneakyThrows
+    public static String downloadFile(String fileUrl, String savePath) {
+        URL url = new URL(fileUrl);
+        InputStream inputStream = url.openStream();
+        Paths.get(savePath,getFileName(fileUrl));
+        Files.copy(inputStream, Paths.get(savePath));
+        return savePath;
+    }
+    public static String getFileName(String fileUrl) {
+        String[] parts = fileUrl.split("/");
+        return parts[parts.length - 1];
     }
 }
 

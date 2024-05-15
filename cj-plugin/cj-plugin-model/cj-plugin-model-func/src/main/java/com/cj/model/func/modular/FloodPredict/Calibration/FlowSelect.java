@@ -18,7 +18,7 @@ import java.util.List;
 public class FlowSelect {
 
     TimeUtils timeUtils = new TimeUtils();
-    InputUtils inputUtils = new InputUtils();
+//    InputUtils inputUtils = new InputUtils();
 
     //获取3个断面洪水持续时间
     public List<Object[]> getFloodDate(OneCalibrationParam input) throws IOException, InvalidFormatException {
@@ -87,12 +87,12 @@ public class FlowSelect {
                 for (int j = 0; j < flow.size(); j++) {
                     if (timeUtils.DateCompare(dateStart, flow.get(j).getGatherTime(), "小时")) {
                         hisF[i][0] = flow.get(j).getGatherTime();
-                        hisF[i][1] = flow.get(j).getFlow();
+                        hisF[i][1] = flow.get(j).getFlow()==null?0.0:flow.get(j).getFlow();
                         break;
                     } else {
                         hisF[i][0] = dateStart;
                         int n = timeUtils.findNearestTime(dateList, dateStart);
-                        hisF[i][1] = flow.get(n).getFlow();
+                        hisF[i][1] = flow.get(n).getFlow()==null?0.0:flow.get(n).getFlow();
                     }
                 }
                 calendar1.add(Calendar.HOUR_OF_DAY, 1);
@@ -108,12 +108,12 @@ public class FlowSelect {
                 for (int j = 0; j < qjFlow.size(); j++) {
                     if (timeUtils.DateCompare(dateStart, qjFlow.get(j).getMonitorTime(), "小时")) {
                         hisF[i][0] = qjFlow.get(j).getMonitorTime();
-                        hisF[i][1] = qjFlow.get(j).getSqMonitorFlow();
+                        hisF[i][1] = qjFlow.get(j).getSqMonitorFlow()==null?0.0:qjFlow.get(j).getSqMonitorFlow();
                         break;
                     } else {
                         hisF[i][0] = dateStart;
                         int n = timeUtils.findNearestTime(dateList, dateStart);
-                        hisF[i][1] = qjFlow.get(n).getSqMonitorFlow();
+                        hisF[i][1] = qjFlow.get(n).getSqMonitorFlow()==null?0.0:qjFlow.get(n).getSqMonitorFlow();
                     }
                 }
                 calendar1.add(Calendar.HOUR_OF_DAY, 1);
@@ -133,6 +133,7 @@ public class FlowSelect {
         Object[][] flood = new Object[predict.length][3];
         double max = 0.0;
         double min = 1000000.0;
+
         for (int i = 0; i < predict.length; i++) {
             if (max <= (double) predict[i][1]) {
                 max = (double) predict[i][1];//洪峰
@@ -312,7 +313,7 @@ public class FlowSelect {
             endTime = (Date) oneFlow[oneFlow.length - 1][1];
             Calendar cal = Calendar.getInstance();
             cal.setTime(startTime);
-            cal.add(Calendar.HOUR_OF_DAY, -inputUtils.beforeHours);
+            cal.add(Calendar.HOUR_OF_DAY, -InputUtils.beforeHours);
             startTime = cal.getTime();
             dateObject[0] = startTime;
             dateObject[1] = endTime;

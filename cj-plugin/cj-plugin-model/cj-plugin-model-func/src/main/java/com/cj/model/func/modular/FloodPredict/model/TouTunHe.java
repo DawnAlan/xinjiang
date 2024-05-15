@@ -5,16 +5,14 @@ import com.cj.model.func.modular.FloodPredict.entity.*;
 import com.cj.model.func.modular.FloodPredict.model.function.MachineModel;
 import com.cj.model.func.modular.FloodPredict.model.function.PhysicalForecast;
 import com.cj.model.func.modular.FloodPredict.model.function.SnowMeltModel;
-import com.cj.model.func.modular.FloodPredict.utils.DataUtils;
-import com.cj.model.func.modular.FloodPredict.utils.ExcelTool;
-import com.cj.model.func.modular.FloodPredict.utils.InputUtils;
-import com.cj.model.func.modular.FloodPredict.utils.TimeUtils;
+import com.cj.model.func.modular.FloodPredict.utils.*;
 import com.cj.model.func.modular.FloodPrevent.entity.Option;
 import com.cj.model.func.modular.FloodPrevent.model.ModelOfTTH;
 import com.cj.model.func.modular.entity.Flood;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -24,20 +22,17 @@ import static com.cj.model.func.modular.FloodPredict.utils.Tools.resultToXlsx;
 
 public class TouTunHe {
     DataUtils dataUtils = new DataUtils();
-
+    MachineDataUtils machineDataUtils = new MachineDataUtils();
     TimeUtils timeUtils = new TimeUtils();
-
-    InputUtils inputUtils = new InputUtils();
-
 
     public TemporaryXlsx getFloodList(ForecastInputParamNew forecastParam) throws IOException, ParseException, InvalidFormatException {
 
         //异常值处理
         forecastParam = dataUtils.emptyProcessing(forecastParam);
         //判断是否添加新数据
-        inputUtils.intervalData(forecastParam);
+        String s = machineDataUtils.intervalData(forecastParam);
         //参数转化
-        ForecastInputParam param = inputUtils.paramConvert(forecastParam);
+        ForecastInputParam param = machineDataUtils.paramConvert(forecastParam);
         //数据输入
         Map<String, List<List<PredictInputData>>> stationsData = getOneStationDataList(forecastParam);
         //楼庄子
@@ -65,6 +60,7 @@ public class TouTunHe {
         TemporaryXlsx temporaryXlsx;
         //返回文件路径
         temporaryXlsx = resultToXlsx(result);
+        temporaryXlsx.setUpdateFilePath(s);
         return temporaryXlsx;
 
     }
@@ -91,10 +87,10 @@ public class TouTunHe {
         List<PredictInputData> QJ = new ArrayList<>();//从A3中获取的
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Date dataDate = sdf.parse("2024-01-01 00:00:00");
-//        dataDate = new Date();
+
         if (paramNew.getPredictionTime().before(dataDate)) {
-            Object[][] lzzData = ExcelTool.readExcel(inputUtils.dataPath + "头屯河历史数据1.xlsx", "楼庄子日");
-            Object[][] tthData = ExcelTool.readExcel(inputUtils.dataPath + "头屯河历史数据1.xlsx", "楼头区间日");
+            Object[][] lzzData = InputUtils.historyData.get("楼庄子日");
+            Object[][] tthData = InputUtils.historyData.get("楼头区间日");
             Date startTime = paramNew.getDataStartTime();
             Date endTime = paramNew.getPredictionTime();
             for (int i = 0; i < lzzData.length; i++) {
@@ -184,12 +180,12 @@ public class TouTunHe {
         param.setIsTrain(false);
         param.setLocation(stationName);
         String Option = stationName + param.getPeriod();
-        Object[][] historyInput = ExcelTool.readExcel(inputUtils.dataPath + "头屯河历史数据1.xlsx", Option);
+        Object[][] historyInput = InputUtils.historyData.get(Option);
         //数据驱动模型输入
         List<PredictInputData> machineData = Data.get(0);
         //数据驱动模型数据输入尺度转换
         List<PredictInputData> re = timeUtils.ChangeDate(machineData, param.getPeriod());
-        Object[][] machineInputData = inputUtils.listToObject(re, stationName);
+        Object[][] machineInputData = machineDataUtils.listToObject(re, stationName);
 
         //判断是否为短期预报，是则使用物理模型
         if (param.getIsShortForecast()) {
@@ -204,16 +200,15 @@ public class TouTunHe {
                 param.setIsSnowMeltModel(true);
                 for (int i = 0; i < l; i++) {
                     Date date = param.getPreStartTime();
-                    Object[][] machineInput = inputUtils.dataIntegration(historyInput, machineInputData, param);
+                    Object[][] machineInput = machineDataUtils.dataIntegration(historyInput, machineInputData, param);
                     //划分历年融雪数据
-                    Object[][] snowMeltInput = dataUtils.snowMeltDate(machineInput, param.getLocation());
+                    Object[][] snowMeltInput = machineDataUtils.snowMeltDate(machineInput, param.getLocation());
                     //训练模型获得参数以及其储存路径
                     SnowMeltModel model = new SnowMeltModel();
                     //是否训练模型
                     if (param.getIsTrain()) {
                         model.snowTrain(snowMeltInput, param);
                     }
-                    param = inputUtils.getMachineParams(param);
                     //中长期预报预报融雪效果
                     snowFlood[i] = model.snowForecast(snowMeltInput, param);
                     date = timeUtils.addCalendar(date, "日", 1);
@@ -237,12 +232,11 @@ public class TouTunHe {
         //机器模型中长期预报
         else {
             MachineModel model = new MachineModel();
-            Object[][] machineInput = inputUtils.dataIntegration(historyInput, machineInputData, param);
-            machineInput = dataUtils.inputProcessing(machineInput, param);//获得距平值
+            Object[][] machineInput = machineDataUtils.dataIntegration(historyInput, machineInputData, param);
+            machineInput = machineDataUtils.inputProcessing(machineInput, param);//获得距平值
             if (param.getIsTrain()) {
                 model.modelTrain(machineInput, param);
             }
-            param = inputUtils.getMachineParams(param);
             //中长期预报预报
             List<Flood> result = model.machineForecast(machineInput, param);
             return result;

@@ -376,8 +376,7 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
         return CollectionUtil.sortByPinyin(permissionResult.stream().filter(api ->
                 !api.startsWith("/" + StrUtil.BRACKET_START)
                         && !api.startsWith("/error")
-                        && !api.contains("/api-docs")
-                        && !api.contains("/swagger-resources")).collect(Collectors.toList()));
+                        && !api.contains("/api-docs")).collect(Collectors.toList()));
     }
 
     @Override

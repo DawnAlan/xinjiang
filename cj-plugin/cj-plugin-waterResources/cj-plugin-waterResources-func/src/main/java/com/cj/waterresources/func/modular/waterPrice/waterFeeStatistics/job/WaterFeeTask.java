@@ -96,66 +96,6 @@ public class WaterFeeTask {
         }
     }
 
-    /*public JobRes getTableHeadIdHaveQs(){
-        try {
-            JobRes res = new JobRes();
-            String mk = (String) redisUtil.get("trendsTableParam:list");
-            if(StringUtils.isEmpty(mk)){
-                waterFeeStatisticsDetailsService.updateCache();
-                mk = (String) redisUtil.get("trendsTableParam:list");
-            }
-            List<TrendsTableParam> trendsTableParamList = JSONObject.parseArray(mk, TrendsTableParam.class);
-            Map<String,List<String>> map = new HashMap<>();
-            List<String> resList = new ArrayList<>();
-            Map<String, List<TrendsTableParam>> collect = trendsTableParamList.stream().filter(t -> t.getUseType() == 2).collect(Collectors.groupingBy(TrendsTableParam::getUseStation));
-            Set<String> strings = collect.keySet();
-            for(String s:strings){
-                if (s.equals("渠首灯笼渠") || s.equals("零星水费") || s.equals("工业水费") || s.equals("渠首砂厂") || s.equals("河东管理站农业") || s.equals("河东管理站绿化") || s.equals("河西管理站")) {
-                    continue;
-                }
-                resList.add(s);
-                List<WaterDailyParamSelectRes> resultList = new ArrayList<>();
-                List<String> tableIds = new ArrayList<>();
-                List<TrendsTableParam> list = trendsTableParamList.stream().filter(t->t.getUseType()==2).filter(t->t.getUseStation().equals(s)).collect(Collectors.toList());
-                List<TrendsTableParam> collectTemp = list.stream().filter(t -> t.getPId().equals("0")).collect(Collectors.toList());
-                for (TrendsTableParam param:collectTemp){
-                    WaterDailyParamSelectRes tempRes = new WaterDailyParamSelectRes();
-                    BeanUtils.copyProperties(param,tempRes);
-                    resultList.add(tempRes);
-                }
-                getParamTree(resultList,list);
-                for(WaterDailyParamSelectRes res1 : resultList){
-                    List<WaterDailyParamSelectRes> children = res1.getChildren();
-                    //
-                    if(children != null){
-                        for(WaterDailyParamSelectRes res2:children){
-                            List<WaterDailyParamSelectRes> children1 = res2.getChildren();
-                            //
-                            if(children1 !=null){
-                                for(WaterDailyParamSelectRes res3:children1){
-                                    tableIds.add(res3.getId());
-                                }
-                            }else {
-                                tableIds.add(res2.getId());
-                            }
-                        }
-                    }else {
-                        tableIds.add(res1.getId());
-                    }
-                }
-                map.put(s,tableIds);
-            }
-            if(null !=map && map.size()>0){
-                res.setMap(map);
-                res.setCollect(resList);
-            }
-            return res;
-        }catch (Exception e){
-            e.printStackTrace();
-            log.error(e.getLocalizedMessage());
-            return null;
-        }
-    }*/
     @Scheduled(cron="0 30 08 * * ?")//每天8:30
     public void createWaterFeeTableNoHaveQs(){
         log.info("--------------------------------执行定时插入水费表操作----------------------------");
@@ -190,39 +130,6 @@ public class WaterFeeTask {
         }
     }
 
-/*    @Scheduled(cron="0 32 08 * * ?")//每天8:35
-    public void createWaterFeeTableHaveQs(){
-        log.info("--------------------------------执行定时插入水费表操作（仅渠首管理站）----------------------------");
-        JobRes tableHeadId = getTableHeadIdHaveQs();
-        if(null != tableHeadId){
-            List<String> collect = tableHeadId.getCollect();
-            Map<String, List<String>> map = tableHeadId.getMap();
-            LocalDateTime now = LocalDateTime.now();
-            LocalDateTime yesterday = now.minusDays(1);
-            Integer year = yesterday.getYear();
-            Integer month = yesterday.getMonth().getValue();
-            Integer day = yesterday.getDayOfMonth();
-            String tenDays = determineTenDays(day);
-            SimpleDateFormat sdf = new SimpleDateFormat("MM月dd日");
-            for(String s:collect){
-                List<String> strings = map.get(s);
-                List<WaterFeeStatisticsDetails> result = new ArrayList<>();
-                for(String s1:strings){
-                    if(s.equals("渠首管理站")){
-                        WaterFeeStatisticsDetails details = new WaterFeeStatisticsDetails();
-                        details.setTableHeadId(s1);
-                        details.setStation(s);
-                        details.setMonth(month);
-                        details.setYear(year);
-                        details.setStatisticsDate(sdf.format(getDate(new Date(),-1)));
-                        details.setTenDays(tenDays);
-                        result.add(details);
-                    }
-                }
-                waterFeeStatisticsDetailsService.add(result);
-            }
-        }
-    }*/
 
     public String determineTenDays(Integer day){
         if(day<=10){

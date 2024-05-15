@@ -25,4 +25,6 @@ public class OneCalibrationParam {
     private LzzHydrologyParam lzzHydrologyParam;
     //灌区实时雨量站信息
     private IrrigatedHydrologyParam irrigatedHydrologyParam;
+    //文件存储路径
+    private String filePath;
 }

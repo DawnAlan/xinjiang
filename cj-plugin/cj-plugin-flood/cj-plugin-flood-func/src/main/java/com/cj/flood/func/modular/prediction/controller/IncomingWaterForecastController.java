@@ -12,6 +12,7 @@ import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSupport;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +24,7 @@ import java.util.List;
 @RestController
 @Validated
 @RequestMapping("incomingWaterForecast")
+@Slf4j
 public class IncomingWaterForecastController {
 
     @Autowired
@@ -41,6 +43,7 @@ public class IncomingWaterForecastController {
     @CommonLog(value = "来水预报模块查询可视化界面")
     @GetMapping("/details")
     public RestResponse details(@RequestParam(value = "id") String id) {
+        log.error("--------------------------------进入查询模型详情接口id："+id);
         return incomingWaterForecastService.selectDetails(id);
     }
 

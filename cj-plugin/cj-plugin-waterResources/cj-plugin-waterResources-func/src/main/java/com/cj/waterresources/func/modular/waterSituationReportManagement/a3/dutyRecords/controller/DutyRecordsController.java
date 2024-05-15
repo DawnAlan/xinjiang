@@ -9,6 +9,7 @@ import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSupport;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +24,8 @@ import org.springframework.web.bind.annotation.*;
 @ApiSupport(author = "LEO-LUOXU", order = 1)
 @Validated
 @RestController
-@RequestMapping("dutyRecords")
+    @RequestMapping("dutyRecords")
+@Slf4j
 public class DutyRecordsController {
 
     @Autowired
@@ -34,7 +36,17 @@ public class DutyRecordsController {
     @CommonLog("值班记录新增")
     @PostMapping("/add")
     public RestResponse add(@RequestBody DutyRecords dutyRecords) {
+        log.error("--------------------------------值班记录新增dutyRecords："+dutyRecords.toString());
         return dutyRecordsService.add(dutyRecords);
+    }
+
+    @ApiOperationSupport(order = 1)
+    @ApiOperation("值班记录新增(insert)")
+    @CommonLog("值班记录新增(insert)")
+    @PostMapping("/insert")
+    public RestResponse insert(@RequestBody DutyRecords dutyRecords) {
+        log.error("--------------------------------值班记录新增dutyRecords："+dutyRecords.toString());
+        return dutyRecordsService.insert(dutyRecords);
     }
 
     @ApiOperationSupport(order = 2)
@@ -42,6 +54,7 @@ public class DutyRecordsController {
     @CommonLog("值班记录查询列表")
     @PostMapping("/selectList")
     public RestResponse selectList(@RequestBody DutyRecordsSelectListReq req) {
+        log.error("--------------------------------值班记录查询列表req："+req.toString());
         return dutyRecordsService.selectList(req);
     }
 

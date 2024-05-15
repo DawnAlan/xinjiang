@@ -35,6 +35,19 @@ public class DutyRecordsServiceImpl extends ServiceImpl<DutyRecordsMapper, DutyR
     }
 
     @Override
+    public RestResponse insert(DutyRecords dutyRecords) {
+        dutyRecords.setId(UUIDUtils.getUUID());
+        dutyRecords.setDel(0);
+        dutyRecords.setCreateTime(new Date());
+        boolean save = this.save(dutyRecords);
+        if(save){
+            return RestResponse.ok();
+        }else {
+            return RestResponse.no("failed to save duty records");
+        }
+    }
+
+    @Override
     public RestResponse delete(String id) {
         boolean update = this.lambdaUpdate().set(DutyRecords::getDel, 1).eq(DutyRecords::getId, id).update();
         if(update){
@@ -56,7 +69,9 @@ public class DutyRecordsServiceImpl extends ServiceImpl<DutyRecordsMapper, DutyR
 
     @Override
     public RestResponse<List<DutyRecords>> selectList(DutyRecordsSelectListReq req) {
+        log.error("-----------------------------------------------------------获取前端传的参数："+req.toString());
         List<DutyRecords> dutyRecords = this.baseMapper.selectListByParam(req);
+        log.error("---------------------------------------------------查询后返回的结果集："+dutyRecords.toString());
         if(null != dutyRecords && dutyRecords.size()>0){
             return RestResponse.ok(dutyRecords);
         }else {

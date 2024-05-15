@@ -1,22 +1,29 @@
 package com.cj.model.func.modular.FloodPredict.utils;
 
+import com.cj.common.util.UUIDUtils;
+import com.cj.model.func.core.util.MinioUtils;
+import com.cj.model.func.modular.FloodPredict.entity.DataWrite;
 import com.cj.model.func.modular.FloodPredict.entity.PredictInputData;
-import com.cj.model.func.modular.entity.Flood;
+import lombok.SneakyThrows;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.openxml4j.util.ZipSecureFile;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import java.io.*;
-import java.util.Date;
-import java.util.List;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.*;
 
 /**
  * 通用Excel操作方法，定制时请自行书写
  */
+@Component
 public class ExcelTool {
-
     public static void writeDoubleExcel(String path, String sheetName, double[][] data) throws IOException, InvalidFormatException {
         XSSFWorkbook workbook = new XSSFWorkbook();
         XSSFSheet sheet = workbook.createSheet();
@@ -64,7 +71,73 @@ public class ExcelTool {
         }
     }
 
-    public static void writeObjectExcel(String path, String sheetName, Object[][] data) throws IOException, InvalidFormatException {
+    public static void writeExcel(String path, List<DataWrite> historyData){
+        XSSFWorkbook workbook = null;
+
+        // 检查文件是否存在
+        File file = new File(path);
+        if (file.exists()) {
+            try {
+                FileInputStream fis = new FileInputStream(path);
+                workbook = new XSSFWorkbook(fis);
+                fis.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            // 创建一个新的工作表
+            workbook = new XSSFWorkbook();
+        }
+        for (int i = 0; i < historyData.size(); i++) {
+            fillObjectSheet(workbook,historyData.get(i).getSheetName(),historyData.get(i).getData());
+        }
+
+        try {
+            FileOutputStream fop = new FileOutputStream(path);
+            workbook.write(fop);
+            fop.flush();
+            fop.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    public static void fillObjectSheet(XSSFWorkbook workbook, String sheetName, Object[][] data)  {
+        assert workbook != null;
+        boolean sheetExists = false;
+        int sheetIndex = workbook.getSheetIndex(sheetName);
+        if (sheetIndex != -1) {
+            sheetExists = true;
+        }
+        XSSFSheet sheet;
+        if (sheetExists) {
+            sheet = workbook.getSheet(sheetName);
+        } else {
+            sheet = workbook.createSheet(sheetName);
+        }
+        CellStyle cellStyle = workbook.createCellStyle();
+        cellStyle.setDataFormat(workbook.getCreationHelper().createDataFormat().getFormat("yyyy-mm-dd hh:mm:ss"));
+// 先判断工作簿是否存在，不存在则创建，存在则清空
+        if (sheet != null) {
+            try {
+                // 清空工作表中的数据
+                for (int i = sheet.getFirstRowNum(); i <= sheet.getLastRowNum(); i++) {
+                    Row row = sheet.getRow(i);
+                    if (row != null) {
+                        sheet.removeRow(row);
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            // 在单元格中写入数据
+            fillSheet(workbook, sheet, data);
+        } else {
+            sheet = workbook.createSheet(sheetName);
+            fillSheet(workbook, sheet, data);
+        }
+    }
+
+    public static void writeObjectExcel(String path, String sheetName, Object[][] data)  {
         XSSFWorkbook workbook = null;
 
         // 检查文件是否存在
@@ -298,7 +371,29 @@ public class ExcelTool {
         }
     }
 
-    public static Object[][] readExcel(String path, String sheetName) throws IOException {
+    public static Map<String,Object[][]> readExcel(String path, String name) throws IOException {
+        Map<String,Object[][]> result = new HashMap<>();
+        String savePath = System.getProperty("java.io.tmpdir")+"temp"+ UUIDUtils.getUUID() +".xlsx";
+        String filePath = path+name+".xlsx";
+        downloadFile(filePath, savePath);
+        InputStream fis = new FileInputStream(savePath);
+        ZipSecureFile.setMinInflateRatio(-1.0d);
+        Workbook wb = new XSSFWorkbook(fis);
+        int numberOfSheets = wb.getNumberOfSheets();
+        for (int i = 0; i < numberOfSheets; i++) {
+            Sheet sheet = wb.getSheetAt(i);
+            result.put(sheet.getSheetName(),readSheet(sheet));
+        }
+        return result;
+    }
+
+//    public static Object[][] readExcel(InputStream fis, String sheetName) throws IOException {
+//        ZipSecureFile.setMinInflateRatio(-1.0d);
+//        Workbook wb = new XSSFWorkbook(fis);
+//        Sheet sheet = wb.getSheet(sheetName);
+//        return readSheet(sheet);
+//    }
+    public static Object[][] readStringExcel(String path, String sheetName) throws IOException {
         InputStream fis = new FileInputStream(path);
         ZipSecureFile.setMinInflateRatio(-1.0d);
         Workbook wb = new XSSFWorkbook(fis);
@@ -306,10 +401,18 @@ public class ExcelTool {
         return readSheet(sheet);
     }
 
+
     protected static Object[][] readSheet(Sheet sheet) {
         Object[][] output = null;
         int rowStart = sheet.getFirstRowNum();
         int rowEnd = sheet.getLastRowNum();
+        // 从最后一行向前遍历，找到第一个非空行
+        for (int i = rowEnd; i >= rowStart; i--) {
+            if (sheet.getRow(i) != null) {
+                rowEnd = i;
+                break;
+            }
+        }
         output = new Object[rowEnd + 1][];
         for (int i = rowStart; i <= rowEnd; i++) {
             Row row = sheet.getRow(i);
@@ -334,5 +437,17 @@ public class ExcelTool {
             }
         }
         return output;
+    }
+    @SneakyThrows
+    public static String downloadFile(String fileUrl, String savePath) {
+        URL url = new URL(fileUrl);
+        InputStream inputStream = url.openStream();
+        Paths.get(savePath,getFileName(fileUrl));
+        Files.copy(inputStream, Paths.get(savePath));
+        return savePath;
+    }
+    public static String getFileName(String fileUrl) {
+        String[] parts = fileUrl.split("/");
+        return parts[parts.length - 1];
     }
 }

@@ -29,8 +29,7 @@ public class PhysicalForecast {
     DataUtils dataUtils = new DataUtils();
 
     TimeUtils timeUtils = new TimeUtils();
-    InputUtils inputUtils = new InputUtils();
-    int beforeHours = inputUtils.beforeHours;//前期落地雨时间
+    int beforeHours = InputUtils.beforeHours;//前期落地雨时间
 
     /**
      * 获得场次洪水预报数据
@@ -43,7 +42,6 @@ public class PhysicalForecast {
      */
     public List<Flood> getShortResult(ForecastInputParam param, List<List<PredictInputData>> Data, Object[][] snowData)
             throws IOException {
-        String path = inputUtils.paramPath + "陕北-PARAM.xlsx";
         ShanBeiModel shanBeiModel = new ShanBeiModel();
         String sheetPara = param.getLocation() + "参数";
         //陕北模型输入、蒸散发和前期雨量
@@ -67,7 +65,7 @@ public class PhysicalForecast {
             historyRData[i][1] = historyRDataList.get(i).getRainfall();
         }
         //模型参数赋值
-        Object[][] params = ExcelTool.readExcel(path, sheetPara);
+        Object[][] params = InputUtils.hortonParam.get(sheetPara);
         //是否为模拟降雨，模拟降雨使用固定参数
         if (param.getIsSimulation()) {
             for (int i = 0; i < historyRDataList.size(); i++) {
@@ -174,6 +172,24 @@ public class PhysicalForecast {
      */
     public List<Object[][]> getFloodInformation(Object[][] predict) {
         List<Object[][]> result = new ArrayList<>();
+        if (predict.length==1){
+            Object[][] flood = new Object[predict.length][3];
+            flood[0][0]=0;
+            flood[0][1]=predict[0][0];
+            flood[0][2]=predict[0][1];
+            Object[][] floodNature = new Object[4][2];
+            floodNature[0][0] = "洪量";//万立方米
+            floodNature[1][0] = "洪峰持续时间";
+            floodNature[2][0] = "洪峰";
+            floodNature[3][0] = "峰现时间";
+            floodNature[0][1] = (double)predict[0][1]*3600*24*30/100000.0;//万立方米
+            floodNature[1][1] = "1month";
+            floodNature[2][1] = predict[0][1];
+            floodNature[3][1] = predict[0][0];
+            result.add(flood);
+            result.add(floodNature);
+            return result;
+        }
         Object[][] flood = new Object[predict.length][3];
         double max = 0.0;
         double min = 1000000.0;

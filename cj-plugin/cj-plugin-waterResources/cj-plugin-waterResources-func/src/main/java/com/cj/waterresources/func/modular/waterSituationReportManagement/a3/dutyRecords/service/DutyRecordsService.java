@@ -17,6 +17,8 @@ public interface DutyRecordsService extends IService<DutyRecords> {
 
     RestResponse add(DutyRecords dutyRecords);
 
+    RestResponse insert(DutyRecords dutyRecords);
+
     RestResponse delete(String id);
 
     RestResponse update(DutyRecords dutyRecords);

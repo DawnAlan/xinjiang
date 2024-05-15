@@ -36,6 +36,7 @@ import io.minio.ObjectWriteResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
@@ -73,6 +74,12 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
 
     @Autowired
     private IrrigatedPlatformDataInfoService irrigatedPlatformDataInfoService;
+
+    @Value("${minio.url}")
+    private String minioUrl;
+
+    @Value("${floodModelFilePath}")
+    private String floodModelFilePath;
 
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd");
@@ -151,7 +158,7 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                         }
                         forcastInputParamNew.setIsSimulation(req.getIsSimulation());
                         forcastInputParamNew.setRainFallDtos(req.getRainFallDtos());
-                        List<Date> dates = new InputUtils().judgeDate(incomingWaterForecast.getPredictionTime(),incomingWaterForecast.getPeriodTimeNum());
+                        List<Date> dates = new InputUtils().judgeDate(minioUrl+floodModelFilePath,incomingWaterForecast.getPredictionTime(),incomingWaterForecast.getPeriodTimeNum());
                         if(dates.isEmpty()){
                             List<PredictInputData> resultListTemp = new ArrayList<>();
                             LocalDateTime now = LocalDateTime.now();
@@ -226,6 +233,7 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
 
                         //调用模型方法生成模型结果，更新到数据库
                         //System.out.println("Hello pool");
+                        forcastInputParamNew.setFilePath(minioUrl+floodModelFilePath);
                         TemporaryXlsx floodList = new TouTunHe().getFloodList(forcastInputParamNew);
                         //生成模型结果文件
                         String fileAddress = floodList.getPath();
@@ -235,6 +243,7 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                         String hh = DateUtil.format(date, "HH");
                         String mm = DateUtil.format(date, "mm");
                         String ss = DateUtil.format(date, "ss");
+                        minioUtils.putObject("tth", "/tthUseFile/"+getFileName(floodList.getUpdateFilePath()),floodList.getUpdateFilePath());
                         ObjectWriteResponse objectWriteResponse = minioUtils.putObject("tth", yyyyMMdd+"/"+hh+"/"+mm+"/"+ss+"/"+ UUID.fastUUID().toString(true)+"/"+split[split.length-1], fileAddress);
                         String object = objectWriteResponse.object();
                         incomingWaterForecastService.lambdaUpdate().set(IncomingWaterForecast::getStatus,2).
@@ -505,6 +514,7 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
 
     @Override
     public RestResponse<IncomingWaterForecastDetailsRes> selectDetails(String id) {
+        log.error("--------------------------------进入查询模型详情接口");
         try {
             IncomingWaterForecastDetailsRes res = new IncomingWaterForecastDetailsRes();
             IncomingWaterForecast incomingWaterForecast = this.getById(id);
@@ -514,11 +524,15 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                 res.setProgrammeName(incomingWaterForecast.getProgrammeName());
                 String modelResultAddress = incomingWaterForecast.getModelResultAddress();
                 if(StringUtils.isNotEmpty(modelResultAddress)){
+                    log.error("--------------------------------从minio前获取InputStream");
                     InputStream tth = minioUtils.getObject("tth", modelResultAddress);
+                    log.error("--------------------------------从minio获取InputStream");
                     String[] split = modelResultAddress.split("/");
                     String[] split1 = split[split.length - 1].split("\\.");
                     MultipartFile multipartFile = MultipartFileUtil.inputStreamToMultipartFile(tth, split1[0]);
+                    log.error("--------------------------------转换multipartFile");
                     List<Flood> floods = ExcelUtils.importExcel(multipartFile, Flood.class);
+                    log.error("--------------------------------转换成list"+floods.toString());
                     Map<String, IncomingWaterForecastViewDto> view = new LinkedHashMap<>();
                     List<Object> viewForFourPredictions = new LinkedList<>();
                     IncomingWaterForecastViewDto threeBridge = getIncomingWaterForecastViewDto(floods, "3号桥");
@@ -776,6 +790,11 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
 //                        "when 4 then DATEADD(HH, PERIOD_TIME_STEP * PERIOD_TIME_NUM, PREDICTION_TIME)\n" +
 //                        "end >= to_date({0}, 'yyyy-mm-dd hh24:mi:ss')", sdf.format(req.getEndTime()))
                 .list());
+    }
+
+    public static String getFileName(String fileUrl) {
+        String[] parts = fileUrl.split("\\\\");
+        return parts[parts.length - 1];
     }
 }
 

@@ -4,15 +4,9 @@ import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInf
 import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.entity.LzzGaugingStation;
 import com.cj.model.func.modular.FloodPredict.Calibration.entity.*;
 import com.cj.model.func.modular.FloodPredict.Calibration.pso.*;
-import com.cj.model.func.modular.FloodPredict.entity.ForecastInputParam;
-import com.cj.model.func.modular.FloodPredict.entity.ForecastInputParamNew;
-import com.cj.model.func.modular.FloodPredict.entity.IrrigatedHydrologyParam;
-import com.cj.model.func.modular.FloodPredict.entity.PredictInputData;
+import com.cj.model.func.modular.FloodPredict.entity.*;
 import com.cj.model.func.modular.FloodPredict.model.function.SnowMeltModel;
-import com.cj.model.func.modular.FloodPredict.utils.DataUtils;
-import com.cj.model.func.modular.FloodPredict.utils.ExcelTool;
-import com.cj.model.func.modular.FloodPredict.utils.InputUtils;
-import com.cj.model.func.modular.FloodPredict.utils.TimeUtils;
+import com.cj.model.func.modular.FloodPredict.utils.*;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 
 import java.io.IOException;
@@ -23,18 +17,18 @@ import java.util.*;
 public class ShanBeiCalibration {
 
     /// 流域面积 单位平方公里
-    static double Area;
+    double Area;
 
     ///基础流量
-    static List<Object[][]> baseAveList = new ArrayList<>();
+    List<Object[][]> baseAveList = new ArrayList<>();
     //楼庄子蒸发降雨
-    static List<Object[][]> preREDataList = new ArrayList<>();
+    List<Object[][]> preREDataList = new ArrayList<>();
     //前期雨量
-    static List<Object[][]> historyRDataList = new ArrayList<>();
+    List<Object[][]> historyRDataList = new ArrayList<>();
     //参与率定的真实径流
-    static List<Object[][]> historyFDataList = new ArrayList<>();
+    List<Object[][]> historyFDataList = new ArrayList<>();
     //预报的时间
-    static List<Integer> durationList = new ArrayList<>();
+    List<Integer> durationList = new ArrayList<>();
     //选择的模型参数
     ShanbeiParam shanbeiParamOld = new ShanbeiParam();
     //人工修改的模型参数
@@ -45,7 +39,7 @@ public class ShanBeiCalibration {
 
     DataUtils dataUtils = new DataUtils();
 
-    static TimeUtils timeUtils = new TimeUtils();
+    TimeUtils timeUtils = new TimeUtils();
 
     InputUtils inputUtils = new InputUtils();
 
@@ -54,22 +48,29 @@ public class ShanBeiCalibration {
         Map<String, CalibrationOutput> result = new HashMap<>();
         OneCalibrationParam three = new OneCalibrationParam();
         isAutomatic = input.getIsAutomatic();
-        if (input.getLzzHydrologyParam().getLzzInput().isEmpty()){
-            throw new RuntimeException("未获取楼庄子入库历史数据");
-        }if (input.getLzzHydrologyParam().getThreeGaugingStation().isEmpty()){
-            throw new RuntimeException("未获取3号桥入库历史数据");
-        }if (input.getIrrigatedHydrologyParam().getTthInput().isEmpty()){
-            throw new RuntimeException("未获取头屯河入库历史数据");
-        }
-        three.setLzzHydrologyParam(input.getLzzHydrologyParam());
+        LzzHydrologyParam lzzHydrologyParam = dataUtils.lzzNullTemOrFlow(input.getLzzHydrologyParam());
+        three.setLzzHydrologyParam(lzzHydrologyParam);
         IrrigatedHydrologyParam irrigatedHydrologyParam = dataUtils.irrigateMinuteToHour(input.getIrrigatedHydrologyParam());//区间
         three.setIrrigatedHydrologyParam(irrigatedHydrologyParam);
         three.setIsAutomatic(input.getIsAutomatic());
         three.setStartTime(input.getStartTime());
         three.setEndTime(input.getEndTime());
-        result.put("3号桥", threeCalibration("3号桥", input, three));
-        result.put("楼庄子", threeCalibration("楼庄子", input, three));
-        result.put("头屯河", threeCalibration("楼头区间", input, three));
+        if (input.getLzzHydrologyParam()==null||input.getLzzHydrologyParam().getThreeGaugingStation().isEmpty()){
+            result.put("3号桥", new CalibrationOutput() {{setError("未获取3号桥入库历史数据");}});
+        }else {
+            result.put("3号桥", threeCalibration("3号桥", input, three));
+        }
+
+        if (input.getLzzHydrologyParam()==null||input.getLzzHydrologyParam().getLzzInput().isEmpty()){
+            result.put("楼庄子", new CalibrationOutput() {{setError("未获取楼庄子入库历史数据");}});
+        }else {
+            result.put("楼庄子", threeCalibration("楼庄子", input, three));
+        }
+        if (input.getIrrigatedHydrologyParam()==null||input.getIrrigatedHydrologyParam().getTthInput().isEmpty()){
+            result.put("头屯河", new CalibrationOutput() {{setError("未获取头屯河入库历史数据");}});
+        }else {
+            result.put("头屯河", threeCalibration("楼头区间", input, three));
+        }
         return result;
     }
 
@@ -206,7 +207,7 @@ public class ShanBeiCalibration {
         Calendar calendar = Calendar.getInstance();
         Date date = paramNew.getPredictionTime();
         calendar.setTime(date);
-        calendar.add(Calendar.HOUR_OF_DAY, -inputUtils.beforeHours);
+        calendar.add(Calendar.HOUR_OF_DAY, -InputUtils.beforeHours);
         Date dateStart = calendar.getTime();
         List<Date> dateList = new ArrayList<>();
         Date date1 = dateStart;
@@ -330,7 +331,7 @@ public class ShanBeiCalibration {
         Object[][] result = new Object[number / 24 + 1][2];
         location = (location.equals("头屯河") ? "楼头区间" : location);
 //        Object[][] input = ExcelTool.readExcel(inputUtils.dataPath + "头屯河历史数据1.xlsx", location + "日");
-        Object[][] input = ExcelTool.readExcel("D:\\头屯河历史数据1.xlsx", location + "日");
+        Object[][] input = InputUtils.historyData.get(location+"日");
         int days = number / 24 + 1;
         for (int i = 0; i < days; i++) {
             int l = 0;//截至到预报时间目前的日尺度数据
@@ -341,7 +342,7 @@ public class ShanBeiCalibration {
             }
             Object[][] snowData = new Object[l][4];
             System.arraycopy(input, 0, snowData, 0, l);
-            Object[][] snowMeltInput = dataUtils.snowMeltDate(snowData, location);
+            Object[][] snowMeltInput = new MachineDataUtils().snowMeltDate(snowData, location);
             SnowMeltModel snowMeltModel = new SnowMeltModel();
             ForecastInputParam snowParam = new ForecastInputParam();
             InputUtils inputUtils = new InputUtils();
@@ -350,7 +351,7 @@ public class ShanBeiCalibration {
             snowParam.setIsSnowMeltModel(true);
             snowParam.setPeriodStepNumber(1);
             snowParam.setPeriodStepSize(1);
-            snowParam = inputUtils.getMachineParams(snowParam);
+//            snowParam = inputUtils.getMachineParams(snowParam);
             Object[] snow = snowMeltModel.snowForecast(snowMeltInput, snowParam);
             Calendar cal = Calendar.getInstance();
             cal.setTime(startTime);
@@ -386,7 +387,7 @@ public class ShanBeiCalibration {
         oneCalibration(inputData);
         // 创建PSO算法的问题域
 
-        Domain domain = new Domain(regionIntervals, ShanBeiCalibration::Evaluate, 1);
+        Domain domain = new Domain(regionIntervals, params -> Evaluate(params), 1);
 
 
         // 创建PSO算法实例
@@ -497,7 +498,7 @@ public class ShanBeiCalibration {
     }
 
     // 定义PSO算法目标函数
-    public static double Evaluate(double[] params) {
+    public double Evaluate(double[] params) {
         ParameterValidation parameterValidation = new ParameterValidation();
         List<Double> hisFlowList = new ArrayList<>();
         List<Double> preFlowList = new ArrayList<>();
@@ -576,7 +577,7 @@ public class ShanBeiCalibration {
         return sum;
     }
 
-    public static double RMSE(double[] a, double[] b) {
+    public double RMSE(double[] a, double[] b) {
         if (a.length != b.length) {
             return -1;
         }

@@ -75,7 +75,6 @@ public class GatewayConfigure {
             "/favicon.ico",
             "/doc.html",
             "/webjars/**",
-            "/swagger-resources/**",
             "/v2/api-docs",
             "/v2/api-docs-ext",
             "/configuration/ui",

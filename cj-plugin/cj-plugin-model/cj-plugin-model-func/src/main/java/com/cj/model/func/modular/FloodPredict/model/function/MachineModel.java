@@ -16,9 +16,7 @@ import java.util.List;
 
 public class MachineModel {
 
-    DataUtils dataUtils = new DataUtils();
-
-    InputUtils inputUtils = new InputUtils();
+    MachineDataUtils machineDataUtils = new MachineDataUtils();
 
     TimeUtils timeUtils = new TimeUtils();
 
@@ -168,19 +166,19 @@ public class MachineModel {
                 List<TemporaryXlsx> paramList = new ArrayList<>();
                 String period = param.getPeriod();
                 String location = param.getLocation();
-                String pathParam = inputUtils.paramPath + location + period + "-PARAM.xlsx";
-                ExcelTool.writeList2DoubleExcel(pathParam, "模型参数", paramResult);
+                String pathParam = param.getFilePath() + "MACHINE-PARAM.xlsx";
+                ExcelTool.writeList2DoubleExcel(pathParam, location+period+"-模型参数", paramResult);
                 temxParam.setPath(pathParam);
-                temxParam.setSheetName("模型参数");
+                temxParam.setSheetName(location+period+"-模型参数");
                 paramList.add(temxParam);
                 results.setParamxlsx(paramList);
                 //最大最小值写入
                 TemporaryXlsx temxMaxmin = new TemporaryXlsx();
                 List<TemporaryXlsx> maxminList = new ArrayList<>();
-                String pathMaxmin = inputUtils.paramPath + location + period + "最大最小值.xlsx";
-                ExcelTool.writeDoubleExcel(pathMaxmin, "最大最小值", maxmin);
+                String pathMaxmin = param.getFilePath() + "MACHINE-MAXMIN.xlsx";
+                ExcelTool.writeDoubleExcel(pathMaxmin, location+period+"-最大最小值", maxmin);
                 temxMaxmin.setPath(pathMaxmin);
-                temxMaxmin.setSheetName("最大最小值");
+                temxMaxmin.setSheetName(location+period+"-最大最小值");
                 maxminList.add(temxMaxmin);
                 results.setMaxminxlsx(maxminList);
             }
@@ -216,7 +214,7 @@ public class MachineModel {
                 vmdreaResult[i][0] = vmdreaResult[i][0] + vmdOutput[j][i + historyDay * 2 - 2];
             }
         }
-        trainResult(de_result, reaResult, preResult, vmdreaResult, param);
+//        trainResult(de_result, reaResult, preResult, vmdreaResult, param);
     }
 
     /**
@@ -232,8 +230,8 @@ public class MachineModel {
         List<Flood> result = new ArrayList<>();
         machineModel.paramSet(inputTemp, param);//设置输入
         param.setIsRealtime(true);
-        String paraPath = param.getXlsx().get(0).getPath();
-        String maxminPath = param.getXlsx().get(1).getPath();
+        String location = param.getLocation().equals("3号桥")?"楼庄子": param.getLocation();
+        String period = param.getPeriod();
 
         //数值的赋值
         int K = param.vmdK;//分解层数
@@ -265,9 +263,9 @@ public class MachineModel {
 
         for (int k = 0; k < K; k++) {
             //读取训练数据时的最大最小值，与输入数据比较，实现与参数吻合的归一化处理
-            Object[][] maxminOldTemp = ExcelTool.readExcel(maxminPath, "最大最小值");
+            Object[][] maxminOldTemp = InputUtils.machineMaxMin.get(location+period+"-最大最小值");
             //读取模型参数
-            Object[][] paraTemp = ExcelTool.readExcel(paraPath, "模型参数");
+            Object[][] paraTemp = InputUtils.machineParam.get(location+period+"-模型参数");
             Object[][] input = new Object[inputTemp.length][2];
             for (int i = 0; i < inputTemp.length; i++) {
                 input[i][0] = inputTemp[i][0];
@@ -292,7 +290,7 @@ public class MachineModel {
                 preResult[i][1] = (double) preResult[i][1] + (double) de_result[i + 1][j + 1];
             }
         }
-        dataUtils.resultProcessing(preResult, param);//恢复为径流量
+        machineDataUtils.resultProcessing(preResult, param);//恢复为径流量
         result = setLongFlood(preResult, param);
         return result;
     }
