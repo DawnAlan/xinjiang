@@ -15,6 +15,8 @@ import com.cj.common.util.UUIDUtils;
 import com.cj.flood.func.modular.prediction.bean.dto.*;
 import com.cj.flood.func.modular.prediction.bean.req.IncomingWaterForecastAddReq;
 import com.cj.flood.func.modular.prediction.bean.req.WaterResourceAllocationTimeReq;
+import com.cj.flood.func.modular.prediction.entity.ModelParameters;
+import com.cj.flood.func.modular.prediction.service.ModelParametersService;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.entity.IrrigatedPlatformDataInfo;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.service.IrrigatedPlatformDataInfoService;
 import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.entity.LzzGaugingStation;
@@ -28,6 +30,7 @@ import com.cj.flood.func.modular.prediction.bean.res.IncomingWaterForecastDetail
 import com.cj.flood.func.modular.prediction.entity.IncomingWaterForecast;
 import com.cj.flood.func.modular.prediction.service.IncomingWaterForecastService;
 import com.cj.flood.func.modular.prediction.mapper.IncomingWaterForecastMapper;
+import com.cj.model.func.modular.FloodPredict.Calibration.entity.ShanbeiParam;
 import com.cj.model.func.modular.FloodPredict.entity.*;
 import com.cj.model.func.modular.FloodPredict.model.TouTunHe;
 import com.cj.model.func.modular.FloodPredict.utils.InputUtils;
@@ -37,13 +40,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -83,6 +87,11 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
 
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd");
+
+    @Bean
+    public CommandLineRunner loadModelData() {
+        return args -> InputUtils.getData(minioUrl+floodModelFilePath);
+    }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -140,6 +149,7 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                 private IrrigatedPlatformDataInfoService irrigatedPlatformDataInfoService = SpringUtil.getBean(IrrigatedPlatformDataInfoService.class);
 
                 private IncomingWaterForecastMapper incomingWaterForecastMapper = SpringUtil.getBean(IncomingWaterForecastMapper.class);
+                private ModelParametersService modelParametersService = SpringUtil.getBean(ModelParametersService.class);
 
                 @Override
                 public void run() {
@@ -158,7 +168,7 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                         }
                         forcastInputParamNew.setIsSimulation(req.getIsSimulation());
                         forcastInputParamNew.setRainFallDtos(req.getRainFallDtos());
-                        List<Date> dates = new InputUtils().judgeDate(minioUrl+floodModelFilePath,incomingWaterForecast.getPredictionTime(),incomingWaterForecast.getPeriodTimeNum());
+                        List<Date> dates = InputUtils.judgeDate(incomingWaterForecast.getPredictionTime(),incomingWaterForecast.getPeriodTimeNum());
                         if(dates.isEmpty()){
                             List<PredictInputData> resultListTemp = new ArrayList<>();
                             LocalDateTime now = LocalDateTime.now();
@@ -234,6 +244,24 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                         //调用模型方法生成模型结果，更新到数据库
                         //System.out.println("Hello pool");
                         forcastInputParamNew.setFilePath(minioUrl+floodModelFilePath);
+                        Map<String, ShanbeiParam> paramMap =  new HashMap<>();
+                        modelParametersService.lambdaQuery().eq(ModelParameters::getIsDefault, 1).list()
+                                .forEach(param -> {
+                                    paramMap.put(param.getSiteName(), new ShanbeiParam(){{
+                                        setArea(param.getArea());
+                                        setFC(param.getFc());
+                                        setFM(param.getFm());
+                                        setFB(param.getFb());
+                                        setCS(param.getCs());
+                                        setKC(param.getKc());
+                                        setWM(param.getWm());
+                                        setFM(param.getFm());
+                                        setK(param.getK());
+                                        setB(param.getB());
+                                        setL(param.getL());
+                                    }});
+                                });
+                        forcastInputParamNew.setParamMap(paramMap);
                         TemporaryXlsx floodList = new TouTunHe().getFloodList(forcastInputParamNew);
                         //生成模型结果文件
                         String fileAddress = floodList.getPath();
@@ -427,6 +455,7 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
             ExecutorService pool = Executors.newSingleThreadExecutor();
             pool.submit(new Runnable() {
                 private IncomingWaterForecastService incomingWaterForecastService = SpringUtil.getBean(IncomingWaterForecastService.class);
+                private ModelParametersService modelParametersService = SpringUtil.getBean(ModelParametersService.class);
 
                 @Override
                 public void run() {
@@ -460,6 +489,24 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                         irrigatedHydrologyParam.setTthInput(irrigatedPlatformDataInfoService.lambdaQuery().eq(IrrigatedPlatformDataInfo::getMonitorName,"入库流量").list());
                         forcastInputParamNew.setLzzHydrologyParam(lzzHydrologyParam);
                         forcastInputParamNew.setIrrigatedHydrologyParam(irrigatedHydrologyParam);
+                        Map<String, ShanbeiParam> paramMap =  new HashMap<>();
+                        modelParametersService.lambdaQuery().eq(ModelParameters::getIsDefault, 1).list()
+                                .forEach(param -> {
+                                    paramMap.put(param.getSiteName(), new ShanbeiParam(){{
+                                        setArea(param.getArea());
+                                        setFC(param.getFc());
+                                        setFM(param.getFm());
+                                        setFB(param.getFb());
+                                        setCS(param.getCs());
+                                        setKC(param.getKc());
+                                        setWM(param.getWm());
+                                        setFM(param.getFm());
+                                        setK(param.getK());
+                                        setB(param.getB());
+                                        setL(param.getL());
+                                    }});
+                                });
+                        forcastInputParamNew.setParamMap(paramMap);
                         //调用模型方法生成模型结果，更新到数据库
                         TemporaryXlsx floodList = new TouTunHe().getFloodList(forcastInputParamNew);
                         //生成模型结果文件

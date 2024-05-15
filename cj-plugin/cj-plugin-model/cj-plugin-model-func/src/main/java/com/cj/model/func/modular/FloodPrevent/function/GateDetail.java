@@ -1,5 +1,6 @@
 package com.cj.model.func.modular.FloodPrevent.function;
 
+import com.alibaba.fastjson.JSONObject;
 import com.cj.model.func.modular.FloodPrevent.entity.Option;
 
 import java.util.*;
@@ -15,7 +16,6 @@ public class GateDetail {
         Map<String, List<Object>> Time_lzz = new LinkedHashMap<>();
         Map<String, List<Object>> Q1_lzz = new LinkedHashMap<>();
         Map<String, List<Object>> Q2_lzz = new LinkedHashMap<>();
-        Map<String, List<Object>> Q3_lzz = new LinkedHashMap<>();
 
         Map<String, List<Object>> Time_tth = new LinkedHashMap<>();
         Map<String, List<Object>> Q1_tth = new LinkedHashMap<>();
@@ -31,7 +31,6 @@ public class GateDetail {
             List<Object> time_lzz = new ArrayList<>();
             List<Object> q1_lzz = new ArrayList<>();
             List<Object> q2_lzz = new ArrayList<>();
-            List<Object> q3_lzz = new ArrayList<>();
 
             List<Object> time_tth = new ArrayList<>();
             List<Object> q1_tth = new ArrayList<>();
@@ -40,17 +39,17 @@ public class GateDetail {
 
             for (int i = 0; i < option.size(); i++) {
                 String name = option.get(i).getName();
+                List<Double> singleList = JSONObject.parseArray(option.get(i).getQSingleString(), Double.class);
                 if(name.equals("楼庄子")){
                     time_lzz.add(option.get(i).getTime());
-                    q1_lzz.add(option.get(i).getQ1());
-                    q2_lzz.add(option.get(i).getQ2());
-                    q3_lzz.add(option.get(i).getQ3());
+                    q1_lzz.add(singleList.get(0));
+                    q2_lzz.add(singleList.get(1));
                 }
                 else if(name.equals("头屯河")){
                     time_tth.add(option.get(i).getTime());
-                    q1_tth.add(option.get(i).getQ1());
-                    q2_tth.add(option.get(i).getQ2());
-                    q3_tth.add(option.get(i).getQ3());
+                    q1_tth.add(singleList.get(0));
+                    q2_tth.add(singleList.get(1));
+                    q3_tth.add(singleList.get(2));
                 }
                 else{
                     throw new RuntimeException("方案有误");
@@ -60,7 +59,6 @@ public class GateDetail {
             Time_lzz.put(key,time_lzz);
             Q1_lzz.put(key,q1_lzz);
             Q2_lzz.put(key,q2_lzz);
-            Q3_lzz.put(key,q3_lzz);
             Time_tth.put(key,time_tth);
             Q1_tth.put(key,q1_tth);
             Q2_tth.put(key,q2_tth);

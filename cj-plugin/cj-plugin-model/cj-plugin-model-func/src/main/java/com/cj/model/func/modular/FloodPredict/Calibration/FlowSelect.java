@@ -50,7 +50,7 @@ public class FlowSelect {
             Object[][] lzzObjectFlow = flowSelect.getFlow(lzzFlow, new ArrayList<>(), dateStart, dateEnd);
             List<Object[]> lzzDateList = flowSelect.floodList("楼庄子",flowSelect.getFloodSelect("楼庄子",lzzObjectFlow));
             result = lzzDateList;
-        } else if (input.getLocation().equals("楼头区间")) {
+        } else if (input.getLocation().equals("头屯河")) {
             for (int i = 0; i < input.getIrrigatedHydrologyParam().getTthInput().size(); i++) //头屯河进库流量
             {
                 if (input.getIrrigatedHydrologyParam().getTthInput().get(i).getMonitorTime().after(input.getStartTime())) {
@@ -143,10 +143,12 @@ public class FlowSelect {
             }
         }
         double dt = max - min;//差值
+
         if (max <= 10 || dt / min <= 2)//如果洪峰小于10或者来水变幅很小
         {
             throw new RuntimeException(location+"所选时段内无较大来水，无法对模型参数进行有效优化");
         }
+
         if (max >= 300)//如果洪峰大于300
         {
             throw new RuntimeException(location+"所选时段内历史数据有误，最大洪峰超过300立方米每秒");
@@ -266,7 +268,7 @@ public class FlowSelect {
     public List<Object[]> floodList(String location,Object[][] flow) {
         //判断数据库中是否有数据
         if (flow == null) {
-            throw new RuntimeException("未从本数据集中获得可用洪水数据");
+            throw new RuntimeException(location+"未从本数据集中获得可用洪水数据");
         } else {
             // 判断数组中的元素是否全部为 null 或者长度为 0 的一维数组
             boolean isEmpty = true;
@@ -277,7 +279,7 @@ public class FlowSelect {
                 }
             }
             if (isEmpty) {
-                throw new RuntimeException("未从本数据集中获得可用洪水数据");
+                throw new RuntimeException(location+"未从本数据集中获得可用洪水数据");
             }
         }
         List<Object[][]> flowResult = new ArrayList<>();
@@ -301,7 +303,7 @@ public class FlowSelect {
             }
         }
         if (flowResult.isEmpty()) {
-            throw new RuntimeException("未从本数据集中获得可用洪水数据");
+            throw new RuntimeException(location+"洪水持续时间过短");
         }
         //获取不同时间来水的开始和结束时间
         for (int i = 0; i < flowResult.size(); i++) {

@@ -34,4 +34,10 @@ public class FloodControlOperationAddReq implements Serializable {
 
     @ApiModelProperty(value = "头屯河各月份汛限水位，共12个")
     private double[] limitLevelsTth;
+
+    @ApiModelProperty(value = "楼庄子各月份生态流量,供12个")
+    private double[] ecosLzz;
+
+    @ApiModelProperty(value = "头屯河各月份生态流量,供12个")
+    private double[] ecosTth;
 }

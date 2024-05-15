@@ -29,5 +29,6 @@ public class ModelParametersDetail extends Model<ModelParametersDetail> {
     
     private String parentId;
 
+    private Double preParamRainfall;
 }
 

@@ -3,6 +3,7 @@ package com.cj.model.func.modular.FloodPredict.utils;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.entity.IrrigatedPlatformDataInfo;
 import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.entity.LzzGaugingStation;
 import com.cj.middleDatabase.func.modular.lzz.lzzRainfallStation.entity.LzzRainfallStation;
+import com.cj.model.func.modular.FloodPredict.Calibration.entity.ShanbeiParam;
 import com.cj.model.func.modular.FloodPredict.entity.*;
 
 import java.math.BigDecimal;
@@ -102,6 +103,13 @@ public class DataUtils {
         lzzHydrologyParam.setLzzInput(LZZresult);
         lzzHydrologyParam = lzzNullTemOrFlow(lzzHydrologyParam);
         result.setLzzHydrologyParam(lzzHydrologyParam);
+        /**
+         * 区间数据的前期处理
+         */
+        //区间数据站点名空值处理
+        IrrigatedHydrologyParam irrigatedHydrologyParam = result.getIrrigatedHydrologyParam();
+        irrigatedHydrologyParam = irrigateStationProcessing(irrigatedHydrologyParam);
+        result.setIrrigatedHydrologyParam(irrigatedHydrologyParam);
         //雨情预报数据处理
         if (result.getIsSimulation() == null) {
             result.setIsSimulation(false);
@@ -114,14 +122,38 @@ public class DataUtils {
         if (result.getInflowRunoffs() == null || result.getInflowRunoffs().isEmpty()) {
             throw new RuntimeException("未获得A3表中进库流量数据");
         }
-        /**
-         * 区间数据的前期处理
-         */
-        //区间数据站点名空值处理
-        IrrigatedHydrologyParam irrigatedHydrologyParam = result.getIrrigatedHydrologyParam();
-        irrigatedHydrologyParam = irrigateStationProcessing(irrigatedHydrologyParam);
-        result.setIrrigatedHydrologyParam(irrigatedHydrologyParam);
+        //参数的输入
+        ShanbeiParam shanbeiparam3 = defaultParam();
+
+        ShanbeiParam shanbeiparamLzz =  defaultParam();
+
+        ShanbeiParam shanbeiparamTth =  defaultParam();
+
+        if (!result.getParamMap().containsKey("3号桥")){
+            shanbeiparam3.setArea(690.0);
+            result.getParamMap().put("3号桥",shanbeiparam3);
+        }        if (!result.getParamMap().containsKey("楼庄子")){
+            shanbeiparamLzz.setArea(1174.0);
+            result.getParamMap().put("楼庄子",shanbeiparamLzz);
+        }        if (!result.getParamMap().containsKey("头屯河")){
+            shanbeiparamTth.setArea(259.0);
+            result.getParamMap().put("楼头区间",shanbeiparamTth);
+        }
         return result;
+    }
+
+    private ShanbeiParam defaultParam() {
+        ShanbeiParam shanbeiParam = new ShanbeiParam();
+        shanbeiParam.setArea(0.0);
+        shanbeiParam.setFB(0.008);
+        shanbeiParam.setWM(120.0);
+        shanbeiParam.setKC(1.0);
+        shanbeiParam.setFC(32.0);
+        shanbeiParam.setFM(100.0);
+        shanbeiParam.setK(0.022);
+        shanbeiParam.setB(0.3);
+        shanbeiParam.setCS(0.966);
+        return shanbeiParam;
     }
 
     /**
@@ -658,59 +690,59 @@ public class DataUtils {
         List<List<PredictInputData>> result = new ArrayList<>();
         Date dateStart = entity.getDataStartTime();
         Date dateEnd = entity.getPredictionTime();
-        //3号桥
-        List<LzzGaugingStation> THS = entity.getLzzHydrologyParam().getThreeGaugingStation();
-        List<PredictInputData> Three = lzzFlowConversion(dateStart, dateEnd, THS);
-        result.add(Three);
-        //楼庄子入库
-        List<LzzGaugingStation> LZZI = entity.getLzzHydrologyParam().getLzzInput();
-        List<PredictInputData> LOUIN = lzzFlowConversion(dateStart, dateEnd, LZZI);
-        result.add(LOUIN);
-        //楼庄子出库
-        List<LzzGaugingStation> LZZO = entity.getLzzHydrologyParam().getLzzOutput();
-        List<PredictInputData> LOUOUT = lzzFlowConversion(dateStart, dateEnd, LZZO);
-        result.add(LOUOUT);
-        if (entity.getModelType() == 3) {
-            //喀什沟雨量站
-            List<LzzRainfallStation> KSG = entity.getLzzHydrologyParam().getKsgRainfallStation();
-            List<PredictInputData> KASHI = lzzRainConversion(KSG);
-            result.add(KASHI);
-            //黑沟雨量站
-            List<LzzRainfallStation> HG = entity.getLzzHydrologyParam().getHgRainfallStation();
-            List<PredictInputData> HEIGOU = lzzRainConversion(HG);
-            result.add(HEIGOU);
-            //煤矿沟雨量站
-            List<LzzRainfallStation> MKG = entity.getLzzHydrologyParam().getMkgRainfallStation();
-            List<PredictInputData> MEI = lzzRainConversion(MKG);
-            result.add(MEI);
-            //无名沟雨量站
-            List<LzzRainfallStation> WMG = entity.getLzzHydrologyParam().getWmgRainfallStation();
-            List<PredictInputData> WUMING = lzzRainConversion(WMG);
-            result.add(WUMING);
-            //加普沙雨量站
-            List<LzzRainfallStation> JPS = entity.getLzzHydrologyParam().getJpsRainfallStation();
-            List<PredictInputData> JIA = lzzRainConversion(JPS);
-            result.add(JIA);
-            //宰尔德雨量站
-            List<LzzRainfallStation> ZED = entity.getLzzHydrologyParam().getZrdRainfallStation();
-            List<PredictInputData> ZAI = lzzRainConversion(ZED);
-            result.add(ZAI);
-            //东南沟雨量站
-            List<LzzRainfallStation> DNG = entity.getLzzHydrologyParam().getDngRainfallStation();
-            List<PredictInputData> DONG = lzzRainConversion(DNG);
-            result.add(DONG);
-            //八一林场雨量站
-            List<LzzRainfallStation> BYLC = entity.getLzzHydrologyParam().getBylcRainfallStation();
-            List<PredictInputData> BAYI = lzzRainConversion(BYLC);
-            result.add(BAYI);
-            //萨尔达万雨量站
-            List<LzzRainfallStation> SEDW = entity.getLzzHydrologyParam().getSedwRainfallStation();
-            List<PredictInputData> SAER = lzzRainConversion(SEDW);
-            result.add(SAER);
-            //制材厂雨量站
-            List<LzzRainfallStation> ZCC = entity.getLzzHydrologyParam().getZccRainfallStation();
-            List<PredictInputData> ZHI = lzzRainConversion(ZCC);
-            result.add(ZHI);
+        //喀什沟雨量站
+        List<LzzRainfallStation> KSG = entity.getLzzHydrologyParam().getKsgRainfallStation();
+        List<PredictInputData> KASHI = lzzRainConversion(KSG);
+        result.add(KASHI);
+        //黑沟雨量站
+        List<LzzRainfallStation> HG = entity.getLzzHydrologyParam().getHgRainfallStation();
+        List<PredictInputData> HEIGOU = lzzRainConversion(HG);
+        result.add(HEIGOU);
+        //煤矿沟雨量站
+        List<LzzRainfallStation> MKG = entity.getLzzHydrologyParam().getMkgRainfallStation();
+        List<PredictInputData> MEI = lzzRainConversion(MKG);
+        result.add(MEI);
+        //无名沟雨量站
+        List<LzzRainfallStation> WMG = entity.getLzzHydrologyParam().getWmgRainfallStation();
+        List<PredictInputData> WUMING = lzzRainConversion(WMG);
+        result.add(WUMING);
+        //加普沙雨量站
+        List<LzzRainfallStation> JPS = entity.getLzzHydrologyParam().getJpsRainfallStation();
+        List<PredictInputData> JIA = lzzRainConversion(JPS);
+        result.add(JIA);
+        //宰尔德雨量站
+        List<LzzRainfallStation> ZED = entity.getLzzHydrologyParam().getZrdRainfallStation();
+        List<PredictInputData> ZAI = lzzRainConversion(ZED);
+        result.add(ZAI);
+        //东南沟雨量站
+        List<LzzRainfallStation> DNG = entity.getLzzHydrologyParam().getDngRainfallStation();
+        List<PredictInputData> DONG = lzzRainConversion(DNG);
+        result.add(DONG);
+        //八一林场雨量站
+        List<LzzRainfallStation> BYLC = entity.getLzzHydrologyParam().getBylcRainfallStation();
+        List<PredictInputData> BAYI = lzzRainConversion(BYLC);
+        result.add(BAYI);
+        //萨尔达万雨量站
+        List<LzzRainfallStation> SEDW = entity.getLzzHydrologyParam().getSedwRainfallStation();
+        List<PredictInputData> SAER = lzzRainConversion(SEDW);
+        result.add(SAER);
+        //制材厂雨量站
+        List<LzzRainfallStation> ZCC = entity.getLzzHydrologyParam().getZccRainfallStation();
+        List<PredictInputData> ZHI = lzzRainConversion(ZCC);
+        result.add(ZHI);
+        if (entity.getModelType() != 3) {
+            //3号桥
+            List<LzzGaugingStation> THS = entity.getLzzHydrologyParam().getThreeGaugingStation();
+            List<PredictInputData> Three = lzzFlowConversion(dateStart, dateEnd, THS);
+            result.add(Three);
+            //楼庄子入库
+            List<LzzGaugingStation> LZZI = entity.getLzzHydrologyParam().getLzzInput();
+            List<PredictInputData> LOUIN = lzzFlowConversion(dateStart, dateEnd, LZZI);
+            result.add(LOUIN);
+            //楼庄子出库
+            List<LzzGaugingStation> LZZO = entity.getLzzHydrologyParam().getLzzOutput();
+            List<PredictInputData> LOUOUT = lzzFlowConversion(dateStart, dateEnd, LZZO);
+            result.add(LOUOUT);
         }
         return result;
     }
@@ -1015,70 +1047,70 @@ public class DataUtils {
         List<PredictInputData> RainDay = new ArrayList<>();
         //喀什沟
         List<List<PredictInputData>> lzzData = lzzDataConversion(paramNew);
-        List<PredictInputData> KSG = lzzData.get(3);
+        List<PredictInputData> KSG = lzzData.get(0);
         KSG = getHoursRain(paramNew, KSG);
         List<PredictInputData> KSGDAY = lzzRainHourToDay(paramNew.getLzzHydrologyParam().getKsgRainfallStation());
         KSGDAY = getTwentyDaysRain(paramNew, KSGDAY);
         RainDay.addAll(KSGDAY);
         RainHour.addAll(KSG);
         //黑沟
-        List<PredictInputData> HG = lzzData.get(4);
+        List<PredictInputData> HG = lzzData.get(1);
         HG = getHoursRain(paramNew, HG);
         List<PredictInputData> HGDAY = lzzRainHourToDay(paramNew.getLzzHydrologyParam().getHgRainfallStation());
         HGDAY = getTwentyDaysRain(paramNew, HGDAY);
         RainDay.addAll(HGDAY);
         RainHour.addAll(HG);
         //煤矿沟
-        List<PredictInputData> MKG = lzzData.get(5);
+        List<PredictInputData> MKG = lzzData.get(2);
         MKG = getHoursRain(paramNew, MKG);
         List<PredictInputData> MKGDAY = lzzRainHourToDay(paramNew.getLzzHydrologyParam().getMkgRainfallStation());
         MKGDAY = getTwentyDaysRain(paramNew, MKGDAY);
         RainDay.addAll(MKGDAY);
         RainHour.addAll(MKG);
         //无名沟
-        List<PredictInputData> WMG = lzzData.get(6);
+        List<PredictInputData> WMG = lzzData.get(3);
         WMG = getHoursRain(paramNew, WMG);
         List<PredictInputData> WMGDAY = lzzRainHourToDay(paramNew.getLzzHydrologyParam().getWmgRainfallStation());
         WMGDAY = getTwentyDaysRain(paramNew, WMGDAY);
         RainDay.addAll(WMGDAY);
         RainHour.addAll(WMG);
         //加普沙
-        List<PredictInputData> JPS = lzzData.get(7);
+        List<PredictInputData> JPS = lzzData.get(4);
         JPS = getHoursRain(paramNew, JPS);
         List<PredictInputData> JPSDAY = lzzRainHourToDay(paramNew.getLzzHydrologyParam().getJpsRainfallStation());
         JPSDAY = getTwentyDaysRain(paramNew, JPSDAY);
         RainDay.addAll(JPSDAY);
         RainHour.addAll(JPS);
         //宰尔德
-        List<PredictInputData> ZED = lzzData.get(8);
+        List<PredictInputData> ZED = lzzData.get(5);
         ZED = getHoursRain(paramNew, ZED);
         List<PredictInputData> ZEDDAY = lzzRainHourToDay(paramNew.getLzzHydrologyParam().getZrdRainfallStation());
         ZEDDAY = getTwentyDaysRain(paramNew, ZEDDAY);
         RainDay.addAll(ZEDDAY);
         RainHour.addAll(ZED);
         //东南沟
-        List<PredictInputData> DNG = lzzData.get(9);
+        List<PredictInputData> DNG = lzzData.get(6);
         DNG = getHoursRain(paramNew, DNG);
         List<PredictInputData> DNGDAY = lzzRainHourToDay(paramNew.getLzzHydrologyParam().getDngRainfallStation());
         DNGDAY = getTwentyDaysRain(paramNew, DNGDAY);
         RainDay.addAll(DNGDAY);
         RainHour.addAll(DNG);
         //八一林场
-        List<PredictInputData> BYLC = lzzData.get(10);
+        List<PredictInputData> BYLC = lzzData.get(7);
         BYLC = getHoursRain(paramNew, BYLC);
         List<PredictInputData> BYLCDAY = lzzRainHourToDay(paramNew.getLzzHydrologyParam().getBylcRainfallStation());
         BYLCDAY = getTwentyDaysRain(paramNew, BYLCDAY);
         RainDay.addAll(BYLCDAY);
         RainHour.addAll(BYLC);
         //萨尔达万
-        List<PredictInputData> SEDW = lzzData.get(11);
+        List<PredictInputData> SEDW = lzzData.get(8);
         SEDW = getHoursRain(paramNew, SEDW);
         List<PredictInputData> SEDWDAY = lzzRainHourToDay(paramNew.getLzzHydrologyParam().getSedwRainfallStation());
         SEDWDAY = getTwentyDaysRain(paramNew, SEDWDAY);
         RainDay.addAll(SEDWDAY);
         RainHour.addAll(SEDW);
         //制材厂
-        List<PredictInputData> ZCC = lzzData.get(12);
+        List<PredictInputData> ZCC = lzzData.get(9);
         ZCC = getHoursRain(paramNew, ZCC);
         List<PredictInputData> ZCCDAY = lzzRainHourToDay(paramNew.getLzzHydrologyParam().getZccRainfallStation());
         ZCCDAY = getTwentyDaysRain(paramNew, ZCCDAY);
@@ -1176,7 +1208,6 @@ public class DataUtils {
                         BigDecimal T = result.get(i - 1).getTemperature();
                         result.get(i).setTemperature(T);
                     }
-
                 }
             }
         }
@@ -1547,9 +1578,12 @@ public class DataUtils {
                     info.setSqMonitorFlow(inputList.get(i).getSqMonitorFlow());
                     info.setYqRainFallOne(inputList.get(i).getYqRainFallOne());
                 }else {
-                    info.setSqMonitorFlow(rainFall/number);
-                    info.setYqRainFallOne(monitorFlow/number);
+                    info.setSqMonitorFlow(monitorFlow/number);
+                    info.setYqRainFallOne(rainFall/number);
                 }
+                rainFall = 0.0;
+                monitorFlow = 0.0;
+                number = 0;
                 resultList.add(info);
             }
         }

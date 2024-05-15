@@ -98,7 +98,7 @@ public class ShanBeiModel {
         K = shanbeiParam.getK(); //霍尔顿下渗曲线方程中的土质系数 0.04~0.05/min
         B = shanbeiParam.getB();  //B反映下渗能力在透水面积上的分布特性
         CS = shanbeiParam.getCS(); //CS 为地面径流消退系数
-
+        zero = 0;
 
         for (int i = 0; i < input.length; i++) {
             if (Double.parseDouble(input[i][2].toString())==0.0){

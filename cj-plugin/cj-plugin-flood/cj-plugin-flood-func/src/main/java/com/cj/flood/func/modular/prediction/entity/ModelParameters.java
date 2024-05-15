@@ -17,7 +17,7 @@ import java.io.Serializable;
 @Data
 @Builder
 public class ModelParameters extends Model<ModelParameters> {
-    
+
     private String id;
     //站点名称
     private String siteName;
@@ -55,5 +55,7 @@ public class ModelParameters extends Model<ModelParameters> {
     private String remarks;
 
     private  Integer isDefault;
-    }
+
+    private String fromId;
+}
 

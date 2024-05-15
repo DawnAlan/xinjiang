@@ -732,7 +732,7 @@ public class MachineDataUtils {
         param.setPeriodStepNumber(n);
         param.setPreFlow(forecastParam.getPreFlow());
         param.setPreRainFall(forecastParam.getPreRainFall());
-
+        param.setParamMap(forecastParam.getParamMap());
         return param;
     }
 
@@ -745,8 +745,7 @@ public class MachineDataUtils {
      * @throws InvalidFormatException
      */
     public String intervalData(ForecastInputParamNew paramForecastInputParamNew)
-            throws IOException, ParseException, InvalidFormatException {
-        InputStream fis = paramForecastInputParamNew.getHistoryData();
+            throws IOException, ParseException {
         Object[][] historyInput = InputUtils.historyData.get("楼庄子日");
         Date historyTime = (Date) historyInput[historyInput.length - 1][0];
         Date predictTime = paramForecastInputParamNew.getPredictionTime();
@@ -767,9 +766,9 @@ public class MachineDataUtils {
             data.addAll(dataObject(Three,"3号桥"));
             data.addAll(dataObject(Lou,"楼庄子"));
             data.addAll(dataObject(Qu,"楼头区间"));
-            ExcelTool.writeExcel(savePath+"HISTORY-DATA.xlsx",data);
+            ExcelTool.writeExcel(savePath+"/HISTORY-DATA.xlsx",data);
         }
-        return savePath+"HISTORY-DATA.xlsx";
+        return savePath+"/HISTORY-DATA.xlsx";
     }
 
     /**

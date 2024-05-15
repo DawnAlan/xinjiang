@@ -106,10 +106,10 @@ public class Containment {
         View.put("楼庄子",lzz);
         View.put("头屯河",tth);
 
-        double best=HAQ.get(0)[1];
+        double best=GetValue(HAQ.get(0));
         int num =0;
         for (int i = 0; i < Key_num.size(); i++) {
-            double va=HAQ.get(i)[1];
+            double va=GetValue(HAQ.get(i));
             if(va<=best){
                 best=va;
                 num=i;
@@ -134,6 +134,37 @@ public class Containment {
             }
         }
         return max;
+    }
+
+    public static double GetValue(Double[] HAQ){
+
+        double maxH_lzz = HAQ[0];
+
+        double maxH_tth = HAQ[2];
+
+        double value=maxH_lzz+maxH_tth;
+
+        if(maxH_lzz>=1397.63){
+            value=value+100000*(maxH_lzz-1397.63);
+        }
+        else if(maxH_lzz>=1397.41){
+            value=value+1000*(maxH_lzz-1397.41);
+        }
+        else if(maxH_lzz>=1397.21){
+            value=value+10*(maxH_lzz-1397.21);
+        }
+
+        if(maxH_tth>=992.54){
+            value=value+100000*(maxH_tth-992.54);
+        }
+        else if(maxH_tth>=991.2){
+            value=value+1000*(maxH_tth-991.2);
+        }
+        else if(maxH_tth>=989.6){
+            value=value+10*(maxH_tth-989.6);
+        }
+
+        return value;
     }
 
 }
