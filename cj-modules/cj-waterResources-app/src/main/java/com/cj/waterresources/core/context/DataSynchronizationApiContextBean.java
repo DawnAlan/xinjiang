@@ -13,7 +13,7 @@ public class DataSynchronizationApiContextBean implements DataSynchronizationApi
 
     private final DataSynchronizationFeign dataSynchronizationFeign;
     @Override
-    public String updateMonitor() {
-        return dataSynchronizationFeign.updateMonitor();
+    public String updateMonitor(Integer treeType) {
+        return dataSynchronizationFeign.updateMonitor(treeType);
     }
 }

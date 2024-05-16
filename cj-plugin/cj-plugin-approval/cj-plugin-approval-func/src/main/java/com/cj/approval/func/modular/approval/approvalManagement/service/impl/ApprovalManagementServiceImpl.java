@@ -373,9 +373,9 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
                 }
                 redisUtil.set(year + ":wordNum", wordNum);
             }
-            String fileName = "调度指令";
+            String fileName = "approvalManagement";
             String netWorkFilepath = url+approvalFilepath+"approvalManagement.docx";
-            String savePath = System.getProperty("java.io.tmpdir")+"approvalManagement"+ UUIDUtils.getUUID() +".xlsx";
+            String savePath = System.getProperty("java.io.tmpdir")+"/approvalManagement"+ UUIDUtils.getUUID() +".xlsx";
             downloadFile(netWorkFilepath,savePath);
             // 通过 XWPFTemplate 编译文件并渲染数据到模板中
             XWPFTemplate template = XWPFTemplate.compile(savePath).render(
@@ -407,7 +407,7 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
             try {
                 // 将完成数据渲染的文档写出
                 String property = System.getProperty("java.io.tmpdir");
-                String filePath = property + fileName;
+                String filePath = property + "/"+fileName;
                 template.writeAndClose(new FileOutputStream(filePath + ".docx"));
                 File tempFile = new File(filePath + ".docx");
                 FileInputStream inputStream = new FileInputStream(tempFile);
@@ -422,10 +422,11 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
                 String object = objectWriteResponse.object();
                 boolean update = this.lambdaUpdate().set(ApprovalManagement::getFileAddress, object).eq(ApprovalManagement::getId, id).update();
                 if (update) {
-                    Path path = Paths.get(filePath + ".docx");
+                    minioUtils.download(defaultBucket, namePath,response);
+                    /*Path path = Paths.get(filePath + ".docx");
                     response.setContentType("application/octet-stream");
                     response.setHeader("Content-Disposition", "attachment;filename=" + path.getFileName());
-                    Files.copy(path, response.getOutputStream());
+                    Files.copy(path, response.getOutputStream());*/
                 }
             } catch (IOException e) {
                 e.printStackTrace();

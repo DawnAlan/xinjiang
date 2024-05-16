@@ -1922,7 +1922,7 @@ public class AllServiceImpl implements AllService {
         Integer lzzSize = lzz.split(",").length;
         List<DayWaterSituationStatisticsTableLzz> dayWaterSituationStatisticsTableLzzs = dayWaterSituationStatisticsTableLzzMapper.selectListForTodayWaterSituation(date,lzzSize);
         if(dayWaterSituationStatisticsTableLzzs.isEmpty()){
-            resMap.put("楼庄子",null);
+            resMap.put("楼庄子_1",null);
         }else {
             String endTableListLzz = dayWaterSituationStatisticsTableLzzs.get(0).getEndTableList();
             String[] splitLzz = endTableListLzz.split(",");
@@ -1937,15 +1937,15 @@ public class AllServiceImpl implements AllService {
                 }
             }
             if(lzzList.isEmpty()){
-                resMap.put("楼庄子",null);
+                resMap.put("楼庄子_1",null);
             }
-            resMap.put("楼庄子",lzzList);
+            resMap.put("楼庄子_1",lzzList);
         }
         String tth = dayWaterSituationStatisticsTableTthMapper.selectEndTableList(date);
         Integer tthSize = tth.split(",").length;
         List<DayWaterSituationStatisticsTableTth> dayWaterSituationStatisticsTableTths = dayWaterSituationStatisticsTableTthMapper.selectListForTodayWaterSituation(date, tthSize);
         if(dayWaterSituationStatisticsTableTths.isEmpty()){
-            resMap.put("头屯河",null);
+            resMap.put("头屯河_2",null);
         }else {
             String endTableListTth = dayWaterSituationStatisticsTableTths.get(0).getEndTableList();
             String[] splitTth = endTableListTth.split(",");
@@ -1960,15 +1960,15 @@ public class AllServiceImpl implements AllService {
                 }
             }
             if(tthList.isEmpty()){
-                resMap.put("头屯河",null);
+                resMap.put("头屯河_2",null);
             }
-            resMap.put("头屯河",tthList);
+            resMap.put("头屯河_2",tthList);
         }
         String qs = dayWaterSituationStatisticsTableQsMapper.selectEndTableList(date);
         Integer qsSize = qs.split(",").length;
         List<DayWaterSituationStatisticsTableQs> dayWaterSituationStatisticsTableQss = dayWaterSituationStatisticsTableQsMapper.selectListForTodayWaterSituation(date, qsSize);
         if(dayWaterSituationStatisticsTableQss.isEmpty()){
-            resMap.put("渠首",null);
+            resMap.put("渠首_3",null);
         }else {
             String endTableListQs = dayWaterSituationStatisticsTableQss.get(0).getEndTableList();
             String[] splitQs = endTableListQs.split(",");
@@ -1983,15 +1983,15 @@ public class AllServiceImpl implements AllService {
                 }
             }
             if(qsList.isEmpty()){
-                resMap.put("渠首",null);
+                resMap.put("渠首_3",null);
             }
-            resMap.put("渠首",qsList);
+            resMap.put("渠首_3",qsList);
         }
         String hd = dayWaterSituationStatisticsTableHdMapper.selectEndTableList(date);
         Integer hdSize = hd.split(",").length;
         List<DayWaterSituationStatisticsTableHd> dayWaterSituationStatisticsTableHds = dayWaterSituationStatisticsTableHdMapper.selectListForTodayWaterSituation(date, hdSize);
         if(dayWaterSituationStatisticsTableHds.isEmpty()){
-            resMap.put("河东",null);
+            resMap.put("河东_4",null);
         }else {
             String endTableListHd = dayWaterSituationStatisticsTableHds.get(0).getEndTableList();
             String[] splitHd = endTableListHd.split(",");
@@ -2006,15 +2006,15 @@ public class AllServiceImpl implements AllService {
                 }
             }
             if(hdList.isEmpty()){
-                resMap.put("河东",null);
+                resMap.put("河东_4",null);
             }
-            resMap.put("河东",hdList);
+            resMap.put("河东_4",hdList);
         }
         String hx = dayWaterSituationStatisticsTableHxMapper.selectEndTableList(date);
         Integer hxSize = hx.split(",").length;
         List<DayWaterSituationStatisticsTableHx> dayWaterSituationStatisticsTableHxs = dayWaterSituationStatisticsTableHxMapper.selectListForTodayWaterSituation(date, hxSize);
         if(dayWaterSituationStatisticsTableHxs.isEmpty()){
-            resMap.put("河西",null);
+            resMap.put("河西_5",null);
         }else {
             String endTableListHx = dayWaterSituationStatisticsTableHxs.get(0).getEndTableList();
             String[] splitHx = endTableListHx.split(",");
@@ -2029,9 +2029,9 @@ public class AllServiceImpl implements AllService {
                 }
             }
             if(hxList.isEmpty()){
-                resMap.put("河西",null);
+                resMap.put("河西_5",null);
             }
-            resMap.put("河西",hxList);
+            resMap.put("河西_5",hxList);
         }
         if(resMap.isEmpty()){
             return null;

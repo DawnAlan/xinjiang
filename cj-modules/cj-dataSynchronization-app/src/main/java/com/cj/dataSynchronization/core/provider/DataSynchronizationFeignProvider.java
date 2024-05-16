@@ -16,7 +16,7 @@ public class DataSynchronizationFeignProvider implements DataSynchronizationFeig
 
     @Override
     @RequestMapping("/feign/provider/dataSynchronization/updateMonitor")
-    public String updateMonitor() {
-        return dataSynchronizationApiProvider.updateMonitor();
+    public String updateMonitor(Integer treeType) {
+        return dataSynchronizationApiProvider.updateMonitor(treeType);
     }
 }

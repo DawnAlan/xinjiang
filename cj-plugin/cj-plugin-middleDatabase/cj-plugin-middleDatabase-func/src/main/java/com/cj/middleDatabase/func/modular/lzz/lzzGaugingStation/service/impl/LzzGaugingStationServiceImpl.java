@@ -2,6 +2,7 @@ package com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.service.impl;
 
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.bean.res.SelectTodayWaterSituationRes;
 import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.mapper.LzzGaugingStationMapper;
 import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.entity.LzzGaugingStation;
 import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.service.LzzGaugingStationService;
@@ -56,6 +57,11 @@ public class LzzGaugingStationServiceImpl extends ServiceImpl<LzzGaugingStationM
     @Override
     public List<LzzGaugingStation> getCurrent(String dateTime) {
         return this.baseMapper.getCurrent(dateTime);
+    }
+
+    @Override
+    public List<SelectTodayWaterSituationRes> selectTodayWaterSituation(List<String> ids, String date) {
+        return this.baseMapper.selectTodayWaterSituation(ids,date);
     }
 }
 

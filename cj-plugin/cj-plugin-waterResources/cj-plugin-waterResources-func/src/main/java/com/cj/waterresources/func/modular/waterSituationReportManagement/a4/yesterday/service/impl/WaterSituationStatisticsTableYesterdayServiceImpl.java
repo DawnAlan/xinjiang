@@ -94,7 +94,7 @@ public class WaterSituationStatisticsTableYesterdayServiceImpl extends ServiceIm
         calendar.add(calendar.DATE, -1);
         String yesterday= sdf.format(calendar.getTime());
         String today= sdf.format(new Date());
-        List<DayWaterSituationStatisticsTableZcc> dayWaterSituationStatisticsTableZccs = dayWaterSituationStatisticsTableZccMapper.selectList(yesterday);
+        List<DayWaterSituationStatisticsTableZcc> dayWaterSituationStatisticsTableZccs = dayWaterSituationStatisticsTableZccMapper.selectList(today);
         if(null != dayWaterSituationStatisticsTableZccs && dayWaterSituationStatisticsTableZccs.size()>0){
             List<TrendsTableParam> zccList = trendsTableParamList.stream().filter(t->t.getUseType()==1).
                     filter(t -> t.getUseStation().equals("制材厂")).collect(Collectors.toList());

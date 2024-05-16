@@ -3,6 +3,7 @@ package com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataIn
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cj.middleDatabase.func.modular.dto.RealTimeRainfallRes;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.bean.res.SelectInfoByIrrigationNameListRes;
+import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.bean.res.SelectTodayWaterSituationRes;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.mapper.IrrigatedPlatformDataInfoMapper;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.entity.IrrigatedPlatformDataInfo;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.service.IrrigatedPlatformDataInfoService;
@@ -179,5 +180,11 @@ public class IrrigatedPlatformDataInfoServiceImpl extends ServiceImpl<IrrigatedP
     public List<IrrigatedPlatformDataInfo> getRecentlyRainfalls(String dateTime) {
         return this.baseMapper.getRecentlyRainfalls(dateTime);
     }
+
+    @Override
+    public List<SelectTodayWaterSituationRes> selectTodayWaterSituation(List<String> ids, String date, Integer num) {
+        return this.baseMapper.selectTodayWaterSituation(ids,date,num);
+    }
+
 }
 

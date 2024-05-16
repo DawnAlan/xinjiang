@@ -5,12 +5,19 @@
 <mapper namespace="com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.mapper.IrrigatedPlatformDataInfoMapper">
     <select id="getRealTimeWaterLevel" resultType="com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.entity.IrrigatedPlatformDataInfo">
         SELECT *
+        from IRRIGATED_PLATFORM_DATA_INFO where (MONITOR_ID,MONITOR_TIME) in (
+        select MONITOR_ID,max(MONITOR_TIME)
         FROM IRRIGATED_PLATFORM_DATA_INFO
-        WHERE MONITOR_ID in
-        <foreach item="item" collection="id" open="(" separator="," close=")">
-            #{item}
-        </foreach>
-        AND RECORD_TIME = #{time} ORDER BY MONITOR_TIME DESC limit #{num}
+        <where>
+            <if test="id!=null and id.size()>0">
+                and MONITOR_ID in
+                <foreach item="item" collection="id" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            and RECORD_TIME = #{time}
+        </where>
+        group by MONITOR_ID)
     </select>
 
     <select id="getRealTimeRainfall" resultType="com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.entity.IrrigatedPlatformDataInfo">
@@ -43,6 +50,23 @@
             and to_char(MONITOR_TIME,'mi')=00
         </where>
         order by MONITOR_TIME desc
+    </select>
+
+    <select id="selectTodayWaterSituation" resultType="com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.bean.res.SelectTodayWaterSituationRes">
+        SELECT MONITOR_NAME as name,SQ_MONITOR_FLOW as value,MONITOR_ID as id
+        from IRRIGATED_PLATFORM_DATA_INFO where (MONITOR_ID,MONITOR_TIME) in (
+        select MONITOR_ID,max(MONITOR_TIME)
+        FROM IRRIGATED_PLATFORM_DATA_INFO
+        <where>
+            <if test="ids!=null and ids.size()>0">
+                and MONITOR_ID in
+                <foreach item="item" collection="ids" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            and RECORD_TIME = #{date}
+        </where>
+        group by MONITOR_ID)
     </select>
 
 </mapper>

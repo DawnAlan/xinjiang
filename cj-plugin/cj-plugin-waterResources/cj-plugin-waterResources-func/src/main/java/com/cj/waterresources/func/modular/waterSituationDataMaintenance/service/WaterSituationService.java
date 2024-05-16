@@ -19,4 +19,6 @@ public interface WaterSituationService {
 
     RestResponse selectInfoListAll(SelectInfoListReq req);
     RestResponse selectInfoListAllNew(SelectInfoListNewReq req);
+
+    RestResponse selectTodayWaterSituation(String date);
 }

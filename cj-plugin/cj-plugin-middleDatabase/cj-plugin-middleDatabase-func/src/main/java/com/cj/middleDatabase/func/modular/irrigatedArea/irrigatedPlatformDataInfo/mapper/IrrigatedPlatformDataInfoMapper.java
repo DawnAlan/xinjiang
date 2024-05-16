@@ -3,6 +3,7 @@ package com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataIn
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.cj.middleDatabase.func.modular.dto.RealTimeRainfallRes;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.bean.res.SelectInfoByIrrigationNameListRes;
+import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.bean.res.SelectTodayWaterSituationRes;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.entity.IrrigatedPlatformDataInfo;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -81,5 +82,7 @@ public interface IrrigatedPlatformDataInfoMapper extends BaseMapper<IrrigatedPla
 
     @Select("SELECT * FROM IRRIGATED_PLATFORM_DATA_INFO WHERE MONITOR_NAME = #{monitorName} AND RECORD_TIME = #{time}  order by MONITOR_TIME desc limit 1")
     IrrigatedPlatformDataInfo selectInfoForIndex1(@Param("monitorName") String monitorName, @Param("time") String time);
+
+    List<SelectTodayWaterSituationRes> selectTodayWaterSituation(@Param("ids")List<String> ids, @Param("date")String date, @Param("num")Integer num);
 }
 

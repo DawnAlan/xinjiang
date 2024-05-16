@@ -1,8 +1,11 @@
 package com.cj.waterresources.func.modular.waterSituationDataMaintenance.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
+import com.cj.auth.core.pojo.SaBaseLoginUser;
+import com.cj.auth.core.util.StpLoginUserUtil;
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.RedisUtil;
+import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.bean.res.SelectTodayWaterSituationRes;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.entity.IrrigatedPlatformDataInfo;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.service.IrrigatedPlatformDataInfoService;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformTree.entity.IrrigatedPlatformTree;
@@ -27,6 +30,7 @@ import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.res
 import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.res.IrrigatedPlatformTreeRes;
 import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.res.LzzPlatformTreeRes;
 import com.cj.waterresources.func.modular.waterSituationDataMaintenance.service.WaterSituationService;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.res.TodayWaterSituationRes;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.service.AllService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -35,10 +39,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -270,6 +271,132 @@ public class WaterSituationServiceImpl implements WaterSituationService {
         }else {
             return RestResponse.ok(resList);
         }
+    }
+
+    @Override
+    public RestResponse selectTodayWaterSituation(String date) {
+        SaBaseLoginUser saBaseLoginUser = StpLoginUserUtil.getLoginUser();
+        Map<String,List<SelectTodayWaterSituationRes>> resMap = new HashMap<>();
+        if(saBaseLoginUser.getOrgName().equals("河东管理站")){
+            IrrigatedPlatformTree hdParent = irrigatedPlatformTreeService.lambdaQuery().eq(IrrigatedPlatformTree::getName, "河东站").eq(IrrigatedPlatformTree::getNodetype, "GroupType").one();
+            List<IrrigatedPlatformTree> hdList = irrigatedPlatformTreeService.lambdaQuery().eq(IrrigatedPlatformTree::getParentId, hdParent.getId()).list();
+            List<String> strings = hdList.stream().map(IrrigatedPlatformTree::getId).collect(Collectors.toList());
+            List<SelectTodayWaterSituationRes> selectTodayWaterSituationRes = irrigatedPlatformDataInfoService.selectTodayWaterSituation(strings, date, strings.size());
+            if(selectTodayWaterSituationRes.isEmpty()){
+                return RestResponse.no("暂无数据");
+            }else {
+                resMap.put("河东",selectTodayWaterSituationRes);
+                return RestResponse.ok(resMap);
+            }
+        }
+        if(saBaseLoginUser.getOrgName().equals("河西管理站")){
+            IrrigatedPlatformTree hxParent = irrigatedPlatformTreeService.lambdaQuery().eq(IrrigatedPlatformTree::getName, "河西水利工程站").eq(IrrigatedPlatformTree::getNodetype, "GroupType").one();
+            List<IrrigatedPlatformTree> hxList = irrigatedPlatformTreeService.lambdaQuery().eq(IrrigatedPlatformTree::getParentId, hxParent.getId()).list();
+            List<String> strings = hxList.stream().map(IrrigatedPlatformTree::getId).collect(Collectors.toList());
+            List<SelectTodayWaterSituationRes> selectTodayWaterSituationRes = irrigatedPlatformDataInfoService.selectTodayWaterSituation(strings, date, strings.size());
+            if(selectTodayWaterSituationRes.isEmpty()){
+                return RestResponse.no("暂无数据");
+            }else {
+                resMap.put("河西",selectTodayWaterSituationRes);
+                return RestResponse.ok(resMap);
+            }
+        }
+        if(saBaseLoginUser.getOrgName().equals("渠首管理站")){
+            IrrigatedPlatformTree qsParent = irrigatedPlatformTreeService.lambdaQuery().eq(IrrigatedPlatformTree::getName, "渠首站").eq(IrrigatedPlatformTree::getNodetype, "GroupType").one();
+            List<IrrigatedPlatformTree> qsList = irrigatedPlatformTreeService.lambdaQuery().eq(IrrigatedPlatformTree::getParentId, qsParent.getId()).list();
+            List<String> strings = qsList.stream().map(IrrigatedPlatformTree::getId).collect(Collectors.toList());
+            List<SelectTodayWaterSituationRes> selectTodayWaterSituationRes = irrigatedPlatformDataInfoService.selectTodayWaterSituation(strings, date, strings.size());
+            if(selectTodayWaterSituationRes.isEmpty()){
+                return RestResponse.no("暂无数据");
+            }else {
+                resMap.put("渠首",selectTodayWaterSituationRes);
+                return RestResponse.ok(resMap);
+            }
+        }
+        if(saBaseLoginUser.getOrgName().equals("头屯河水库")){
+            IrrigatedPlatformTree tthParent = irrigatedPlatformTreeService.lambdaQuery().eq(IrrigatedPlatformTree::getName, "水库站").eq(IrrigatedPlatformTree::getNodetype, "GroupType").one();
+            List<IrrigatedPlatformTree> tthList = irrigatedPlatformTreeService.lambdaQuery().eq(IrrigatedPlatformTree::getParentId, tthParent.getId()).in(IrrigatedPlatformTree::getName,"入库流量","出库流量").list();
+            List<String> strings = tthList.stream().map(IrrigatedPlatformTree::getId).collect(Collectors.toList());
+            List<SelectTodayWaterSituationRes> selectTodayWaterSituationRes = irrigatedPlatformDataInfoService.selectTodayWaterSituation(strings, date, strings.size());
+            if(selectTodayWaterSituationRes.isEmpty()){
+                return RestResponse.no("暂无数据");
+            }else {
+                resMap.put("头屯河",selectTodayWaterSituationRes);
+                return RestResponse.ok(resMap);
+            }
+        }
+        if(saBaseLoginUser.getOrgName().equals("楼庄子水库")){
+            List<LzzPlatformTree> lzzPlatformTrees = lzzPlatformTreeService.lambdaQuery().in(LzzPlatformTree::getName, "出库自动水位站", "入库自动水位站", "楼庄子水厂1号管道", "楼庄子水厂2号管道").list();
+            List<String> strings = lzzPlatformTrees.stream().map(LzzPlatformTree::getId).collect(Collectors.toList());
+            List<SelectTodayWaterSituationRes> selectTodayWaterSituationRes = lzzGaugingStationService.selectTodayWaterSituation(strings, date);
+            if(selectTodayWaterSituationRes.isEmpty()){
+                return RestResponse.no("暂无数据");
+            }else {
+                resMap.put("楼庄子",selectTodayWaterSituationRes);
+                return RestResponse.ok(resMap);
+            }
+        }
+        Map<String, List<SelectTodayWaterSituationRes>> stringListMap = allData(date);
+        if(stringListMap !=null){
+            return RestResponse.ok(stringListMap);
+        }else {
+            return RestResponse.no("今日暂无有效数据");
+        }
+    }
+
+    private Map<String,List<SelectTodayWaterSituationRes>> allData(String date){
+        Map<String,List<SelectTodayWaterSituationRes>> resMap = new LinkedHashMap<>();
+        List<LzzPlatformTree> lzzPlatformTrees = lzzPlatformTreeService.lambdaQuery().in(LzzPlatformTree::getName, "出库自动水位站", "入库自动水位站", "楼庄子水厂1号管道", "楼庄子水厂2号管道").list();
+        List<String> lzzIds = lzzPlatformTrees.stream().map(LzzPlatformTree::getId).collect(Collectors.toList());
+        List<SelectTodayWaterSituationRes> resultLzz = lzzGaugingStationService.selectTodayWaterSituation(lzzIds, date);
+        if(resultLzz.isEmpty()){
+            resMap.put("楼庄子_1",null);
+        }else {
+            resMap.put("楼庄子_1",resultLzz);
+        }
+
+        IrrigatedPlatformTree tthParent = irrigatedPlatformTreeService.lambdaQuery().eq(IrrigatedPlatformTree::getName, "水库站").eq(IrrigatedPlatformTree::getNodetype, "GroupType").one();
+        List<IrrigatedPlatformTree> tthList = irrigatedPlatformTreeService.lambdaQuery().eq(IrrigatedPlatformTree::getParentId, tthParent.getId()).in(IrrigatedPlatformTree::getName,"入库流量","出库流量").list();
+        List<String> tthIds = tthList.stream().map(IrrigatedPlatformTree::getId).collect(Collectors.toList());
+        List<SelectTodayWaterSituationRes> resultTth = irrigatedPlatformDataInfoService.selectTodayWaterSituation(tthIds, date, tthIds.size());
+        if(resultTth.isEmpty()){
+            resMap.put("头屯河_2",null);
+        }else {
+            resMap.put("头屯河_2",resultTth);
+        }
+
+        IrrigatedPlatformTree qsParent = irrigatedPlatformTreeService.lambdaQuery().eq(IrrigatedPlatformTree::getName, "渠首站").eq(IrrigatedPlatformTree::getNodetype, "GroupType").one();
+        List<IrrigatedPlatformTree> qsList = irrigatedPlatformTreeService.lambdaQuery().eq(IrrigatedPlatformTree::getParentId, qsParent.getId()).list();
+        List<String> qsIds = qsList.stream().map(IrrigatedPlatformTree::getId).collect(Collectors.toList());
+        List<SelectTodayWaterSituationRes> resultQs = irrigatedPlatformDataInfoService.selectTodayWaterSituation(qsIds, date, qsIds.size());
+        if(resultQs.isEmpty()){
+            resMap.put("渠首_3",null);
+        }else {
+            resMap.put("渠首_3",resultQs);
+        }
+        IrrigatedPlatformTree hdParent = irrigatedPlatformTreeService.lambdaQuery().eq(IrrigatedPlatformTree::getName, "河东站").eq(IrrigatedPlatformTree::getNodetype, "GroupType").one();
+        List<IrrigatedPlatformTree> hdList = irrigatedPlatformTreeService.lambdaQuery().eq(IrrigatedPlatformTree::getParentId, hdParent.getId()).list();
+        List<String> hdIds = hdList.stream().map(IrrigatedPlatformTree::getId).collect(Collectors.toList());
+        List<SelectTodayWaterSituationRes> resultHd = irrigatedPlatformDataInfoService.selectTodayWaterSituation(hdIds, date, hdIds.size());
+        if(resultHd.isEmpty()){
+            resMap.put("河东_4",null);
+        }else {
+            resMap.put("河东_4",resultHd);
+        }
+
+        IrrigatedPlatformTree hxParent = irrigatedPlatformTreeService.lambdaQuery().eq(IrrigatedPlatformTree::getName, "河西水利工程站").eq(IrrigatedPlatformTree::getNodetype, "GroupType").one();
+        List<IrrigatedPlatformTree> hxList = irrigatedPlatformTreeService.lambdaQuery().eq(IrrigatedPlatformTree::getParentId, hxParent.getId()).list();
+        List<String> hxIds = hxList.stream().map(IrrigatedPlatformTree::getId).collect(Collectors.toList());
+        List<SelectTodayWaterSituationRes> resultHx = irrigatedPlatformDataInfoService.selectTodayWaterSituation(hxIds, date, hxIds.size());
+        if(resultHx.isEmpty()){
+            resMap.put("河西_5",null);
+        }else {
+            resMap.put("河西_5",resultHx);
+        }
+        if(resMap.isEmpty()){
+            return null;
+        }
+        return resMap;
     }
 
     public void getIrrigatedTree(List<IrrigatedPlatformTreeRes> resultList, List<IrrigatedPlatformTreeRes> list){

@@ -118,8 +118,8 @@ public class OverallSituationUnitMgrServiceImpl extends ServiceImpl<OverallSitua
     }
 
     @Override
-    public RestResponse updateMonitor() {
-        String s = dataSynchronizationApi.updateMonitor();
+    public RestResponse updateMonitor(Integer treeType) {
+        String s = dataSynchronizationApi.updateMonitor(treeType);
         if(s.equals("200")){
             return RestResponse.ok();
         }else {

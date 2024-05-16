@@ -2,6 +2,7 @@ package com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.mapper;
 
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.bean.res.SelectTodayWaterSituationRes;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.entity.IrrigatedPlatformDataInfo;
 import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.entity.LzzGaugingStation;
 import com.cj.middleDatabase.func.modular.lzz.lzzRainfallStation.entity.LzzRainfallStation;
@@ -48,5 +49,7 @@ public interface LzzGaugingStationMapper extends BaseMapper<LzzGaugingStation> {
 
     @Select("SELECT * FROM LZZ_GAUGING_STATION WHERE STATION_NAME = #{stationName} AND RECORD_TIME = #{time}  order by GATHER_TIME desc limit 1")
     LzzGaugingStation selectInfoForIndex1(@Param("stationName") String stationName, @Param("time") String time);
+
+    List<SelectTodayWaterSituationRes> selectTodayWaterSituation(@Param("ids")List<String> ids, @Param("date")String date);
 }
 

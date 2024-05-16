@@ -2,5 +2,5 @@ package com.cj.DataSynchronization.api;
 
 public interface DataSynchronizationApi {
 
-    String updateMonitor();
+    String updateMonitor(Integer treeType);
 }

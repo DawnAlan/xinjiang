@@ -17,13 +17,21 @@ public class DataSynchronizationApiProvider implements DataSynchronizationApi {
     private final IrrigatedAreaService irrigatedAreaService;
 
     @Override
-    public String updateMonitor() {
-        RestResponse allTree = irrigatedAreaService.getAllTree();
-        RestResponse restResponse = lzzPlatformService.updateTree();
-        if(allTree.getCode()==200 && restResponse.getCode()==200){
-            return "200";
+    public String updateMonitor(Integer treeType) {
+        if(treeType==1){
+            RestResponse allTree = irrigatedAreaService.getAllTree();
+            if(allTree.getCode()==200){
+                return "200";
+            }else {
+                return "500";
+            }
         }else {
-            return "500";
+            RestResponse restResponse = lzzPlatformService.updateTree();
+            if(restResponse.getCode()==200){
+                return "200";
+            }else {
+                return "500";
+            }
         }
     }
 }

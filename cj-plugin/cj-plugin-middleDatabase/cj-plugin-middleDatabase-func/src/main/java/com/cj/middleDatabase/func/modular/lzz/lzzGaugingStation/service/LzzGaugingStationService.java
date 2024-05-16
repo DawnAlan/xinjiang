@@ -2,6 +2,7 @@ package com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.service;
 
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.bean.res.SelectTodayWaterSituationRes;
 import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.entity.LzzGaugingStation;
 
 import java.util.List;
@@ -24,5 +25,7 @@ public interface LzzGaugingStationService extends IService<LzzGaugingStation> {
     List<LzzGaugingStation> selectHistoryList(String name, String startTime, String endTime);
 
     List<LzzGaugingStation> getCurrent(String dateTime);
+
+    List<SelectTodayWaterSituationRes> selectTodayWaterSituation(List<String> ids,String date);
 }
 

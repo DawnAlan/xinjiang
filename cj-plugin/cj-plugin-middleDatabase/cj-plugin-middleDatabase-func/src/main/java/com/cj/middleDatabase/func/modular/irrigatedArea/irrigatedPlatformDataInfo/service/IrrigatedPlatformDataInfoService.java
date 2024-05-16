@@ -3,6 +3,7 @@ package com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataIn
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.cj.middleDatabase.func.modular.dto.RealTimeRainfallRes;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.bean.res.SelectInfoByIrrigationNameListRes;
+import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.bean.res.SelectTodayWaterSituationRes;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.entity.IrrigatedPlatformDataInfo;
 import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.entity.LzzGaugingStation;
 
@@ -43,5 +44,8 @@ public interface IrrigatedPlatformDataInfoService extends IService<IrrigatedPlat
     List<IrrigatedPlatformDataInfo> getCurrentDate(String startTime, String endTime);
 
     List<IrrigatedPlatformDataInfo> getRecentlyRainfalls(String dateTime);
+
+    List<SelectTodayWaterSituationRes> selectTodayWaterSituation(List<String> ids,String date,Integer num);
+
 }
 

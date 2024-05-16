@@ -67,8 +67,8 @@ public class OverallSituationUnitMgrController{
     @ApiOperation("全局单位管理更新监测点数据")
     @CommonLog(value = "全局单位管理更新监测点数据")
     @PostMapping("/updateMonitor")
-    public RestResponse updateMonitor() {
-        return overallSituationUnitMgrService.updateMonitor();
+    public RestResponse updateMonitor(@RequestParam("treeType")Integer treeType) {
+        return overallSituationUnitMgrService.updateMonitor(treeType);
     }
 }
 

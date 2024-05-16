@@ -65,4 +65,11 @@ public class WaterSituationController {
     public RestResponse selectInfoListAllNew(@RequestBody SelectInfoListNewReq req) {
         return waterSituationService.selectInfoListAllNew(req);
     }
+    @ApiOperationSupport(order = 6)
+    @ApiOperation("水情数据维护模块查询水资源首页今日水情")
+    @CommonLog(value = "水情数据维护模块查询水资源首页今日水情")
+    @GetMapping("/selectTodayWaterSituation")
+    public RestResponse selectTodayWaterSituation(@RequestParam("date") String date) {
+        return waterSituationService.selectTodayWaterSituation(date);
+    }
 }
