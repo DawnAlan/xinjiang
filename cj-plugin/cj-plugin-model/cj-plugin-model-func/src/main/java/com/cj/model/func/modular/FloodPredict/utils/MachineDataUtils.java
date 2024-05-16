@@ -732,7 +732,7 @@ public class MachineDataUtils {
         param.setPeriodStepNumber(n);
         param.setPreFlow(forecastParam.getPreFlow());
         param.setPreRainFall(forecastParam.getPreRainFall());
-
+        param.setParamMap(forecastParam.getParamMap());
         return param;
     }
 
@@ -745,8 +745,7 @@ public class MachineDataUtils {
      * @throws InvalidFormatException
      */
     public String intervalData(ForecastInputParamNew paramForecastInputParamNew)
-            throws IOException, ParseException, InvalidFormatException {
-        InputStream fis = paramForecastInputParamNew.getHistoryData();
+            throws IOException, ParseException {
         Object[][] historyInput = InputUtils.historyData.get("楼庄子日");
         Date historyTime = (Date) historyInput[historyInput.length - 1][0];
         Date predictTime = paramForecastInputParamNew.getPredictionTime();

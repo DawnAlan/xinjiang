@@ -6,11 +6,9 @@ import com.cj.model.func.modular.FloodPredict.Calibration.entity.ShanbeiParam;
 import com.cj.model.func.modular.FloodPredict.entity.ForecastInputParam;
 import com.cj.model.func.modular.FloodPredict.entity.PredictInputData;
 import com.cj.model.func.modular.FloodPredict.utils.DataUtils;
-import com.cj.model.func.modular.FloodPredict.utils.ExcelTool;
 import com.cj.model.func.modular.FloodPredict.utils.InputUtils;
 import com.cj.model.func.modular.FloodPredict.utils.TimeUtils;
 import com.cj.model.func.modular.FloodPrevent.entity.Option;
-import com.cj.model.func.modular.FloodPrevent.model.ModelOfLZZ;
 import com.cj.model.func.modular.entity.Flood;
 
 import java.io.IOException;
@@ -84,6 +82,7 @@ public class PhysicalForecast {
         shanbeiparam.setK((double) params[0][6]);
         shanbeiparam.setB((double) params[0][7]);
         shanbeiparam.setCS((double) params[0][8]);
+        shanbeiparam = param.getParamMap().get(param.getLocation());
         //模型计算过程
         shanBeiModel.InputData(shanbeiparam, preREData, historyRData);
         shanBeiModel.InitialMoistureContentCalculation();
@@ -117,15 +116,13 @@ public class PhysicalForecast {
         Object[][] floodNature = floodInformation.get(1);//洪水信息
         Object[][] water_outQ = new Object[n][3];//水位、出库流量、汛限水位
         if (param.getLocation().equals("楼庄子")) {
-            Object[][] input = new Object[n][3];
+            Object[][] input = new Object[n][2];
             for (int i = 0; i < n; i++) {
-                input[i][0] = param.getLocation();
-                input[i][1] = predict[i * l][0];
-                input[i][2] = predict[i * l][1];
+                input[i][0] = predict[i * l][0];
+                input[i][1] = predict[i * l][1];
             }
             int timeLength = 3600 * l;
-            ModelOfLZZ lzzOut = new ModelOfLZZ(input, timeLength);
-            List<Option> lzzOutList = lzzOut.Calculate_S2();
+            List<Option> lzzOutList = LZZ.Calculate("../file/Basin.json",input, timeLength);
             for (int i = 0; i < n; i++) {
                 water_outQ[i][0] = lzzOutList.get(i).getH1();
                 water_outQ[i][1] = lzzOutList.get(i).getQOut();

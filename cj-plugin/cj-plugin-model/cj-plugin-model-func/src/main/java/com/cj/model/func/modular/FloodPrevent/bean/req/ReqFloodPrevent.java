@@ -1,8 +1,7 @@
 package com.cj.model.func.modular.FloodPrevent.bean.req;
 
-import com.cj.model.func.modular.FloodPrevent.entity.CurveParam;
+
 import com.cj.model.func.modular.FloodPrevent.entity.DataFloodPrevent;
-import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.util.List;
@@ -10,40 +9,17 @@ import java.util.Map;
 
 @Data
 public class ReqFloodPrevent {
-
-    @ApiModelProperty(value = "预报断面")
-    private Map<String, List<DataFloodPrevent>> data;
-
-    @ApiModelProperty(value = "曲线")
-    private List<CurveParam> curveParam;
-
-    @ApiModelProperty(value = "楼庄子起调水位")
-    private double H1_begin;
-
-    @ApiModelProperty(value = "楼庄子期末控制水位")
-    private double H1_end;
-
-    @ApiModelProperty(value = "头屯河起调水位")
-    private double H2_begin;
-
-    @ApiModelProperty(value = "头屯河期末控制水位")
-    private double H2_end;
-
-    @ApiModelProperty(value = "楼庄子模型精度(0.05~0.2)")
-    private double Step1;
-
-    @ApiModelProperty(value = "头屯河模型精度(0.05~0.2)")
-    private double Step2;
-
-    @ApiModelProperty(value = "来水预报结果名称")
+    //预报方案名称
     private String programmeName;
+    //各水库上游区间流量
+    private Map<String, List<DataFloodPrevent>> intervals;
+    //各水库起调水位
+    private Map<String,Double> beginLevels;
+    //各库权重
+    private Map<String,Double> weights;
+    //各水库动态汛限水位
+    private Map<String,double[]> limitLevels;
+    //各水库动态生态流量
+    private Map<String,double[]> eco;
 
-    /**
-     * 楼庄子各月份汛限水位，共12个
-     */
-    private double[] limitLevels_lzz;
-    /**
-     * 头屯河各月份汛限水位，共12个
-     */
-    private double[] limitLevels_tth;
 }

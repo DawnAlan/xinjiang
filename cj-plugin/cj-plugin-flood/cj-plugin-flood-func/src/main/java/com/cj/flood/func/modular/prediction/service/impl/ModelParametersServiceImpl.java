@@ -1,9 +1,13 @@
 package com.cj.flood.func.modular.prediction.service.impl;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.cj.common.exception.CommonException;
+import com.cj.common.model.RestResponse;
 import com.cj.flood.func.modular.prediction.bean.req.CalibrateReq;
+import com.cj.flood.func.modular.prediction.bean.req.ModelParameterDetailReq;
 import com.cj.flood.func.modular.prediction.bean.req.ModelParametersReq;
+import com.cj.flood.func.modular.prediction.entity.ModelParametersDetail;
 import com.cj.flood.func.modular.prediction.mapper.ModelParametersMapper;
 import com.cj.flood.func.modular.prediction.entity.ModelParameters;
 import com.cj.flood.func.modular.prediction.service.ModelParametersDetailService;
@@ -24,13 +28,14 @@ import com.cj.model.func.modular.FloodPredict.entity.LzzHydrologyParam;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import javax.annotation.Resource;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 
@@ -56,6 +61,11 @@ public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMappe
     private IrrigatedPlatformDataInfoService irrigatedPlatformDataInfoService;
     @Autowired
     private ModelParametersDetailService modelParametersDetailService;
+    @Autowired
+    private ModelParametersService modelParametersService;
+
+    @Value("${model.flood.lzzInputStationName:天谷自动水位站}")
+    private String lzzInputStationName;
 
     public Map<String, List<ModelParameters>> queryList() {
         List<ModelParameters> parametersList = this.lambdaQuery()
@@ -66,10 +76,15 @@ public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMappe
 
     }
 
+    @Override
+    public List queryDefaultList() {
+        return this.lambdaQuery().eq(ModelParameters::getIsDefault, 1).list();
+    }
+
     @SneakyThrows
     @Override
-    public List<ModelParameters> calibrate(CalibrateReq input) {
-
+    @Transactional
+    public List calibrate(CalibrateReq input) {
         // 获取当前日期的Calendar实例
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(input.getStartTime());
@@ -78,36 +93,7 @@ public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMappe
         // 获取设置后的时间
         Date startTime = calendar.getTime();
         Date endTime = input.getEndTime();
-        LzzHydrologyParam lzzHydrologyParam = new LzzHydrologyParam();
-        List<LzzGaugingStation> lzzGaugingStationList = lzzGaugingStationService.lambdaQuery()
-                .in(LzzGaugingStation::getStationName, "3号桥水位站", "天谷自动水位站", "楼庄子出库水位站", "楼庄子库水位站")
-                .between(LzzGaugingStation::getGatherTime, startTime, endTime).list();
-        lzzHydrologyParam.setThreeGaugingStation(lzzGaugingStationList.stream().filter(n -> n.getStationName().equals("3号桥水位站")).collect(Collectors.toList()));
-        lzzHydrologyParam.setLzzInput(lzzGaugingStationList.stream().filter(n -> n.getStationName().equals("天谷自动水位站")).collect(Collectors.toList()));
-        lzzHydrologyParam.setLzzOutput(lzzGaugingStationList.stream().filter(n -> n.getStationName().equals("楼庄子出库水位站")).collect(Collectors.toList()));
-        lzzHydrologyParam.setLzzWaterLevel(lzzGaugingStationList.stream().filter(n -> n.getStationName().equals("楼庄子库水位站")).collect(Collectors.toList()));
-        List<LzzRainfallStation> lzzRainfallStationList = lzzRainfallStationService.lambdaQuery()
-                .in(LzzRainfallStation::getStationName, "喀什沟自动雨量站", "黑沟自动雨量站", "煤矿沟自动雨量站", "无名沟自动雨量站",
-                        "加普沙自动雨量站", "宰尔德自动雨量站", "东南沟自动雨量站", "八一林场自动雨量站", "萨尔达万自动雨量站", "制材厂自动雨量站")
-                .between(LzzRainfallStation::getTime, startTime, endTime).list();
-        lzzHydrologyParam.setKsgRainfallStation(lzzRainfallStationList.stream().filter(n -> n.getStationName().equals("喀什沟自动雨量站")).collect(Collectors.toList()));
-        lzzHydrologyParam.setHgRainfallStation(lzzRainfallStationList.stream().filter(n -> n.getStationName().equals("黑沟自动雨量站")).collect(Collectors.toList()));
-        lzzHydrologyParam.setMkgRainfallStation(lzzRainfallStationList.stream().filter(n -> n.getStationName().equals("煤矿沟自动雨量站")).collect(Collectors.toList()));
-        lzzHydrologyParam.setWmgRainfallStation(lzzRainfallStationList.stream().filter(n -> n.getStationName().equals("无名沟自动雨量站")).collect(Collectors.toList()));
-        lzzHydrologyParam.setJpsRainfallStation(lzzRainfallStationList.stream().filter(n -> n.getStationName().equals("加普沙自动雨量站")).collect(Collectors.toList()));
-        lzzHydrologyParam.setZrdRainfallStation(lzzRainfallStationList.stream().filter(n -> n.getStationName().equals("宰尔德自动雨量站")).collect(Collectors.toList()));
-        lzzHydrologyParam.setDngRainfallStation(lzzRainfallStationList.stream().filter(n -> n.getStationName().equals("东南沟自动雨量站")).collect(Collectors.toList()));
-        lzzHydrologyParam.setBylcRainfallStation(lzzRainfallStationList.stream().filter(n -> n.getStationName().equals("八一林场自动雨量站")).collect(Collectors.toList()));
-        lzzHydrologyParam.setSedwRainfallStation(lzzRainfallStationList.stream().filter(n -> n.getStationName().equals("萨尔达万自动雨量站")).collect(Collectors.toList()));
-        lzzHydrologyParam.setZccRainfallStation(lzzRainfallStationList.stream().filter(n -> n.getStationName().equals("制材厂自动雨量站")).collect(Collectors.toList()));
-        IrrigatedHydrologyParam irrigatedHydrologyParam = new IrrigatedHydrologyParam();
-        List<IrrigatedPlatformDataInfo> irrigatedPlatformDataInfoList = irrigatedPlatformDataInfoService.lambdaQuery()
-                .in(IrrigatedPlatformDataInfo::getMonitorName, "小渠子雨量站", "团结一队雨量站", "头屯河水库雨量站", "入库流量")
-                .between(IrrigatedPlatformDataInfo::getMonitorTime, startTime, endTime).list();
-        irrigatedHydrologyParam.setXqzGaugingStation(irrigatedPlatformDataInfoList.stream().filter(n -> n.getMonitorName().equals("小渠子雨量站")).collect(Collectors.toList()));
-        irrigatedHydrologyParam.setTjydGaugingStation(irrigatedPlatformDataInfoList.stream().filter(n -> n.getMonitorName().equals("团结一队雨量站")).collect(Collectors.toList()));
-        irrigatedHydrologyParam.setTthGaugingStation(irrigatedPlatformDataInfoList.stream().filter(n -> n.getMonitorName().equals("头屯河水库雨量站")).collect(Collectors.toList()));
-        irrigatedHydrologyParam.setTthInput(irrigatedPlatformDataInfoList.stream().filter(n -> n.getMonitorName().equals("入库流量")).collect(Collectors.toList()));
+
         //固定或者默认模型参数
 //        input.getHistoryParam();
         //修改后的参数
@@ -120,9 +106,7 @@ public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMappe
         });
         List<ModelParameters> historyList = this.baseMapper.selectBatchIds(ids);
         Map<String, ShanbeiParam> historyParam = new HashMap<>();
-        historyList.forEach(r -> {
-            setShanbeiParam(historyParam, r);
-        });
+        historyList.forEach(r -> setShanbeiParam(historyParam, r));
 
         CalibrationParam calibrationParam = new CalibrationParam();
         calibrationParam.setIsAutomatic(input.getIsAutomatic());
@@ -132,64 +116,55 @@ public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMappe
         calibrationParam.setHistoryParam(historyParam);
         //修改后的参数
         calibrationParam.setManualParam(manualParam);
-        calibrationParam.setLzzHydrologyParam(lzzHydrologyParam);
-        calibrationParam.setIrrigatedHydrologyParam(irrigatedHydrologyParam);
-        List<ModelParameters> modelList = new ArrayList<>();
+        calibrationParam.setLzzHydrologyParam(setLzzHydrologyParam(startTime, endTime));
+        calibrationParam.setIrrigatedHydrologyParam(setIrrigatedHydrologyParam(startTime, endTime));
         Map<String, CalibrationOutput> calibrationOutput = shanBeiCalibration.calibration(calibrationParam);
-        if (calibrationOutput.entrySet().stream().filter((entry -> StringUtils.hasText(entry.getValue().getError()))).count() > 0) {
-            throw new CommonException("参数率定模型调用返回异常,请检查后重试");
-        }
-
-        ExecutorService pool = Executors.newSingleThreadExecutor();
-//        pool.submit(new Runnable() {
-//            private ShanBeiCalibration shanBeiCalibration = SpringUtil.getBean(ShanBeiCalibration.class);
-//            @Autowired
-//            private ModelParametersService modelParametersService = SpringUtil.getBean(ModelParametersService.class);
-//            @Autowired
-//            private ModelParametersDetailService modelParametersDetailService = SpringUtil.getBean(ModelParametersDetailService.class);
-//            @Override
-//            public void run() {
-//                try {
-//                    Map<String, CalibrationOutput> calibrationOutput = shanBeiCalibration.calibration(calibrationParam);
-//                    calibrationOutput.forEach((key, value) -> {
-//                        ModelParameters modelParameters = ModelParameters.builder()
-//                                .id(UUID.randomUUID().toString())
-//                                .siteName(key)
-//                                .area(value.getParam().getArea())
-//                                .b(value.getParam().getB())
-//                                .cs(value.getParam().getCS())
-//                                .date(new Date())
-//                                .kc(value.getParam().getKC())
-//                                .l(value.getParam().getL())
-//                                .fc(value.getParam().getFC())
-//                                .fm(value.getParam().getFM())
-//                                .k(value.getParam().getK())
-//                                .fb(value.getParam().getFB())
-//                                .wm(value.getParam().getWM())
-//                                .rate(value.getParam().getQC())
-//                                .build();
-//                        List<ModelParametersDetail> detailList = new ArrayList<>();
-//                        for (int i = 0; i < value.getFlowList().size(); i++) {
-//                            ModelParametersDetail detail = ModelParametersDetail.builder()
-//                                    .id(UUID.randomUUID().toString())
-//                                    .parentId(modelParameters.getId())
-//                                    .time(value.getFlowList().get(i).getTime())
-//                                    .historyFlow(value.getFlowList().get(i).getHistoryFlow())
-//                                    .preParamFlow(value.getFlowList().get(i).getPreParamFlow())
-//                                    .newParamFlow(value.getFlowList().get(i).getNewParamFlow())
-//                                    .build();
-//                            detailList.add(detail);
-//                        }
-//                        modelList.add(modelParameters);
-//                        modelParametersService.save(modelParameters);
-//                        modelParametersDetailService.saveBatch(detailList);
-//                    });
-//                } catch (Exception e){
-//
-//                }
-//            }
-//        });
-
+        //Assert.isTrue(!validError(calibrationOutput), "参数率定模型调用返回异常,请检查后重试");
+        Date now = new Date();
+        List modelList = new ArrayList<>();
+        calibrationOutput.forEach((key, value) -> {
+            if (StringUtils.hasText(value.getError())) {
+                modelList.add(new HashMap<String, String>() {{
+                    put("siteName", key);
+                    put("error", value.getError());}}
+                );
+                return;
+            }
+            ModelParameters modelParameters = ModelParameters.builder()
+                    .id(UUID.randomUUID().toString())
+                    .siteName(key)
+                    .area(value.getParam().getArea())
+                    .b(value.getParam().getB())
+                    .cs(value.getParam().getCS())
+                    .date(now)
+                    .kc(value.getParam().getKC())
+                    .l(value.getParam().getL())
+                    .fc(value.getParam().getFC())
+                    .fm(value.getParam().getFM())
+                    .k(value.getParam().getK())
+                    .fb(value.getParam().getFB())
+                    .wm(value.getParam().getWM())
+                    .rate(value.getParam().getQC())
+                    .isDefault(0)
+                    .fromId(input.getParametersList().stream().filter(n -> n.getSiteName().equals(key)).findFirst().orElse(ModelParameters.builder().build()).getId())
+                    .build();
+            List<ModelParametersDetail> detailList = new ArrayList<>();
+            for (int i = 0; i < value.getFlowList().size(); i++) {
+                ModelParametersDetail detail = ModelParametersDetail.builder()
+                        .id(UUID.randomUUID().toString())
+                        .parentId(modelParameters.getId())
+                        .time(value.getFlowList().get(i).getTime())
+                        .historyFlow(value.getFlowList().get(i).getHistoryFlow())
+                        .preParamFlow(value.getFlowList().get(i).getPreParamFlow())
+                        .newParamFlow(value.getFlowList().get(i).getNewParamFlow())
+                        .preParamRainfall(value.getFlowList().get(i).getHistoryRainfall())
+                        .build();
+                detailList.add(detail);
+            }
+            modelList.add(modelParameters);
+            modelParametersService.save(modelParameters);
+            modelParametersDetailService.saveBatch(detailList);
+        });
         return modelList;
     }
 
@@ -210,7 +185,56 @@ public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMappe
         param.put(r.getSiteName(), shanbeiParam);
     }
 
+    private LzzHydrologyParam setLzzHydrologyParam(Date startTime, Date endTime) {
+        LzzHydrologyParam lzzHydrologyParam = new LzzHydrologyParam();
+        List<LzzGaugingStation> lzzGaugingStationList = lzzGaugingStationService.lambdaQuery()
+                .in(LzzGaugingStation::getStationName, "3号桥水位站", lzzInputStationName, "楼庄子出库水位站", "楼庄子库水位站")
+                .between(LzzGaugingStation::getGatherTime, startTime, endTime).list();
+        lzzHydrologyParam.setThreeGaugingStation(lzzGaugingStationList.stream().filter(n -> n.getStationName().equals("3号桥水位站")).collect(Collectors.toList()));
+        lzzHydrologyParam.setLzzInput(lzzGaugingStationList.stream().filter(n -> n.getStationName().equals(lzzInputStationName)).collect(Collectors.toList()));
+        lzzHydrologyParam.setLzzOutput(lzzGaugingStationList.stream().filter(n -> n.getStationName().equals("楼庄子出库水位站")).collect(Collectors.toList()));
+        lzzHydrologyParam.setLzzWaterLevel(lzzGaugingStationList.stream().filter(n -> n.getStationName().equals("楼庄子库水位站")).collect(Collectors.toList()));
+        List<LzzRainfallStation> lzzRainfallStationList = lzzRainfallStationService.lambdaQuery()
+                .in(LzzRainfallStation::getStationName, "喀什沟自动雨量站", "黑沟自动雨量站", "煤矿沟自动雨量站", "无名沟自动雨量站",
+                        "加普沙自动雨量站", "宰尔德自动雨量站", "东南沟自动雨量站", "八一林场自动雨量站", "萨尔达万自动雨量站", "制材厂自动雨量站")
+                .between(LzzRainfallStation::getTime, startTime, endTime).list();
+        lzzHydrologyParam.setKsgRainfallStation(lzzRainfallStationList.stream().filter(n -> n.getStationName().equals("喀什沟自动雨量站")).collect(Collectors.toList()));
+        lzzHydrologyParam.setHgRainfallStation(lzzRainfallStationList.stream().filter(n -> n.getStationName().equals("黑沟自动雨量站")).collect(Collectors.toList()));
+        lzzHydrologyParam.setMkgRainfallStation(lzzRainfallStationList.stream().filter(n -> n.getStationName().equals("煤矿沟自动雨量站")).collect(Collectors.toList()));
+        lzzHydrologyParam.setWmgRainfallStation(lzzRainfallStationList.stream().filter(n -> n.getStationName().equals("无名沟自动雨量站")).collect(Collectors.toList()));
+        lzzHydrologyParam.setJpsRainfallStation(lzzRainfallStationList.stream().filter(n -> n.getStationName().equals("加普沙自动雨量站")).collect(Collectors.toList()));
+        lzzHydrologyParam.setZrdRainfallStation(lzzRainfallStationList.stream().filter(n -> n.getStationName().equals("宰尔德自动雨量站")).collect(Collectors.toList()));
+        lzzHydrologyParam.setDngRainfallStation(lzzRainfallStationList.stream().filter(n -> n.getStationName().equals("东南沟自动雨量站")).collect(Collectors.toList()));
+        lzzHydrologyParam.setBylcRainfallStation(lzzRainfallStationList.stream().filter(n -> n.getStationName().equals("八一林场自动雨量站")).collect(Collectors.toList()));
+        lzzHydrologyParam.setSedwRainfallStation(lzzRainfallStationList.stream().filter(n -> n.getStationName().equals("萨尔达万自动雨量站")).collect(Collectors.toList()));
+        lzzHydrologyParam.setZccRainfallStation(lzzRainfallStationList.stream().filter(n -> n.getStationName().equals("制材厂自动雨量站")).collect(Collectors.toList()));
+        return lzzHydrologyParam;
+    }
+
+    private IrrigatedHydrologyParam setIrrigatedHydrologyParam(Date startTime, Date endTime) {
+        IrrigatedHydrologyParam irrigatedHydrologyParam = new IrrigatedHydrologyParam();
+        List<IrrigatedPlatformDataInfo> irrigatedPlatformDataInfoList = irrigatedPlatformDataInfoService.lambdaQuery()
+                .in(IrrigatedPlatformDataInfo::getMonitorName, "小渠子雨量站", "团结一队雨量站", "头屯河水库雨量站", "入库流量")
+                .between(IrrigatedPlatformDataInfo::getMonitorTime, startTime, endTime).list();
+        irrigatedHydrologyParam.setXqzGaugingStation(irrigatedPlatformDataInfoList.stream().filter(n -> n.getMonitorName().equals("小渠子雨量站")).collect(Collectors.toList()));
+        irrigatedHydrologyParam.setTjydGaugingStation(irrigatedPlatformDataInfoList.stream().filter(n -> n.getMonitorName().equals("团结一队雨量站")).collect(Collectors.toList()));
+        irrigatedHydrologyParam.setTthGaugingStation(irrigatedPlatformDataInfoList.stream().filter(n -> n.getMonitorName().equals("头屯河水库雨量站")).collect(Collectors.toList()));
+        irrigatedHydrologyParam.setTthInput(irrigatedPlatformDataInfoList.stream().filter(n -> n.getMonitorName().equals("入库流量")).collect(Collectors.toList()));
+        return irrigatedHydrologyParam;
+    }
+
+    private boolean validError(Map<String, CalibrationOutput> calibrationOutput) {
+        AtomicBoolean hasErr = new AtomicBoolean(false);
+        calibrationOutput.forEach((k, v) -> {
+            if (StringUtils.hasText(v.getError())) {
+                log.error(k + ":" + v.getError());
+                hasErr.set(true);
+            }
+        });
+        return hasErr.get();
+    }
     @Override
+    @Transactional
     public Boolean del(List<String> input) {
         Integer idDel = this.baseMapper.deleteBatchIds(input);
         for (int i = 0; i < input.size(); i++) {
@@ -218,20 +242,22 @@ public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMappe
             map.put("PARENT_ID",input.get(i));
             modelParametersDetailService.removeByMap(map);
         }
-        return idDel > 0 ? true : false;
+        return idDel > 0;
     }
 
     @Override
-    public boolean isDefault(ModelParametersReq input) {
-       List<ModelParameters> modelList = this.lambdaQuery().eq(ModelParameters::getSiteName,input.getSiteName())
+    @Transactional
+    public boolean setDefault(ModelParametersReq input) {
+        List<ModelParameters> model = this.lambdaQuery().eq(ModelParameters::getSiteName,input.getSiteName())
+                .eq(ModelParameters::getIsDefault, 1)
                 .list();
-        for (int i = 0; i < modelList.size(); i++) {
-            modelList.get(i).setIsDefault(0);
+        if (!CollectionUtils.isEmpty(model)) {
+            model.forEach(n -> n.setIsDefault(0));
+            this.updateBatchById(model);
         }
-        this.baseMapper.deleteBatchIds(modelList);
-        ModelParameters model = this.baseMapper.selectById(input.getId());
-        model.setIsDefault(1);
-        this.baseMapper.updateById(model);
+        model = this.lambdaQuery().eq(ModelParameters::getId, input.getId()).list();
+        model.forEach(n -> n.setIsDefault(1));
+        this.updateBatchById(model);
         return true;
     }
 
@@ -247,12 +273,18 @@ public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMappe
         Date endTime = input.getEndTime();
         LzzHydrologyParam lzzHydrologyParam = new LzzHydrologyParam();
         lzzHydrologyParam.setThreeGaugingStation(lzzGaugingStationService.lambdaQuery().eq(LzzGaugingStation::getStationName, "3号桥水位站").between(LzzGaugingStation::getGatherTime, startTime, endTime).list());
-        lzzHydrologyParam.setLzzInput(lzzGaugingStationService.lambdaQuery().eq(LzzGaugingStation::getStationName, "天谷自动水位站").between(LzzGaugingStation::getGatherTime, startTime, endTime).list());
+        lzzHydrologyParam.setLzzInput(lzzGaugingStationService.lambdaQuery().eq(LzzGaugingStation::getStationName, lzzInputStationName).between(LzzGaugingStation::getGatherTime, startTime, endTime).list());
 
         IrrigatedHydrologyParam irrigatedHydrologyParam = new IrrigatedHydrologyParam();
 
         irrigatedHydrologyParam.setTthInput(irrigatedPlatformDataInfoService.lambdaQuery().eq(IrrigatedPlatformDataInfo::getMonitorName, "入库流量").between(IrrigatedPlatformDataInfo::getMonitorTime, startTime, endTime).list());
         return false;
+    }
+
+    @Override
+    public RestResponse paramDetail(ModelParameterDetailReq req) {
+        IPage<ModelParametersDetail> page = new Page<>(req.getPageNo(), req.getPageSize());
+        return RestResponse.ok(modelParametersDetailService.lambdaQuery().eq(ModelParametersDetail::getParentId, req.getId()).page(page));
     }
 }
 

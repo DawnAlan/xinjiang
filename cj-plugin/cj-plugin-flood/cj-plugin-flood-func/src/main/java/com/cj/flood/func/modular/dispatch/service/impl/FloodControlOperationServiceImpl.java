@@ -31,6 +31,7 @@ import com.cj.model.func.modular.FloodPrevent.entity.Option;
 import com.cj.model.func.modular.FloodPrevent.function.*;
 import com.cj.model.func.modular.curve.service.CurveService;
 import com.cj.model.func.modular.entity.Flood;
+import com.google.common.collect.ImmutableMap;
 import io.minio.ObjectWriteResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -91,7 +92,8 @@ public class FloodControlOperationServiceImpl extends ServiceImpl<FloodControlOp
             }
             tth.close();
            return RestResponse.ok(results);
-        }catch (Exception e){
+        }
+        catch (Exception e){
             e.printStackTrace();
             return RestResponse.no("查询失败");
         }
@@ -156,28 +158,41 @@ public class FloodControlOperationServiceImpl extends ServiceImpl<FloodControlOp
                         List<Flood> floods = ExcelUtils.importExcel(multipartFile, Flood.class);
                         List<DataFloodPrevent> interval = getDataFloodPrevent(floods, "楼头区间");
                         if (null != interval) {
-                            data.put("lat", interval);
+                            data.put("头屯河", interval);
                         } else {
-                            data.put("lat", null);
+                            data.put("头屯河", null);
                         }
                         List<DataFloodPrevent> lzzEntryStation = getDataFloodPrevent(floods, "楼庄子");
                         if (null != lzzEntryStation) {
-                            data.put("lzz", lzzEntryStation);
+                            data.put("楼庄子", lzzEntryStation);
                         } else {
-                            data.put("lzz", null);
+                            data.put("楼庄子", null);
                         }
-                        List<CurveParam> curveParams = curveService.selectList();
-                        paramReq.setCurveParam(curveParams);
-                        paramReq.setData(data);
-                        paramReq.setH1_begin(req.getH1_begin());
-                        paramReq.setH1_end(req.getH1_end());
-                        paramReq.setH2_begin(req.getH2_begin());
-                        paramReq.setH2_end(req.getH2_end());
-                        paramReq.setStep1(req.getStep1());
-                        paramReq.setStep2(req.getStep2());
-                        paramReq.setLimitLevels_lzz(req.getLimitLevelsLzz());
-                        paramReq.setLimitLevels_tth(req.getLimitLevelsTth());
-                        List<ResOption> calculator = Cascade.calculator(paramReq);
+
+                        paramReq.setIntervals(data);
+                        paramReq.setBeginLevels(new HashMap<String, Double>()
+                        {{
+                            put("楼庄子", req.getH1_begin());
+                            put("头屯河", req.getH2_begin());
+                        }});
+                        paramReq.setWeights(new HashMap<String, Double>()
+                        {{
+                            put("楼庄子", req.getStep1());
+                            put("头屯河", req.getStep2());
+                        }});
+                        paramReq.setLimitLevels(new HashMap<String, double[]>()
+                        {{
+                            put("楼庄子", req.getLimitLevelsLzz());
+                            put("头屯河", req.getLimitLevelsTth());
+                        }});
+
+                        paramReq.setEco(new HashMap<String, double[]>()
+                        {{
+                            put("楼庄子", req.getEcosLzz());
+                            put("头屯河", req.getEcosTth());
+                        }});
+
+                        List<ResOption> calculator = Cascade.calculator("../file/Basin.json", paramReq);
                         for (ResOption resOption : calculator) {
                             String path = resOption.getPath();
                             String[] pathSplit = path.split("\\\\");
@@ -203,7 +218,8 @@ public class FloodControlOperationServiceImpl extends ServiceImpl<FloodControlOp
             }else {
                 return RestResponse.no("防洪调度生成失败");
             }
-        }catch (Exception e){
+        }
+        catch (Exception e){
             e.printStackTrace();
             return RestResponse.no("防洪调度生成错误");
         }
@@ -339,10 +355,10 @@ public class FloodControlOperationServiceImpl extends ServiceImpl<FloodControlOp
                 String[] split1 = split[split.length - 1].split("\\.");
                 MultipartFile multipartFile = MultipartFileUtil.inputStreamToMultipartFile(tth, split1[0]);
                 List<Option> options1 = ExcelUtils.importExcel(multipartFile, Option.class);
-                options1.forEach(t->{
-                    List<Double> doubles = JSONObject.parseArray(t.getLimitString(), Double.class);
-                    t.setLimits(doubles);
-                });
+//                options1.forEach(t->{
+//                    List<Double> doubles = JSONObject.parseArray(t.getLimitString(), Double.class);
+//                    t.setLimits(doubles);
+//                });
                 options.put(op.getSchemeName(),options1);
                 tth.close();
             }
@@ -374,17 +390,21 @@ public class FloodControlOperationServiceImpl extends ServiceImpl<FloodControlOp
         if(null != floodList && floodList.size() > 0) {
             List<PredictionProcessDto> predictionProcess = new ArrayList<>();
             for (Option flood : floodList) {
+                String qSingleString = flood.getQSingleString();
+                List<Double> singleList = JSONObject.parseArray(qSingleString, Double.class);
                 PredictionProcessDto predictionProcessDto = new PredictionProcessDto();
-                predictionProcessDto.setPreQ(flood.getQ1());
+                predictionProcessDto.setPreQ(singleList.get(0));
                 predictionProcessDto.setTime(flood.getTime());
                 predictionProcessDto.setWaterLevel(flood.getH2());
                 predictionProcessDto.setCapacity(flood.getV());
                 predictionProcessDto.setRetain(flood.getRetain());
                 predictionProcessDto.setQIn(flood.getQIn());
                 predictionProcessDto.setQOut(flood.getQOut());
-                predictionProcessDto.setQ1(flood.getQ1());
-                predictionProcessDto.setQ2(flood.getQ2());
-                predictionProcessDto.setQ3(flood.getQ3());
+                predictionProcessDto.setQ1(singleList.get(0));
+                predictionProcessDto.setQ2(singleList.get(1));
+                if (singleList.size() == 3) {
+                    predictionProcessDto.setQ3(singleList.get(2));
+                }
                 predictionProcessDto.setFloodStorageCapacityPercent(flood.getPercentage1());
                 predictionProcessDto.setRegulatingStorageCapacityPercent(flood.getPercentage2());
                 predictionProcess.add(predictionProcessDto);

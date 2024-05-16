@@ -7,12 +7,11 @@ import com.cj.model.func.modular.FloodPredict.model.function.PhysicalForecast;
 import com.cj.model.func.modular.FloodPredict.model.function.SnowMeltModel;
 import com.cj.model.func.modular.FloodPredict.utils.*;
 import com.cj.model.func.modular.FloodPrevent.entity.Option;
-import com.cj.model.func.modular.FloodPrevent.model.ModelOfTTH;
+import com.cj.model.func.modular.FloodPredict.model.function.TTH;
 import com.cj.model.func.modular.entity.Flood;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -273,9 +272,8 @@ public class TouTunHe {
         String level = physicalForecast.getFloodLevel(tthIn, "头屯河");
         Object[][] tthIndex = tthInformation.get(0);
         Object[][] floodNature = tthInformation.get(1);
-        ModelOfTTH tthin = new ModelOfTTH(tthIn, timeLength);
         StringBuilder tthRain = new StringBuilder();
-        List<Option> tthInList = tthin.Calculate_S2();
+        List<Option> tthInList = TTH.Calculate("../file/Basin.json",tthIn, timeLength);
         //洪水来源和洪水组成
         if (timeLength < 3600 * 24) {
             String data = Lzz.get(0).getQCause() + "," + qj.get(0).getQCause();

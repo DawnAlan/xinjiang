@@ -1,18 +1,13 @@
 package com.cj.model.func.modular.FloodPredict.utils;
 
-import com.cj.model.func.modular.FloodPredict.entity.*;
-import com.cj.model.func.modular.FloodPredict.model.TouTunHe;
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
-
 import java.io.IOException;
-import java.io.InputStream;
-import java.text.ParseException;
+
 import java.util.*;
 
 
 public class InputUtils {
 
-    TimeUtils timeUtils = new TimeUtils();
+    static TimeUtils timeUtils = new TimeUtils();
 
     public static int beforeDays = 30;
 
@@ -26,19 +21,21 @@ public class InputUtils {
 
     public static Map<String,Object[][]> machineMaxMin;
 
+    public static void getData(String path) throws IOException {
+        historyData = ExcelTool.readExcel(path, "HISTORY-DATA");
+        hortonParam = ExcelTool.readExcel(path, "HORTON-PARAM");
+        machineParam = ExcelTool.readExcel(path,"MACHINE-PARAM");
+        machineMaxMin = ExcelTool.readExcel(path,"MACHINE-MAXMIN");
+    }
+
     /**
      * 判断需要从数据库获取哪些数据
      *
      * @param
      * @return
-     * @throws IOException
      */
-    public List<Date> judgeDate(String path,Date predictTime, int n) throws IOException {
+    public static List<Date> judgeDate(Date predictTime, int n) {
         List<Date> result = new ArrayList<>();
-        historyData = ExcelTool.readExcel(path, "HISTORY-DATA");
-        hortonParam = ExcelTool.readExcel(path, "HORTON-PARAM");
-        machineParam = ExcelTool.readExcel(path,"MACHINE-PARAM");
-        machineMaxMin = ExcelTool.readExcel(path,"MACHINE-MAXMIN");
         Object[][] historyInput = historyData.get("楼庄子日");
         Date historyTime = (Date) historyInput[historyInput.length - 1][0];
         int number = timeUtils.duration(historyTime, predictTime, "日");

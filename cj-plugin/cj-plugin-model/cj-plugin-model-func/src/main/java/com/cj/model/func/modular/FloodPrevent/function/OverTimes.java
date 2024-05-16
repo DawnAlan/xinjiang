@@ -1,5 +1,6 @@
 package com.cj.model.func.modular.FloodPrevent.function;
 
+import com.alibaba.fastjson.JSONObject;
 import com.cj.model.func.modular.FloodPrevent.entity.Option;
 
 import java.util.*;
@@ -36,16 +37,16 @@ public class OverTimes {
 
             for (int i = 0; i < option.size(); i++) {
                 String name = option.get(i).getName();
+                List<Double> limits = JSONObject.parseArray(option.get(i).getLimitString(), Double.class);
                 if(name.equals("楼庄子")){
                     H_lzz.add(option.get(i).getH2());
                     Time_lzz.add(option.get(i).getTime());
-                    limits_lzz = option.get(i).getLimits();
-//                    limits_lzz = JSONObject.parseArray(option.get(i).getLimits(), Double.class);
+                    limits_lzz = limits;
                 }
                 else if(name.equals("头屯河")){
                     H_tth.add(option.get(i).getH2());
                     Time_tth.add(option.get(i).getTime());
-                    limits_tth=option.get(i).getLimits();
+                    limits_tth=limits;
                 }
                 else{
                     throw new RuntimeException("方案有误");

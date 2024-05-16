@@ -4,7 +4,6 @@ import cn.afterturn.easypoi.excel.annotation.Excel;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
-
 import java.util.Date;
 import java.util.List;
 
@@ -48,51 +47,38 @@ public class Option {
     @Excel(name = "qOut",width = 15,orderNum = "7")
     private double qOut;
     /**
-     * 1号闸门流量
+     * 各闸门出库流量
      */
-    @Excel(name = "q1",width = 15,orderNum = "8")
-    private double q1;
-    /**
-     * 2号闸门流量
-     */
-    @Excel(name = "q2",width = 15,orderNum = "9")
-    private double q2;
-    /**
-     * 3号闸门流量
-     */
-    @Excel(name = "q3",width = 15,orderNum = "10")
-    private double q3;
+    @Excel(name = "qSingle",width = 15,orderNum = "8")
+    private String qSingleString;
     /**
      * 库容
      */
-    @Excel(name = "v",width = 15,orderNum = "11")
+    @Excel(name = "v",width = 15,orderNum = "9")
     private double v;
     /**
      * 拦蓄洪量
      */
-    @Excel(name = "retain",width = 15,orderNum = "12")
+    @Excel(name = "retain",width = 15,orderNum = "10")
     private double retain;
     /**
      * 防洪库容
      */
-    @Excel(name = "percentage1",width = 15,orderNum = "13")
+    @Excel(name = "percentage1",width = 15,orderNum = "11")
     private double percentage1;
     /**
      * 调洪库容
      */
-    @Excel(name = "percentage2",width = 15,orderNum = "14")
+    @Excel(name = "percentage2",width = 15,orderNum = "12")
     private double percentage2;
     /**
      * 汛限水位
      */
-    @Excel(name = "limits",width = 15,orderNum = "15")
+    @Excel(name = "limits",width = 15,orderNum = "13")
     private String limitString;
 
 
-    private double remainQ;
-    private List<Double> limits;
-    private double min;
-    private double max;
+
 
 
 }

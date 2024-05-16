@@ -1,10 +1,12 @@
 package com.cj.model.func.modular.FloodPredict.entity;
 
+import com.cj.model.func.modular.FloodPredict.Calibration.entity.ShanbeiParam;
 import lombok.Data;
 
 import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @Data
 public class ForecastInputParamNew {
@@ -35,11 +37,9 @@ public class ForecastInputParamNew {
     private Double preRainFall;
     //是否为模拟降雨
     private Boolean isSimulation;
-
+    //文件路径
     private String filePath;
-    //文件
-    public InputStream machineParam;//机器模型参数
-    public InputStream machineMaxMin;//机器模型最大最小值
-    public InputStream historyData;//模型历史参数
-    public InputStream hortonParam;//超渗产流模型参数
+    //物理模型参数
+    private Map<String, ShanbeiParam> paramMap;
+
 }
