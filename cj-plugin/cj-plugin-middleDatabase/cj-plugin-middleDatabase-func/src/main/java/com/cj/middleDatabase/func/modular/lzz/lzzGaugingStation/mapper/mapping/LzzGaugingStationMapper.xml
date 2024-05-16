@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.mapper.LzzGaugingStationMapper">
+
+    <select id="selectTodayWaterSituation" resultType="com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.bean.res.SelectTodayWaterSituationRes">
+        SELECT STATION_NAME as name,FLOW as value,TREE_ID as id
+        from LZZ_GAUGING_STATION where (TREE_ID,GATHER_TIME) in (
+        select TREE_ID,max(GATHER_TIME)
+        FROM LZZ_GAUGING_STATION
+        <where>
+            <if test="ids!=null and ids.size()>0">
+                and TREE_ID in
+                <foreach item="item" collection="ids" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            and RECORD_TIME = #{date}
+        </where>
+        group by TREE_ID)
+    </select>
+
+</mapper>
