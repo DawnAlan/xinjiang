@@ -1,5 +1,6 @@
 package com.cj.model.func.modular.FloodPrevent.function;
 
+import com.cj.common.util.UUIDUtils;
 import com.cj.model.func.modular.FloodPrevent.bean.req.ReqFloodPrevent;
 import com.cj.model.func.modular.FloodPrevent.bean.res.ResOption;
 import com.cj.model.func.modular.FloodPrevent.entity.*;
@@ -19,6 +20,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
+
+import static com.cj.model.func.modular.FloodPredict.utils.ExcelTool.downloadFile;
 
 public class Cascade{
 
@@ -197,14 +200,18 @@ public class Cascade{
 
 
 
-    public static void Read(Basin basin,String fileName){
+    public static void Read(Basin basin,String fileName) throws FileNotFoundException {
+        String savePath = System.getProperty("java.io.tmpdir")+"/temp"+ UUIDUtils.getUUID() +".json";
+        String filePath = fileName+"Basin.json";
+        downloadFile(filePath, savePath);
+        InputStream inputStream = new FileInputStream(savePath);
         //配置文件
-        InputStream inputStream = null;
+//        InputStream inputStream = null;
         Reader reader = null;
         StringBuilder sb;
         JSONObject object = null;
         try {
-            inputStream  = Files.newInputStream(Paths.get(fileName));
+            inputStream  = Files.newInputStream(Paths.get(savePath));
             reader = new InputStreamReader(inputStream);
             int ch = 0;
             char[] buffer = new char[1024];
@@ -217,7 +224,7 @@ public class Cascade{
 
         }
         catch (IOException e) {
-            throw new RuntimeException("配置文件" + fileName + "不存在");
+            throw new RuntimeException("配置文件" + filePath + "不存在");
         }
         finally {
             IOUtils.close(inputStream);

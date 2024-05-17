@@ -1669,8 +1669,8 @@ public class AllServiceImpl implements AllService {
                 balance.setDay(LocalDateTime.now().getDayOfMonth());
                 balance.setTableHeadId(details.getTableHeadId());
                 ////总实收水量
-                actualWaterReceived = details.getV();
-                balance.setActualWaterReceived(details.getV());
+                actualWaterReceived = NumberUtil.holdDecimal(details.getV(),3);
+                balance.setActualWaterReceived(NumberUtil.holdDecimal(details.getV(),3));
                 WaterDistributionRatio ratio = waterDistributionRatioService.lambdaQuery().eq(WaterDistributionRatio::getStation, details.getStation()).
                         eq(WaterDistributionRatio::getYear, details.getYear()).
                         eq(WaterDistributionRatio::getMonth, details.getMonth()).
@@ -1711,7 +1711,7 @@ public class AllServiceImpl implements AllService {
                         eq(WaterDistributionRatio::getTableHeadId, details.getTableHeadId()).one();
                 if(null != ratio){
                     //按比例水量
-                    balance.setProportionalWaterQuantity(NumberUtil.holdDecimal(((ratio.getV()==null?0.0:ratio.getV())/totalRatio)* actualWaterReceived,3));
+                    balance.setProportionalWaterQuantity(totalRatio==0.00?0.00:NumberUtil.holdDecimal(((ratio.getV()==null?0.0:ratio.getV())/totalRatio)* actualWaterReceived,3));
                 }
                 //实际水量
                 balance.setActualWaterVolume(details.getV()==null?null:NumberUtil.holdDecimal(details.getV(),3));

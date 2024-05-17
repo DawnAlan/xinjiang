@@ -11,6 +11,7 @@ import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.service.DayWaterSituationStatisticsTableQsLhService;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.service.DayWaterSituationStatisticsTableQsService;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tth.service.DayWaterSituationStatisticsTableTthService;
+import com.xxl.job.core.handler.annotation.XxlJob;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -53,7 +54,8 @@ public class A3Task {
 
 
 
-    @Scheduled(cron="0 30 20 * * ?")//每天20:30
+    //@Scheduled(cron="0 30 20 * * ?")//每天20:30
+    @XxlJob("createA3NotDkl")
     public void createA3NotDkl(){
         log.info("--------------------------------执行定时插入A3（不包含对口率） 完8点后生成今日均数据----------------------------");
         tthService.insertTodayMeanValue();
@@ -63,7 +65,8 @@ public class A3Task {
         hxService.insertTodayMeanValue();
     }
 
-    @Scheduled(cron="0 35 20 * * ?")//每天20:30
+    //@Scheduled(cron="0 35 20 * * ?")//每天20:30
+    @XxlJob("createA3QsLh")
     public void createA3QsLh(){
         log.info("--------------------------------执行定时插入A3（灯笼渠绿化） 完8点后生成今日均数据----------------------------");
         qsLhService.insertTodayMeanValue();
@@ -79,8 +82,9 @@ public class A3Task {
         log.info("--------------------------------完成定时插入A3（仅对口率） 当前时刻生成数据----------------------------");
     }
 
-    @Scheduled(cron="0 00 23 * * ?")//每天23:00
+    //@Scheduled(cron="0 00 23 * * ?")//每天23:00
     //@Scheduled(cron="0 0 0/1 * * ?")//每小时执行一次，以空格分隔
+    @XxlJob("createA3HaveDklForToday")
     public void createA3HaveDklForToday(){
         log.info("--------------------------------执行定时插入A3（仅对口率） 晚8点后生成今日均数据----------------------------");
         Date date = new Date();
@@ -88,7 +92,8 @@ public class A3Task {
         log.info("--------------------------------完成定时插入A3（仅对口率） 晚8点后生成今日均数据----------------------------");
     }
 
-    @Scheduled(cron="0 00 09 * * ?")//每天08:40
+    //@Scheduled(cron="0 00 09 * * ?")//每天08:40
+    @XxlJob("createA3EightDkl")
     public void createA3EightDkl(){
         log.info("--------------------------------执行定时插入A3对口率早8点数据----------------------------");
         List<DayWaterSituationStatisticsTableDkl> dayWaterSituationStatisticsTableDkls = JSON.parseArray(dklJson, DayWaterSituationStatisticsTableDkl.class);
@@ -97,7 +102,8 @@ public class A3Task {
         log.info("执行定时插入A3对口率早8点数据成功");
     }
 
-    @Scheduled(cron="0 59 23 * * ?")//每天23:59
+    //@Scheduled(cron="0 59 23 * * ?")//每天23:59
+    @XxlJob("deleteDayUseWaterPlan")
     public void deleteDayUseWaterPlan(){
         Set<String> dayUseWaterPlanChoseTimeAllKeys = redisUtil.getAllKeys("A3:dayUseWaterPlanChoseTime");
         if(!dayUseWaterPlanChoseTimeAllKeys.isEmpty()){

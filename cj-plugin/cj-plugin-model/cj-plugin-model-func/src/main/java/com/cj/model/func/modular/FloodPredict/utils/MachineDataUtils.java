@@ -734,6 +734,7 @@ public class MachineDataUtils {
         param.setPreFlow(forecastParam.getPreFlow());
         param.setPreRainFall(forecastParam.getPreRainFall());
         param.setParamMap(forecastParam.getParamMap());
+        param.setFilePath(forecastParam.getFilePath());
         return param;
     }
 

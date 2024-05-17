@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.cj.common.util.RedisUtil;
 import com.cj.waterresources.func.modular.trendsTable.entity.TrendsTableParam;
 import com.cj.waterresources.func.modular.trendsTable.service.TrendsTableParamService;
+import com.xxl.job.core.handler.annotation.XxlJob;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +25,8 @@ public class TrendsTableTask {
     @Autowired
     private RedisUtil redisUtil;
 
-    @Scheduled(cron="0 0 0/1 * * ?")//每小时执行一次，以空格分隔
+    //@Scheduled(cron="0 0 0/1 * * ?")//每小时执行一次，以空格分隔
+    @XxlJob("saveCache")
     public void saveCache(){
         List<TrendsTableParam> listed = trendsTableParamService.list();
         redisUtil.set("trendsTableParam:list", JSONObject.toJSONString(listed));

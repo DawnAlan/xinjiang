@@ -25,3 +25,16 @@ dayWaterBalanceChoseTime: 08
 inspection:
   path: http://222.82.208.100:17999
   #path: http://10.65.8.168:10188/app
+
+xxl:
+  job:
+    admin:
+      addresses: http://localhost:9004/xxl-job-admin
+    accessToken:
+    executor:
+      appname: xxl-job-executor-water
+      address:
+      ip:
+      port: 9998
+      logpath: /data/applogs/xxl-job/jobhandler
+      logretentiondays: 30

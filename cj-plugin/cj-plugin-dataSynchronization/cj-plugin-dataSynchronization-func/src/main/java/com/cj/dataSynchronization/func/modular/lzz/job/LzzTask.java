@@ -5,6 +5,8 @@ import com.cj.common.util.RedisUtil;
 import com.cj.dataSynchronization.func.modular.lzz.bean.ParamDto;
 import com.cj.dataSynchronization.func.modular.lzz.service.LzzPlatformService;
 import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.entity.LzzGaugingStation;
+import com.xxl.job.core.context.XxlJobHelper;
+import com.xxl.job.core.handler.annotation.XxlJob;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -16,8 +18,9 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
-@EnableScheduling//开启定时任务
+//@EnableScheduling//开启定时任务
 @Component
 @Slf4j
 public class LzzTask {
@@ -25,15 +28,9 @@ public class LzzTask {
     @Autowired
     private LzzPlatformService lzzPlatformService;
 
-    @Autowired
-    private RedisUtil redisUtil;
 
-    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-
-
-    @Scheduled(cron="0 0 0/1 * * ?")//每小时执行一次，以空格分隔
-    //@Scheduled(cron="0 */5 * * * ?")
-    public  void saveAffluentLevelByOneHour(){
+    @XxlJob("saveLzzDta")
+    public  void saveLzzDta(){
         try {
             Date time = new Date();
             Date startTime = calculateTime(time,-1);

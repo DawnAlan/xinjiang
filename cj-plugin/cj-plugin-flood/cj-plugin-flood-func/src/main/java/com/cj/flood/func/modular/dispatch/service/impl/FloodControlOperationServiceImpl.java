@@ -34,6 +34,7 @@ import com.cj.model.func.modular.entity.Flood;
 import com.google.common.collect.ImmutableMap;
 import io.minio.ObjectWriteResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
@@ -65,6 +66,12 @@ public class FloodControlOperationServiceImpl extends ServiceImpl<FloodControlOp
 
     @Autowired
     private IncomingWaterForecastService incomingWaterForecastService;
+
+    @Value("${minio.url}")
+    private String minioUrl;
+
+    @Value("${floodModelFilePath}")
+    private String floodModelFilePath;
 
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmmm");
     @Override
@@ -186,13 +193,17 @@ public class FloodControlOperationServiceImpl extends ServiceImpl<FloodControlOp
                             put("头屯河", req.getLimitLevelsTth());
                         }});
 
+//                        Map<String,double[]> eco = new HashMap<>();
+//                        eco.put("楼庄子", new double[]{0.74,0.74,0.74,1.48,1.48,1.48,1.48,1.48,1.48,0.74,0.74,0.74});
+//                        eco.put("头屯河", new double[]{0.74,0.74,0.74,1.48,1.48,1.48,1.48,1.48,1.48,0.74,0.74,0.74});
+//                        paramReq.setEco(eco);
                         paramReq.setEco(new HashMap<String, double[]>()
                         {{
                             put("楼庄子", req.getEcosLzz());
                             put("头屯河", req.getEcosTth());
                         }});
 
-                        List<ResOption> calculator = Cascade.calculator("../file/Basin.json", paramReq);
+                        List<ResOption> calculator = Cascade.calculator(minioUrl+floodModelFilePath, paramReq);
                         for (ResOption resOption : calculator) {
                             String path = resOption.getPath();
                             String[] pathSplit = path.split("\\\\");

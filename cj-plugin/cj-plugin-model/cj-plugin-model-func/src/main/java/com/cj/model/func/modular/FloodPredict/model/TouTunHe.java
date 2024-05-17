@@ -11,6 +11,7 @@ import com.cj.model.func.modular.FloodPredict.model.function.TTH;
 import com.cj.model.func.modular.entity.Flood;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -50,7 +51,7 @@ public class TouTunHe {
         QJDATA = stationsData.get("楼头区间");
         Flood_qj = getOneStationFlood(QJDATA, param, "楼头区间");
         //头屯河入库
-        List<Flood> Flood_Tth = getTTH(Flood_Lzz, Flood_qj);
+        List<Flood> Flood_Tth = getTTH(param.getFilePath(),Flood_Lzz, Flood_qj);
         List<Flood> result = new ArrayList<>();
         result.addAll(Flood_Three);
         result.addAll(Flood_Lzz);
@@ -249,7 +250,7 @@ public class TouTunHe {
      * @param qj
      * @return
      */
-    public List<Flood> getTTH(List<Flood> Lzz, List<Flood> qj) {
+    public List<Flood> getTTH(String path,List<Flood> Lzz, List<Flood> qj) throws FileNotFoundException {
         List<Flood> result = new ArrayList<>();
         int timeLength = Integer.parseInt(Lzz.get(0).getScale());
         //头屯河入库
@@ -273,7 +274,7 @@ public class TouTunHe {
         Object[][] tthIndex = tthInformation.get(0);
         Object[][] floodNature = tthInformation.get(1);
         StringBuilder tthRain = new StringBuilder();
-        List<Option> tthInList = TTH.Calculate("../file/Basin.json",tthIn, timeLength);
+        List<Option> tthInList = TTH.Calculate(path,tthIn, timeLength);
         //洪水来源和洪水组成
         if (timeLength < 3600 * 24) {
             String data = Lzz.get(0).getQCause() + "," + qj.get(0).getQCause();

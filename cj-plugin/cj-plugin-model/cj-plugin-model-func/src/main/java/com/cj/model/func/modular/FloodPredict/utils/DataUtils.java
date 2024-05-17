@@ -115,7 +115,19 @@ public class DataUtils {
             result.setIsSimulation(false);
         }
         if (result.getModelType() == 3 && endTime.after(nowDate) && result.getRainFallDtos().isEmpty()) {
-            throw new RuntimeException("未获得预报降雨数据");
+            List<RainFallDto> rainFallDtoList =new ArrayList<>();
+            for (int i = 0; i < result.getPeriodTimeNum()*result.getPeriodTimeNum(); i++) {
+                RainFallDto rainFallDto =new RainFallDto();
+                rainFallDto.setArea("面雨量");
+                rainFallDto.setRainFall(0.0);
+                rainFallDto.setTemperature(0.0);
+                Date date = result.getPredictionTime();
+                timeUtils.addCalendar(date,"小时",1);
+                rainFallDto.setDate(sdf.format(date));
+                rainFallDtoList.add(rainFallDto);
+            }
+            //throw new RuntimeException("未获得预报降雨数据");
+            result.setRainFallDtos(rainFallDtoList);
         } else {
             result.setRainFallDtos(result.getRainFallDtos());
         }
@@ -132,11 +144,14 @@ public class DataUtils {
         if (!result.getParamMap().containsKey("3号桥")){
             shanbeiparam3.setArea(690.0);
             result.getParamMap().put("3号桥",shanbeiparam3);
-        }        if (!result.getParamMap().containsKey("楼庄子")){
+        }if (!result.getParamMap().containsKey("楼庄子")){
             shanbeiparamLzz.setArea(1174.0);
             result.getParamMap().put("楼庄子",shanbeiparamLzz);
-        }        if (!result.getParamMap().containsKey("头屯河")){
+        }if (!result.getParamMap().containsKey("头屯河")){
             shanbeiparamTth.setArea(259.0);
+            result.getParamMap().put("楼头区间",shanbeiparamTth);
+        }if (result.getParamMap().containsKey("头屯河")){
+            shanbeiparamTth = result.getParamMap().get("头屯河");
             result.getParamMap().put("楼头区间",shanbeiparamTth);
         }
         return result;

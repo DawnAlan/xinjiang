@@ -22,13 +22,13 @@ public interface IrrigatedPlatformDataInfoMapper extends BaseMapper<IrrigatedPla
     @Select("select YESTERDAY_AVG_FLOW,MONITOR_NAME FROM IRRIGATED_PLATFORM_DATA_INFO WHERE MONITOR_NAME = #{name} order by MONITOR_TIME desc limit 1")
     SelectInfoByIrrigationNameListRes selectInfoByIrrigationNameList(@Param("name") String name);
 
-    @Select("SELECT * FROM IRRIGATED_PLATFORM_DATA_INFO WHERE MONITOR_ID = #{id} AND RECORD_TIME BETWEEN #{startTime} AND #{endTime} order by MONITOR_TIME ASC")
+    @Select("SELECT * FROM IRRIGATED_PLATFORM_DATA_INFO WHERE MONITOR_ID = #{id} AND RECORD_TIME BETWEEN #{startTime} AND #{endTime} order by MONITOR_TIME DESC")
     List<IrrigatedPlatformDataInfo> selectInfoByCondition1(@Param("id") String id, @Param("startTime") String startTime,@Param("endTime") String endTime);
 
-    @Select("SELECT * FROM IRRIGATED_PLATFORM_DATA_INFO WHERE MONITOR_ID = #{id} AND RECORD_TIME = #{time} order by MONITOR_TIME ASC")
+    @Select("SELECT * FROM IRRIGATED_PLATFORM_DATA_INFO WHERE MONITOR_ID = #{id} AND RECORD_TIME = #{time} order by MONITOR_TIME DESC")
     List<IrrigatedPlatformDataInfo> selectInfoByCondition2(@Param("id") String id, @Param("time")String time);
 
-    @Select("SELECT * FROM IRRIGATED_PLATFORM_DATA_INFO WHERE MONITOR_ID = #{id} order by MONITOR_TIME ASC")
+    @Select("SELECT * FROM IRRIGATED_PLATFORM_DATA_INFO WHERE MONITOR_ID = #{id} order by MONITOR_TIME DESC")
     List<IrrigatedPlatformDataInfo> selectInfoByCondition3(@Param("id") String id);
 
     @Select("SELECT * FROM IRRIGATED_PLATFORM_DATA_INFO WHERE MONITOR_NAME = #{name} AND MONITOR_TIME = #{time} order by MONITOR_TIME DESC limit 1")

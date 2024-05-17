@@ -11,6 +11,7 @@ import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.bean.res
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.entity.WaterFeeStatisticsDetails;
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.service.WaterFeeStatisticsDetailsService;
 import com.cj.waterresources.func.modular.waterPrice.waterPriceManagement.entity.WaterPriceManagement;
+import com.xxl.job.core.handler.annotation.XxlJob;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -24,7 +25,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@EnableScheduling//开启定时任务
+//@EnableScheduling//开启定时任务
 @Component
 @Slf4j
 public class WaterFeeTask {
@@ -96,7 +97,8 @@ public class WaterFeeTask {
         }
     }
 
-    @Scheduled(cron="0 30 08 * * ?")//每天8:30
+    //@Scheduled(cron="0 30 08 * * ?")//每天8:30
+    @XxlJob("createWaterFeeTableNoHaveQs")
     public void createWaterFeeTableNoHaveQs(){
         log.info("--------------------------------执行定时插入水费表操作----------------------------");
         JobRes tableHeadId = getTableHeadIdNoHaveQs();

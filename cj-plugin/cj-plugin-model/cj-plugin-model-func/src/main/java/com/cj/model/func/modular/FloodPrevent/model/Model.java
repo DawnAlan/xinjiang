@@ -567,11 +567,21 @@ public class Model {
      * 计算目标函数
      */
     public static double Value(Reservoir reservoir,List<Option> options){
-        double value;
+        double value=0;
         double rate = reservoir.getWeight();
         int max = MaxLevel(options);
         double maxLevel=options.get(max).getH2();
         double endLevel=options.get(options.size()-1).getH2();
+
+        //超过校核水位的惩罚
+        if(maxLevel>=reservoir.getProofLevel()){
+            value=value+1000000*(maxLevel-reservoir.getProofLevel());
+        }
+        //超过设计水位的惩罚
+        else if(maxLevel>=reservoir.getDesignLevel()){
+            value=value+10000*(maxLevel-reservoir.getDesignLevel());
+        }
+        //低于汛限水位的惩罚
         double delta=0;
         int num=0;
         for(Option option:options){
@@ -582,17 +592,12 @@ public class Model {
             }
         }
         if(num!=0) delta=delta/num;
+        //超过汛限水位的惩罚
         double over=Math.max(0,maxLevel-reservoir.getLimitLevel());
         value=rate*delta+over;
-        if(maxLevel>=reservoir.getProofLevel()){
-            value=value+1000000*(maxLevel-reservoir.getProofLevel());
-        }
-        else if(maxLevel>=reservoir.getDesignLevel()){
-            value=value+10000*(maxLevel-reservoir.getDesignLevel());
-        }
-
+        //末水位低于汛限水位的惩罚
         if(endLevel<reservoir.getLimitLevel()){
-            value=value+1000*(reservoir.getLimitLevel()-endLevel);
+            value=value+100*(reservoir.getLimitLevel()-endLevel);
         }
         return value;
     }

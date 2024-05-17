@@ -11,6 +11,7 @@ import com.cj.model.func.modular.FloodPredict.utils.TimeUtils;
 import com.cj.model.func.modular.FloodPrevent.entity.Option;
 import com.cj.model.func.modular.entity.Flood;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -64,6 +65,8 @@ public class PhysicalForecast {
         }
         //模型参数赋值
         Object[][] params = InputUtils.hortonParam.get(sheetPara);
+        ShanbeiParam shanbeiparam = new ShanbeiParam();
+        shanbeiparam = param.getParamMap().get(param.getLocation());
         //是否为模拟降雨，模拟降雨使用固定参数
         if (param.getIsSimulation()) {
             for (int i = 0; i < historyRDataList.size(); i++) {
@@ -71,18 +74,16 @@ public class PhysicalForecast {
                 historyRData[i][1] = param.getPreRainFall() / historyRDataList.size();
             }
             params[0][1]=0.008;params[0][2]=120.0;params[0][3]=1.0;params[0][4]=32.0;params[0][5]=100.0;params[0][6]=0.022;params[0][7]=0.3;params[0][8]=0.966;
+            shanbeiparam.setArea((double) params[0][0]);
+            shanbeiparam.setFB((double) params[0][1]);
+            shanbeiparam.setWM((double) params[0][2]);
+            shanbeiparam.setKC((double) params[0][3]);
+            shanbeiparam.setFC((double) params[0][4]);
+            shanbeiparam.setFM((double) params[0][5]);
+            shanbeiparam.setK((double) params[0][6]);
+            shanbeiparam.setB((double) params[0][7]);
+            shanbeiparam.setCS((double) params[0][8]);
         }
-        ShanbeiParam shanbeiparam = new ShanbeiParam();
-        shanbeiparam.setArea((double) params[0][0]);
-        shanbeiparam.setFB((double) params[0][1]);
-        shanbeiparam.setWM((double) params[0][2]);
-        shanbeiparam.setKC((double) params[0][3]);
-        shanbeiparam.setFC((double) params[0][4]);
-        shanbeiparam.setFM((double) params[0][5]);
-        shanbeiparam.setK((double) params[0][6]);
-        shanbeiparam.setB((double) params[0][7]);
-        shanbeiparam.setCS((double) params[0][8]);
-        shanbeiparam = param.getParamMap().get(param.getLocation());
         //模型计算过程
         shanBeiModel.InputData(shanbeiparam, preREData, historyRData);
         shanBeiModel.InitialMoistureContentCalculation();
@@ -107,7 +108,7 @@ public class PhysicalForecast {
      * @param param
      * @return
      */
-    public List<Flood> setShortFlood(Object[][] predict, ForecastInputParam param, Object[][] rain) {
+    public List<Flood> setShortFlood(Object[][] predict, ForecastInputParam param, Object[][] rain) throws FileNotFoundException {
         List<Flood> result = new ArrayList<>();
         int n = param.getPeriodStepNumber();
         int l = param.getPeriodStepSize();
@@ -122,7 +123,7 @@ public class PhysicalForecast {
                 input[i][1] = predict[i * l][1];
             }
             int timeLength = 3600 * l;
-            List<Option> lzzOutList = LZZ.Calculate("../file/Basin.json",input, timeLength);
+            List<Option> lzzOutList = LZZ.Calculate(param.getFilePath(), input, timeLength);
             for (int i = 0; i < n; i++) {
                 water_outQ[i][0] = lzzOutList.get(i).getH1();
                 water_outQ[i][1] = lzzOutList.get(i).getQOut();
