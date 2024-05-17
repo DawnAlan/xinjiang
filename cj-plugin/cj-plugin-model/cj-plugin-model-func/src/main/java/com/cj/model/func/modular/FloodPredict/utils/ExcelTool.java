@@ -373,8 +373,8 @@ public class ExcelTool {
 
     public static Map<String,Object[][]> readExcel(String path, String name) throws IOException {
         Map<String,Object[][]> result = new HashMap<>();
-        String savePath = System.getProperty("java.io.tmpdir")+"/temp"+ UUIDUtils.getUUID() +".xlsx";
-        String filePath = path+name+".xlsx";
+        String savePath = System.getProperty("java.io.tmpdir") + File.separator + name +".xlsx";
+        String filePath = path + name+".xlsx";
         downloadFile(filePath, savePath);
         InputStream fis = new FileInputStream(savePath);
         ZipSecureFile.setMinInflateRatio(-1.0d);

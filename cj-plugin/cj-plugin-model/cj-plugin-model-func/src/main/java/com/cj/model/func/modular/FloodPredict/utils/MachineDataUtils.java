@@ -8,6 +8,7 @@ import com.cj.model.func.modular.FloodPredict.entity.PredictInputData;
 import com.cj.model.func.modular.FloodPredict.model.TouTunHe;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
@@ -766,9 +767,9 @@ public class MachineDataUtils {
             data.addAll(dataObject(Three,"3号桥"));
             data.addAll(dataObject(Lou,"楼庄子"));
             data.addAll(dataObject(Qu,"楼头区间"));
-            ExcelTool.writeExcel(savePath+"/HISTORY-DATA.xlsx",data);
+            ExcelTool.writeExcel(savePath + File.separator + "HISTORY-DATA.xlsx",data);
         }
-        return savePath+"/HISTORY-DATA.xlsx";
+        return savePath + File.separator + "HISTORY-DATA.xlsx";
     }
 
     /**
