@@ -16,6 +16,7 @@ import javax.annotation.Resource;
 import java.io.*;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
@@ -442,6 +443,10 @@ public class ExcelTool {
     public static String downloadFile(String fileUrl, String savePath) {
         URL url = new URL(fileUrl);
         InputStream inputStream = url.openStream();
+        Path filePath = Paths.get(savePath);
+        if (Files.exists(filePath)){
+            Files.delete(filePath);
+        }
         Paths.get(savePath,getFileName(fileUrl));
         Files.copy(inputStream, Paths.get(savePath));
         return savePath;
