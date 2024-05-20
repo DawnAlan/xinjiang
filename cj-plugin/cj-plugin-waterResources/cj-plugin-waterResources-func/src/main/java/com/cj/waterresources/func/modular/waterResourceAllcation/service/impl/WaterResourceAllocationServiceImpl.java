@@ -282,7 +282,26 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
         waterAllocationComparisonSelectionRes.setWaterRatio(getWaterRatio(appraiseReqExcel2List));
         waterAllocationComparisonSelectionRes.setWaterStatistics(getWaterStatistics(waterResourceAllocations, appraiseAllocationDisplayDataList));
         waterAllocationComparisonSelectionRes.setWaterAmount(getWaterAmount(appraiseReqExcel2List, appraiseAllocationDisplayDataList));
+        setAmount(waterAllocationComparisonSelectionRes);
         return RestResponse.ok(waterAllocationComparisonSelectionRes);
+    }
+
+    private void setAmount(WaterAllocationComparisonSelectionRes waterAllocationComparisonSelectionRes) {
+        List<Double> incomingWaterAmountTotal = new ArrayList<>();
+        List<Double> proportionWaterAmountTotal = new ArrayList<>();
+        List<Double> waterLackAmountTotal = new ArrayList<>();
+        List<Double> wasteWaterAmountTotal = new ArrayList<>();
+        for (int i = 0; i < waterAllocationComparisonSelectionRes.getWaterAmount().get(0).getIncomingWaterAmount().size(); i++) {
+            int finalI = i;
+            incomingWaterAmountTotal.add(waterAllocationComparisonSelectionRes.getWaterAmount().stream().map(n -> n.getIncomingWaterAmount().get(finalI)).mapToDouble(n -> n).sum());
+            proportionWaterAmountTotal.add(waterAllocationComparisonSelectionRes.getWaterAmount().stream().map(n -> n.getProportionWaterAmount().get(finalI)).mapToDouble(n -> n).sum());
+            waterLackAmountTotal.add(waterAllocationComparisonSelectionRes.getWaterAmount().stream().map(n -> n.getWaterLackAmount().get(finalI)).mapToDouble(n -> n).sum());
+            wasteWaterAmountTotal.add(waterAllocationComparisonSelectionRes.getWaterAmount().stream().map(n -> n.getWasteWaterAmount().get(finalI)).mapToDouble(n -> n).sum());
+        }
+        waterAllocationComparisonSelectionRes.setIncomingWaterAmountTotal(incomingWaterAmountTotal);
+        waterAllocationComparisonSelectionRes.setProportionWaterAmountTotal(proportionWaterAmountTotal);
+        waterAllocationComparisonSelectionRes.setWaterLackAmountTotal(waterLackAmountTotal);
+        waterAllocationComparisonSelectionRes.setWasteWaterAmountTotal(wasteWaterAmountTotal);
     }
 
     private List<WaterAllocationComparisonSelectionRes.WaterAmountDTO> getWaterAmount(List<List<Excel2>> appraiseReqExcel2List, List<List<AllocationDisplayData>> appraiseAllocationDisplayDataList) {

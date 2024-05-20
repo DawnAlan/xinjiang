@@ -15,6 +15,14 @@ public class WaterAllocationComparisonSelectionRes {
     private List<WaterRatioDTO> waterRatio;
     private WaterStatisticsDTO waterStatistics;
     private List<WaterAmountDTO> waterAmount;
+    @JsonSerialize(using = DoubleListScale2Serializer.class)
+    private List<Double> incomingWaterAmountTotal;
+    @JsonSerialize(using = DoubleListScale2Serializer.class)
+    private List<Double> proportionWaterAmountTotal;
+    @JsonSerialize(using = DoubleListScale2Serializer.class)
+    private List<Double> waterLackAmountTotal;
+    @JsonSerialize(using = DoubleListScale2Serializer.class)
+    private List<Double> wasteWaterAmountTotal;
     private String appraise;
 
     @NoArgsConstructor
