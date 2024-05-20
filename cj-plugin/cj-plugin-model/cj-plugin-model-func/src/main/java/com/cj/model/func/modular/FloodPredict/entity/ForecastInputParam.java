@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -66,7 +65,7 @@ public class ForecastInputParam {
     //前期天数
     public Integer history_day;
     //文件路径
-    public String filePath;
+    public String basinStr;
     //参数
     public Map<String, ShanbeiParam> paramMap;
 

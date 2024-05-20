@@ -123,7 +123,7 @@ public class PhysicalForecast {
                 input[i][1] = predict[i * l][1];
             }
             int timeLength = 3600 * l;
-            List<Option> lzzOutList = LZZ.Calculate(param.getFilePath(), input, timeLength);
+            List<Option> lzzOutList = LZZ.Calculate(param.getBasinStr(), input, timeLength);
             for (int i = 0; i < n; i++) {
                 water_outQ[i][0] = lzzOutList.get(i).getH1();
                 water_outQ[i][1] = lzzOutList.get(i).getQOut();

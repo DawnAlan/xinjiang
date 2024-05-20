@@ -6,6 +6,7 @@ import com.cj.common.model.RestResponse;
 import com.cj.flood.func.modular.prediction.bean.req.IncomingWaterForecastAddReq;
 import com.cj.flood.func.modular.prediction.bean.req.IncomingWaterForecastListReq;
 import com.cj.flood.func.modular.prediction.bean.req.WaterResourceAllocationTimeReq;
+import com.cj.flood.func.modular.prediction.entity.BasinParam;
 import com.cj.flood.func.modular.prediction.entity.IncomingWaterForecast;
 import com.cj.flood.func.modular.prediction.service.IncomingWaterForecastService;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
@@ -77,5 +78,13 @@ public class IncomingWaterForecastController {
     @PostMapping("/selectListByTime")
     public RestResponse<List<IncomingWaterForecast>> selectListByTime(@RequestBody WaterResourceAllocationTimeReq req) {
         return incomingWaterForecastService.selectListByTime(req);
+    }
+
+    @ApiOperationSupport(order = 6)
+    @ApiOperation("来水预报模块流域参数查询")
+    @CommonLog(value = "来水预报模块流域参数查询")
+    @GetMapping("/getBasinParam")
+    public RestResponse<BasinParam> getBasinParam() {
+        return incomingWaterForecastService.getBasinParam();
     }
 }

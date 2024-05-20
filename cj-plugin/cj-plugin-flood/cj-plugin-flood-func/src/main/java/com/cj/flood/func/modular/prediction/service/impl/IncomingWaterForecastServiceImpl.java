@@ -12,9 +12,11 @@ import com.cj.auth.core.util.StpLoginUserUtil;
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.ExcelUtils;
 import com.cj.common.util.UUIDUtils;
+import com.cj.flood.func.core.common.PublicParam;
 import com.cj.flood.func.modular.prediction.bean.dto.*;
 import com.cj.flood.func.modular.prediction.bean.req.IncomingWaterForecastAddReq;
 import com.cj.flood.func.modular.prediction.bean.req.WaterResourceAllocationTimeReq;
+import com.cj.flood.func.modular.prediction.entity.BasinParam;
 import com.cj.flood.func.modular.prediction.entity.ModelParameters;
 import com.cj.flood.func.modular.prediction.service.ModelParametersService;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.entity.IrrigatedPlatformDataInfo;
@@ -37,6 +39,7 @@ import com.cj.model.func.modular.FloodPredict.utils.InputUtils;
 import com.cj.model.func.modular.entity.Flood;
 import io.minio.ObjectWriteResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -45,6 +48,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -90,7 +94,28 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
 
     @Bean
     public CommandLineRunner loadModelData() {
-        return args -> InputUtils.getData(minioUrl+floodModelFilePath);
+        return args -> {
+            InputUtils.getData(minioUrl+floodModelFilePath);
+            PublicParam.basinParam = loadBasinParam();
+        };
+    }
+
+    private BasinParam loadBasinParam() throws IOException {
+        InputStream tth = minioUtils.getObject("tth", "tthUseFile/Basin.json");
+        String basin = IOUtils.toString(tth, StandardCharsets.UTF_8);
+        return JSONObject.parseObject(basin, BasinParam.class);
+    }
+
+    @Override
+    public RestResponse<BasinParam> getBasinParam() {
+        if (PublicParam.basinParam == null) {
+            try {
+                loadBasinParam();
+            } catch (IOException e) {
+                log.error(e.getMessage());
+            }
+        }
+        return RestResponse.ok(PublicParam.basinParam);
     }
 
     @Override
@@ -243,7 +268,7 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
 
                         //调用模型方法生成模型结果，更新到数据库
                         //System.out.println("Hello pool");
-                        forcastInputParamNew.setFilePath(minioUrl+floodModelFilePath);
+                        forcastInputParamNew.setBasinStr(JSONObject.toJSONString(req.getBasinParam() == null ? PublicParam.basinParam : req.getBasinParam()));
                         Map<String, ShanbeiParam> paramMap =  new HashMap<>();
                         modelParametersService.lambdaQuery().eq(ModelParameters::getIsDefault, 1).list()
                                 .forEach(param -> {

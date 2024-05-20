@@ -25,29 +25,26 @@ import com.cj.flood.func.modular.prediction.entity.IncomingWaterForecast;
 import com.cj.flood.func.modular.prediction.service.IncomingWaterForecastService;
 import com.cj.model.func.modular.FloodPrevent.bean.req.ReqFloodPrevent;
 import com.cj.model.func.modular.FloodPrevent.bean.res.ResOption;
-import com.cj.model.func.modular.FloodPrevent.entity.CurveParam;
 import com.cj.model.func.modular.FloodPrevent.entity.DataFloodPrevent;
 import com.cj.model.func.modular.FloodPrevent.entity.Option;
 import com.cj.model.func.modular.FloodPrevent.function.*;
 import com.cj.model.func.modular.curve.service.CurveService;
 import com.cj.model.func.modular.entity.Flood;
-import com.google.common.collect.ImmutableMap;
 import io.minio.ObjectWriteResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.stream.Collectors;
+
+import com.cj.flood.func.core.common.PublicParam;
 
 /**
  * 防洪调度表(FloodControlOperation)表服务实现类
@@ -203,7 +200,7 @@ public class FloodControlOperationServiceImpl extends ServiceImpl<FloodControlOp
                             put("头屯河", req.getEcosTth());
                         }});
 
-                        List<ResOption> calculator = Cascade.calculator(minioUrl+floodModelFilePath, paramReq);
+                        List<ResOption> calculator = Cascade.calculator(JSONObject.toJSONString(PublicParam.basinParam), paramReq);
                         for (ResOption resOption : calculator) {
                             String path = resOption.getPath();
                             String[] pathSplit = path.split("\\\\");

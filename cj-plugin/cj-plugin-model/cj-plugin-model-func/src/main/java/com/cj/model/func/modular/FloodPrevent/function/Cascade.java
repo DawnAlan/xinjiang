@@ -25,10 +25,10 @@ import static com.cj.model.func.modular.FloodPredict.utils.ExcelTool.downloadFil
 
 public class Cascade{
 
-    public static List<ResOption> calculator(String fileName , ReqFloodPrevent reqFloodPrevent) throws Exception {
+    public static List<ResOption> calculator(String basinStr , ReqFloodPrevent reqFloodPrevent) throws Exception {
         Basin basin = new Basin();
         //配置文件
-        Read(basin,fileName);
+        Read(basin,basinStr);
         //前端传来的数据
         for (Reservoir reservoir : basin.getReservoirs()) {
             //水库名
@@ -55,14 +55,18 @@ public class Cascade{
             }
             //动态汛限水位
             try{
-                reservoir.setLimitLevels(reqFloodPrevent.getLimitLevels().get(reservoirName));
+                if (reqFloodPrevent.getLimitLevels() != null && reqFloodPrevent.getLimitLevels().size() == 12) {
+                    reservoir.setLimitLevels(reqFloodPrevent.getLimitLevels().get(reservoirName));
+                }
             }
             catch (Exception e){
                 throw new Exception("输入汛限水位异常");
             }
             //动态生态流量
             try{
-                reservoir.setEco(reqFloodPrevent.getEco().get(reservoirName));
+                if (reqFloodPrevent.getEco() != null && reqFloodPrevent.getEco().size() == 12) {
+                    reservoir.setEco(reqFloodPrevent.getEco().get(reservoirName));
+                }
             }
             catch (Exception e){
                 throw new Exception("输入生态流量异常");
@@ -200,45 +204,16 @@ public class Cascade{
 
 
 
-    public static void Read(Basin basin,String fileName) throws FileNotFoundException {
-        String savePath = System.getProperty("java.io.tmpdir")+"/temp"+ UUIDUtils.getUUID() +".json";
-        String filePath = fileName+"Basin.json";
-        downloadFile(filePath, savePath);
-        InputStream inputStream = new FileInputStream(savePath);
-        //配置文件
-//        InputStream inputStream = null;
-        Reader reader = null;
-        StringBuilder sb;
-        JSONObject object = null;
-        try {
-            inputStream  = Files.newInputStream(Paths.get(savePath));
-            reader = new InputStreamReader(inputStream);
-            int ch = 0;
-            char[] buffer = new char[1024];
-            sb = new StringBuilder();
-            while ((ch = reader.read(buffer)) != -1) {
-                sb.append(buffer, 0, ch);
-            }
-            // json转换
-            object = JSON.parseObject(sb.toString());
-
-        }
-        catch (IOException e) {
-            throw new RuntimeException("配置文件" + filePath + "不存在");
-        }
-        finally {
-            IOUtils.close(inputStream);
-            IOUtils.close(reader);
-        }
+    public static void Read(Basin basin,String basinStr) {
+        JSONObject object = JSON.parseObject(basinStr);
         assert object != null;
-
         try{
             basin.setName(object.getString("name"));
             List<Reservoir> reservoirs= JSON.parseArray(object.get("reservoirs").toString(), Reservoir.class);
             basin.setReservoirs(reservoirs);
         }
         catch (Exception e){
-            throw new RuntimeException("配置文件有误");
+            throw new RuntimeException("流域参数读取有误");
         }
     }
     public static void Write(String path,List<Option> options) {

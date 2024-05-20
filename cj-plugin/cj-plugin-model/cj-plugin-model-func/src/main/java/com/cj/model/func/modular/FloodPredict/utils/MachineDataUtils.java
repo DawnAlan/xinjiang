@@ -1,6 +1,5 @@
 package com.cj.model.func.modular.FloodPredict.utils;
 
-import com.cj.common.util.UUIDUtils;
 import com.cj.model.func.modular.FloodPredict.entity.DataWrite;
 import com.cj.model.func.modular.FloodPredict.entity.ForecastInputParam;
 import com.cj.model.func.modular.FloodPredict.entity.ForecastInputParamNew;
@@ -10,7 +9,6 @@ import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.text.ParseException;
 import java.util.*;
 
@@ -734,7 +732,7 @@ public class MachineDataUtils {
         param.setPreFlow(forecastParam.getPreFlow());
         param.setPreRainFall(forecastParam.getPreRainFall());
         param.setParamMap(forecastParam.getParamMap());
-        param.setFilePath(forecastParam.getFilePath());
+        param.setBasinStr(forecastParam.getBasinStr());
         return param;
     }
 

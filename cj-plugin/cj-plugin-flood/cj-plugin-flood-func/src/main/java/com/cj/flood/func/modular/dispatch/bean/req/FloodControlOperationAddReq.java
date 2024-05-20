@@ -1,5 +1,6 @@
 package com.cj.flood.func.modular.dispatch.bean.req;
 
+import com.cj.flood.func.modular.prediction.entity.BasinParam;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -40,4 +41,7 @@ public class FloodControlOperationAddReq implements Serializable {
 
     @ApiModelProperty(value = "头屯河各月份生态流量,供12个")
     private double[] ecosTth;
+
+    @ApiModelProperty(value = "头屯河各月份生态流量,供12个")
+    private BasinParam basinParam;
 }

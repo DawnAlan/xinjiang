@@ -116,7 +116,7 @@ public class SnowMeltModel {
         List<TemporaryXlsx> paramList = new ArrayList<>();
 
         String location = param.getLocation();
-        String pathParam = param.getFilePath() + location + "融雪-PARAM.xlsx";
+        String pathParam = param.getBasinStr() + location + "融雪-PARAM.xlsx";
         ExcelTool.writeList2DoubleExcel(pathParam, "模型参数", paramResult);
         temxParam.setPath(pathParam);
         temxParam.setSheetName("模型参数");
@@ -125,7 +125,7 @@ public class SnowMeltModel {
         //最大最小值写入
         TemporaryXlsx temxMaxmin = new TemporaryXlsx();
         List<TemporaryXlsx> maxminList = new ArrayList<>();
-        String pathMaxmin = param.getFilePath() + location + "融雪最大最小值.xlsx";
+        String pathMaxmin = param.getBasinStr() + location + "融雪最大最小值.xlsx";
         ExcelTool.writeDoubleExcel(pathMaxmin, "最大最小值", maxmin);
         temxMaxmin.setPath(pathMaxmin);
         temxMaxmin.setSheetName("最大最小值");

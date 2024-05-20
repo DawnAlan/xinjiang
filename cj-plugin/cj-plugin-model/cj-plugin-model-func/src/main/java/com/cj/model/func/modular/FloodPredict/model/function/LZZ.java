@@ -9,12 +9,12 @@ import java.util.*;
 
 public class LZZ {
 
-    public static List<Option> Calculate(String fileName, Object[][] pre, int delta) throws FileNotFoundException {
+    public static List<Option> Calculate(String basinStr, Object[][] pre, int delta) throws FileNotFoundException {
         List<Option> result ;
 
         Basin basin = new Basin();
         //配置文件
-        Cascade.Read(basin,fileName);
+        Cascade.Read(basin,basinStr);
         //楼庄子水库
         Reservoir reservoir = basin.getReservoirs().get(0);
 

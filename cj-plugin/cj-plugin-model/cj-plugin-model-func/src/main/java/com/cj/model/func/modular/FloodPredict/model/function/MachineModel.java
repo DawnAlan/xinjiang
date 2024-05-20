@@ -166,7 +166,7 @@ public class MachineModel {
                 List<TemporaryXlsx> paramList = new ArrayList<>();
                 String period = param.getPeriod();
                 String location = param.getLocation();
-                String pathParam = param.getFilePath() + "MACHINE-PARAM.xlsx";
+                String pathParam = param.getBasinStr() + "MACHINE-PARAM.xlsx";
                 ExcelTool.writeList2DoubleExcel(pathParam, location+period+"-模型参数", paramResult);
                 temxParam.setPath(pathParam);
                 temxParam.setSheetName(location+period+"-模型参数");
@@ -175,7 +175,7 @@ public class MachineModel {
                 //最大最小值写入
                 TemporaryXlsx temxMaxmin = new TemporaryXlsx();
                 List<TemporaryXlsx> maxminList = new ArrayList<>();
-                String pathMaxmin = param.getFilePath() + "MACHINE-MAXMIN.xlsx";
+                String pathMaxmin = param.getBasinStr() + "MACHINE-MAXMIN.xlsx";
                 ExcelTool.writeDoubleExcel(pathMaxmin, location+period+"-最大最小值", maxmin);
                 temxMaxmin.setPath(pathMaxmin);
                 temxMaxmin.setSheetName(location+period+"-最大最小值");

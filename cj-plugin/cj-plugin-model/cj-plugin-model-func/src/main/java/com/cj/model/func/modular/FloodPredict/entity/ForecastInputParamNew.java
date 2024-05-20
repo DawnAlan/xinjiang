@@ -3,7 +3,6 @@ package com.cj.model.func.modular.FloodPredict.entity;
 import com.cj.model.func.modular.FloodPredict.Calibration.entity.ShanbeiParam;
 import lombok.Data;
 
-import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -38,7 +37,7 @@ public class ForecastInputParamNew {
     //是否为模拟降雨
     private Boolean isSimulation;
     //文件路径
-    private String filePath;
+    private String basinStr;
     //物理模型参数
     private Map<String, ShanbeiParam> paramMap;
 

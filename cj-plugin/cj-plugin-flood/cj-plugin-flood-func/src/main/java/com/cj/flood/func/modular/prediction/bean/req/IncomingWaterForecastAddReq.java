@@ -1,5 +1,6 @@
 package com.cj.flood.func.modular.prediction.bean.req;
 
+import com.cj.flood.func.modular.prediction.entity.BasinParam;
 import com.cj.model.func.modular.FloodPredict.entity.RainFallDto;
 import com.cj.flood.func.modular.prediction.entity.IncomingWaterForecast;
 import io.swagger.annotations.ApiModelProperty;
@@ -25,4 +26,7 @@ public class IncomingWaterForecastAddReq implements Serializable {
 
     @ApiModelProperty(value = "来水预报字段数据")
     private IncomingWaterForecast incomingWaterForecast;
+
+    @ApiModelProperty(value = "流域参数")
+    private BasinParam basinParam;
 }
