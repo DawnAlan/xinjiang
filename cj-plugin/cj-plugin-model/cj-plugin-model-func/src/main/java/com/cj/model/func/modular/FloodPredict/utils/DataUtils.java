@@ -154,6 +154,9 @@ public class DataUtils {
             shanbeiparamTth = result.getParamMap().get("头屯河");
             result.getParamMap().put("楼头区间",shanbeiparamTth);
         }
+        if (result.getParamMap().containsKey("头屯河")){
+            result.getParamMap().put("楼头区间", result.getParamMap().get("头屯河"));
+        }
         return result;
     }
 
