@@ -9,6 +9,7 @@ import com.cj.waterresources.func.modular.waterResourceAllcation.bean.req.WaterR
 import com.cj.waterresources.func.modular.waterResourceAllcation.bean.req.WaterResourceAllocationQueryReq;
 import com.cj.waterresources.func.modular.waterResourceAllcation.bean.res.ViewModelRes;
 import com.cj.waterresources.func.modular.waterResourceAllcation.bean.res.WaterAllocationComparisonSelectionRes;
+import com.cj.waterresources.func.modular.waterResourceAllcation.bean.res.WaterDistributionOverviewRes;
 import com.cj.waterresources.func.modular.waterResourceAllcation.entity.WaterResourceAllocation;
 import com.cj.waterresources.func.modular.waterResourceAllcation.service.WaterResourceAllocationService;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
@@ -97,6 +98,14 @@ public class WaterResourceAllocationController {
     @PostMapping("/compare")
     public RestResponse<WaterAllocationComparisonSelectionRes> compare(@RequestBody List<String> ids) {
         return waterResourceAllocationService.compare(ids);
+    }
+
+    @ApiOperationSupport(order = 8)
+    @ApiOperation("水资源调配模块配水概览")
+    @CommonLog(value = "水资源调配模块配水概览")
+    @PostMapping("/waterDistributionOverview")
+    public RestResponse<WaterDistributionOverviewRes> waterDistributionOverview(@RequestParam("id") String id) {
+        return waterResourceAllocationService.waterDistributionOverview(id);
     }
 }
 

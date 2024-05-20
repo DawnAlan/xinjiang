@@ -7,6 +7,7 @@ import com.cj.waterresources.func.modular.waterResourceAllcation.bean.req.ViewMo
 import com.cj.waterresources.func.modular.waterResourceAllcation.bean.req.WaterResourceAllocationAddReq;
 import com.cj.waterresources.func.modular.waterResourceAllcation.bean.req.WaterResourceAllocationQueryReq;
 import com.cj.waterresources.func.modular.waterResourceAllcation.bean.res.ViewModelRes;
+import com.cj.waterresources.func.modular.waterResourceAllcation.bean.res.WaterDistributionOverviewRes;
 import com.cj.waterresources.func.modular.waterResourceAllcation.entity.WaterResourceAllocation;
 
 import java.util.List;
@@ -42,5 +43,7 @@ public interface WaterResourceAllocationService extends IService<WaterResourceAl
     RestResponse waterQuantityCalculation(String id);
 
     RestResponse getRealTimeReservoirLevel(String reservoir);
+
+    RestResponse<WaterDistributionOverviewRes> waterDistributionOverview(String id);
 }
 

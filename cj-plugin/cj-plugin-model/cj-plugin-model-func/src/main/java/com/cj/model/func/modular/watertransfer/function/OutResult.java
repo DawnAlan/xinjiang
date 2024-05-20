@@ -242,6 +242,24 @@ public class OutResult {
             Option_Water option = new Option_Water();
             option.setTime(Out1.get(0).getTime()[i]);
             option.setTypeName(req.getTypeName());
+            option.setStationType("总用水");
+            option.setStationName("总用水");
+            option.setWater(Out1.get(0).getWaterSupply()[0][i]+Out1.get(0).getWaterSupply()[1][i]+Out1.get(0).getWaterSupply()[2][i]
+                    +Out1.get(0).getWaterSupply()[3][i]+Out1.get(0).getWaterSupply()[4][i]);
+            double n=1;
+            option.setProportion(n);
+
+            option.setWaterLack(Double.parseDouble(df.format(Out1.get(0).getWaterdemand()[0][i]+Out1.get(0).getWaterdemand()[1][i]
+                    +Out1.get(0).getWaterdemand()[2][i]+Out1.get(0).getWaterdemand()[3][i]+Out1.get(0).getWaterdemand()[4][i]
+                    -(Out1.get(0).getWaterSupply()[0][i]+Out1.get(0).getWaterSupply()[1][i]+Out1.get(0).getWaterSupply()[2][i]
+                    +Out1.get(0).getWaterSupply()[3][i]+Out1.get(0).getWaterSupply()[4][i]))));
+            option2.add(option);
+        }
+        for (int i = 0; i < length; i++)
+        {
+            Option_Water option = new Option_Water();
+            option.setTime(Out1.get(0).getTime()[i]);
+            option.setTypeName(req.getTypeName());
             option.setStationType("总西干渠");
             option.setStationName("西干渠");
             option.setWater(Out1.get(0).getWaterSupply()[3][i]);
