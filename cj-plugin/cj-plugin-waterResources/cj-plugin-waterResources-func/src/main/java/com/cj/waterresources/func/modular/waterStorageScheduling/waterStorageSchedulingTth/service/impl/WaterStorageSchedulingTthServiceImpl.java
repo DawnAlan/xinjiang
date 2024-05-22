@@ -158,8 +158,9 @@ public class WaterStorageSchedulingTthServiceImpl extends ServiceImpl<WaterStora
                 if(vo.getMonth()==1 && vo.getName()==1){
                     List<OverallSituationUnitMgr> unitList = getUnitList();
                     String id = unitList.stream().filter(t -> t.getPId().equals("0") && t.getUnitName().equals("头屯河水库")).map(OverallSituationUnitMgr::getId).findFirst().get();
-                    Double waterLevelByLevel = GetSzyDataUtils.getWaterLevelByLevel(byId.getFirstData(), id);
-                    tth.setRegulatingWaterStorageCapacity(inflowData.get(0).getValue().doubleValue()-waterLevelByLevel);
+                    Double waterLevelByLevel1 = GetSzyDataUtils.getWaterLevelByLevel(byId.getFirstData(), id);
+                    Double waterLevelByLevel = GetSzyDataUtils.getWaterLevelByLevel(inflowData.get(0).getValue().doubleValue(), id);
+                    tth.setRegulatingWaterStorageCapacity(waterLevelByLevel-waterLevelByLevel1);
                 }
                 tth.setSortNum(sortNum++);
                 waterStorageSchedulingTthList.add(tth);
@@ -175,7 +176,7 @@ public class WaterStorageSchedulingTthServiceImpl extends ServiceImpl<WaterStora
             tth.setRegulatingWaterStorageCapacity(changeNum(tth.getWaterStorage()-waterStorageSchedulingTthList.get(j-1).getWaterStorage()));
         }
         waterStorageSchedulingTthList.forEach(t->{
-            t.setFineTuningReservoirInflow(t.getWaterSupplyVolumeTotal()+t.getRegulatingWaterStorageCapacity());
+            t.setReservoirInflow(t.getWaterSupplyVolumeTotal()+t.getRegulatingWaterStorageCapacity());
         });
         boolean b = this.saveBatch(waterStorageSchedulingTthList);
         if(b){
@@ -199,7 +200,6 @@ public class WaterStorageSchedulingTthServiceImpl extends ServiceImpl<WaterStora
     @Override
     @Transactional(rollbackFor = Exception.class)
     public RestResponse edit(WaterStorageSchedulingTth tth) {
-        tth.setFineTuningReservoirInflow((tth.getFineTuning()/100)*tth.getReservoirInflow());
         tth.setWaterSupplyVolumeTotal(changeNum(
                     (tth.getIrrigationWaterDemand()==null?0.0:tth.getIrrigationWaterDemand())+
                     (tth.getGreenWaterDemand()==null?0.0:tth.getGreenWaterDemand())+
@@ -774,7 +774,7 @@ public class WaterStorageSchedulingTthServiceImpl extends ServiceImpl<WaterStora
             "    },\n" +
             "    {\n" +
             "        \"month\":12,\n" +
-            "        \"name\":13,\n" +
+            "        \"name\":3,\n" +
             "        \"value\":980.52\n" +
             "    }\n" +
             "]\n";

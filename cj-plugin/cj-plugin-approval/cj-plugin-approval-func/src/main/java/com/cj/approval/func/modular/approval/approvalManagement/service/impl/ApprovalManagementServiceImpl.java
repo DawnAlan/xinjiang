@@ -353,34 +353,14 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
                 e.printStackTrace();
             }
         }else {
-            String format = sdf.format(new Date());
-            String year = format.split("-")[0];
-            String wordNum = (String) redisUtil.get(year + ":wordNum");
-            if (StringUtils.isEmpty(wordNum)) {
-                redisUtil.set(year + ":wordNum", "001");
-                wordNum = "001";
-            } else {
-                Integer i = Integer.parseInt(wordNum) + 1;
-                String string = i.toString();
-                if (string.length() == 1) {
-                    wordNum = "00" + i;
-                }
-                if (string.length() == 2) {
-                    wordNum = "0" + i;
-                }
-                if (string.length() > 2) {
-                    wordNum = string;
-                }
-                redisUtil.set(year + ":wordNum", wordNum);
-            }
             String fileName = "approvalManagement";
             String netWorkFilepath = url+approvalFilepath+"approvalManagement.docx";
-            String savePath = System.getProperty("java.io.tmpdir")+"/approvalManagement"+ UUIDUtils.getUUID() +".xlsx";
+            String savePath = System.getProperty("java.io.tmpdir")+File.separator+"approvalManagement"+ UUIDUtils.getUUID() +".xlsx";
             downloadFile(netWorkFilepath,savePath);
             // 通过 XWPFTemplate 编译文件并渲染数据到模板中
             XWPFTemplate template = XWPFTemplate.compile(savePath).render(
                     new HashMap<String, Object>() {{
-                        put("wordNum", (String) redisUtil.get(year + ":wordNum"));
+                        put("wordNum", byId.getInstructionSheetNum());
                         put("dispatchingUnit", byId.getDispatchingUnit());
                         put("dispatchingObjectives", byId.getDispatchingObjectives());
                         put("dispatchingParams", byId.getDispatchingParams());
@@ -395,19 +375,20 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
                                 JSONObject userByIdWithoutException = sysUserApi.getUserByIdWithoutException(split[a]);
                                 String digitalSignature = (String) userByIdWithoutException.get("digitalSignature");
                                 String filePath = url+"/tth/"+digitalSignature;
-                                String fileResultPath = System.getProperty("java.io.tmpdir")+"/"+UUIDUtils.getUUID()+".png";
+                                String fileResultPath = System.getProperty("java.io.tmpdir")+File.separator+UUIDUtils.getUUID()+".png";
                                 downloadAndSaveFile(filePath,fileResultPath);
                                 put("pic"+(a+1), Pictures.ofStream(new FileInputStream(fileResultPath), PictureType.PNG)
                                         .size(50, 25).create());
                             }
                         } catch (Exception e) {
+                            e.printStackTrace();
                             throw new RuntimeException(e);
                         }
                     }});
             try {
                 // 将完成数据渲染的文档写出
                 String property = System.getProperty("java.io.tmpdir");
-                String filePath = property + "/"+fileName;
+                String filePath = property + File.separator+fileName;
                 template.writeAndClose(new FileOutputStream(filePath + ".docx"));
                 File tempFile = new File(filePath + ".docx");
                 FileInputStream inputStream = new FileInputStream(tempFile);

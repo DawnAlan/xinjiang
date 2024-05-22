@@ -16,6 +16,6 @@ spring:
 minio:
   url: http://www.leoluoxu.com:9000  #对象存储服务的URL
   accessKey: minioadmin #账户
-  secretKey: Ylw@d687pqzxc #密码
+  secretKey: minioadmin #密码
   bucket: tth
 approvalFilepath: /tth/tthUseFile/

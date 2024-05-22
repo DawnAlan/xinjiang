@@ -124,7 +124,7 @@ public class WaterStorageSchedulingLzzServiceImpl extends ServiceImpl<WaterStora
                 List<WaterStorageSchedulingTth> tthDataTemp = tth.stream().filter(t -> t.getMonth() == vo.getMonth() && t.getTenDays().equals(lzz.getTenDays())).collect(Collectors.toList());
                 if(null != tthDataTemp && tthDataTemp.size()>0){
                     WaterStorageSchedulingTth tthData = tthDataTemp.get(0);
-                    lzz.setReservoirWaterDemand(changeNum(tthData.getFineTuningReservoirInflow()));
+                    lzz.setReservoirWaterDemand(changeNum(tthData.getReservoirInflow()));
                 }
                 lzz.setWaterSupplyVolumeTotal(changeNum(
                             (lzz.getWaterPlantDemand()==null?0.0:lzz.getWaterPlantDemand())+

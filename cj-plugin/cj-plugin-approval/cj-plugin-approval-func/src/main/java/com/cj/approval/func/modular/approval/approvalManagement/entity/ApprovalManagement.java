@@ -126,5 +126,9 @@ public class ApprovalManagement extends Model<ApprovalManagement> {
     //指令单
     @ApiModelProperty(value = "指令单")
     private String fileAddress;
+
+    //指令单序号
+    @ApiModelProperty(value = "指令单序号")
+    private String instructionSheetNum;
 }
 
