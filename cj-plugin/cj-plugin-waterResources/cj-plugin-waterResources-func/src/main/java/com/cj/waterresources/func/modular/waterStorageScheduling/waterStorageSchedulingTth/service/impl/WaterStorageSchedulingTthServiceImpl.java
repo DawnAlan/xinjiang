@@ -1,13 +1,19 @@
 package com.cj.waterresources.func.modular.waterStorageScheduling.waterStorageSchedulingTth.service.impl;
 
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson2.JSONArray;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cj.auth.core.pojo.SaBaseLoginUser;
 import com.cj.auth.core.util.StpLoginUserUtil;
 import com.cj.common.model.RestResponse;
+import com.cj.common.util.RedisUtil;
 import com.cj.common.util.UUIDUtils;
 import com.cj.middleDatabase.func.modular.lzz.storageCapacityCurve.entity.StorageCapacityCurve;
 import com.cj.middleDatabase.func.modular.lzz.storageCapacityCurve.service.StorageCapacityCurveService;
+import com.cj.waterresources.func.core.utils.GetSzyDataUtils;
+import com.cj.waterresources.func.modular.overallSituationUnitMgr.entity.OverallSituationUnitMgr;
+import com.cj.waterresources.func.modular.overallSituationUnitMgr.service.OverallSituationUnitMgrService;
 import com.cj.waterresources.func.modular.surfaceWater.entity.QueryListReq;
 import com.cj.waterresources.func.modular.surfaceWater.generator.domain.SurfaceWater;
 import com.cj.waterresources.func.modular.surfaceWater.generator.service.SurfaceWaterFlowDetailService;
@@ -26,12 +32,14 @@ import com.cj.waterresources.func.modular.waterStorageScheduling.waterStorageSch
 import com.cj.waterresources.func.modular.waterStorageScheduling.waterStorageSchedulingTth.service.WaterStorageSchedulingTthService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -62,6 +70,12 @@ public class WaterStorageSchedulingTthServiceImpl extends ServiceImpl<WaterStora
     @Autowired
     private StorageCapacityCurveService storageCapacityCurveService;
 
+    @Autowired
+    private OverallSituationUnitMgrService overallSituationUnitMgrService;
+
+    @Autowired
+    private RedisUtil redisUtil;
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public RestResponse add(String formId) {
@@ -70,10 +84,7 @@ public class WaterStorageSchedulingTthServiceImpl extends ServiceImpl<WaterStora
         if(null==byId){
             return RestResponse.no("方案有误，请重新选择");
         }
-        List<TenDayVo> inflowData = getInflowData(byId.getInflowYear());
-        if(null==inflowData || inflowData.size()<0){
-            return RestResponse.no("方案选择的来水时间无数据");
-        }
+        List<TenDayVo> inflowData = JSONArray.parseArray(defaultIncomingWaterData,TenDayVo.class);
         Map<Integer, List<TenDayVo>> collect = inflowData.stream().collect(Collectors.groupingBy(TenDayVo::getMonth));
         Set<Integer> integers = collect.keySet();
         //排序
@@ -95,7 +106,6 @@ public class WaterStorageSchedulingTthServiceImpl extends ServiceImpl<WaterStora
         SelectYearWaterUsePlanTrunkCanalForSum hyTemp = yearWaterUsePlanTrunkCanalService.selectListForSum(req);
         List<TenDayVo> hyData = getData1_12(hyTemp);
         Integer sortNum = 1;
-        List<StorageCapacityCurve> storageCapacityCurveList = storageCapacityCurveService.lambdaQuery().eq(StorageCapacityCurve::getReservoir, "tth").list();
         for(Integer month:list){
             List<TenDayVo> tenDayVos = collect.get(month);
             tenDayVos.sort(Comparator.comparing(t -> t.getName()));
@@ -109,9 +119,9 @@ public class WaterStorageSchedulingTthServiceImpl extends ServiceImpl<WaterStora
                 tth.setMonth(vo.getMonth());
                 tth.setTenDays(vo.getName()==1?"上旬":vo.getName()==2?"中旬":"下旬");
                 tth.setYear(byId.getYear());
-                tth.setReservoirInflow(changeNum(vo.getValue().doubleValue()));
+                tth.setWaterStorageLevel(changeNum(vo.getValue().doubleValue()));
                 tth.setFineTuning(100.00);
-                tth.setFineTuningReservoirInflow(changeNum((tth.getFineTuning()/100)*tth.getReservoirInflow()));
+                //tth.setFineTuningReservoirInflow(changeNum((tth.getFineTuning()/100)*tth.getReservoirInflow()));
                 List<TenDayVo> ggTemp = nyData.stream().filter(t -> t.getMonth() == month && t.getName()==vo.getName()).collect(Collectors.toList());
                 if(null != ggTemp && ggTemp.size()>0){
                     TenDayVo gg = ggTemp.get(0);
@@ -146,23 +156,27 @@ public class WaterStorageSchedulingTthServiceImpl extends ServiceImpl<WaterStora
                         )
                 );
                 if(vo.getMonth()==1 && vo.getName()==1){
-                    tth.setWaterStorage(1140.53);
+                    List<OverallSituationUnitMgr> unitList = getUnitList();
+                    String id = unitList.stream().filter(t -> t.getPId().equals("0") && t.getUnitName().equals("头屯河水库")).map(OverallSituationUnitMgr::getId).findFirst().get();
+                    Double waterLevelByLevel = GetSzyDataUtils.getWaterLevelByLevel(byId.getFirstData(), id);
+                    tth.setRegulatingWaterStorageCapacity(inflowData.get(0).getValue().doubleValue()-waterLevelByLevel);
                 }
                 tth.setSortNum(sortNum++);
                 waterStorageSchedulingTthList.add(tth);
             }
         }
-
+        List<OverallSituationUnitMgr> unitList = getUnitList();
+        String id = unitList.stream().filter(t -> t.getPId().equals("0") && t.getUnitName().equals("头屯河水库")).map(OverallSituationUnitMgr::getId).findFirst().get();
+        waterStorageSchedulingTthList.forEach(t->{
+            t.setWaterStorage(GetSzyDataUtils.getWaterLevelByLevel(t.getWaterStorageLevel(),id));
+        });
         for(int j=1;j<waterStorageSchedulingTthList.size();j++){
             WaterStorageSchedulingTth tth = waterStorageSchedulingTthList.get(j);
-            tth.setWaterStorage(changeNum(
-                        (waterStorageSchedulingTthList.get(j-1).getWaterStorage())+
-                        (tth.getRegulatingWaterStorageCapacity())
-                    )
-            );
+            tth.setRegulatingWaterStorageCapacity(changeNum(tth.getWaterStorage()-waterStorageSchedulingTthList.get(j-1).getWaterStorage()));
         }
-
-        waterStorageSchedulingTthList.forEach(t->t.setWaterStorageLevel(getWaterStorageLevel(storageCapacityCurveList,t.getWaterStorage())));
+        waterStorageSchedulingTthList.forEach(t->{
+            t.setFineTuningReservoirInflow(t.getWaterSupplyVolumeTotal()+t.getRegulatingWaterStorageCapacity());
+        });
         boolean b = this.saveBatch(waterStorageSchedulingTthList);
         if(b){
             return RestResponse.ok();
@@ -171,25 +185,15 @@ public class WaterStorageSchedulingTthServiceImpl extends ServiceImpl<WaterStora
         }
     }
 
-    private Double getWaterStorageLevel(List<StorageCapacityCurve> storageCapacityCurveList,Double waterStorage){
-        List<StorageCapacityCurve> collect = storageCapacityCurveList.stream().filter(t ->t.getStorageCapacity()!=null && t.getStorageCapacity().compareTo(new BigDecimal(waterStorage)) != 1).collect(Collectors.toList());
-        collect.sort(Comparator.comparing(t -> t.getStorageCapacity()));
-        if(null != collect && collect.size()>0){
-            StorageCapacityCurve storageCapacityCurve = collect.get(collect.size()-1);
-            Double temp = (waterStorage-storageCapacityCurve.getStorageCapacity().doubleValue())/storageCapacityCurve.getRate();
-            String[] split = temp.toString().split("\\.");
-            Double temp1 = 0.0;
-            if(split.length>1){
-                temp1 =  Double.parseDouble(split[0] +"."+ split[1].substring(0,1));
-            }else {
-                temp1 = Double.parseDouble(split[0]);
-            }
-            Double a = storageCapacityCurve.getWaterLevel().doubleValue()+storageCapacityCurve.getInterpolation().doubleValue();
-            Double waterStorageLevel = temp1 *0.1+a;
-            return changeNum(waterStorageLevel);
-        }else {
-            return null;
+    private List<OverallSituationUnitMgr> getUnitList(){
+        String overall = (String) redisUtil.get("overallSituationUnitMgr:list");
+        if(StringUtils.isEmpty(overall)){
+            List<OverallSituationUnitMgr> overallSituationUnitMgrList = overallSituationUnitMgrService.list();
+            redisUtil.set("overallSituationUnitMgr:list", com.alibaba.fastjson.JSONObject.toJSONString(overallSituationUnitMgrList));
+            overall = JSONObject.toJSONString(overallSituationUnitMgrList);
         }
+        List<OverallSituationUnitMgr> list = JSONObject.parseArray(overall, OverallSituationUnitMgr.class);
+        return list;
     }
 
     @Override
@@ -230,7 +234,6 @@ public class WaterStorageSchedulingTthServiceImpl extends ServiceImpl<WaterStora
     }
 
     private Boolean updateAll(String formId){
-        List<StorageCapacityCurve> storageCapacityCurveList = storageCapacityCurveService.lambdaQuery().eq(StorageCapacityCurve::getReservoir, "tth").list();
         List<WaterStorageSchedulingTth> waterStorageSchedulingTthList = this.lambdaQuery().eq(WaterStorageSchedulingTth::getFormId,formId).list();
         waterStorageSchedulingTthList.sort(Comparator.comparing(t -> t.getSortNum()));
         for(int j=1;j<waterStorageSchedulingTthList.size();j++){
@@ -241,28 +244,15 @@ public class WaterStorageSchedulingTthServiceImpl extends ServiceImpl<WaterStora
                     )
             );
         }
-        waterStorageSchedulingTthList.forEach(t->t.setWaterStorageLevel(getWaterStorageLevel(storageCapacityCurveList,t.getWaterStorage())));
+        List<OverallSituationUnitMgr> unitList = getUnitList();
+        String id = unitList.stream().filter(t -> t.getPId().equals("0") && t.getUnitName().equals("头屯河水库")).map(OverallSituationUnitMgr::getId).findFirst().get();
+        waterStorageSchedulingTthList.forEach(t-> t.setWaterStorage(GetSzyDataUtils.getWaterLevelByLevel(t.getWaterStorageLevel(),id)));
         boolean b = this.saveOrUpdateBatch(waterStorageSchedulingTthList);
         if(b){
             return true;
         }else {
             return false;
         }
-    }
-
-    private List<TenDayVo> getInflowData(Integer year) {
-        QueryListReq req = new QueryListReq();
-        req.setYear(year);
-        req.setTableName("日平均流量表");
-        req.setManagerName("头屯河水库");
-        req.setPageNo(1);
-        req.setPageSize(1);
-        IPage<SurfaceWater> surfaceWaterIPage = surfaceWaterService.queryList(req);
-        if(surfaceWaterIPage.getTotal()<0){
-            return null;
-        }
-        List<TenDayVo> tenDayVos = surfaceWaterFlowDetailService.ten_day(surfaceWaterIPage.getRecords().get(0).getId());
-        return tenDayVos;
     }
 
     private List<TenDayVo> getData4_11(SelectYearWaterUsePlanCropForSum gg){
@@ -285,7 +275,7 @@ public class WaterStorageSchedulingTthServiceImpl extends ServiceImpl<WaterStora
         vo4_3.setName(3);
         vo4_3.setValue(gg.getAprilLaterOctober()==null?null:new BigDecimal(gg.getAprilLaterOctober()).setScale(2, RoundingMode.HALF_UP));
         voList.add(vo4_3);
-        
+
         TenDayVo vo5_1 = new TenDayVo();
         vo5_1.setMonth(5);
         vo5_1.setName(1);
@@ -301,7 +291,7 @@ public class WaterStorageSchedulingTthServiceImpl extends ServiceImpl<WaterStora
         vo5_3.setName(3);
         vo5_3.setValue(gg.getMayLaterOctober()==null?null:new BigDecimal(gg.getMayLaterOctober()).setScale(2, RoundingMode.HALF_UP));
         voList.add(vo5_3);
-        
+
         TenDayVo vo6_1 = new TenDayVo();
         vo6_1.setMonth(6);
         vo6_1.setName(1);
@@ -317,7 +307,7 @@ public class WaterStorageSchedulingTthServiceImpl extends ServiceImpl<WaterStora
         vo6_3.setName(3);
         vo6_3.setValue(gg.getJuneLaterOctober()==null?null:new BigDecimal(gg.getJuneLaterOctober()).setScale(2, RoundingMode.HALF_UP));
         voList.add(vo6_3);
-        
+
         TenDayVo vo7_1 = new TenDayVo();
         vo7_1.setMonth(7);
         vo7_1.setName(1);
@@ -333,7 +323,7 @@ public class WaterStorageSchedulingTthServiceImpl extends ServiceImpl<WaterStora
         vo7_3.setName(3);
         vo7_3.setValue(gg.getJulyLaterOctober()==null?null:new BigDecimal(gg.getJulyLaterOctober()).setScale(2, RoundingMode.HALF_UP));
         voList.add(vo7_3);
-        
+
         TenDayVo vo8_1 = new TenDayVo();
         vo8_1.setMonth(8);
         vo8_1.setName(1);
@@ -349,7 +339,7 @@ public class WaterStorageSchedulingTthServiceImpl extends ServiceImpl<WaterStora
         vo8_3.setName(3);
         vo8_3.setValue(gg.getAugustLaterOctober()==null?null:new BigDecimal(gg.getAugustLaterOctober()).setScale(2, RoundingMode.HALF_UP));
         voList.add(vo8_3);
-        
+
         TenDayVo vo9_1 = new TenDayVo();
         vo9_1.setMonth(9);
         vo9_1.setName(1);
@@ -365,7 +355,7 @@ public class WaterStorageSchedulingTthServiceImpl extends ServiceImpl<WaterStora
         vo9_3.setName(3);
         vo9_3.setValue(gg.getSeptemberLaterOctober()==null?null:new BigDecimal(gg.getSeptemberLaterOctober()).setScale(2, RoundingMode.HALF_UP));
         voList.add(vo9_3);
-        
+
         TenDayVo vo10_1 = new TenDayVo();
         vo10_1.setMonth(10);
         vo10_1.setName(1);
@@ -381,7 +371,7 @@ public class WaterStorageSchedulingTthServiceImpl extends ServiceImpl<WaterStora
         vo10_3.setName(3);
         vo10_3.setValue(gg.getOctoberLaterOctober()==null?null:new BigDecimal(gg.getOctoberLaterOctober()).setScale(2, RoundingMode.HALF_UP));
         voList.add(vo10_3);
-        
+
         TenDayVo vo11_1 = new TenDayVo();
         vo11_1.setMonth(11);
         vo11_1.setName(1);
@@ -452,8 +442,8 @@ public class WaterStorageSchedulingTthServiceImpl extends ServiceImpl<WaterStora
         vo3_3.setName(3);
         vo3_3.setValue(sum.getMarch()==null?null:new BigDecimal(sum.getMarch()/3).setScale(2, RoundingMode.HALF_UP));
         voList.add(vo3_3);
-        
-        
+
+
         TenDayVo vo4_1 = new TenDayVo();
         vo4_1.setMonth(4);
         vo4_1.setName(1);
@@ -605,5 +595,188 @@ public class WaterStorageSchedulingTthServiceImpl extends ServiceImpl<WaterStora
         String format = format2.format(num);
         return Double.parseDouble(format);
     }
+
+    private String defaultIncomingWaterData = "[\n" +
+            "    {\n" +
+            "        \"month\":1,\n" +
+            "        \"name\":1,\n" +
+            "        \"value\":987.04\n" +
+            "    },\n" +
+            "    {\n" +
+            "        \"month\":1,\n" +
+            "        \"name\":2,\n" +
+            "        \"value\":987.34\n" +
+            "    },\n" +
+            "    {\n" +
+            "        \"month\":1,\n" +
+            "        \"name\":3,\n" +
+            "        \"value\":987.15\n" +
+            "    },\n" +
+            "    {\n" +
+            "        \"month\":2,\n" +
+            "        \"name\":1,\n" +
+            "        \"value\":987.11\n" +
+            "    },\n" +
+            "    {\n" +
+            "        \"month\":2,\n" +
+            "        \"name\":2,\n" +
+            "        \"value\":986.99\n" +
+            "    },\n" +
+            "    {\n" +
+            "        \"month\":2,\n" +
+            "        \"name\":3,\n" +
+            "        \"value\":986.84\n" +
+            "    },\n" +
+            "    {\n" +
+            "        \"month\":3,\n" +
+            "        \"name\":1,\n" +
+            "        \"value\":986.16\n" +
+            "    },\n" +
+            "    {\n" +
+            "        \"month\":3,\n" +
+            "        \"name\":2,\n" +
+            "        \"value\":985.56\n" +
+            "    },\n" +
+            "    {\n" +
+            "        \"month\":3,\n" +
+            "        \"name\":3,\n" +
+            "        \"value\":985.30\n" +
+            "    },\n" +
+            "    {\n" +
+            "        \"month\":4,\n" +
+            "        \"name\":1,\n" +
+            "        \"value\":984.89\n" +
+            "    },\n" +
+            "    {\n" +
+            "        \"month\":4,\n" +
+            "        \"name\":2,\n" +
+            "        \"value\":984.61\n" +
+            "    },\n" +
+            "    {\n" +
+            "        \"month\":4,\n" +
+            "        \"name\":3,\n" +
+            "        \"value\":982.95\n" +
+            "    },\n" +
+            "    {\n" +
+            "        \"month\":5,\n" +
+            "        \"name\":1,\n" +
+            "        \"value\":978.38\n" +
+            "    },\n" +
+            "    {\n" +
+            "        \"month\":5,\n" +
+            "        \"name\":2,\n" +
+            "        \"value\":978.90\n" +
+            "    },\n" +
+            "    {\n" +
+            "        \"month\":5,\n" +
+            "        \"name\":3,\n" +
+            "        \"value\":976.84\n" +
+            "    },\n" +
+            "    {\n" +
+            "        \"month\":6,\n" +
+            "        \"name\":1,\n" +
+            "        \"value\":977.78\n" +
+            "    },\n" +
+            "    {\n" +
+            "        \"month\":6,\n" +
+            "        \"name\":2,\n" +
+            "        \"value\":982.41\n" +
+            "    },\n" +
+            "    {\n" +
+            "        \"month\":6,\n" +
+            "        \"name\":3,\n" +
+            "        \"value\":981.60\n" +
+            "    },\n" +
+            "    {\n" +
+            "        \"month\":7,\n" +
+            "        \"name\":1,\n" +
+            "        \"value\":978.21\n" +
+            "    },\n" +
+            "    {\n" +
+            "        \"month\":7,\n" +
+            "        \"name\":2,\n" +
+            "        \"value\":977.33\n" +
+            "    },\n" +
+            "    {\n" +
+            "        \"month\":7,\n" +
+            "        \"name\":3,\n" +
+            "        \"value\":975.60\n" +
+            "    },\n" +
+            "    {\n" +
+            "        \"month\":8,\n" +
+            "        \"name\":1,\n" +
+            "        \"value\":975.41\n" +
+            "    },\n" +
+            "    {\n" +
+            "        \"month\":8,\n" +
+            "        \"name\":2,\n" +
+            "        \"value\":978.16\n" +
+            "    },\n" +
+            "    {\n" +
+            "        \"month\":8,\n" +
+            "        \"name\":3,\n" +
+            "        \"value\":978.50\n" +
+            "    },\n" +
+            "    {\n" +
+            "        \"month\":9,\n" +
+            "        \"name\":1,\n" +
+            "        \"value\":979.49\n" +
+            "    },\n" +
+            "    {\n" +
+            "        \"month\":9,\n" +
+            "        \"name\":2,\n" +
+            "        \"value\":982.05\n" +
+            "    },\n" +
+            "    {\n" +
+            "        \"month\":9,\n" +
+            "        \"name\":3,\n" +
+            "        \"value\":982.76\n" +
+            "    },\n" +
+            "    {\n" +
+            "        \"month\":10,\n" +
+            "        \"name\":1,\n" +
+            "        \"value\":982.60\n" +
+            "    },\n" +
+            "    {\n" +
+            "        \"month\":10,\n" +
+            "        \"name\":2,\n" +
+            "        \"value\":978.49\n" +
+            "    },\n" +
+            "    {\n" +
+            "        \"month\":10,\n" +
+            "        \"name\":3,\n" +
+            "        \"value\":976.69\n" +
+            "    },\n" +
+            "    {\n" +
+            "        \"month\":11,\n" +
+            "        \"name\":1,\n" +
+            "        \"value\":977.01\n" +
+            "    },\n" +
+            "    {\n" +
+            "        \"month\":11,\n" +
+            "        \"name\":2,\n" +
+            "        \"value\":978.92\n" +
+            "    },\n" +
+            "    {\n" +
+            "        \"month\":11,\n" +
+            "        \"name\":3,\n" +
+            "        \"value\":979.85\n" +
+            "    },\n" +
+            "    {\n" +
+            "        \"month\":12,\n" +
+            "        \"name\":1,\n" +
+            "        \"value\":980.45\n" +
+            "    },\n" +
+            "    {\n" +
+            "        \"month\":12,\n" +
+            "        \"name\":2,\n" +
+            "        \"value\":980.39\n" +
+            "    },\n" +
+            "    {\n" +
+            "        \"month\":12,\n" +
+            "        \"name\":13,\n" +
+            "        \"value\":980.52\n" +
+            "    }\n" +
+            "]\n";
 }
 

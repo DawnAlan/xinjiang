@@ -3,6 +3,7 @@ package com.cj.waterresources.func.modular.useWaterPlanEscalation.useWaterManage
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.cj.common.model.RestResponse;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.useWaterManagement.bean.req.UseWaterManagementAddReq;
+import com.cj.waterresources.func.modular.useWaterPlanEscalation.useWaterManagement.bean.req.UseWaterManagementBindIdReq;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.useWaterManagement.bean.req.UseWaterManagementQueryReq;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.useWaterManagement.bean.res.UseWaterManagementQueryRes;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.useWaterManagement.entity.UseWaterManagement;
@@ -23,5 +24,6 @@ public interface UseWaterManagementService extends IService<UseWaterManagement> 
 
     RestResponse<List<UseWaterManagementQueryRes>> select(UseWaterManagementQueryReq req);
 
+    RestResponse bindId(UseWaterManagementBindIdReq req);
 }
 

@@ -33,4 +33,8 @@ public class UseWaterManagementAddReq implements Serializable {
     //单位类型
     @ApiModelProperty(value = "单位类型")
     private String unitType;
+
+    //绑定A3ID
+    @ApiModelProperty(value = "绑定A3ID")
+    private String bindId;
 }

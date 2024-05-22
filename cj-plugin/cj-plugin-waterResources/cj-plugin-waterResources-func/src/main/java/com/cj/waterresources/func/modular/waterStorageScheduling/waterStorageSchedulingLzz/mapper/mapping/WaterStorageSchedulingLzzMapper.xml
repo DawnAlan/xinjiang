@@ -4,4 +4,20 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.cj.waterresources.func.modular.waterStorageScheduling.waterStorageSchedulingLzz.mapper.WaterStorageSchedulingLzzMapper">
 
+    <select id="selectRealFlowList" resultType="com.cj.waterresources.func.modular.waterStorageScheduling.waterStorageSchedulingLzz.bean.res.RealFlowRes">
+        SELECT MONTH,NAME,SUM(FLOW)*8.64 AS FLOW FROM(
+            select  EXTRACT(YEAR FROM RECORD_TIME) as YEAR,
+            EXTRACT(MONTH FROM RECORD_TIME) as MONTH,
+            CASE
+            WHEN EXTRACT(DAY FROM RECORD_TIME) BETWEEN 1 AND 10 THEN '1'
+            WHEN EXTRACT(DAY FROM RECORD_TIME) BETWEEN 11 AND 20 THEN '2'
+            ELSE '3'
+            END AS NAME,
+            COALESCE(V, 0) AS FLOW
+            from "TTH"."DAY_WATER_SITUATION_STATISTICS_TABLE_LZZ"
+            where "TIME" = '今日均'
+            AND RECORD_TIME BETWEEN #{startTime} AND #{endTime}
+            and TABLE_HEAD_ID = '73f33822cf2c48caa4302dabf769b29b'
+            ) GROUP BY MONTH,NAME
+    </select>
 </mapper>

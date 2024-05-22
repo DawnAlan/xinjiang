@@ -175,11 +175,12 @@ public class WaterSituationStatisticsTableTodayServiceImpl extends ServiceImpl<W
             TrendsTableParam dlq = qsTableParam.stream().filter(t -> t.getPId().equals(dlqTemp.getId()) && t.getParamName().equals("合计")).collect(Collectors.toList()).get(0);
             TrendsTableParam xaTemp = qsTableParam.stream().filter(t -> t.getPId().equals("0") && t.getParamName().equals("西岸")).collect(Collectors.toList()).get(0);
             TrendsTableParam xgq = qsTableParam.stream().filter(t -> t.getPId().equals(xaTemp.getId()) && t.getParamName().equals("西干渠流量")).collect(Collectors.toList()).get(0);
-            TrendsTableParam ld = qsTableParam.stream().filter(t -> t.getPId().equals("0") && t.getParamName().equals("漏斗")).collect(Collectors.toList()).get(0);
+            TrendsTableParam stTemp = qsTableParam.stream().filter(t -> t.getPId().equals("0") && t.getParamName().equals("生态")).collect(Collectors.toList()).get(0);
+            TrendsTableParam ld = qsTableParam.stream().filter(t -> t.getPId().equals(stTemp.getId()) && t.getParamName().equals("漏斗")).collect(Collectors.toList()).get(0);
             TrendsTableParam byNy = qsTableParam.stream().filter(t -> t.getPId().equals(dlqTemp.getId()) && t.getParamName().equals("八一")).collect(Collectors.toList()).get(0);
             TrendsTableParam lxNy = qsTableParam.stream().filter(t -> t.getPId().equals(dlqTemp.getId()) && t.getParamName().equals("立新")).collect(Collectors.toList()).get(0);
             TrendsTableParam dlqLh = qsTableParam.stream().filter(t -> t.getPId().equals(dlqTemp.getId()) && t.getParamName().equals("灯笼渠绿化")).collect(Collectors.toList()).get(0);
-            TrendsTableParam st = qsTableParam.stream().filter(t -> t.getPId().equals("0") && t.getParamName().equals("生态")).collect(Collectors.toList()).get(0);
+            TrendsTableParam st = qsTableParam.stream().filter(t -> t.getPId().equals(stTemp.getId()) && t.getParamName().equals("合计")).collect(Collectors.toList()).get(0);
             waterSituationStatisticsTableToday.setQsZgqDgq(data_8.stream().filter(t->t.getTableHeadId().equals(dgq.getId())).map(DayWaterSituationStatisticsTableQs::getV).collect(Collectors.toList()).get(0));
             waterSituationStatisticsTableToday.setQsZgqXgq(data_8.stream().filter(t->t.getTableHeadId().equals(xgq.getId())).map(DayWaterSituationStatisticsTableQs::getV).collect(Collectors.toList()).get(0));
             waterSituationStatisticsTableToday.setQsZgqLd(data_8.stream().filter(t->t.getTableHeadId().equals(ld.getId())).map(DayWaterSituationStatisticsTableQs::getV).collect(Collectors.toList()).get(0));

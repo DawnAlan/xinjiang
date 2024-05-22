@@ -4,8 +4,10 @@ package com.cj.waterresources.func.modular.useWaterPlanEscalation.useWaterManage
 import com.cj.business.log.modular.log.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.useWaterManagement.bean.req.UseWaterManagementAddReq;
+import com.cj.waterresources.func.modular.useWaterPlanEscalation.useWaterManagement.bean.req.UseWaterManagementBindIdReq;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.useWaterManagement.bean.req.UseWaterManagementQueryReq;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.useWaterManagement.bean.res.UseWaterManagementQueryRes;
+import com.cj.waterresources.func.modular.useWaterPlanEscalation.useWaterManagement.entity.UseWaterManagement;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.useWaterManagement.service.UseWaterManagementService;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSupport;
@@ -56,6 +58,14 @@ public class UseWaterManagementController {
     @PostMapping("/select")
     public RestResponse<List<UseWaterManagementQueryRes>> select(@RequestBody UseWaterManagementQueryReq req) {
         return useWaterManagementService.select(req);
+    }
+
+    @ApiOperationSupport(order = 4)
+    @ApiOperation("用水单位管理模块绑定id")
+    @CommonLog(value = "用水单位管理模块绑定id")
+    @PostMapping("/bindId")
+    public RestResponse bindId(@RequestBody UseWaterManagementBindIdReq req) {
+        return useWaterManagementService.bindId(req);
     }
 
 }

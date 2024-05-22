@@ -20,4 +20,10 @@ public class IrrigationQuotaListReq {
     @ApiModelProperty(value = "管理站")
     private String station;
 
+    @ApiModelProperty(value = "对比月份")
+    private Integer month;
+
+    @ApiModelProperty(value = "对比旬")
+    private String tenDays;
+
 }

@@ -30,12 +30,18 @@ public class IrrigationQuotaDetails extends Model<IrrigationQuotaDetails> {
     //管理站
     private String station;
     //时间
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private Date createTime;
 
     private String totalId;
 
     private String tenDays;
+
+    //灌溉次数
+    private Integer turn;
+
+    //灌溉次数
+    private Integer year;
 
 }
 

@@ -70,8 +70,8 @@ public class IrrigationQuotaController {
     @ApiOperation("灌溉额度表修改")
     @CommonLog(value = "灌溉额度表修改")
     @PostMapping("/update")
-    public RestResponse update(@RequestBody IrrigationQuota irrigationQuota) {
-        return irrigationQuotaService.update(irrigationQuota);
+    public RestResponse update(@RequestBody List<IrrigationQuota> input) {
+        return irrigationQuotaService.update(input);
     }
 
     @ApiOperationSupport(order = 5)

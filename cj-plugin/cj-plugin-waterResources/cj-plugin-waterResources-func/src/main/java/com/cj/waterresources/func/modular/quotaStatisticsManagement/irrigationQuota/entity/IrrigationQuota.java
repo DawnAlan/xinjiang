@@ -289,9 +289,85 @@ public class IrrigationQuota extends Model<IrrigationQuota> {
     @ApiModelProperty(value = "逻辑删除(0-否 1-是)")
     private Integer del;
 
-    //亩平均灌水额
+    //灌溉定额
     @TableField(updateStrategy = FieldStrategy.IGNORED)
-    @ApiModelProperty(value = "亩平均灌水额")
+    @ApiModelProperty(value = "灌溉定额")
     private Double averageIrrigationAmount;
+
+    private Integer aprilEarlyOctoberTurn;
+    
+    private Integer aprilMidDayTurn;
+    
+    private Integer aprilLateOctoberTurn;
+    
+    private Integer mayEarlyOctoberTurn;
+    
+    private Integer mayMidDayTurn;
+    
+    private Integer mayLateOctoberTurn;
+    
+    private Integer juneEarlyOctoberTurn;
+    
+    private Integer juneMidDayTurn;
+    
+    private Integer juneLateOctoberTurn;
+    
+    private Integer julyEarlyOctoberTurn;
+    
+    private Integer julyMidDayTurn;
+    
+    private Integer julyLateOctoberTurn;
+    
+    private Integer augustEarlyOctoberTurn;
+    
+    private Integer augustMidDayTurn;
+    
+    private Integer augustLateOctoberTurn;
+    
+    private Integer septemberEarlyOctoberTurn;
+    
+    private Integer septemberMidDayTurn;
+    
+    private Integer septemberLateOctoberTurn;
+    
+    private Integer octoberEarlyOctoberTurn;
+    
+    private Integer octoberMidDayTurn;
+    
+    private Integer octoberLateOctoberTurn;
+    
+    private Integer novemberEarlyOctoberTurn;
+    
+    private Integer novemberMidDayTurn;
+    
+    private Integer novemberLateOctoberTurn;
+
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
+    @ApiModelProperty(value = "年计划种植面积")
+    private Double annualPlannedPlantingArea;
+
+    @ApiModelProperty(value = "累计灌溉次数")
+    private Integer accumulatedTotalIrrigationTurn;
+
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
+    @ApiModelProperty(value = "去年实际种植面积")
+    private Double totalPlannedIrrigationAreaLastYear;
+
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
+    @ApiModelProperty(value = "去年累计灌溉面积")
+    private Double accumulatedIrrigationAreaLastYear;
+
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
+    @ApiModelProperty(value = "去年累计灌溉水量")
+    private Double accumulatedTotalIrrigationAmountLastYear;
+
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
+    @ApiModelProperty(value = "去年累计灌溉次数")
+    private Integer accumulatedTotalIrrigationTurnLastYear;
+
+
+
+
+
 }
 

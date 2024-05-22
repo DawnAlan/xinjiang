@@ -1,6 +1,7 @@
 package com.cj.waterresources.func.modular.surfaceWater.vo;
 
 import io.swagger.annotations.ApiModelProperty;
+import io.swagger.models.auth.In;
 import lombok.Data;
 
 import java.math.BigDecimal;

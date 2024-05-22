@@ -60,5 +60,9 @@ public class UseWaterManagement extends Model<UseWaterManagement> {
     //逻辑删除(0-否 1-是)
     @ApiModelProperty(value = "逻辑删除(0-否 1-是)")
     private Integer del;
+
+    //绑定A3ID
+    @ApiModelProperty(value = "绑定A3ID")
+    private String bindId;
 }
 

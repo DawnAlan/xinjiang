@@ -3,6 +3,7 @@ package com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cj.common.model.RestResponse;
+import com.cj.common.util.NumberUtil;
 import com.cj.common.util.RedisUtil;
 import com.cj.common.util.UUIDUtils;
 import com.cj.flood.api.PredictionApi;
@@ -14,7 +15,6 @@ import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.mapper.DayWaterSituationStatisticsTableLzzMapper;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.entity.DayWaterSituationStatisticsTableLzz;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.service.DayWaterSituationStatisticsTableLzzService;
-import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tth.entity.DayWaterSituationStatisticsTableTth;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -83,6 +83,7 @@ public class DayWaterSituationStatisticsTableLzzServiceImpl extends ServiceImpl<
         if(!todayData.isEmpty()){
             return RestResponse.no(dayWaterSituationStatisticsTableLzzList.get(0).getTime()+"数据已创建");
         }
+        Double lzzScCount = 0.00;
         for(DayWaterSituationStatisticsTableLzz t:dayWaterSituationStatisticsTableLzzList){
             t.setId(UUIDUtils.getUUID());
             String paramName = trendsTableParamService.getById(t.getTableHeadId()).getParamName();
@@ -97,10 +98,12 @@ public class DayWaterSituationStatisticsTableLzzServiceImpl extends ServiceImpl<
             if(paramName.equals("楼庄子水厂管道1")){
                 Double v = (Double)redisUtil.get("lzz:waterworks:1:"+sdf.format(t.getRecordTime())+" "+t.getTime());
                 t.setV(v==null?null:v);
+                lzzScCount+=(v==null?0.00:v);
             }
             if(paramName.equals("楼庄子水厂管道2")){
                 Double v = (Double)redisUtil.get("lzz:waterworks:2:"+sdf.format(t.getRecordTime())+" "+t.getTime());
                 t.setV(v==null?null:v);
+                lzzScCount+=(v==null?0.00:v);
             }
             if(paramName.equals("进库流量")){
                 Double v = (Double)redisUtil.get("lzz:input:"+sdf.format(t.getRecordTime())+" "+t.getTime());
@@ -109,6 +112,13 @@ public class DayWaterSituationStatisticsTableLzzServiceImpl extends ServiceImpl<
             if(paramName.equals("河道")){
                 Double v = (Double)redisUtil.get("lzz:out:"+sdf.format(t.getRecordTime())+" "+t.getTime());
                 t.setV(v==null?null:v);
+            }
+        }
+
+        for(DayWaterSituationStatisticsTableLzz t:dayWaterSituationStatisticsTableLzzList){
+            String paramName = trendsTableParamService.getById(t.getTableHeadId()).getParamName();
+            if(paramName.equals("楼庄子水厂总量")){
+                t.setV(lzzScCount);
             }
         }
         List<DayWaterSituationStatisticsTableLzz> result = new ArrayList<>();
@@ -149,17 +159,15 @@ public class DayWaterSituationStatisticsTableLzzServiceImpl extends ServiceImpl<
                 TrendsTableParam tableParam = JSONObject.parseObject(tableParamString, TrendsTableParam.class);
                 if(!tableParam.getPId().equals("0")){
                     List<TrendsTableParam> noTotalList = trendsTableParamList.stream().filter(t->t.getPId().equals(tableParam.getPId()) && !t.getParamName().equals("合计")).collect(Collectors.toList());
-                    //List<TrendsTableParam> noTotalList = trendsTableParamService.lambdaQuery().eq(TrendsTableParam::getPId, tableParam.getPId()).ne(TrendsTableParam::getParamName, "合计").list();
                     for(TrendsTableParam param:noTotalList){
                         for(DayWaterSituationStatisticsTableLzz t:dayWaterSituationStatisticsTableLzzList){
-                            if(t.getTableHeadId().equals(param.getId())){
+                            if(t.getTableHeadId().equals(param.getId()) && !param.getParamName().equals("楼庄子水厂总量")){
                                 value+=t.getV()==null?0.0:t.getV();
                             }
                             List<TrendsTableParam> listed = trendsTableParamList.stream().filter(p->p.getPId().equals(param.getId()) && !p.getParamName().equals("合计")).collect(Collectors.toList());
-                            //List<TrendsTableParam> listed = trendsTableParamService.lambdaQuery().eq(TrendsTableParam::getPId, param.getId()).ne(TrendsTableParam::getParamName, "合计").list();
                             if(null != listed && listed.size()>0){
                                 for (TrendsTableParam param1:listed){
-                                    if(t.getTableHeadId().equals(param1.getId())){
+                                    if(t.getTableHeadId().equals(param1.getId()) && !param.getParamName().equals("楼庄子水厂总量")){
                                         value+=t.getV()==null?0.0:t.getV();
                                     }
                                 }
@@ -197,6 +205,12 @@ public class DayWaterSituationStatisticsTableLzzServiceImpl extends ServiceImpl<
             }
         }
         result.addAll(dayWaterSituationStatisticsTableLzzList);
+        for(DayWaterSituationStatisticsTableLzz t:result){
+            String paramName = (String)redisUtil.get("trendsTableParam:name:"+t.getTableHeadId());
+            if(paramName.contains("库容")){
+                t.setV(t.getV()==null?null:NumberUtil.holdDecimal(t.getV(),2));
+            }
+        }
         boolean b = this.saveBatch(result);
         if (b) {
             if(dayWaterSituationStatisticsTableLzzList.get(0).getTime().equals("08:00")){
@@ -235,6 +249,22 @@ public class DayWaterSituationStatisticsTableLzzServiceImpl extends ServiceImpl<
                 redisUtil.set("lzz:time:waterLevel:true:"+sdf.format(t.getRecordTime())+" "+t.getTime(),t.getV(),24*3600);
             }
         });
+        Double lzzScCount = 0.00;
+        for(DayWaterSituationStatisticsTableLzz t:dayWaterSituationStatisticsTableLzzList){
+            String paramName = trendsTableParamService.getById(t.getTableHeadId()).getParamName();
+            if(paramName.equals("楼庄子水厂管道1")){
+                lzzScCount+=t.getV();
+            }
+            if(paramName.equals("楼庄子水厂管道2")){
+                lzzScCount+=t.getV();
+            }
+        }
+        for(DayWaterSituationStatisticsTableLzz t:dayWaterSituationStatisticsTableLzzList){
+            String paramName = trendsTableParamService.getById(t.getTableHeadId()).getParamName();
+            if(paramName.equals("楼庄子水厂总量")){
+                t.setV(lzzScCount);
+            }
+        }
         List<TotalIdToStation> totalIdToStationList = totalIdToStationService.lambdaQuery().eq(TotalIdToStation::getUseType, 1).eq(TotalIdToStation::getStation, "楼庄子水库").list();
         String mk = (String) redisUtil.get("trendsTableParam:list");
         if(StringUtils.isEmpty(mk)){
@@ -255,13 +285,13 @@ public class DayWaterSituationStatisticsTableLzzServiceImpl extends ServiceImpl<
                     List<TrendsTableParam> noTotalList = trendsTableParamList.stream().filter(t->t.getPId().equals(tableParam.getPId()) && !t.getParamName().equals("合计")).collect(Collectors.toList());
                     for(TrendsTableParam param:noTotalList){
                         for(DayWaterSituationStatisticsTableLzz t:dayWaterSituationStatisticsTableLzzList){
-                            if(t.getTableHeadId().equals(param.getId())){
+                            if(t.getTableHeadId().equals(param.getId()) && !param.getParamName().equals("楼庄子水厂总量")){
                                 value+=t.getV()==null?0.0:t.getV();
                             }
                             List<TrendsTableParam> listed = trendsTableParamList.stream().filter(p->p.getPId().equals(param.getId()) && !p.getParamName().equals("合计")).collect(Collectors.toList());
                             if(null != listed && listed.size()>0){
                                 for (TrendsTableParam param1:listed){
-                                    if(t.getTableHeadId().equals(param1.getId())){
+                                    if(t.getTableHeadId().equals(param1.getId()) && !param.getParamName().equals("楼庄子水厂总量")){
                                         value+=t.getV()==null?0.0:t.getV();
                                     }
                                 }
@@ -296,6 +326,12 @@ public class DayWaterSituationStatisticsTableLzzServiceImpl extends ServiceImpl<
                         t.setV(total);
                     }
                 }
+            }
+        }
+        for(DayWaterSituationStatisticsTableLzz t:dayWaterSituationStatisticsTableLzzList){
+            String paramName = (String)redisUtil.get("trendsTableParam:name:"+t.getTableHeadId());
+            if(paramName.contains("库容")){
+                t.setV(t.getV()==null?null:NumberUtil.holdDecimal(t.getV(),2));
             }
         }
         boolean b = this.updateBatchById(dayWaterSituationStatisticsTableLzzList);
@@ -346,6 +382,22 @@ public class DayWaterSituationStatisticsTableLzzServiceImpl extends ServiceImpl<
         if(dayWaterSituationStatisticsTableLzzList.isEmpty()){
             return RestResponse.no("今日无数据");
         }
+        Double lzzScCount = 0.00;
+        for(DayWaterSituationStatisticsTableLzz t:dayWaterSituationStatisticsTableLzzList){
+            String paramName = trendsTableParamService.getById(t.getTableHeadId()).getParamName();
+            if(paramName.equals("楼庄子水厂管道1")){
+                lzzScCount+=t.getV();
+            }
+            if(paramName.equals("楼庄子水厂管道2")){
+                lzzScCount+=t.getV();
+            }
+        }
+        for(DayWaterSituationStatisticsTableLzz t:dayWaterSituationStatisticsTableLzzList){
+            String paramName = trendsTableParamService.getById(t.getTableHeadId()).getParamName();
+            if(paramName.equals("楼庄子水厂总量")){
+                t.setV(lzzScCount);
+            }
+        }
         List<TotalIdToStation> totalIdToStationList = totalIdToStationService.lambdaQuery().eq(TotalIdToStation::getUseType, 1).eq(TotalIdToStation::getStation, "楼庄子水库").list();
         String mk = (String) redisUtil.get("trendsTableParam:list");
         if(StringUtils.isEmpty(mk)){
@@ -366,13 +418,13 @@ public class DayWaterSituationStatisticsTableLzzServiceImpl extends ServiceImpl<
                     List<TrendsTableParam> noTotalList = trendsTableParamList.stream().filter(t->t.getPId().equals(tableParam.getPId()) && !t.getParamName().equals("合计")).collect(Collectors.toList());
                     for(TrendsTableParam param:noTotalList){
                         for(DayWaterSituationStatisticsTableLzz t:dayWaterSituationStatisticsTableLzzList){
-                            if(t.getTableHeadId().equals(param.getId())){
+                            if(t.getTableHeadId().equals(param.getId()) && !param.getParamName().equals("楼庄子水厂总量")){
                                 value+=t.getV()==null?0.0:t.getV();
                             }
                             List<TrendsTableParam> listed = trendsTableParamList.stream().filter(p->p.getPId().equals(param.getId()) && !p.getParamName().equals("合计")).collect(Collectors.toList());
                             if(null != listed && listed.size()>0){
                                 for (TrendsTableParam param1:listed){
-                                    if(t.getTableHeadId().equals(param1.getId())){
+                                    if(t.getTableHeadId().equals(param1.getId()) && !param.getParamName().equals("楼庄子水厂总量")){
                                         value+=t.getV()==null?0.0:t.getV();
                                     }
                                 }
@@ -407,6 +459,13 @@ public class DayWaterSituationStatisticsTableLzzServiceImpl extends ServiceImpl<
                         t.setV(total);
                     }
                 }
+            }
+        }
+
+        for(DayWaterSituationStatisticsTableLzz t:dayWaterSituationStatisticsTableLzzList){
+            String paramName = (String)redisUtil.get("trendsTableParam:name:"+t.getTableHeadId());
+            if(paramName.contains("库容")){
+                t.setV(t.getV()==null?null:NumberUtil.holdDecimal(t.getV(),2));
             }
         }
         boolean b = this.saveBatch(dayWaterSituationStatisticsTableLzzList);

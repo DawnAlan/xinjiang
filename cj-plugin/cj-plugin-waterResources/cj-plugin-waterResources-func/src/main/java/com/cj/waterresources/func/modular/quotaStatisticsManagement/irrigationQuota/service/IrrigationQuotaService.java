@@ -18,7 +18,7 @@ public interface IrrigationQuotaService extends IService<IrrigationQuota> {
 
     RestResponse delete(String id);
 
-    RestResponse update(IrrigationQuota irrigationQuota);
+    RestResponse update(List<IrrigationQuota> input);
 
     RestResponse<List<IrrigationQuota>> selectList(IrrigationQuotaListReq req);
 

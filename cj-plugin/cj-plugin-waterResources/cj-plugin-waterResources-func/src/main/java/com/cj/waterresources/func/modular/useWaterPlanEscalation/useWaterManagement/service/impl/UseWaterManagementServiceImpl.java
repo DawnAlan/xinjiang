@@ -6,6 +6,7 @@ import com.cj.common.util.UUIDUtils;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.monthWaterUsePlan.entity.MonthWaterUsePlan;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.monthWaterUsePlan.service.MonthWaterUsePlanService;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.useWaterManagement.bean.req.UseWaterManagementAddReq;
+import com.cj.waterresources.func.modular.useWaterPlanEscalation.useWaterManagement.bean.req.UseWaterManagementBindIdReq;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.useWaterManagement.bean.req.UseWaterManagementQueryReq;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.useWaterManagement.bean.res.UseWaterManagementQueryRes;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.useWaterManagement.mapper.UseWaterManagementMapper;
@@ -105,6 +106,16 @@ public class UseWaterManagementServiceImpl extends ServiceImpl<UseWaterManagemen
             }else {
                 return RestResponse.no("暂无数据");
             }
+        }
+    }
+
+    @Override
+    public RestResponse bindId(UseWaterManagementBindIdReq req) {
+        boolean update = this.lambdaUpdate().set(UseWaterManagement::getBindId, req.getBindId()).eq(UseWaterManagement::getId, req.getId()).update();
+        if(update) {
+            return RestResponse.ok("绑定成功");
+        }else {
+            return RestResponse.no("绑定失败");
         }
     }
 

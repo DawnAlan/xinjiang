@@ -3,6 +3,7 @@ package com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tth
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cj.common.model.RestResponse;
+import com.cj.common.util.NumberUtil;
 import com.cj.common.util.RedisUtil;
 import com.cj.common.util.UUIDUtils;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.service.IrrigatedPlatformDataInfoService;
@@ -18,6 +19,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
@@ -188,6 +190,12 @@ public class DayWaterSituationStatisticsTableTthServiceImpl extends ServiceImpl<
             }
         }
         result.addAll(dayWaterSituationStatisticsTableTthList);
+        for(DayWaterSituationStatisticsTableTth t:result){
+            String paramName = (String)redisUtil.get("trendsTableParam:name:"+t.getTableHeadId());
+            if(paramName.contains("库容")){
+                t.setV(t.getV()==null?null:NumberUtil.holdDecimal(t.getV(),2));
+            }
+        }
         boolean b = this.saveBatch(result);
         if (b) {
             if(dayWaterSituationStatisticsTableTthList.get(0).getTime().equals("08:00")){
@@ -279,6 +287,12 @@ public class DayWaterSituationStatisticsTableTthServiceImpl extends ServiceImpl<
                         t.setV(total);
                     }
                 }
+            }
+        }
+        for(DayWaterSituationStatisticsTableTth t:dayWaterSituationStatisticsTableTthList){
+            String paramName = (String)redisUtil.get("trendsTableParam:name:"+t.getTableHeadId());
+            if(paramName.contains("库容")){
+                t.setV(t.getV()==null?null:NumberUtil.holdDecimal(t.getV(),2));
             }
         }
         boolean b = this.updateBatchById(dayWaterSituationStatisticsTableTthList);
@@ -399,6 +413,12 @@ public class DayWaterSituationStatisticsTableTthServiceImpl extends ServiceImpl<
                         t.setV(total);
                     }
                 }
+            }
+        }
+        for(DayWaterSituationStatisticsTableTth t:dayWaterSituationStatisticsTableTthList){
+            String paramName = (String)redisUtil.get("trendsTableParam:name:"+t.getTableHeadId());
+            if(paramName.contains("库容")){
+                t.setV(t.getV()==null?null:NumberUtil.holdDecimal(t.getV(),2));
             }
         }
         boolean b = this.saveBatch(dayWaterSituationStatisticsTableTthList);

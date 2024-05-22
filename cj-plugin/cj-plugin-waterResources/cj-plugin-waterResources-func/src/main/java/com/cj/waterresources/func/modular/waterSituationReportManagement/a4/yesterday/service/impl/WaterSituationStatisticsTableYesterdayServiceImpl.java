@@ -281,11 +281,12 @@ public class WaterSituationStatisticsTableYesterdayServiceImpl extends ServiceIm
                     filter(t -> t.getUseStation().equals("渠首管理站")).collect(Collectors.toList());
             TrendsTableParam dgq = qsList.stream().filter(t -> t.getParamName().equals("东干渠流量")).collect(Collectors.toList()).get(0);
             TrendsTableParam xgq = qsList.stream().filter(t -> t.getParamName().equals("西干渠流量")).collect(Collectors.toList()).get(0);
-            TrendsTableParam ld = qsList.stream().filter(t -> t.getParamName().equals("漏斗")).collect(Collectors.toList()).get(0);
+            TrendsTableParam hdTemp = qsList.stream().filter(t -> t.getParamName().equals("生态")).collect(Collectors.toList()).get(0);
+            TrendsTableParam ld = qsList.stream().filter(t -> t.getParamName().equals("漏斗") && t.getPId().equals(hdTemp.getId())).collect(Collectors.toList()).get(0);
             TrendsTableParam by = qsList.stream().filter(t -> t.getParamName().equals("八一")).collect(Collectors.toList()).get(0);
             TrendsTableParam lx = qsList.stream().filter(t -> t.getParamName().equals("立新")).collect(Collectors.toList()).get(0);
             TrendsTableParam dlqlh = qsList.stream().filter(t -> t.getParamName().equals("灯笼渠绿化")).collect(Collectors.toList()).get(0);
-            TrendsTableParam hd = qsList.stream().filter(t -> t.getParamName().equals("生态")).collect(Collectors.toList()).get(0);
+            TrendsTableParam hd = qsList.stream().filter(t -> t.getParamName().equals("合计") && t.getPId().equals(hdTemp.getId())).collect(Collectors.toList()).get(0);
             TrendsTableParam qh = qsList.stream().filter(t -> t.getParamName().equals("全河")).collect(Collectors.toList()).get(0);
             List<TrendsTableParam> dklList = trendsTableParamList.stream().filter(t->t.getUseType()==1).
                     filter(t -> t.getUseStation().equals("对口率")).collect(Collectors.toList());

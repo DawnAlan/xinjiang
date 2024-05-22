@@ -83,7 +83,7 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
     private String minioUrl;
 
     @Value("${floodModelFilePath}")
-    private String floodModelFilePath;
+    private String  floodModelFilePath;
 
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd");
