@@ -54,4 +54,6 @@ public class WaterTransferReq {
     private  List<Waterdemand> waterDemandData;
 
     private String typeName;
+    //供水优先级
+    private int orderNumber;
 }

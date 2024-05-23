@@ -11,6 +11,7 @@ import com.cj.waterresources.func.modular.waterResourceAllcation.bean.res.ViewMo
 import com.cj.waterresources.func.modular.waterResourceAllcation.bean.res.WaterAllocationComparisonSelectionRes;
 import com.cj.waterresources.func.modular.waterResourceAllcation.bean.res.WaterDistributionOverviewRes;
 import com.cj.waterresources.func.modular.waterResourceAllcation.entity.WaterResourceAllocation;
+import com.cj.waterresources.func.modular.waterResourceAllcation.entity.WaterSupplyPriority;
 import com.cj.waterresources.func.modular.waterResourceAllcation.service.WaterResourceAllocationService;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSupport;
@@ -106,6 +107,14 @@ public class WaterResourceAllocationController {
     @PostMapping("/waterDistributionOverview")
     public RestResponse<WaterDistributionOverviewRes> waterDistributionOverview(@RequestParam("id") String id) {
         return waterResourceAllocationService.waterDistributionOverview(id);
+    }
+
+    @ApiOperationSupport(order = 9)
+    @ApiOperation("水资源调配模块查询供水优先级配置")
+    @CommonLog(value = "水资源调配模块查询供水优先级配置")
+    @GetMapping("/getWaterSupplyPriority")
+    public RestResponse<List<WaterSupplyPriority>> getWaterSupplyPriority() {
+        return waterResourceAllocationService.getWaterSupplyPriority();
     }
 }
 

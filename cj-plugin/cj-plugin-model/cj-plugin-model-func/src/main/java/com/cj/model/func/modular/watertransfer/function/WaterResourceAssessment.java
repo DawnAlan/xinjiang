@@ -60,30 +60,43 @@ public class WaterResourceAssessment {
             waterLack[i]=Double.parseDouble(da.format(getSum(reqList.get(i).getExcel2Data())[1]));
         }
 
-        double bestUtilizationRate=(inflowWater[0]-wasteWater[0])/inflowWater[0];
-
+        double bestUtilizationRate=(inflowWater[0]-storgeAll[0]-wasteWater[0])/(inflowWater[0]-storgeAll[0]);
+        double x=0;
+        for (int i=0;i<reqList.size();i++)
+        {
+            if (reqList.get(i).getName().contains("单库调度"))
+            {
+                x=i;
+                double utilizationRate=1;
+                if (inflowWater[i] - storgeAll[i] > 0) {
+                    utilizationRate = (inflowWater[i] - storgeAll[i] - wasteWater[i]) / (inflowWater[i] - storgeAll[i]);
+                } else {
+                    utilizationRate = 1;
+                }
+                waterRate[i] = Double.parseDouble(da.format(utilizationRate));
+            }
+        }
         double n=0;
         for (int i=0;i<reqList.size();i++){
-            double utilizationRate=0;
-            if  (inflowWater[i]-storgeAll[i]>0){
-                 utilizationRate= (inflowWater[i]-storgeAll[i]-wasteWater[i])/(inflowWater[i]-storgeAll[i]);
-            }
-            else {
-                 utilizationRate= 1;
-            }
-            waterRate[i]=Double.parseDouble(da.format(utilizationRate));
-           if (utilizationRate>bestUtilizationRate)
-           {
-               bestUtilizationRate=utilizationRate;
-               n=i;
-           }
-           else if (utilizationRate==bestUtilizationRate)
-           {
-               if (waterLack[i]<waterLack[(int)n]){
-                    n=i;
-               }
-           }
 
+            if (i!=x)
+            {
+                double utilizationRate = 0;
+                if (inflowWater[i] - storgeAll[i] > 0) {
+                    utilizationRate = (inflowWater[i] - storgeAll[i] - wasteWater[i]) / (inflowWater[i] - storgeAll[i]);
+                } else {
+                    utilizationRate = 1;
+                }
+                waterRate[i] = Double.parseDouble(da.format(utilizationRate));
+                if (utilizationRate > bestUtilizationRate) {
+                    bestUtilizationRate = utilizationRate;
+                    n = i;
+                } else if (utilizationRate == bestUtilizationRate) {
+                    if (waterLack[i] < waterLack[(int) n]) {
+                        n = i;
+                    }
+                }
+            }
         }
 
         Map<String, Object>  appraise11= new HashMap<>();

@@ -15,6 +15,7 @@ import com.cj.common.exception.CommonException;
 import com.cj.common.model.RestResponse;
 import com.cj.common.pojo.CommonResult;
 import com.cj.common.util.ExcelUtils;
+import com.cj.common.util.RedisUtil;
 import com.cj.common.util.UUIDUtils;
 import com.cj.flood.api.PredictionApi;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.entity.IrrigatedPlatformDataInfo;
@@ -58,6 +59,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -93,9 +96,51 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
     private final WaterResourceAllocationControlObjectService waterResourceAllocationControlObjectService;
     private final UseWaterManagementService useWaterManagementService;
     private final WaterStorageSchedulingLzzService waterStorageSchedulingLzzService;
+    private final RedisUtil redisUtil;
 
     private final static String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
+    private final static String WATER_SUPPLY_PRIORITY_REDIS_KEY = "WATER_SUPPLY_PRIORITY_REDIS_KEY";
     private Map<String, String> useWaterManagementUnitIdMap;
+
+    @Bean
+    public CommandLineRunner loadWaterSupplyPriority() {
+        return args -> {
+            if (!redisUtil.hasKey(WATER_SUPPLY_PRIORITY_REDIS_KEY)) {
+                List<WaterSupplyPriority> waterSupplyPriorities = new ArrayList<>();
+                waterSupplyPriorities.add(new WaterSupplyPriority(){{
+                    setPriorityType("生态用水");
+                    setPriorityIndex(0);
+                    setPriorityValue(1);
+                    setIsBlock(0);
+                }});
+                waterSupplyPriorities.add(new WaterSupplyPriority(){{
+                    setPriorityType("生活用水");
+                    setPriorityIndex(1);
+                    setPriorityValue(2);
+                    setIsBlock(0);
+                }});
+                waterSupplyPriorities.add(new WaterSupplyPriority(){{
+                    setPriorityType("工业用水");
+                    setPriorityIndex(2);
+                    setPriorityValue(3);
+                    setIsBlock(0);
+                }});
+                waterSupplyPriorities.add(new WaterSupplyPriority(){{
+                    setPriorityType("灌溉用水");
+                    setPriorityIndex(3);
+                    setPriorityValue(4);
+                    setIsBlock(1);
+                }});
+                waterSupplyPriorities.add(new WaterSupplyPriority(){{
+                    setPriorityType("绿化用水");
+                    setPriorityIndex(4);
+                    setPriorityValue(5);
+                    setIsBlock(1);
+                }});
+                redisUtil.set(WATER_SUPPLY_PRIORITY_REDIS_KEY, JSONObject.toJSONString(waterSupplyPriorities), 0);
+            }
+        };
+    }
 
     @Override
     public RestResponse<List<IncomingWaterForecastDto>> getIncomingWaterForecastListByTime(String startTime, String endTime, Integer bucketType) {
@@ -159,6 +204,9 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
         List<WaterResourceAllocationControlObject> objectList = getAllocationControlObject(req, waterResourceAllocation.getId());
         this.save(waterResourceAllocation);
         waterResourceAllocationControlObjectService.saveBatch(objectList);
+        if (!CollectionUtil.isEmpty(req.getWaterSupplyPriorityList())) {
+            redisUtil.set(WATER_SUPPLY_PRIORITY_REDIS_KEY, JSONObject.toJSONString(req.getWaterSupplyPriorityList()), 0);
+        }
 
         new Thread(() -> {
             try {
@@ -835,6 +883,12 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
         waterTransferReq.setData(data);
         waterTransferReq.setWaterDemandData(waterNeed(allocation.getWaterDistributionStartTime()));
         waterTransferReq.setCurve(curveService.selectList());
+        List<WaterSupplyPriority> waterSupplyPriorityList = JSONObject.parseArray(redisUtil.get(WATER_SUPPLY_PRIORITY_REDIS_KEY).toString(), WaterSupplyPriority.class);
+        waterTransferReq.setOrderNumber(Integer.parseInt(waterSupplyPriorityList.stream()
+                .filter(n -> n.getIsBlock() != 1)
+                .sorted(Comparator.comparing(WaterSupplyPriority::getPriorityIndex))
+                .map(n -> n.getPriorityValue().toString())
+                .collect(Collectors.joining())));
         List<ResOption> calculator;
         try {
             calculator = OutResult.calculator(waterTransferReq);
@@ -1183,6 +1237,11 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
                 .entrySet().stream().sorted(Map.Entry.comparingByKey())
                 .map(n -> new WaterDistributionOverviewRes.WaterDto(n.getKey(), n.getValue())).collect(Collectors.toList()));
         return RestResponse.ok(res);
+    }
+
+    @Override
+    public RestResponse<List<WaterSupplyPriority>> getWaterSupplyPriority() {
+        return RestResponse.ok(JSONObject.parseArray(redisUtil.get(WATER_SUPPLY_PRIORITY_REDIS_KEY).toString(), WaterSupplyPriority.class));
     }
 }
 

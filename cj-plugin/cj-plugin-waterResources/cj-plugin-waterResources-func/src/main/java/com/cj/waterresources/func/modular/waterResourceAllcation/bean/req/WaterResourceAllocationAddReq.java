@@ -1,6 +1,7 @@
 package com.cj.waterresources.func.modular.waterResourceAllcation.bean.req;
 
 import com.alibaba.excel.annotation.format.DateTimeFormat;
+import com.cj.waterresources.func.modular.waterResourceAllcation.entity.WaterSupplyPriority;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -104,4 +105,7 @@ public class WaterResourceAllocationAddReq implements Serializable {
 
     @ApiModelProperty(value = "头屯河最低调度水位")
     private List<Double> minWaterLevelTth;
+
+    @ApiModelProperty(value = "供水优先级")
+    private List<WaterSupplyPriority> waterSupplyPriorityList;
 }

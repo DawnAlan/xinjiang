@@ -30,7 +30,7 @@ public class ResourceOptimizationshort_DayAheadTest
 
     private double[] minOutflow;
     private Reservoir [] reservoirs;
-
+    private int order;
     public ArrayList ResourceOptimizationshort_daysTest(WaterTransferReq waterTransferReq) throws Exception {
         //应用POA  进行水资源优化
         //设计调度时段  和   来水过程
@@ -39,7 +39,7 @@ public class ResourceOptimizationshort_DayAheadTest
 
         setReservoir(waterTransferReq.getCurve(),reservoirs);
         minOutflow=new double[2];
-
+        order=waterTransferReq.getOrderNumber();
         if (waterTransferReq.getName()==1){
             waterTransferReq.setId(2);
         }
@@ -114,6 +114,9 @@ public class ResourceOptimizationshort_DayAheadTest
 //        double[][] fitness_term = new double[2][6];
         double[] levelBegin = {waterTransferReq.getLevelBeginLzz(), waterTransferReq.getLevelBeginTth()};
         double[] levelEnd =  {waterTransferReq.getLevelEndLzz(), waterTransferReq.getLevelEndTth()};
+        if (waterTransferReq.getId()==3&&waterTransferReq.getLevelBeginTth()<waterTransferReq.getLevelEndTth()){
+            levelEnd[1] = waterTransferReq.getLevelBeginTth();
+        }
         double[][]levelLimit=new double[2][waterTransferReq.getFloodWaterLevelLzz().length];
         double[][]levelMin=new double[2][waterTransferReq.getFloodWaterLevelLzz().length];
         levelLimit[0] =waterTransferReq.getFloodWaterLevelLzz();
@@ -515,57 +518,58 @@ public class ResourceOptimizationshort_DayAheadTest
 
         double[]allwater=new double[period];
         double[][]ecologyWater=new double[2][period];
+        ecologyWater[0]=calFit(id,reservoirs,period,wl_term,waterDemand,inflow)[12];
+        ecologyWater[1]=calFit(id,reservoirs,period,wl_term,waterDemand,inflow)[13];
         double[][]ecologyFlow=new double[2][period];
         double[][]ecologyWaterNeed=new double[2][period];
         for (int i=0;i<ecologyWater.length;i++){
             for (int x=0;x<period;x++){
                 double eco=Double.parseDouble(da.format(minOutflow[i]*delatT/1e4));
-                ecologyWater[i][x]=eco;
                 ecologyWaterNeed[i][x]=eco;
             }
         }
-        for (int x=0;x<period;x++)
-        {
-            if (waterDemand[0][x]>waterSupply[0][x]&&ecologyWater[0][x]>0){
-
-                double ecologyWater1=ecologyWater[0][x]-(waterDemand[0][x]-waterSupply[0][x]);
-                if (ecologyWater1>=0){
-                    waterSupply[0][x]=waterDemand[0][x];
-                    ecologyWater[0][x]=ecologyWater1;
-                }
-                else if (ecologyWater1<0){
-                    waterSupply[0][x]=ecologyWater[0][x]+waterSupply[0][x];
-                    ecologyWater[0][x]=0;
-                }
-            }
-
-            if (waterDemand[2][x]>waterSupply[2][x]&&ecologyWater[1][x]>0){
-
-                double ecologyWater1=ecologyWater[1][x]-(waterDemand[2][x]-waterSupply[2][x]);
-                if (ecologyWater1>=0){
-                    waterSupply[2][x]=waterDemand[2][x];
-                    ecologyWater[1][x]=ecologyWater1;
-                }
-                else if (ecologyWater1<0){
-                    waterSupply[2][x]=ecologyWater[1][x]+waterSupply[2][x];
-                    ecologyWater[1][x]=0;
-                }
-            }
-
-            if (waterDemand[1][x]>waterSupply[1][x]&&ecologyWater[1][x]>0){
-
-                double ecologyWater1=ecologyWater[1][x]-(waterDemand[1][x]-waterSupply[1][x]);
-                if (ecologyWater1>=0){
-                    waterSupply[1][x]=waterDemand[1][x];
-                    ecologyWater[1][x]=ecologyWater1;
-                }
-                else if (ecologyWater1<0){
-                    waterSupply[1][x]=ecologyWater[1][x]+waterSupply[1][x];
-                    ecologyWater[1][x]=0;
-                }
-            }
-
-        }
+//        for (int x=0;x<period;x++)
+//        {
+//            if (waterDemand[0][x]>waterSupply[0][x]&&ecologyWater[0][x]>0){
+//
+//                double ecologyWater1=ecologyWater[0][x]-(waterDemand[0][x]-waterSupply[0][x]);
+//                if (ecologyWater1>=0){
+//                    waterSupply[0][x]=waterDemand[0][x];
+//                    ecologyWater[0][x]=ecologyWater1;
+//                }
+//                else if (ecologyWater1<0){
+//                    waterSupply[0][x]=ecologyWater[0][x]+waterSupply[0][x];
+//                    ecologyWater[0][x]=0;
+//                }
+//            }
+//
+//            if (waterDemand[2][x]>waterSupply[2][x]&&ecologyWater[1][x]>0){
+//
+//                double ecologyWater1=ecologyWater[1][x]-(waterDemand[2][x]-waterSupply[2][x]);
+//                if (ecologyWater1>=0){
+//                    waterSupply[2][x]=waterDemand[2][x];
+//                    ecologyWater[1][x]=ecologyWater1;
+//                }
+//                else if (ecologyWater1<0){
+//                    waterSupply[2][x]=ecologyWater[1][x]+waterSupply[2][x];
+//                    ecologyWater[1][x]=0;
+//                }
+//            }
+//
+//            if (waterDemand[1][x]>waterSupply[1][x]&&ecologyWater[1][x]>0){
+//
+//                double ecologyWater1=ecologyWater[1][x]-(waterDemand[1][x]-waterSupply[1][x]);
+//                if (ecologyWater1>=0){
+//                    waterSupply[1][x]=waterDemand[1][x];
+//                    ecologyWater[1][x]=ecologyWater1;
+//                }
+//                else if (ecologyWater1<0){
+//                    waterSupply[1][x]=ecologyWater[1][x]+waterSupply[1][x];
+//                    ecologyWater[1][x]=0;
+//                }
+//            }
+//
+//        }
 
         for (int n1=0;n1<period;n1++){
 
@@ -925,7 +929,8 @@ public class ResourceOptimizationshort_DayAheadTest
         double[] inflow_toutunhe = new double[period];
         double[] maxOutflow = new double[2];
 //        double[] minOutflow = new double[2];
-
+        //生态用水
+        double[][]ecologyWater=new double[2][period];
 //        double[][] outflow_down_term = new double[2][period];
 //        double[][] fitness_term = new double[2][6];
         //初始解模拟计算
@@ -1041,8 +1046,8 @@ public class ResourceOptimizationshort_DayAheadTest
                         //水库1缺水额度
                         water_shortage1[m][t] =Double.parseDouble(da.format( (minOutflow[m] + waterdemandQ[m][t]  - outflow_term[m][t]) * (delatT)/ 1e4));
                         waterSupply[m][t]=Double.parseDouble(da.format(waterdemandQ[0][t]*(delatT) / 1e4-water_shortage1[m][t]));
-                         watersupply_lzz[t]=waterSupply[m][t];
-
+                        watersupply_lzz[t]=waterSupply[m][t];
+                        ecologyWater[m][t]=minOutflow[m]* delatT / 1e4 ;
                     }
                     if (outflow_term[m][t] <= minOutflow[m]) {
                         if (id==1||id==3)
@@ -1058,7 +1063,7 @@ public class ResourceOptimizationshort_DayAheadTest
                         water_shortage1[m][t] =Double.parseDouble(da.format( ( waterdemandQ[m][t]  ) * (delatT)/ 1e4));
                         waterSupply[m][t]=0;
                         watersupply_lzz[t]=0;
-
+                        ecologyWater[m][t]=outflow_term[m][t]* delatT / 1e4 ;
                     }
                     if (outflow_term[m][t] >=minOutflow[m]+ waterdemandQ[0][t]) {
 
@@ -1066,7 +1071,7 @@ public class ResourceOptimizationshort_DayAheadTest
                         water_shortage1[m][t] =0 ;
                         waterSupply[m][t]=Double.parseDouble(da.format( ( waterdemandQ[m][t]  ) * (delatT)/ 1e4));
                         watersupply_lzz[t]=Double.parseDouble(da.format((outflow_term[m][t] -minOutflow[m])* (delatT)/ 1e4));
-
+                        ecologyWater[m][t]=minOutflow[m]* delatT / 1e4 ;
                     }
 
 
@@ -1089,6 +1094,7 @@ public class ResourceOptimizationshort_DayAheadTest
                         water_shortage1[m][t] =Double.parseDouble(da.format((minOutflow[m] +  watershortage_allQ[t]  - outflow_term[m][t]) * (delatT) / 1e4));
                         //水库2可供水量
                         water_Supply_tth[t]=(watershortage_allQ[t])*(delatT) / 1e4-water_shortage1[m][t];
+                        ecologyWater[m][t]=minOutflow[m]* delatT / 1e4 ;
                     }
                     if (outflow_term[m][t] <= minOutflow[m]){
                         if (id==1||id==3){
@@ -1102,12 +1108,14 @@ public class ResourceOptimizationshort_DayAheadTest
                         water_shortage1[m][t] =Double.parseDouble(da.format((  watershortage_allQ[t]  ) * (delatT) / 1e4));
                         //水库2可供水量
                         water_Supply_tth[t]=0;
+                        ecologyWater[m][t]=outflow_term[m][t]* delatT / 1e4 ;
                     }
                     if (outflow_term[m][t] >= minOutflow[m] + watershortage_allQ[t] ){
                         fitness2+=Double.parseDouble(da.format((outflow_term[m][t]-(minOutflow[m] + watershortage_allQ[t]))* delatT  / 1e4));
 
                         water_Supply_tth[t]=waterDemand[1][t]+waterDemand[2][t]+waterDemand[3][t]+waterDemand[4][t];
                         water_shortage1[m][t]=0;
+                        ecologyWater[m][t]=minOutflow[m]* delatT / 1e4 ;
                     }
 
                 }
@@ -1181,6 +1189,52 @@ public class ResourceOptimizationshort_DayAheadTest
                     waterSupply[3][t]= 0;
                     waterSupply[4][t]= 0;
                 }
+                if (outflow_term[1][t] < minOutflow[1] +waterdemandQ[1][t]+waterdemandQ[2][t])
+                {
+                    waterSupply[3][t] = 0;
+                    waterSupply[4][t] = 0;
+                    double timeLength=delatT / 1e4;
+                    Map<String, Object> data=new HashMap<>();
+                    switch (order)
+                    {
+                        case 123:
+                            data= setWater( outflow_term[1][t], timeLength,minOutflow[1],waterdemandQ[1][t]);
+                            ecologyWater[1][t]= (double)data.get("第一优先");
+                            waterSupply[1][t] = (double)data.get("第二优先");
+                            waterSupply[2][t] = (double)data.get("第三优先");
+                            break;
+                        case 132:
+                            data= setWater( outflow_term[1][t], timeLength,minOutflow[1],waterdemandQ[2][t]);
+                            ecologyWater[1][t]= (double)data.get("第一优先");
+                            waterSupply[2][t] = (double)data.get("第二优先");
+                            waterSupply[1][t] = (double)data.get("第三优先");
+                            break;
+                        case 213:
+                            data= setWater( outflow_term[1][t], timeLength,waterdemandQ[1][t],minOutflow[1]);
+                            waterSupply[1][t]= (double)data.get("第一优先");
+                            ecologyWater[1][t] = (double)data.get("第二优先");
+                            waterSupply[2][t] = (double)data.get("第三优先");
+                            break;
+                        case 231:
+                            data= setWater( outflow_term[1][t], timeLength,waterdemandQ[1][t],waterdemandQ[2][t]);
+                            waterSupply[1][t]= (double)data.get("第一优先");
+                            ecologyWater[1][t] = (double)data.get("第三优先");
+                            waterSupply[2][t] = (double)data.get("第二优先");
+                            break;
+                        case 312:
+                            data= setWater( outflow_term[1][t], timeLength,waterdemandQ[2][t],minOutflow[1]);
+                            waterSupply[2][t]= (double)data.get("第一优先");
+                            ecologyWater[1][t] = (double)data.get("第二优先");
+                            waterSupply[1][t] = (double)data.get("第三优先");
+                            break;
+                        case 321:
+                            data= setWater( outflow_term[1][t], timeLength,waterdemandQ[2][t],waterdemandQ[1][t]);
+                            waterSupply[2][t]= (double)data.get("第一优先");
+                            ecologyWater[1][t] = (double)data.get("第三优先");
+                            waterSupply[1][t] = (double)data.get("第二优先");
+                            break;
+                    }
+                }
             }
 
 
@@ -1189,11 +1243,47 @@ public class ResourceOptimizationshort_DayAheadTest
         double[] fitness = new double[]{constraintViolation, fitness1, fitness1_penalty,fitness2,wl_term[0][period],wl_term[1][period]};
         //适应度，1水库下泄流量，2水库下泄，1水库缺额，2水库缺额,2水库实际来水，0楼庄子供水，1红岩城市用水，2八钢工业，3西干，4东干
         result=new double[][]{fitness,outflow_term[0],outflow_term[1],water_shortage[0],water_shortage[1],inflow_toutunhe
-                ,waterSupply[0],waterSupply[1],waterSupply[2],waterSupply[3],waterSupply[4],watersupply_lzz};
+                ,waterSupply[0],waterSupply[1],waterSupply[2],waterSupply[3],waterSupply[4],watersupply_lzz,ecologyWater[0],ecologyWater[1]};
         return result;
 
     }
+    /**
+     * 不同供水优先级配水情况
+     * @param outflow_term
+     * @param timeLength
+     * @param ecologyFlow1
+     * @param waterdemandQ
+     * @return
+     */
+    public Map<String, Object>  setWater(double outflow_term, double timeLength,double ecologyFlow1, double waterdemandQ)
+    {
+        double ecologyWater=0;
+        double waterSupply1=0;
+        double waterSupply2=0;
 
+        if (outflow_term < ecologyFlow1){
+            ecologyWater=outflow_term*timeLength;
+            waterSupply1 = 0;
+            waterSupply2 = 0;
+        }
+        if (outflow_term >= ecologyFlow1&&outflow_term < ecologyFlow1 +waterdemandQ){
+            ecologyWater=ecologyFlow1*timeLength;
+            waterSupply1 = (outflow_term-ecologyFlow1)*timeLength;
+            waterSupply2 = 0;
+        }
+        if (outflow_term >= ecologyFlow1 +waterdemandQ)
+        {
+            ecologyWater=ecologyFlow1*timeLength;
+            waterSupply1 = waterdemandQ*timeLength ;
+            waterSupply2 =(outflow_term - ecologyFlow1 -waterdemandQ)*timeLength ;
+        }
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("第一优先",ecologyWater);
+        data.put("第二优先",waterSupply1);
+        data.put("第三优先",waterSupply2);
+        return data;
+    }
     /**
      * 获得每日配水
      * @param waterAgricultureEastDay
