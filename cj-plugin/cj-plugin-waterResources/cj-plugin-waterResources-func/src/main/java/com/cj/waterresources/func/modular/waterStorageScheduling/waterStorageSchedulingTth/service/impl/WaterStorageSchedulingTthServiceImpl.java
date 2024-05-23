@@ -220,7 +220,9 @@ public class WaterStorageSchedulingTthServiceImpl extends ServiceImpl<WaterStora
         }else {
             tth.setWaterStorage(changeNum(tth.getWaterStorage()));
         }
-
+        List<OverallSituationUnitMgr> unitList = getUnitList();
+        String id = unitList.stream().filter(t -> t.getPId().equals("0") && t.getUnitName().equals("头屯河水库")).map(OverallSituationUnitMgr::getId).findFirst().get();
+        tth.setWaterStorage(GetSzyDataUtils.getWaterLevelByLevel(tth.getWaterStorageLevel(),id));
         boolean b = this.updateById(tth);
         if(b){
             if(updateAll(tth.getFormId())){
@@ -238,15 +240,14 @@ public class WaterStorageSchedulingTthServiceImpl extends ServiceImpl<WaterStora
         waterStorageSchedulingTthList.sort(Comparator.comparing(t -> t.getSortNum()));
         for(int j=1;j<waterStorageSchedulingTthList.size();j++){
             WaterStorageSchedulingTth tth = waterStorageSchedulingTthList.get(j);
-            tth.setWaterStorage(changeNum(
-                        (waterStorageSchedulingTthList.get(j-1).getWaterStorage())+
-                        (tth.getRegulatingWaterStorageCapacity())
-                    )
-            );
+            tth.setWaterStorage(changeNum((waterStorageSchedulingTthList.get(j-1).getWaterStorage())+(tth.getRegulatingWaterStorageCapacity())));
         }
         List<OverallSituationUnitMgr> unitList = getUnitList();
         String id = unitList.stream().filter(t -> t.getPId().equals("0") && t.getUnitName().equals("头屯河水库")).map(OverallSituationUnitMgr::getId).findFirst().get();
-        waterStorageSchedulingTthList.forEach(t-> t.setWaterStorage(GetSzyDataUtils.getWaterLevelByLevel(t.getWaterStorageLevel(),id)));
+        waterStorageSchedulingTthList.forEach(t-> {
+            t.setWaterStorageLevel(GetSzyDataUtils.getWaterLevelByFlow(t.getWaterStorage(),id));
+            t.setReservoirInflow(t.getRegulatingWaterStorageCapacity()+t.getWaterSupplyVolumeTotal());
+        });
         boolean b = this.saveOrUpdateBatch(waterStorageSchedulingTthList);
         if(b){
             return true;
