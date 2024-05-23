@@ -62,15 +62,6 @@ public class WaterStorageSchedulingTthServiceImpl extends ServiceImpl<WaterStora
     private WaterStorageSchedulingTotalFormService waterStorageSchedulingTotalFormService;
 
     @Autowired
-    private SurfaceWaterFlowDetailService surfaceWaterFlowDetailService;
-
-    @Autowired
-    private SurfaceWaterService surfaceWaterService;
-
-    @Autowired
-    private StorageCapacityCurveService storageCapacityCurveService;
-
-    @Autowired
     private OverallSituationUnitMgrService overallSituationUnitMgrService;
 
     @Autowired
@@ -200,6 +191,17 @@ public class WaterStorageSchedulingTthServiceImpl extends ServiceImpl<WaterStora
     @Override
     @Transactional(rollbackFor = Exception.class)
     public RestResponse edit(WaterStorageSchedulingTth tth) {
+        List<OverallSituationUnitMgr> unitList = getUnitList();
+        String id = unitList.stream().filter(t -> t.getPId().equals("0") && t.getUnitName().equals("头屯河水库")).map(OverallSituationUnitMgr::getId).findFirst().get();
+        tth.setWaterStorage(GetSzyDataUtils.getWaterLevelByLevel(tth.getWaterStorageLevel(),id));
+        if(tth.getSortNum()==1){
+            WaterStorageSchedulingTotalForm byId = waterStorageSchedulingTotalFormService.getById(tth.getFormId());
+            Double waterLevelByLevel = GetSzyDataUtils.getWaterLevelByLevel(byId.getFirstData(), id);
+            tth.setRegulatingWaterStorageCapacity(waterLevelByLevel-tth.getWaterStorage());
+        }else {
+            WaterStorageSchedulingTth one = this.lambdaQuery().eq(WaterStorageSchedulingTth::getFormId, tth.getFormId()).eq(WaterStorageSchedulingTth::getSortNum, tth.getSortNum() - 1).one();
+            tth.setRegulatingWaterStorageCapacity(one.getWaterStorage()-tth.getWaterStorage());
+        }
         tth.setWaterSupplyVolumeTotal(changeNum(
                     (tth.getIrrigationWaterDemand()==null?0.0:tth.getIrrigationWaterDemand())+
                     (tth.getGreenWaterDemand()==null?0.0:tth.getGreenWaterDemand())+
@@ -209,20 +211,11 @@ public class WaterStorageSchedulingTthServiceImpl extends ServiceImpl<WaterStora
                     (tth.getWaterLoss()==null?0.0:tth.getWaterLoss())
                 )
         );
-        tth.setRegulatingWaterStorageCapacity(changeNum(
-                    (tth.getFineTuningReservoirInflow()==null?0.0:tth.getFineTuningReservoirInflow())-
+        tth.setReservoirInflow(changeNum(
+                    (tth.getRegulatingWaterStorageCapacity()==null?0.0:tth.getRegulatingWaterStorageCapacity())+
                     (tth.getWaterSupplyVolumeTotal()==null?0.0:tth.getWaterSupplyVolumeTotal())
                 )
         );
-        WaterStorageSchedulingTth byId = this.getById(tth.getId());
-        if(byId.getWaterStorage()==tth.getWaterStorage()){
-            tth.setWaterStorage(changeNum(tth.getFineTuningReservoirInflow()));
-        }else {
-            tth.setWaterStorage(changeNum(tth.getWaterStorage()));
-        }
-        List<OverallSituationUnitMgr> unitList = getUnitList();
-        String id = unitList.stream().filter(t -> t.getPId().equals("0") && t.getUnitName().equals("头屯河水库")).map(OverallSituationUnitMgr::getId).findFirst().get();
-        tth.setWaterStorage(GetSzyDataUtils.getWaterLevelByLevel(tth.getWaterStorageLevel(),id));
         boolean b = this.updateById(tth);
         if(b){
             if(updateAll(tth.getFormId())){
@@ -240,12 +233,9 @@ public class WaterStorageSchedulingTthServiceImpl extends ServiceImpl<WaterStora
         waterStorageSchedulingTthList.sort(Comparator.comparing(t -> t.getSortNum()));
         for(int j=1;j<waterStorageSchedulingTthList.size();j++){
             WaterStorageSchedulingTth tth = waterStorageSchedulingTthList.get(j);
-            tth.setWaterStorage(changeNum((waterStorageSchedulingTthList.get(j-1).getWaterStorage())+(tth.getRegulatingWaterStorageCapacity())));
+            tth.setRegulatingWaterStorageCapacity(changeNum(tth.getWaterStorage()-waterStorageSchedulingTthList.get(j-1).getWaterStorage()));
         }
-        List<OverallSituationUnitMgr> unitList = getUnitList();
-        String id = unitList.stream().filter(t -> t.getPId().equals("0") && t.getUnitName().equals("头屯河水库")).map(OverallSituationUnitMgr::getId).findFirst().get();
         waterStorageSchedulingTthList.forEach(t-> {
-            t.setWaterStorageLevel(GetSzyDataUtils.getWaterLevelByFlow(t.getWaterStorage(),id));
             t.setReservoirInflow(t.getRegulatingWaterStorageCapacity()+t.getWaterSupplyVolumeTotal());
         });
         boolean b = this.saveOrUpdateBatch(waterStorageSchedulingTthList);
