@@ -4,9 +4,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.cj.common.model.RestResponse;
 import com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuota.bean.req.IrrigationQuotaContrastReq;
 import com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuota.bean.res.IrrigationQuotaContrastRes;
-import com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuotaDetails.bean.req.StatisticsByLocationReq;
 import com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuotaDetails.bean.req.StatisticsReq;
-import com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuotaDetails.bean.res.StatisticsByLocationRes;
 import com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuotaDetails.entity.IrrigationQuotaDetails;
 
 import java.util.List;
@@ -23,7 +21,5 @@ public interface IrrigationQuotaDetailsService extends IService<IrrigationQuotaD
     RestResponse<Map<String,List<IrrigationQuotaDetails>>> statistics(StatisticsReq req);
 
     Map<String, List<IrrigationQuotaContrastRes>> contrast(IrrigationQuotaContrastReq req);
-
-    RestResponse<Map<String, List<StatisticsByLocationRes>>> statisticsByLocation(StatisticsByLocationReq req);
 }
 
