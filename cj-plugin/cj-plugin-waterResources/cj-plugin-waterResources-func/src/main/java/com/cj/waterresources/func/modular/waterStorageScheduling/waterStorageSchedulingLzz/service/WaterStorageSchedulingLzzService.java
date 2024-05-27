@@ -17,6 +17,6 @@ public interface WaterStorageSchedulingLzzService extends IService<WaterStorageS
 
     RestResponse add(String formId);
 
-    RestResponse edit(WaterStorageSchedulingLzz waterStorageSchedulingLzzList);
+    RestResponse edit(List<WaterStorageSchedulingLzz> waterStorageSchedulingLzzList);
 }
 
