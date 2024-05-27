@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cj.waterresources.func.modular.documentManage.mapper.DocumentManageMapper">
+
+    <resultMap id="BaseResultMap" type="com.cj.waterresources.func.modular.documentManage.domain.DocumentManage">
+            <id property="id" column="ID" jdbcType="VARCHAR"/>
+            <result property="documentName" column="DOCUMENT_NAME" jdbcType="VARCHAR"/>
+            <result property="uploadBy" column="UPLOAD_BY" jdbcType="VARCHAR"/>
+            <result property="uploadTime" column="UPLOAD_TIME" jdbcType="TIMESTAMP"/>
+            <result property="documentType" column="DOCUMENT_TYPE" jdbcType="VARCHAR"/>
+            <result property="documentUrl" column="DOCUMENT_URL" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        ID,DOCUMENT_NAME,UPLOAD_BY,
+        UPLOAD_TIME,DOCUMENT_TYPE,DOCUMENT_URL
+    </sql>
+</mapper>
