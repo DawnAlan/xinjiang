@@ -4,6 +4,7 @@ import com.cj.business.log.modular.log.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.req.YearCropImportParamReq;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.req.YearCropSelectListReq;
+import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.res.PlanComparedToActualByYearRes;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.entity.YearWaterUsePlanCrop;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.service.YearWaterUsePlanCropService;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
@@ -49,6 +50,7 @@ public class YearWaterUsePlanCropController {
     public RestResponse add(@RequestParam(value = "area",required = true) String area,
                             @RequestParam(value = "unit",required = true) String unit,
                             @RequestParam(value = "unitId",required = true) String unitId,
+                            @RequestParam(value = "bindId",required = true) String bindId,
                             @RequestParam(value = "year",required = true) Integer year,
                             @RequestParam(value = "file",required = true) MultipartFile file) {
         YearCropImportParamReq req = new YearCropImportParamReq();
@@ -56,6 +58,7 @@ public class YearWaterUsePlanCropController {
         req.setArea(area);
         req.setUnit(unit);
         req.setUnitId(unitId);
+        req.setBindId(bindId);
         return yearWaterUsePlanCropService.add(req, file);
     }
 
@@ -66,6 +69,17 @@ public class YearWaterUsePlanCropController {
     @PostMapping("/select")
     public RestResponse<List<YearWaterUsePlanCrop>> select(@RequestBody YearCropSelectListReq req) {
         return yearWaterUsePlanCropService.selectList(req);
+    }
+
+
+    @ApiOperationSupport(order = 4)
+    @ApiOperation("年用水计划模块-计划与实际对比")
+    @CommonLog(value = "年用水计划模块-计划与实际对比")
+    @PostMapping("/planComparedToActual")
+    public RestResponse<List<PlanComparedToActualByYearRes>> planComparedToActual(@RequestParam(value = "planYear",required = true) Integer planYear,
+                                                                                  @RequestParam(value = "actualYear",required = true) Integer actualYear,
+                                                                                  @RequestParam(value = "month",required = true) Integer month) {
+        return yearWaterUsePlanCropService.planComparedToActual(planYear, actualYear, month);
     }
 
 }

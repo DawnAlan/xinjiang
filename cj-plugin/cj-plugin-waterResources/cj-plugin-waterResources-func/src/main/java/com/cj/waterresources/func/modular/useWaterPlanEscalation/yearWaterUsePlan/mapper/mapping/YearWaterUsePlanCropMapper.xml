@@ -34,4 +34,8 @@
             sum(NOVEMBER_LATER_OCTOBER_WATER_DEMAND) as NOVEMBER_LATER_OCTOBER
         from YEAR_WATER_USE_PLAN_CROP where YEAR = #{year} and area like concat('%',#{area},'%') and del = 0
     </select>
+
+    <select id="planComparedToActual" resultType="com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.vo.PlanComparedToActualByYearVo">
+        select YEAR, AREA,UNIT,${month} as v,UNIT_ID,BIND_ID from tth.YEAR_WATER_USE_PLAN_TRUNK_CANAL where year = #{year}
+    </select>
 </mapper>

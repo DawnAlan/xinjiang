@@ -39,4 +39,81 @@
             and TIME = '今日均'
         </where>
     </select>
+
+    <select id="planComparedToActual" resultType="com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.entity.DayWaterSituationStatisticsTableQs">
+        select ID,RECORD_TIME,TIME,TABLE_HEAD_ID,V,FRONT_TABLE_LIST,END_TABLE_LIST
+        from DAY_WATER_SITUATION_STATISTICS_TABLE_QS
+        <where>
+            <if test="ids != null and ids.size()>0">
+                and TABLE_HEAD_ID in
+                <foreach item="item" collection="ids" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="startTime !=null and startTime !='' and endTime !=null and endTime !='' ">
+                and TO_CHAR(RECORD_TIME,'YYYY-MM-DD') between #{startTime} and #{endTime}
+            </if>
+            and TIME = '今日均'
+        </where>
+    </select>
+
+    <select id="getStatisticsForMaximum" parameterType="com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req.A3StatisticsReq" resultType="com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.res.A3StatisticsRes">
+        select d1.v,d2.PARAM_NAME,TO_CHAR(d1.RECORD_TIME,'YYYY-MM-DD') as recordTime,d1.TIME
+        from tth.DAY_WATER_SITUATION_STATISTICS_TABLE_QS d1
+        left join tth.TRENDS_TABLE_PARAM d2 on d1.TABLE_HEAD_ID = d2.id
+        <where>
+            <if test="req.ids !=null and req.ids.size()>0">
+                and d1.TABLE_HEAD_ID = #{req.ids[0]}
+            </if>
+            <if test="req.startTime !=null and req.startTime !='' and req.endTime !=null and req.endTime !='' ">
+                and TO_CHAR(d1.RECORD_TIME,'YYYY-MM-DD') between #{req.startTime} and #{req.endTime}
+            </if>
+            and  d1.TIME != '今日均' and d1.TIME != '昨日均'
+            and d1.v = (
+            select d1.v
+            from tth.DAY_WATER_SITUATION_STATISTICS_TABLE_QS d1
+            left join tth.TRENDS_TABLE_PARAM d2 on d1.TABLE_HEAD_ID = d2.id
+            <where>
+                <if test="req.ids !=null and req.ids.size()>0">
+                    and d1.TABLE_HEAD_ID = #{req.ids[0]}
+                </if>
+                <if test="req.startTime !=null and req.startTime !='' and req.endTime !=null and req.endTime !='' ">
+                    and TO_CHAR(d1.RECORD_TIME,'YYYY-MM-DD') between #{req.startTime} and #{req.endTime}
+                </if>
+                and  d1.TIME != '今日均' and d1.TIME != '昨日均' and d1.v is not null
+                order by d1.v desc limit 1
+            </where>
+            )
+        </where>
+    </select>
+
+    <select id="getStatisticsForMinimum" parameterType="com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req.A3StatisticsReq" resultType="com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.res.A3StatisticsRes">
+        select d1.v,d2.PARAM_NAME,TO_CHAR(d1.RECORD_TIME,'YYYY-MM-DD') as recordTime,d1.TIME
+        from tth.DAY_WATER_SITUATION_STATISTICS_TABLE_QS d1
+        left join tth.TRENDS_TABLE_PARAM d2 on d1.TABLE_HEAD_ID = d2.id
+        <where>
+            <if test="req.ids !=null and req.ids.size()>0">
+                and d1.TABLE_HEAD_ID = #{req.ids[0]}
+            </if>
+            <if test="req.startTime !=null and req.startTime !='' and req.endTime !=null and req.endTime !='' ">
+                and TO_CHAR(d1.RECORD_TIME,'YYYY-MM-DD') between #{req.startTime} and #{req.endTime}
+            </if>
+            and  d1.TIME != '今日均' and d1.TIME != '昨日均'
+            and d1.v = (
+            select d1.v
+            from tth.DAY_WATER_SITUATION_STATISTICS_TABLE_QS d1
+            left join tth.TRENDS_TABLE_PARAM d2 on d1.TABLE_HEAD_ID = d2.id
+            <where>
+                <if test="req.ids !=null and req.ids.size()>0">
+                    and d1.TABLE_HEAD_ID = #{req.ids[0]}
+                </if>
+                <if test="req.startTime !=null and req.startTime !='' and req.endTime !=null and req.endTime !='' ">
+                    and TO_CHAR(d1.RECORD_TIME,'YYYY-MM-DD') between #{req.startTime} and #{req.endTime}
+                </if>
+                and  d1.TIME != '今日均' and d1.TIME != '昨日均' and d1.v is not null
+                order by d1.v asc limit 1
+            </where>
+            )
+        </where>
+    </select>
 </mapper>

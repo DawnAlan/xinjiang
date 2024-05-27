@@ -4,4 +4,8 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.cj.waterresources.func.modular.useWaterPlanEscalation.monthWaterUsePlan.mapper.MonthWaterUsePlanMapper">
 
+
+    <select id="planComparedToActual" resultType="com.cj.waterresources.func.modular.useWaterPlanEscalation.monthWaterUsePlan.bean.vo.PlanComparedToActualByMonthVo">
+        select YEAR,MONTH, AREA,UNIT,${tenDays} as v,UNIT_ID,BIND_ID from MONTH_WATER_USE_PLAN where year = #{year} and month = #{month}
+    </select>
 </mapper>

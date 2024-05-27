@@ -3,6 +3,7 @@ package com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQ
 import cn.hutool.extra.spring.SpringUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cj.common.model.RestResponse;
+import com.cj.common.util.NumberUtil;
 import com.cj.common.util.UUIDUtils;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.service.IrrigatedPlatformDataInfoService;
 import com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuota.bean.req.IrrigationQuotaListReq;
@@ -637,7 +638,8 @@ public class IrrigationQuotaServiceImpl extends ServiceImpl<IrrigationQuotaMappe
                             (irrigationQuota.getNovemberMidDayIrrigationWaterVolume() == null ? 0.0 : irrigationQuota.getNovemberMidDayIrrigationWaterVolume()) +
                             (irrigationQuota.getNovemberLateOctoberIrrigationWaterVolume() == null ? 0.0 : irrigationQuota.getNovemberLateOctoberIrrigationWaterVolume())
             );
-            irrigationQuota.setIrrigationQuota(irrigationQuota.getTotalPlannedIrrigationArea() == null ? null : irrigationQuota.getAccumulatedTotalIrrigationAmount() / irrigationQuota.getTotalPlannedIrrigationArea());
+            Double IrrigationQuotaValue = irrigationQuota.getTotalPlannedIrrigationArea() == null ? null : irrigationQuota.getAccumulatedTotalIrrigationAmount() / irrigationQuota.getTotalPlannedIrrigationArea();
+            irrigationQuota.setIrrigationQuota(IrrigationQuotaValue==null?0.00:NumberUtil.holdDecimal(IrrigationQuotaValue,3));
             irrigationQuota.setAverageIrrigationAmount(irrigationQuota.getAccumulatedIrrigationArea() == 0.0 ? null : (irrigationQuota.getAccumulatedTotalIrrigationAmount() / irrigationQuota.getAccumulatedIrrigationArea())*10000);
         }
 

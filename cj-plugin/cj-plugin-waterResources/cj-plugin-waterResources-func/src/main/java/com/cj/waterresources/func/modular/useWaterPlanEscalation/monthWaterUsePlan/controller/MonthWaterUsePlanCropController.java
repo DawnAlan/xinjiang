@@ -6,8 +6,6 @@ import com.cj.waterresources.func.modular.useWaterPlanEscalation.monthWaterUsePl
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.monthWaterUsePlan.bean.req.MonthCropSelectListReq;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.monthWaterUsePlan.entity.MonthWaterUsePlanCrop;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.monthWaterUsePlan.service.MonthWaterUsePlanCropService;
-import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.req.YearCropSelectListReq;
-import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.entity.YearWaterUsePlanCrop;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSupport;
 import io.swagger.annotations.Api;
@@ -51,6 +49,7 @@ public class MonthWaterUsePlanCropController {
     public RestResponse add(@RequestParam(value = "area",required = true) String area,
                             @RequestParam(value = "unit",required = true) String unit,
                             @RequestParam(value = "unitId",required = true) String unitId,
+                            @RequestParam(value = "bindId",required = true) String bindId,
                             @RequestParam(value = "year",required = true) Integer year,
                             @RequestParam(value = "month",required = true) Integer month,
                             @RequestParam(value = "file",required = true) MultipartFile file) {
@@ -59,6 +58,7 @@ public class MonthWaterUsePlanCropController {
         req.setArea(area);
         req.setUnit(unit);
         req.setUnitId(unitId);
+        req.setBindId(bindId);
         req.setMonth(month);
         return monthWaterUsePlanCropService.add(req,file);
     }
@@ -70,5 +70,6 @@ public class MonthWaterUsePlanCropController {
     public RestResponse<List<MonthWaterUsePlanCrop>> select(@RequestBody MonthCropSelectListReq req) {
         return monthWaterUsePlanCropService.selectList(req);
     }
+
 }
 

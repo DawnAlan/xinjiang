@@ -5,6 +5,7 @@ import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.res.A3StatisticsRes;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hd.entity.DayWaterSituationStatisticsTableHd;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hx.entity.DayWaterSituationStatisticsTableHx;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.entity.DayWaterSituationStatisticsTableQs;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -26,6 +27,10 @@ public interface DayWaterSituationStatisticsTableHxMapper extends BaseMapper<Day
     Boolean deleteByTime(@Param("date")String date);
 
     List<A3StatisticsRes> getStatistics(@Param("req") A3StatisticsReq req);
+
+    List<A3StatisticsRes> getStatisticsForMaximum(@Param("req") A3StatisticsReq req);
+
+    List<A3StatisticsRes> getStatisticsForMinimum(@Param("req") A3StatisticsReq req);
     @Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_HX WHERE TO_CHAR(RECORD_TIME,'YYYY-MM-DD') = #{date} and TIME = '今日均'")
     List<DayWaterSituationStatisticsTableHx> selectInfoList(@Param("date")String date);
 
@@ -50,5 +55,7 @@ public interface DayWaterSituationStatisticsTableHxMapper extends BaseMapper<Day
 
     @Select("select END_TABLE_LIST from DAY_WATER_SITUATION_STATISTICS_TABLE_HX WHERE RECORD_TIME = #{time}  and TIME = '08:00' order by time desc limit 1")
     String selectEndTableList(@Param("time")String time);
+
+    List<DayWaterSituationStatisticsTableHx> planComparedToActual(@Param("ids")List<String> ids, @Param("startTime")String startTime, @Param("endTime")String endTime);
 }
 

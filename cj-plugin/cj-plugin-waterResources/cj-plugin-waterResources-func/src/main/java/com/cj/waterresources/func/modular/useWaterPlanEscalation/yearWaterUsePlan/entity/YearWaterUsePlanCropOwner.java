@@ -2,6 +2,7 @@ package com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePl
 
 import java.util.Date;
 import com.baomidou.mybatisplus.extension.activerecord.Model;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -176,5 +177,9 @@ public class YearWaterUsePlanCropOwner extends Model<YearWaterUsePlanCropOwner> 
     private Double octoberTotalWaterDemandOwner;
     
     private Double novemberTotalWaterDemandOwner;
+
+    //绑定A3ID
+    @ApiModelProperty(value = "绑定A3ID")
+    private String bindId;
 }
 

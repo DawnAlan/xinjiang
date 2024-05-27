@@ -351,5 +351,9 @@ public class YearWaterUsePlanCrop extends Model<YearWaterUsePlanCrop> {
 
     @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Double novemberTotalWaterDemand;
+
+    //绑定A3ID
+    @ApiModelProperty(value = "绑定A3ID")
+    private String bindId;
 }
 

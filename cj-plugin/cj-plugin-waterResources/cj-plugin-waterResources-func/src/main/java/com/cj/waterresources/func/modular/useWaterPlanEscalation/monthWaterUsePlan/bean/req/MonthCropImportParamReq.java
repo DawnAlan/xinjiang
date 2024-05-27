@@ -23,4 +23,7 @@ public class MonthCropImportParamReq {
     @ApiModelProperty(value = "月份")
     private Integer month;
 
+    @ApiModelProperty(value = "绑定A3ID")
+    private String bindId;
+
 }

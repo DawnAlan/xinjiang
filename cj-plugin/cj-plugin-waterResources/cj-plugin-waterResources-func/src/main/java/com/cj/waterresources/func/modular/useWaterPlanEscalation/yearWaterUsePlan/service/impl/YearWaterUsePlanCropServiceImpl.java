@@ -3,11 +3,14 @@ package com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePl
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.ExcelUtils;
+import com.cj.common.util.NumberUtil;
 import com.cj.common.util.UUIDUtils;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.req.YearCropImportParamReq;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.req.YearCropImportTableReq;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.req.YearCropSelectListReq;
+import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.res.PlanComparedToActualByYearRes;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.res.SelectYearWaterUsePlanCropForSum;
+import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.vo.PlanComparedToActualByYearVo;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.entity.YearWaterUsePlanCrop;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.entity.YearWaterUsePlanCropOwner;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.mapper.YearWaterUsePlanCropMapper;
@@ -15,6 +18,7 @@ import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePla
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.service.YearWaterUsePlanCropOwnerService;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.service.YearWaterUsePlanCropService;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.service.YearWaterUsePlanTrunkCanalService;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.service.AllService;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -25,9 +29,8 @@ import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 作物年用水计划(YearWaterUsePlanCrop)表服务实现类
@@ -43,6 +46,9 @@ public class YearWaterUsePlanCropServiceImpl extends ServiceImpl<YearWaterUsePla
 
     @Autowired
     private YearWaterUsePlanCropOwnerService yearWaterUsePlanCropOwnerService;
+
+    @Autowired
+    private AllService allService;
 
 
     @Override
@@ -83,6 +89,7 @@ public class YearWaterUsePlanCropServiceImpl extends ServiceImpl<YearWaterUsePla
             crop.setYear(req.getYear());
             crop.setUnit(req.getUnit());
             crop.setUnitId(req.getUnitId());
+            crop.setBindId(req.getBindId());
             crop.setCreateTime(new Date());
             crop.setDel(0);
             yearWaterUsePlanCropList.add(crop);
@@ -260,11 +267,72 @@ public class YearWaterUsePlanCropServiceImpl extends ServiceImpl<YearWaterUsePla
         return this.baseMapper.selectListForSum(year, area);
     }
 
+    @Override
+    public RestResponse<List<PlanComparedToActualByYearRes>> planComparedToActual(Integer planYear, Integer actualYear,Integer month) {
+        List<PlanComparedToActualByYearRes> resultList = new ArrayList<>();
+        List<PlanComparedToActualByYearVo> planYearList = this.baseMapper.planComparedToActual(planYear, getMonthName(month));
+        Map<String, List<PlanComparedToActualByYearVo>> collect = planYearList.stream().collect(Collectors.groupingBy(PlanComparedToActualByYearVo::getArea));
+        Set<String> unitNameList = collect.keySet();
+        for(String unitName : unitNameList){
+            PlanComparedToActualByYearRes res = new PlanComparedToActualByYearRes();
+            res.setUnitName(unitName);
+            if(unitName.contains("八钢工业")){
+                Double planValue = collect.get(unitName).stream().filter(t -> t.getUnit().contains("月水量") && t.getV() != null).map(PlanComparedToActualByYearVo::getV).reduce(Double::sum).orElse(0.00);
+                res.setPlanValue(NumberUtil.holdDecimal(planValue,2));
+            }else {
+                Double planValue = collect.get(unitName).stream().filter(t -> t.getV() != null).map(PlanComparedToActualByYearVo::getV).reduce(Double::sum).orElse(0.00);
+                res.setPlanValue(NumberUtil.holdDecimal(planValue,2));
+            }
+            Map<String, Double> stringDoubleMap = allService.planComparedToActualForYear(planYear, month, collect.get(unitName).stream().map(PlanComparedToActualByYearVo::getBindId).collect(Collectors.toList()), unitName);
+            res.setActualValue(NumberUtil.holdDecimal(stringDoubleMap.get(unitName)*8.64,2));
+            res.setPlanSubtractActualValue(NumberUtil.holdDecimal(res.getActualValue()-res.getPlanValue(),2));
+            Map<String, Double> stringDoubleMap1 = allService.planComparedToActualForYear(actualYear, month, collect.get(unitName).stream().map(PlanComparedToActualByYearVo::getBindId).collect(Collectors.toList()), unitName);
+            res.setActualValueForContrastYear(NumberUtil.holdDecimal(stringDoubleMap1.get(unitName)*8.64,2));
+            res.setPlanSubtractActualValueForContrastYear(NumberUtil.holdDecimal(res.getActualValue()-res.getActualValueForContrastYear(),2));
+            res.setContrast(NumberUtil.holdDecimal((res.getActualValueForContrastYear()==null ||res.getActualValueForContrastYear()==0.00)?0.00: (res.getPlanSubtractActualValueForContrastYear()/res.getActualValueForContrastYear())*100,2));
+            resultList.add(res);
+        }
+        return RestResponse.ok(resultList);
+    }
+
     private Double formatDouble(Double value) {
         DecimalFormat df = new DecimalFormat("#.##");
         String format = df.format(value);
         double v = Double.parseDouble(format);
         return v;
+    }
+
+    private String getMonthName(Integer value) {
+        switch (value){
+            case 0:
+                return "AMOUNT_COUNT";
+            case 1:
+                return "JANUARY";
+            case 2:
+                return "FEBRUARY";
+            case 3:
+                return "MARCH";
+            case 4:
+                return "APRIL";
+            case 5:
+                return "MAY";
+            case 6:
+                return "JUNE";
+            case 7:
+                return "JULY";
+            case 8:
+                return "AUGUST";
+            case 9:
+                return "SEPTEMBER";
+            case 10:
+                return "OCTOBER";
+            case 11:
+                return "NOVEMBER";
+            case 12:
+                return "DECEMBER";
+            default:
+                return "AMOUNT_COUNT";
+        }
     }
 }
 

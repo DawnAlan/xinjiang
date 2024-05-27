@@ -20,4 +20,7 @@ public class YearCropImportParamReq {
     @ApiModelProperty(value = "年份")
     private Integer year;
 
+    @ApiModelProperty(value = "绑定A3ID")
+    private String bindId;
+
 }

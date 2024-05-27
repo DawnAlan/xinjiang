@@ -4,12 +4,13 @@ import com.cj.business.log.modular.log.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuota.bean.req.IrrigationQuotaContrastReq;
 import com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuota.bean.req.IrrigationQuotaListReq;
+import com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuotaDetails.bean.req.StatisticsByLocationReq;
 import com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuota.bean.res.IrrigationQuotaContrastRes;
+import com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuotaDetails.bean.res.StatisticsByLocationRes;
 import com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuota.entity.IrrigationQuota;
 import com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuota.service.IrrigationQuotaService;
 import com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuotaDetails.bean.req.StatisticsReq;
 import com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuotaDetails.service.IrrigationQuotaDetailsService;
-import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.dkl.entity.DayWaterSituationStatisticsTableDkl;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSupport;
 import io.swagger.annotations.Api;
@@ -88,6 +89,14 @@ public class IrrigationQuotaController {
     @PostMapping("/contrast")
     public RestResponse<Map<String, List<IrrigationQuotaContrastRes>>> contrast(@RequestBody IrrigationQuotaContrastReq req) {
         return RestResponse.ok(irrigationQuotaDetailsService.contrast(req));
+    }
+
+    @ApiOperationSupport(order = 6)
+    @ApiOperation("灌溉额度表按地域统计")
+    @CommonLog(value = "灌溉额度表按地域统计")
+    @PostMapping("/statisticsByLocation")
+    public RestResponse<Map<String,List<StatisticsByLocationRes>>> statisticsByLocation(@RequestBody StatisticsByLocationReq req) {
+        return irrigationQuotaDetailsService.statisticsByLocation(req);
     }
 
 }

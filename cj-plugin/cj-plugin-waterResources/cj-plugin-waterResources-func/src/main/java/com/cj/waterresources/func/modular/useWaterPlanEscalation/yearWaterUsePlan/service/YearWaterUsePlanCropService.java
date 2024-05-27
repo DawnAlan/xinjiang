@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.cj.common.model.RestResponse;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.req.YearCropImportParamReq;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.req.YearCropSelectListReq;
+import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.res.PlanComparedToActualByYearRes;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.res.SelectYearWaterUsePlanCropForSum;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.entity.YearWaterUsePlanCrop;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,6 +26,8 @@ public interface YearWaterUsePlanCropService extends IService<YearWaterUsePlanCr
     RestResponse delete(YearCropImportParamReq req);
 
     SelectYearWaterUsePlanCropForSum selectListForSum(Integer year, String area);
+
+    RestResponse<List<PlanComparedToActualByYearRes>> planComparedToActual(Integer planYear, Integer actualYear, Integer month);
 
 }
 

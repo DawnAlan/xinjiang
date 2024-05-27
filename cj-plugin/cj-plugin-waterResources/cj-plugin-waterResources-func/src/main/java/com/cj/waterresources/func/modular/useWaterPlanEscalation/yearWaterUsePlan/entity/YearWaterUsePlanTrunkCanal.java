@@ -125,5 +125,9 @@ public class YearWaterUsePlanTrunkCanal extends Model<YearWaterUsePlanTrunkCanal
     //单位ID
     @ApiModelProperty(value = "单位ID")
     private String unitId;
+
+    //绑定A3ID
+    @ApiModelProperty(value = "绑定A3ID")
+    private String bindId;
 }
 

@@ -33,6 +33,9 @@ public interface DayWaterSituationStatisticsTableLzzMapper extends BaseMapper<Da
     Boolean deleteByTime(@Param("date")String date);
 
     List<A3StatisticsRes> getStatistics(@Param("req") A3StatisticsReq req);
+    List<A3StatisticsRes> getStatisticsForMaximum(@Param("req") A3StatisticsReq req);
+
+    List<A3StatisticsRes> getStatisticsForMinimum(@Param("req") A3StatisticsReq req);
 
     @Select("select ID,RECORD_TIME,TIME,TABLE_HEAD_ID,V from DAY_WATER_SITUATION_STATISTICS_TABLE_LZZ WHERE TO_CHAR(RECORD_TIME,'YYYY-MM-DD') = #{date} and TIME = '今日均'")
     //@Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_LZZ WHERE TO_DAYS( NOW( ) ) - TO_DAYS(\"RECORD_TIME\") = 1 and TIME != '昨日均'")
@@ -68,5 +71,8 @@ public interface DayWaterSituationStatisticsTableLzzMapper extends BaseMapper<Da
 
     @Select("select END_TABLE_LIST from DAY_WATER_SITUATION_STATISTICS_TABLE_LZZ WHERE RECORD_TIME = #{time}  and TIME = '08:00' order by time desc limit 1")
     String selectEndTableList(@Param("time")String time);
+
+    @Select("select ID,RECORD_TIME,TIME,TABLE_HEAD_ID,V,FRONT_TABLE_LIST,END_TABLE_LIST from DAY_WATER_SITUATION_STATISTICS_TABLE_LZZ WHERE TABLE_HEAD_ID = #{id} and RECORD_TIME between  #{startTime} and #{endTime} and TIME = '今日均'")
+    List<DayWaterSituationStatisticsTableLzz> planComparedToActual(@Param("id")String ids, @Param("startTime")String startTime, @Param("endTime")String endTime);
 }
 

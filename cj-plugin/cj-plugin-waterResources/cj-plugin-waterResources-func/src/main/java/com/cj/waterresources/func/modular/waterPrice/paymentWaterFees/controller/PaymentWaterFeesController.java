@@ -26,7 +26,8 @@ import org.springframework.web.bind.annotation.*;
 @Validated
 @RestController
 @RequestMapping("paymentWaterFees")
-public class PaymentWaterFeesController{
+public class
+PaymentWaterFeesController{
 
     @Autowired
     private PaymentWaterFeesService paymentWaterFeesService;

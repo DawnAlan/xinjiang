@@ -3,6 +3,7 @@ package com.cj.waterresources.func.modular.useWaterPlanEscalation.monthWaterUseP
 import com.cj.business.log.modular.log.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.monthWaterUsePlan.bean.req.MonthWaterUsePlanSelectListReq;
+import com.cj.waterresources.func.modular.useWaterPlanEscalation.monthWaterUsePlan.bean.res.PlanComparedToActualByMonthRes;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.monthWaterUsePlan.entity.MonthWaterUsePlan;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.monthWaterUsePlan.service.MonthWaterUsePlanService;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
@@ -63,6 +64,17 @@ public class MonthWaterUsePlanController {
     @PostMapping("/select")
     public RestResponse<List<MonthWaterUsePlan>> select(@RequestBody MonthWaterUsePlanSelectListReq req) {
         return monthWaterUsePlanService.selectList(req);
+    }
+
+
+    @ApiOperationSupport(order = 5)
+    @ApiOperation("月用水计划模块-计划与实际对比")
+    @CommonLog(value = "月用水计划模块-计划与实际对比")
+    @PostMapping("/planComparedToActual")
+    public RestResponse<List<PlanComparedToActualByMonthRes>> planComparedToActual(@RequestParam(value = "plan",required = true) String plan,
+                                                                                   @RequestParam(value = "actual",required = true) String actual,
+                                                                                   @RequestParam(value = "tenDays",required = true) String tenDays) {
+        return monthWaterUsePlanService.planComparedToActual(plan, actual, tenDays);
     }
 
 }

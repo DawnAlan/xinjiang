@@ -9,9 +9,11 @@ import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.res
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req.*;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.res.RealTimeEngineeringSituationDataRes;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.res.TodayWaterSituationRes;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.vo.KvVo;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public interface AllService {
 
@@ -47,4 +49,7 @@ public interface AllService {
     RestResponse selectCapacityOutPutDetail(String date, String ids);
 
     RestResponse<List<DayWaterBalance>> selectTodayDayWaterBalance(List<WaterFeeStatisticsDetails> waterFeeStatisticsDetails);
+
+    Map<String, Double> planComparedToActualForYear(Integer year, Integer month,List<String> ids,String unit);
+    Map<String, Double> planComparedToActualForMonth(Integer year, Integer month,String tenDays,List<String> ids,String unit);
 }

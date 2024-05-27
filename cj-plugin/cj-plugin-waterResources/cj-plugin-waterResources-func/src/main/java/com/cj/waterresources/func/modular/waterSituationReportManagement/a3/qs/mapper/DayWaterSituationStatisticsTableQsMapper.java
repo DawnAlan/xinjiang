@@ -26,6 +26,10 @@ public interface DayWaterSituationStatisticsTableQsMapper extends BaseMapper<Day
 
     List<A3StatisticsRes> getStatistics(@Param("req") A3StatisticsReq req);
 
+    List<A3StatisticsRes> getStatisticsForMaximum(@Param("req") A3StatisticsReq req);
+
+    List<A3StatisticsRes> getStatisticsForMinimum(@Param("req") A3StatisticsReq req);
+
     @Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_QS WHERE TO_CHAR(RECORD_TIME,'YYYY-MM-DD') = #{date} and TIME = '今日均'")
     //@Select("select * from DAY_WATER_SITUATION_STATISTICS_TABLE_QS WHERE TO_DAYS( NOW( ) ) - TO_DAYS(\"RECORD_TIME\") = 1 and TIME != '昨日均'")
     List<DayWaterSituationStatisticsTableQs> selectInfoList(@Param("date")String date);
@@ -55,5 +59,7 @@ public interface DayWaterSituationStatisticsTableQsMapper extends BaseMapper<Day
 
     @Select("select END_TABLE_LIST from DAY_WATER_SITUATION_STATISTICS_TABLE_QS WHERE RECORD_TIME = #{time}  and TIME = '08:00' order by time desc limit 1")
     String selectEndTableList(@Param("time")String time);
+
+    List<DayWaterSituationStatisticsTableQs> planComparedToActual(@Param("ids")List<String> ids, @Param("startTime")String startTime, @Param("endTime")String endTime);
 }
 

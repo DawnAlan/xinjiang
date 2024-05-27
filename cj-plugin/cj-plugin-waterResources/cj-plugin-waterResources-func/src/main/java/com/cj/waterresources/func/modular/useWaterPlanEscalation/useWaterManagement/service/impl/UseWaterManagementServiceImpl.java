@@ -111,7 +111,9 @@ public class UseWaterManagementServiceImpl extends ServiceImpl<UseWaterManagemen
 
     @Override
     public RestResponse bindId(UseWaterManagementBindIdReq req) {
-        boolean update = this.lambdaUpdate().set(UseWaterManagement::getBindId, req.getBindId()).eq(UseWaterManagement::getId, req.getId()).update();
+        boolean update = this.lambdaUpdate().set(UseWaterManagement::getBindId, req.getBindId()).
+                set(UseWaterManagement::getLocation,req.getLocation()).
+                eq(UseWaterManagement::getId, req.getId()).update();
         if(update) {
             return RestResponse.ok("绑定成功");
         }else {

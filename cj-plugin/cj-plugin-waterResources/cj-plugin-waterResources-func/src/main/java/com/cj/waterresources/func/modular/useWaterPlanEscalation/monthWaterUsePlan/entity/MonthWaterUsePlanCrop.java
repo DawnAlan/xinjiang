@@ -119,5 +119,8 @@ public class MonthWaterUsePlanCrop extends Model<MonthWaterUsePlanCrop> {
     //本旬合计需水
     @ApiModelProperty(value = "本旬合计需水")
     private Double totalCountWaterDemand;
+
+    @ApiModelProperty(value = "绑定A3ID")
+    private String bindId;
 }
 

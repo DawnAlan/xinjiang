@@ -3,10 +3,13 @@ package com.cj.waterresources.func.modular.useWaterPlanEscalation.monthWaterUseP
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.ExcelUtils;
+import com.cj.common.util.NumberUtil;
 import com.cj.common.util.UUIDUtils;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.monthWaterUsePlan.bean.req.MonthCropImportParamReq;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.monthWaterUsePlan.bean.req.MonthCropImportTableReq;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.monthWaterUsePlan.bean.req.MonthCropSelectListReq;
+import com.cj.waterresources.func.modular.useWaterPlanEscalation.monthWaterUsePlan.bean.res.PlanComparedToActualByMonthRes;
+import com.cj.waterresources.func.modular.useWaterPlanEscalation.monthWaterUsePlan.bean.vo.PlanComparedToActualByMonthVo;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.monthWaterUsePlan.entity.MonthWaterUsePlan;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.monthWaterUsePlan.entity.MonthWaterUsePlanCropOwner;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.monthWaterUsePlan.mapper.MonthWaterUsePlanCropMapper;
@@ -15,8 +18,10 @@ import com.cj.waterresources.func.modular.useWaterPlanEscalation.monthWaterUsePl
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.monthWaterUsePlan.service.MonthWaterUsePlanCropService;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.monthWaterUsePlan.service.MonthWaterUsePlanService;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.req.YearCropImportParamReq;
+import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.vo.PlanComparedToActualByYearVo;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.entity.YearWaterUsePlanCrop;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.entity.YearWaterUsePlanTrunkCanal;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.service.AllService;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -27,9 +32,8 @@ import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 月用水计划作物表(MonthWaterUsePlanCrop)表服务实现类
@@ -45,6 +49,8 @@ public class MonthWaterUsePlanCropServiceImpl extends ServiceImpl<MonthWaterUseP
 
     @Autowired
     private MonthWaterUsePlanCropOwnerService monthWaterUsePlanCropOwnerService;
+
+
 
     @Override
     public RestResponse<List<MonthWaterUsePlanCrop>> selectList(MonthCropSelectListReq req) {
@@ -81,6 +87,7 @@ public class MonthWaterUsePlanCropServiceImpl extends ServiceImpl<MonthWaterUseP
             crop.setArea(req.getArea());
             crop.setUnit(req.getUnit());
             crop.setUnitId(req.getUnitId());
+            crop.setBindId(req.getBindId());
             crop.setYear(req.getYear());
             crop.setCreateTime(new Date());
             monthWaterUsePlanCropList.add(crop);
@@ -169,7 +176,6 @@ public class MonthWaterUsePlanCropServiceImpl extends ServiceImpl<MonthWaterUseP
             return RestResponse.no("删除失败(非供水科)作物");
         }
     }
-
     private Double formatDouble(Double value) {
         DecimalFormat df = new DecimalFormat("#.##");
         String format = df.format(value);

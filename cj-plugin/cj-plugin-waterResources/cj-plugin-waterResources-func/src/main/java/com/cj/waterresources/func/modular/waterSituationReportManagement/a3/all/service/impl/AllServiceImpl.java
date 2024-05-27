@@ -33,6 +33,7 @@ import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.req
 import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.res.HydrographRes;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.req.*;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.res.*;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.vo.KvVo;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.service.AllService;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.dkl.entity.DayWaterSituationStatisticsTableDkl;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.dkl.mapper.DayWaterSituationStatisticsTableDklMapper;
@@ -141,11 +142,17 @@ public class AllServiceImpl implements AllService {
             mk = (String) redisUtil.get("trendsTableParam:list");
         }
         List<TrendsTableParam> trendsTableParamList = JSONObject.parseArray(mk, TrendsTableParam.class);
+        A3StatisticsAllRes res = new A3StatisticsAllRes();
         if(req.getStation().equals("楼庄子水库")){
             List<A3StatisticsRes> statistics = dayWaterSituationStatisticsTableLzzMapper.getStatistics(req);
             if(null != statistics && statistics.size()>0){
                 Map<String, List<A3StatisticsRes>> collect = statistics.stream().collect(Collectors.groupingBy(A3StatisticsRes::getParamName));
-                return RestResponse.ok(change(collect));
+                res.setStatistics(change(collect));
+                if(req.getIds().size()==1){
+                    res.setMaximum(dayWaterSituationStatisticsTableLzzMapper.getStatisticsForMaximum(req));
+                    res.setMinimum(dayWaterSituationStatisticsTableLzzMapper.getStatisticsForMinimum(req));
+                }
+                return RestResponse.ok(res);
             }else {
                 return RestResponse.no("blank");
             }
@@ -154,7 +161,12 @@ public class AllServiceImpl implements AllService {
             List<A3StatisticsRes> statistics = dayWaterSituationStatisticsTableTthMapper.getStatistics(req);
             if(null != statistics && statistics.size()>0){
                 Map<String, List<A3StatisticsRes>> collect = statistics.stream().collect(Collectors.groupingBy(A3StatisticsRes::getParamName));
-                return RestResponse.ok(change(collect));
+                res.setStatistics(change(collect));
+                if(req.getIds().size()==1){
+                    res.setMaximum(dayWaterSituationStatisticsTableTthMapper.getStatisticsForMaximum(req));
+                    res.setMinimum(dayWaterSituationStatisticsTableTthMapper.getStatisticsForMinimum(req));
+                }
+                return RestResponse.ok(res);
             }else {
                 return RestResponse.no("blank");
             }
@@ -163,7 +175,26 @@ public class AllServiceImpl implements AllService {
             List<A3StatisticsRes> statistics = dayWaterSituationStatisticsTableQsMapper.getStatistics(req);
             if(null != statistics && statistics.size()>0){
                 Map<String, List<A3StatisticsRes>> collect = statistics.stream().collect(Collectors.groupingBy(A3StatisticsRes::getParamName));
-                return RestResponse.ok(change(collect));
+                res.setStatistics(change(collect));
+                if(req.getIds().size()==1){
+                    res.setMaximum(dayWaterSituationStatisticsTableQsMapper.getStatisticsForMaximum(req));
+                    res.setMinimum(dayWaterSituationStatisticsTableQsMapper.getStatisticsForMinimum(req));
+                }
+                return RestResponse.ok(res);
+            }else {
+                return RestResponse.no("blank");
+            }
+        }
+        if(req.getStation().equals("灯笼渠绿化")){
+            List<A3StatisticsRes> statistics = dayWaterSituationStatisticsTableQsLhMapper.getStatistics(req);
+            if(null != statistics && statistics.size()>0){
+                Map<String, List<A3StatisticsRes>> collect = statistics.stream().collect(Collectors.groupingBy(A3StatisticsRes::getParamName));
+                res.setStatistics(change(collect));
+                if(req.getIds().size()==1){
+                    res.setMaximum(dayWaterSituationStatisticsTableQsLhMapper.getStatisticsForMaximum(req));
+                    res.setMinimum(dayWaterSituationStatisticsTableQsLhMapper.getStatisticsForMinimum(req));
+                }
+                return RestResponse.ok(res);
             }else {
                 return RestResponse.no("blank");
             }
@@ -185,7 +216,12 @@ public class AllServiceImpl implements AllService {
                 }
                 Map<String, List<A3StatisticsRes>> change = change(selectHdAndChange(selectMap, req));
                 if(change.size()>0){
-                    return RestResponse.ok(change(change));
+                    res.setStatistics(change(change));
+                    if(req.getIds().size()==1){
+                        res.setMaximum(dayWaterSituationStatisticsTableHdMapper.getStatisticsForMaximum(req));
+                        res.setMinimum(dayWaterSituationStatisticsTableHdMapper.getStatisticsForMinimum(req));
+                    }
+                    return RestResponse.ok(res);
                 }else {
                     return RestResponse.no("blank");
                 }
@@ -193,7 +229,12 @@ public class AllServiceImpl implements AllService {
                 List<A3StatisticsRes> statistics = dayWaterSituationStatisticsTableHdMapper.getStatistics(req);
                 if(null != statistics && statistics.size()>0){
                     Map<String, List<A3StatisticsRes>> collect = statistics.stream().collect(Collectors.groupingBy(A3StatisticsRes::getParamName));
-                    return RestResponse.ok(change(collect));
+                    res.setStatistics(change(collect));
+                    if(req.getIds().size()==1){
+                        res.setMaximum(dayWaterSituationStatisticsTableHdMapper.getStatisticsForMaximum(req));
+                        res.setMinimum(dayWaterSituationStatisticsTableHdMapper.getStatisticsForMinimum(req));
+                    }
+                    return RestResponse.ok(res);
                 }else {
                     return RestResponse.no("blank");
                 }
@@ -216,7 +257,12 @@ public class AllServiceImpl implements AllService {
                 }
                 Map<String, List<A3StatisticsRes>> change = change(selectHxAndChange(selectMap, req));
                 if(change.size()>0){
-                    return RestResponse.ok(change(change));
+                    res.setStatistics(change(change));
+                    if(req.getIds().size()==1){
+                        res.setMaximum(dayWaterSituationStatisticsTableHxMapper.getStatisticsForMaximum(req));
+                        res.setMinimum(dayWaterSituationStatisticsTableHxMapper.getStatisticsForMinimum(req));
+                    }
+                    return RestResponse.ok(res);
                 }else {
                     return RestResponse.no("blank");
                 }
@@ -224,7 +270,12 @@ public class AllServiceImpl implements AllService {
                 List<A3StatisticsRes> statistics = dayWaterSituationStatisticsTableHxMapper.getStatistics(req);
                 if(null != statistics && statistics.size()>0){
                     Map<String, List<A3StatisticsRes>> collect = statistics.stream().collect(Collectors.groupingBy(A3StatisticsRes::getParamName));
-                    return RestResponse.ok(change(collect));
+                    res.setStatistics(change(collect));
+                    if(req.getIds().size()==1){
+                        res.setMaximum(dayWaterSituationStatisticsTableHxMapper.getStatisticsForMaximum(req));
+                        res.setMinimum(dayWaterSituationStatisticsTableHxMapper.getStatisticsForMinimum(req));
+                    }
+                    return RestResponse.ok(res);
                 }else {
                     return RestResponse.no("blank");
                 }
@@ -1722,6 +1773,132 @@ public class AllServiceImpl implements AllService {
         return RestResponse.ok(result);
     }
 
+    @Override
+    public Map<String, Double> planComparedToActualForYear(Integer year, Integer month,List<String> ids,String unit){
+        Map<String, Double> result = new HashMap<>();
+        String startTime = "";
+        String endTime = "";
+        if(0==month){
+            startTime = year+"-01-01";
+            endTime = year+"-12-31";
+        }else {
+            startTime = getStartOfMonth(year, month);
+            endTime = getEndOfMonth(year, month);
+        }
+        //河东
+        if(unit.contains("河东")){
+            List<DayWaterSituationStatisticsTableHd> hd = dayWaterSituationStatisticsTableHdMapper.planComparedToActual(ids, startTime, endTime);
+            result.put(unit,hd.stream().filter(t -> t.getV() != null).map(DayWaterSituationStatisticsTableHd::getV).reduce(Double::sum).orElse(0.00));
+        }
+
+        //河西
+        if(unit.contains("河西")){
+            List<DayWaterSituationStatisticsTableHx> hx = dayWaterSituationStatisticsTableHxMapper.planComparedToActual(ids, startTime, endTime);
+            result.put(unit,hx.stream().filter(t -> t.getV() != null).map(DayWaterSituationStatisticsTableHx::getV).reduce(Double::sum).orElse(0.00));
+        }
+
+        //渠首
+        if(unit.contains("渠首")){
+            if(unit.contains("渠首绿化")){
+                List<DayWaterSituationStatisticsTableQsLh> qs = dayWaterSituationStatisticsTableQsLhMapper.planComparedToActual(ids, startTime, endTime);
+                result.put(unit,qs.stream().filter(t -> t.getV() != null).map(DayWaterSituationStatisticsTableQsLh::getV).reduce(Double::sum).orElse(0.00));
+            }else {
+                List<DayWaterSituationStatisticsTableQs> qs = dayWaterSituationStatisticsTableQsMapper.planComparedToActual(ids, startTime, endTime);
+                result.put(unit,qs.stream().filter(t -> t.getV() != null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00));
+            }
+        }
+        String mk = (String) redisUtil.get("trendsTableParam:list");
+        if(StringUtils.isEmpty(mk)){
+            trendsTableParamService.updateCache();
+            mk = (String) redisUtil.get("trendsTableParam:list");
+        }
+        List<TrendsTableParam> trendsTableParamListTemp = JSONObject.parseArray(mk, TrendsTableParam.class);
+        List<TrendsTableParam> trendsTableParamList = trendsTableParamListTemp.stream().filter(t -> t.getUseType() == 1).collect(Collectors.toList());
+        //楼庄子水厂
+        if(unit.contains("楼庄子水厂")){
+            String id = trendsTableParamList.stream().filter(t -> t.getUseStation().equals("楼庄子水库") && t.getParamName().equals("楼庄子水厂总量")).map(TrendsTableParam::getId).findFirst().get();
+            List<DayWaterSituationStatisticsTableLzz> lzz = dayWaterSituationStatisticsTableLzzMapper.planComparedToActual(id, startTime, endTime);
+            result.put(unit,lzz.stream().filter(t -> t.getV() != null).map(DayWaterSituationStatisticsTableLzz::getV).reduce(Double::sum).orElse(0.00));
+        }
+        //八钢工业
+        if(unit.contains("八钢工业")){
+            String bgParent = trendsTableParamList.stream().filter(t -> t.getUseStation().equals("头屯河水库") && t.getParamName().equals("八钢流量")).map(TrendsTableParam::getId).findFirst().get();
+            String id = trendsTableParamList.stream().filter(t -> t.getUseStation().equals("头屯河水库") && t.getPId().equals(bgParent) && t.getParamName().equals("合计")).map(TrendsTableParam::getId).findFirst().get();
+            List<DayWaterSituationStatisticsTableTth> tth = dayWaterSituationStatisticsTableTthMapper.planComparedToActual(id, startTime, endTime);
+            result.put(unit,tth.stream().filter(t -> t.getV() != null).map(DayWaterSituationStatisticsTableTth::getV).reduce(Double::sum).orElse(0.00));
+        }
+        //红岩
+        if(unit.contains("红岩")){
+            String id = trendsTableParamList.stream().filter(t -> t.getUseStation().equals("头屯河水库") && t.getParamName().equals("红岩流量")).map(TrendsTableParam::getId).findFirst().get();
+            List<DayWaterSituationStatisticsTableTth> tth = dayWaterSituationStatisticsTableTthMapper.planComparedToActual(id, startTime, endTime);
+            result.put(unit,tth.stream().filter(t -> t.getV() != null).map(DayWaterSituationStatisticsTableTth::getV).reduce(Double::sum).orElse(0.00));
+        }
+        return result;
+    }
+
+    @Override
+    public Map<String, Double> planComparedToActualForMonth(Integer year, Integer month,String tenDays, List<String> ids, String unit) {
+        Map<String, Double> result = new HashMap<>();
+        String startTime = "";
+        String endTime = "";
+        if(StringUtils.isEmpty(tenDays)){
+            startTime = year+"-"+(month.toString().length()==1?"0"+month:month+"")+"-01";
+            endTime = getEndOfMonth(year,month);
+        }else {
+            startTime = getStartOfMonthByTenDays(year,month,tenDays);
+            endTime = getEndOfMonthByTenDays(year,month,tenDays);
+        }
+        //河东
+        if(unit.contains("河东")){
+            List<DayWaterSituationStatisticsTableHd> hd = dayWaterSituationStatisticsTableHdMapper.planComparedToActual(ids, startTime, endTime);
+            result.put(unit,hd.stream().filter(t -> t.getV() != null).map(DayWaterSituationStatisticsTableHd::getV).reduce(Double::sum).orElse(0.00));
+        }
+
+        //河西
+        if(unit.contains("河西")){
+            List<DayWaterSituationStatisticsTableHx> hx = dayWaterSituationStatisticsTableHxMapper.planComparedToActual(ids, startTime, endTime);
+            result.put(unit,hx.stream().filter(t -> t.getV() != null).map(DayWaterSituationStatisticsTableHx::getV).reduce(Double::sum).orElse(0.00));
+        }
+
+        //渠首
+        if(unit.contains("渠首")){
+            if(unit.contains("渠首绿化")){
+                List<DayWaterSituationStatisticsTableQsLh> qs = dayWaterSituationStatisticsTableQsLhMapper.planComparedToActual(ids, startTime, endTime);
+                result.put(unit,qs.stream().filter(t -> t.getV() != null).map(DayWaterSituationStatisticsTableQsLh::getV).reduce(Double::sum).orElse(0.00));
+            }else {
+                List<DayWaterSituationStatisticsTableQs> qs = dayWaterSituationStatisticsTableQsMapper.planComparedToActual(ids, startTime, endTime);
+                result.put(unit,qs.stream().filter(t -> t.getV() != null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00));
+            }
+        }
+        String mk = (String) redisUtil.get("trendsTableParam:list");
+        if(StringUtils.isEmpty(mk)){
+            trendsTableParamService.updateCache();
+            mk = (String) redisUtil.get("trendsTableParam:list");
+        }
+        List<TrendsTableParam> trendsTableParamListTemp = JSONObject.parseArray(mk, TrendsTableParam.class);
+        List<TrendsTableParam> trendsTableParamList = trendsTableParamListTemp.stream().filter(t -> t.getUseType() == 1).collect(Collectors.toList());
+        //楼庄子水厂
+        if(unit.contains("楼庄子水厂")){
+            String id = trendsTableParamList.stream().filter(t -> t.getUseStation().equals("楼庄子水库") && t.getParamName().equals("楼庄子水厂总量")).map(TrendsTableParam::getId).findFirst().get();
+            List<DayWaterSituationStatisticsTableLzz> lzz = dayWaterSituationStatisticsTableLzzMapper.planComparedToActual(id, startTime, endTime);
+            result.put(unit,lzz.stream().filter(t -> t.getV() != null).map(DayWaterSituationStatisticsTableLzz::getV).reduce(Double::sum).orElse(0.00));
+        }
+        //八钢工业
+        if(unit.contains("八钢工业")){
+            String bgParent = trendsTableParamList.stream().filter(t -> t.getUseStation().equals("头屯河水库") && t.getParamName().equals("八钢流量")).map(TrendsTableParam::getId).findFirst().get();
+            String id = trendsTableParamList.stream().filter(t -> t.getUseStation().equals("头屯河水库") && t.getPId().equals(bgParent) && t.getParamName().equals("合计")).map(TrendsTableParam::getId).findFirst().get();
+            List<DayWaterSituationStatisticsTableTth> tth = dayWaterSituationStatisticsTableTthMapper.planComparedToActual(id, startTime, endTime);
+            result.put(unit,tth.stream().filter(t -> t.getV() != null).map(DayWaterSituationStatisticsTableTth::getV).reduce(Double::sum).orElse(0.00));
+        }
+        //红岩
+        if(unit.contains("红岩")){
+            String id = trendsTableParamList.stream().filter(t -> t.getUseStation().equals("头屯河水库") && t.getParamName().equals("红岩流量")).map(TrendsTableParam::getId).findFirst().get();
+            List<DayWaterSituationStatisticsTableTth> tth = dayWaterSituationStatisticsTableTthMapper.planComparedToActual(id, startTime, endTime);
+            result.put(unit,tth.stream().filter(t -> t.getV() != null).map(DayWaterSituationStatisticsTableTth::getV).reduce(Double::sum).orElse(0.00));
+        }
+        return result;
+    }
+
     private void setV(List<WaterFeeStatisticsDetails> waterFeeStatisticsDetails){
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         String mk = (String) redisUtil.get("trendsTableParam:list");
@@ -2166,5 +2343,54 @@ public class AllServiceImpl implements AllService {
             });
             dayWaterSituationStatisticsTableDklService.updateBatchById(dayWaterSituationStatisticsTableDklList);
         }
+    }
+
+    private String getEndOfMonth(Integer year, Integer month){
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        // 创建一个Calendar实例
+        Calendar calendar = Calendar.getInstance();
+        // 设置Calendar的年份、月份和日期为该月的最大日期
+        calendar.set(Calendar.YEAR, year);
+        calendar.set(Calendar.MONTH, month-1); // 月份是从0开始的
+        calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
+        // 获取月底的时间戳
+        Date time = calendar.getTime();
+        return sdf.format(time);
+    }
+
+    private String getStartOfMonth(Integer year, Integer month){
+        String monthStr = month.toString().length()==1?"0"+month:month+"";
+        return year+"-"+monthStr+"-01";
+    }
+
+    private String getEndOfMonthByTenDays(Integer year, Integer month,String tenDays){
+        if(tenDays.equals("上旬")){
+            String monthStr = month.toString().length()==1?"0"+month:month+"";
+            return year+"-"+monthStr+"-10";
+        }
+        if(tenDays.equals("中旬")){
+            String monthStr = month.toString().length()==1?"0"+month:month+"";
+            return year+"-"+monthStr+"-20";
+        }
+        if(tenDays.equals("下旬")){
+            return getEndOfMonth(year,month);
+        }
+        return null;
+    }
+
+    private String getStartOfMonthByTenDays(Integer year, Integer month,String tenDays){
+        if(tenDays.equals("上旬")){
+            String monthStr = month.toString().length()==1?"0"+month:month+"";
+            return year+"-"+monthStr+"-01";
+        }
+        if(tenDays.equals("中旬")){
+            String monthStr = month.toString().length()==1?"0"+month:month+"";
+            return year+"-"+monthStr+"-11";
+        }
+        if(tenDays.equals("下旬")){
+            String monthStr = month.toString().length()==1?"0"+month:month+"";
+            return year+"-"+monthStr+"-21";
+        }
+        return null;
     }
 }

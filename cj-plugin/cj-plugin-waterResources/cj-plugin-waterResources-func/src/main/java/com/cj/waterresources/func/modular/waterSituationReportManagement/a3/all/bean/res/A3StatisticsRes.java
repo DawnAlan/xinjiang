@@ -21,4 +21,7 @@ public class A3StatisticsRes implements Serializable {
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "时间")
     private Date recordTime;
+
+    @ApiModelProperty(value = "时刻")
+    private String time;
 }

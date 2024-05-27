@@ -78,5 +78,8 @@ public class MonthWaterUsePlan extends Model<MonthWaterUsePlan> {
     //单位ID
     @ApiModelProperty(value = "单位ID")
     private String unitId;
+
+    @ApiModelProperty(value = "绑定A3ID")
+    private String bindId;
 }
 
