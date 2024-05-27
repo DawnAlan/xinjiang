@@ -1,8 +1,12 @@
 package com.cj.approval.func.modular.approval.instructionFeedback.service.impl;
 
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.extra.spring.SpringUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cj.approval.func.core.utils.WebSocketServer;
 import com.cj.approval.func.modular.approval.approvalManagement.bean.res.SendMsgRes;
+import com.cj.approval.func.modular.approval.dutyRecords.entity.DutyRecords;
+import com.cj.approval.func.modular.approval.dutyRecords.service.DutyRecordsService;
 import com.cj.approval.func.modular.approval.instructionFeedback.mapper.InstructionFeedbackMapper;
 import com.cj.approval.func.modular.approval.instructionFeedback.entity.InstructionFeedback;
 import com.cj.approval.func.modular.approval.instructionFeedback.service.InstructionFeedbackService;
@@ -20,8 +24,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * 指令反馈表(InstructionFeedback)表服务实现类
@@ -37,6 +45,8 @@ public class InstructionFeedbackServiceImpl extends ServiceImpl<InstructionFeedb
 
     @Autowired
     private OverallMsgService overallMsgService;
+
+    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
 
     @Override
@@ -78,6 +88,34 @@ public class InstructionFeedbackServiceImpl extends ServiceImpl<InstructionFeedb
                     TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
                     return RestResponse.no("send msg fail");
                 }
+                ExecutorService pool = Executors.newSingleThreadExecutor();
+                pool.submit(new Runnable() {
+                    private DutyRecordsService dutyRecordsService = SpringUtil.getBean(DutyRecordsService.class);
+                    @Override
+                    public void run() {
+                        DutyRecords dutyRecords = dutyRecordsService.lambdaQuery().eq(DutyRecords::getStation, saBaseLoginUser.getOrgName()).
+                                apply("RECORD_TIME = {0}", DateUtil.format(new Date(), "yyyy-MM-dd")).last("limit 1").one();
+                        if(dutyRecords!=null){
+                            String splicingMsg = dutyRecords.getContextInfo()+"/n"+splicingMsg(instructionFeedback);
+                            dutyRecordsService.lambdaUpdate().set(DutyRecords::getContextInfo,splicingMsg).eq(DutyRecords::getId,dutyRecords.getId()).update();
+                        }else {
+                            DutyRecords dutyRecordsTemp = new DutyRecords();
+                            dutyRecordsTemp.setDel(0);
+                            dutyRecordsTemp.setType(1);
+                            dutyRecordsTemp.setId(UUIDUtils.getUUID());
+                            dutyRecordsTemp.setCreateTime(new Date());
+                            try {
+                                dutyRecordsTemp.setRecordTime(sdf.parse(DateUtil.format(new Date(), "yyyy-MM-dd")));
+                            } catch (ParseException e) {
+                                throw new RuntimeException(e);
+                            }
+                            dutyRecordsTemp.setCreateBy(saBaseLoginUser.getName());
+                            dutyRecordsTemp.setStation(saBaseLoginUser.getOrgName());
+                            dutyRecordsTemp.setContextInfo(splicingMsg(instructionFeedback));
+                            dutyRecordsService.save(dutyRecordsTemp);
+                        }
+                    }
+                });
                 return instructionViewingService.updateInstructionStatus(instructionViewingService.getById(instructionFeedback.getInstructionViewId()).getInstructionId());
             }else {
                 return RestResponse.no("error");
@@ -104,6 +142,16 @@ public class InstructionFeedbackServiceImpl extends ServiceImpl<InstructionFeedb
         sendMsgRes.setSendContent(msgContext);
         msg.setContent(com.alibaba.fastjson2.JSONObject.toJSONString(sendMsgRes));
         overallMsgService.save(msg);
+    }
+
+    private String splicingMsg(InstructionFeedback instructionFeedback){
+        String msg = "";
+        msg += instructionFeedback.getFeedbackTime();
+        //反馈状态(1-未开始 2-开始 3-进行中 4-已完成)
+        msg += " "+(instructionFeedback.getFeedbackStatus()==1?"未开始":instructionFeedback.getFeedbackStatus()==2?"开始":instructionFeedback.getFeedbackStatus()==3?"进行中":instructionFeedback.getFeedbackStatus()==4?"已完成":"未知状态");
+        msg += "。"+instructionFeedback.getFeedbackBy()+"通知"+instructionFeedback.getRecipient()+instructionFeedback.getFeedbackContext()+"。";
+        msg += "配水人员为："+instructionFeedback.getExecutive();
+        return msg;
     }
 }
 
