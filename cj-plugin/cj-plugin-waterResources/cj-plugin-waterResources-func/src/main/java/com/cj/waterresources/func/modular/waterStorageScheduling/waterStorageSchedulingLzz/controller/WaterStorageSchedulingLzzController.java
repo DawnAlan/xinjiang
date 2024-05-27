@@ -57,7 +57,7 @@ public class WaterStorageSchedulingLzzController {
     @ApiOperation("楼庄子水库蓄水调度计划表模块修改")
     @CommonLog("楼庄子水库蓄水调度计划表模块修改")
     @PostMapping("/update")
-    public RestResponse update(@RequestBody WaterStorageSchedulingLzz waterStorageSchedulingLzz) {
+    public RestResponse update(@RequestBody List<WaterStorageSchedulingLzz> waterStorageSchedulingLzz) {
         return waterStorageSchedulingLzzService.edit(waterStorageSchedulingLzz);
     }
 

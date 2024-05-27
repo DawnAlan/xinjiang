@@ -4,6 +4,7 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.lang.UUID;
 import cn.hutool.core.lang.tree.Tree;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.extra.spring.SpringUtil;
 import cn.hutool.json.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -15,6 +16,8 @@ import com.cj.approval.func.modular.approval.approvalManagement.bean.res.SendMsg
 import com.cj.approval.func.modular.approval.approvalManagement.mapper.ApprovalManagementMapper;
 import com.cj.approval.func.modular.approval.approvalManagement.entity.ApprovalManagement;
 import com.cj.approval.func.modular.approval.approvalManagement.service.ApprovalManagementService;
+import com.cj.approval.func.modular.approval.dutyRecords.entity.DutyRecords;
+import com.cj.approval.func.modular.approval.dutyRecords.service.DutyRecordsService;
 import com.cj.approval.func.modular.approval.instructionViewing.entity.InstructionViewing;
 import com.cj.approval.func.modular.approval.instructionViewing.service.InstructionViewingService;
 import com.cj.auth.core.pojo.SaBaseLoginUser;
@@ -54,8 +57,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 import static org.springframework.core.io.buffer.DataBufferUtils.readInputStream;
@@ -145,7 +152,34 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
                     TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
                     return RestResponse.no("send msg fail");
                 }
-
+                ExecutorService pool = Executors.newSingleThreadExecutor();
+                pool.submit(new Runnable() {
+                    private DutyRecordsService dutyRecordsService = SpringUtil.getBean(DutyRecordsService.class);
+                    @Override
+                    public void run() {
+                        DutyRecords dutyRecords = dutyRecordsService.lambdaQuery().eq(DutyRecords::getStation, "供水科").
+                                apply("RECORD_TIME = {0}", DateUtil.format(new Date(), "yyyy-MM-dd")).last("limit 1").one();
+                        if(dutyRecords!=null){
+                            String splicingMsg = dutyRecords.getContextInfo()+"\\n"+splicingMsg(approvalManagement);
+                            dutyRecordsService.lambdaUpdate().set(DutyRecords::getContextInfo,splicingMsg).eq(DutyRecords::getId,dutyRecords.getId()).update();
+                        }else {
+                            DutyRecords dutyRecordsTemp = new DutyRecords();
+                            dutyRecordsTemp.setDel(0);
+                            dutyRecordsTemp.setType(1);
+                            dutyRecordsTemp.setId(UUIDUtils.getUUID());
+                            dutyRecordsTemp.setCreateTime(new Date());
+                            try {
+                                dutyRecordsTemp.setRecordTime(sdf.parse(DateUtil.format(new Date(), "yyyy-MM-dd")));
+                            } catch (ParseException e) {
+                                throw new RuntimeException(e);
+                            }
+                            dutyRecordsTemp.setCreateBy(saBaseLoginUser.getName());
+                            dutyRecordsTemp.setStation("供水科");
+                            dutyRecordsTemp.setContextInfo(splicingMsg(approvalManagement));
+                            dutyRecordsService.save(dutyRecordsTemp);
+                        }
+                    }
+                });
                 return RestResponse.ok();
             }else {
                 return RestResponse.no("error");
@@ -453,50 +487,6 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
         minioUtils.download("tth",path,response);
     }
 
-    public String getIp(HttpServletRequest request) {
-        /*String remoteAddr = request.getRemoteAddr();
-        String forwarded = request.getHeader("X-Forwarded-For");
-        String realIp = request.getHeader("X-Real-IP");
-        String ip = null;
-        if (realIp == null){
-            if (forwarded == null) {
-                ip = remoteAddr;
-            } else {
-                ip = remoteAddr + "/" + forwarded.split(",")[0];
-            }
-        } else{
-            if (realIp.equals(forwarded)){
-                ip = realIp;
-            } else {
-                if (forwarded != null) {
-                    forwarded = forwarded.split(",")[0];
-                }
-                ip = realIp + "/" + forwarded;
-            }
-        }
-         return ip;
-        */
-        try {
-            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
-            while (interfaces.hasMoreElements()) {
-                NetworkInterface networkInterface = interfaces.nextElement();
-                if (!networkInterface.isLoopback() && networkInterface.isUp()) {
-                    Enumeration<InetAddress> addresses = networkInterface.getInetAddresses();
-                    while (addresses.hasMoreElements()) {
-                        InetAddress address = addresses.nextElement();
-                        if (address.isSiteLocalAddress()) {
-                            return address.getHostAddress();
-                        }
-                    }
-                }
-            }
-        } catch (SocketException e) {
-            e.printStackTrace();
-            return null;
-        }
-       return null;
-    }
-
     @SneakyThrows
     public static void downloadAndSaveFile(String fileUrl, String destinationFilePath) {
         try (InputStream in = new URL(fileUrl).openStream();
@@ -565,6 +555,31 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
     public static String getFileName(String fileUrl) {
         String[] parts = fileUrl.split("/");
         return parts[parts.length - 1];
+    }
+
+    private String splicingMsg(ApprovalManagement approvalManagement){
+        String msg = "";
+        if(approvalManagement.getInstructionType().equals("指令签批")){
+            msg += sdf1.format(approvalManagement.getCreateTime())+",";
+            msg += approvalManagement.getCreateBy()+"制作"+approvalManagement.getInstructionSheetNum()+"号签批指令,";
+            msg += sdf1.format(approvalManagement.getDispatchingTime())+approvalManagement.getDispatchingUnit()+"向";
+            msg += approvalManagement.getDispatchingObjectives()+"调水，";
+            msg += "调度参数为:"+approvalManagement.getDispatchingParams()+",";
+            msg += "审批人为："+approvalManagement.getApprovedBy()+"。";
+        }
+        if(approvalManagement.getInstructionType().equals("指令下达")){
+            msg += sdf1.format(approvalManagement.getCreateTime())+",";
+            msg += approvalManagement.getCreateBy()+"向";
+            msg += approvalManagement.getDispatchingUnit()+"的"+approvalManagement.getRecipient()+"下达指令，";
+            msg += "调度时间为:"+sdf1.format(approvalManagement.getDispatchingTime());
+            msg += "，审批人为："+approvalManagement.getApprovedBy()+"。其中，";
+            msg += "楼庄子通知内容为:"+approvalManagement.getDispatchingParamsLzz()+";";
+            msg += "头屯河通知内容为:"+approvalManagement.getDispatchingParamsTth()+";";
+            msg += "渠首通知内容为:"+approvalManagement.getDispatchingParamsQs()+";";
+            msg += "河东通知内容为:"+approvalManagement.getDispatchingParamsHd()+";";
+            msg += "河西通知内容为:"+approvalManagement.getDispatchingParamsHx()+"。";
+        }
+        return msg;
     }
 }
 
