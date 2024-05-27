@@ -160,7 +160,7 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
                         DutyRecords dutyRecords = dutyRecordsService.lambdaQuery().eq(DutyRecords::getStation, "供水科").
                                 apply("RECORD_TIME = {0}", DateUtil.format(new Date(), "yyyy-MM-dd")).last("limit 1").one();
                         if(dutyRecords!=null){
-                            String splicingMsg = dutyRecords.getContextInfo()+"/n"+splicingMsg(approvalManagement);
+                            String splicingMsg = dutyRecords.getContextInfo()+"\\n"+splicingMsg(approvalManagement);
                             dutyRecordsService.lambdaUpdate().set(DutyRecords::getContextInfo,splicingMsg).eq(DutyRecords::getId,dutyRecords.getId()).update();
                         }else {
                             DutyRecords dutyRecordsTemp = new DutyRecords();
@@ -562,16 +562,16 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
         if(approvalManagement.getInstructionType().equals("指令签批")){
             msg += sdf1.format(approvalManagement.getCreateTime())+",";
             msg += approvalManagement.getCreateBy()+"制作"+approvalManagement.getInstructionSheetNum()+"号签批指令,";
-            msg += approvalManagement.getDispatchingTime()+approvalManagement.getDispatchingUnit()+"向";
+            msg += sdf1.format(approvalManagement.getDispatchingTime())+approvalManagement.getDispatchingUnit()+"向";
             msg += approvalManagement.getDispatchingObjectives()+"调水，";
             msg += "调度参数为:"+approvalManagement.getDispatchingParams()+",";
             msg += "审批人为："+approvalManagement.getApprovedBy()+"。";
         }
-        if(approvalManagement.getInstructionType().equals("指令下发")){
+        if(approvalManagement.getInstructionType().equals("指令下达")){
             msg += sdf1.format(approvalManagement.getCreateTime())+",";
             msg += approvalManagement.getCreateBy()+"向";
             msg += approvalManagement.getDispatchingUnit()+"的"+approvalManagement.getRecipient()+"下达指令，";
-            msg += "调度时间为:"+approvalManagement.getDispatchingTime();
+            msg += "调度时间为:"+sdf1.format(approvalManagement.getDispatchingTime());
             msg += "，审批人为："+approvalManagement.getApprovedBy()+"。其中，";
             msg += "楼庄子通知内容为:"+approvalManagement.getDispatchingParamsLzz()+";";
             msg += "头屯河通知内容为:"+approvalManagement.getDispatchingParamsTth()+";";
