@@ -69,9 +69,7 @@ public class DutyRecordsServiceImpl extends ServiceImpl<DutyRecordsMapper, DutyR
 
     @Override
     public RestResponse<List<DutyRecords>> selectList(DutyRecordsSelectListReq req) {
-        log.error("-----------------------------------------------------------获取前端传的参数："+req.toString());
         List<DutyRecords> dutyRecords = this.baseMapper.selectListByParam(req);
-        log.error("---------------------------------------------------查询后返回的结果集："+dutyRecords.toString());
         if(null != dutyRecords && dutyRecords.size()>0){
             return RestResponse.ok(dutyRecords);
         }else {
