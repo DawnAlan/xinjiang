@@ -55,8 +55,8 @@ public class DocumentManageController {
     @ApiOperation("文件管理模块预览")
     @CommonLog(value = "文件管理模块预览")
     @PostMapping("/view")
-    public void view(@RequestParam("id") String id, HttpServletResponse response) {
-        documentManageService.view(id, response);
+    public RestResponse view(@RequestParam("id") String id) {
+        return documentManageService.view(id);
     }
 
     @ApiOperationSupport(order = 5)

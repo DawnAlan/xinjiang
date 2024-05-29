@@ -14,8 +14,7 @@ import lombok.RequiredArgsConstructor;
 import com.cj.waterresources.func.modular.documentManage.domain.DocumentManage;
 import com.cj.waterresources.func.modular.documentManage.mapper.DocumentManageMapper;
 import lombok.SneakyThrows;
-import org.jodconverter.core.DocumentConverter;
-import org.jodconverter.core.document.DefaultDocumentFormatRegistry;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.springframework.util.StringUtils;
@@ -36,7 +35,12 @@ import java.util.List;
 public class DocumentManageService extends ServiceImpl<DocumentManageMapper, DocumentManage>
         implements IService<DocumentManage> {
     private final MinioUtils minioUtils;
-    private final DocumentConverter documentConverter;
+
+    @Value("${minio.url}")
+    private String url;
+
+    @Value("${minio.bucket}")
+    private String bucket;
 
     private static final String DOCUMENT_PATH = "document/";
 
@@ -86,18 +90,14 @@ public class DocumentManageService extends ServiceImpl<DocumentManageMapper, Doc
     }
 
     @SneakyThrows
-    public void view(String id, HttpServletResponse response) {
+    public RestResponse view(String id) {
         DocumentManage document = this.getById(id);
-        InputStream tth = minioUtils.getObject("tth", document.getDocumentUrl());
-        if (document.getDocumentType().equals("pdf")) {
-            minioUtils.download("tth", document.getDocumentUrl(), response);
-            return;
+        if(null == document){
+            return RestResponse.no("暂无文档数据");
+        }else {
+            String resultUrl = url+"/"+bucket+"/"+document.getDocumentUrl();
+            return RestResponse.ok(resultUrl);
         }
-        documentConverter.convert(tth)
-                .as(DefaultDocumentFormatRegistry.getFormatByExtension(document.getDocumentType()))
-                .to(response.getOutputStream())
-                .as(DefaultDocumentFormatRegistry.PDF)
-                .execute();
     }
 
     public void download(String id, HttpServletResponse response) {

@@ -42,7 +42,7 @@ public class ForecastController {
             if(hasInternetAccess()){
                 forecastVOS = forecastService.getForecast();
             }else {
-                String url = "http://10.65.8.168:10188/web/weather/getForecast";
+                String url = "http://10.65.2.100:8085//weather/weather/getForecast";
                 HttpClient client = HttpClients.createDefault();
                 HttpGet httpGet = new HttpGet(url);
                 HttpResponse res = client.execute(httpGet);

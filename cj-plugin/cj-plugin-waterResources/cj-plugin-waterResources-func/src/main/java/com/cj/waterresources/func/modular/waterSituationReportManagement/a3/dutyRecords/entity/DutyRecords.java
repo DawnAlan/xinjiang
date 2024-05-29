@@ -62,6 +62,10 @@ public class DutyRecords extends Model<DutyRecords> {
     //天气
     @ApiModelProperty(value = "天气")
     private String weather;
+
+    //类型
+    @ApiModelProperty(value = "类型")
+    private Integer type;
 }
 
 

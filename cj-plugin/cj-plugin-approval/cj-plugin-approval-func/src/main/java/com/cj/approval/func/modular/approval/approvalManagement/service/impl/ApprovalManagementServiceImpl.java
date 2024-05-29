@@ -157,11 +157,12 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
                     private DutyRecordsService dutyRecordsService = SpringUtil.getBean(DutyRecordsService.class);
                     @Override
                     public void run() {
-                        DutyRecords dutyRecords = dutyRecordsService.lambdaQuery().eq(DutyRecords::getStation, "供水科").
+                        DutyRecords dutyRecords = dutyRecordsService.lambdaQuery().eq(DutyRecords::getStation, "供水科").eq(DutyRecords::getType,1).
                                 apply("RECORD_TIME = {0}", DateUtil.format(new Date(), "yyyy-MM-dd")).last("limit 1").one();
                         if(dutyRecords!=null){
                             String splicingMsg = dutyRecords.getContextInfo()+"\\n"+splicingMsg(approvalManagement);
-                            dutyRecordsService.lambdaUpdate().set(DutyRecords::getContextInfo,splicingMsg).eq(DutyRecords::getId,dutyRecords.getId()).update();
+                            boolean update = dutyRecordsService.lambdaUpdate().set(DutyRecords::getContextInfo, splicingMsg).eq(DutyRecords::getId, dutyRecords.getId()).update();
+                            System.out.println("-------------=======================------------------"+update);
                         }else {
                             DutyRecords dutyRecordsTemp = new DutyRecords();
                             dutyRecordsTemp.setDel(0);

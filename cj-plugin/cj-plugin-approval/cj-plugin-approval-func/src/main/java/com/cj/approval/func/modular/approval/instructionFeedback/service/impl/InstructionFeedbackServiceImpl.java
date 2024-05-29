@@ -46,7 +46,7 @@ public class InstructionFeedbackServiceImpl extends ServiceImpl<InstructionFeedb
     @Autowired
     private OverallMsgService overallMsgService;
 
-    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 
     @Override
@@ -93,7 +93,7 @@ public class InstructionFeedbackServiceImpl extends ServiceImpl<InstructionFeedb
                     private DutyRecordsService dutyRecordsService = SpringUtil.getBean(DutyRecordsService.class);
                     @Override
                     public void run() {
-                        DutyRecords dutyRecords = dutyRecordsService.lambdaQuery().eq(DutyRecords::getStation, saBaseLoginUser.getOrgName()).
+                        DutyRecords dutyRecords = dutyRecordsService.lambdaQuery().eq(DutyRecords::getStation, saBaseLoginUser.getOrgName()).eq(DutyRecords::getType,1).
                                 apply("RECORD_TIME = {0}", DateUtil.format(new Date(), "yyyy-MM-dd")).last("limit 1").one();
                         if(dutyRecords!=null){
                             String splicingMsg = dutyRecords.getContextInfo()+"\\n"+splicingMsg(instructionFeedback);
