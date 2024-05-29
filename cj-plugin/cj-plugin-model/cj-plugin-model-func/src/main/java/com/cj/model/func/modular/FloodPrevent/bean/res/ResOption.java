@@ -7,5 +7,5 @@ public class ResOption {
 
     private String path;
     private String name;
-
+    private String inform;
 }

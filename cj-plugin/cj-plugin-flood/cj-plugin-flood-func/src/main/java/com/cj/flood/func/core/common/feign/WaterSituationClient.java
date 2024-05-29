@@ -15,4 +15,7 @@ public interface WaterSituationClient {
 
     @GetMapping("toutunhe/wpdCurved/queryQuXT")
     String queryQuXT(@RequestParam("id") String id);
+
+    @GetMapping("toutunhe/wpdCurved/queryExternStations")
+    String queryExternStations();
 }

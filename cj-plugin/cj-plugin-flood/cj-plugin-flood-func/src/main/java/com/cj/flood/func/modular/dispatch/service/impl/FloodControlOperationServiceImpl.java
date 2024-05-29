@@ -12,6 +12,11 @@ import com.cj.auth.core.util.StpLoginUserUtil;
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.ExcelUtils;
 import com.cj.common.util.UUIDUtils;
+import com.cj.flood.func.core.common.feign.WaterSituationClient;
+import com.cj.flood.func.core.common.feign.entity.DropDown;
+import com.cj.flood.func.core.common.feign.entity.ExternStations;
+import com.cj.flood.func.core.common.feign.entity.QuXT;
+import com.cj.flood.func.core.common.feign.entity.RRs;
 import com.cj.flood.func.modular.dispatch.bean.req.FloodControlOperationAddReq;
 import com.cj.flood.func.modular.dispatch.bean.req.FloodControlOperationListReq;
 import com.cj.flood.func.modular.dispatch.bean.res.FloodControlOperationListRes;
@@ -23,8 +28,10 @@ import com.cj.flood.func.modular.dispatch.service.FloodControlOperationService;
 import com.cj.flood.func.modular.prediction.bean.dto.PredictionProcessDto;
 import com.cj.flood.func.modular.prediction.entity.IncomingWaterForecast;
 import com.cj.flood.func.modular.prediction.service.IncomingWaterForecastService;
+import com.cj.model.func.modular.FloodPrevent.bean.req.ReqCurve;
 import com.cj.model.func.modular.FloodPrevent.bean.req.ReqFloodPrevent;
 import com.cj.model.func.modular.FloodPrevent.bean.res.ResOption;
+import com.cj.model.func.modular.FloodPrevent.entity.CurveParam;
 import com.cj.model.func.modular.FloodPrevent.entity.DataFloodPrevent;
 import com.cj.model.func.modular.FloodPrevent.entity.Option;
 import com.cj.model.func.modular.FloodPrevent.function.*;
@@ -35,6 +42,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
@@ -63,6 +71,9 @@ public class FloodControlOperationServiceImpl extends ServiceImpl<FloodControlOp
 
     @Autowired
     private IncomingWaterForecastService incomingWaterForecastService;
+
+    @Autowired
+    private WaterSituationClient waterSituationClient;
 
     @Value("${minio.url}")
     private String minioUrl;
@@ -200,7 +211,59 @@ public class FloodControlOperationServiceImpl extends ServiceImpl<FloodControlOp
                             put("头屯河", req.getEcosTth());
                         }});
 
-                        List<ResOption> calculator = Cascade.calculator(JSONObject.toJSONString(PublicParam.basinParam), paramReq);
+                        ReqCurve reqCurve = new ReqCurve();
+                        reqCurve.setCapacityCurves(new HashMap<>());
+                        reqCurve.setGateCurves(new HashMap<>());
+                        List<RRs> rrs = JSONObject.parseArray(JSONObject.parseObject(waterSituationClient.queryRRs("0")).get("data").toString(), RRs.class);
+                        List<ExternStations> externStations = JSONObject.parseArray(JSONObject.parseObject(waterSituationClient.queryExternStations()).get("data").toString(), ExternStations.class);
+                        PublicParam.basinParam.getReservoirs().forEach(
+                                reservoir ->
+                                {
+                                    Optional<RRs> anyRRs = rrs.stream().filter(r -> r.getName().contains(reservoir.getName())).findAny();
+                                    if (!anyRRs.isPresent()) {
+                                        return;
+                                    }
+                                    List<DropDown> dropDowns = JSONObject.parseArray(JSONObject.parseObject(waterSituationClient.dropDown(anyRRs.get().getId())).get("data").toString(), DropDown.class);
+                                    Optional<DropDown> dropDownsTrue = dropDowns.stream().filter(d -> d.getEnable().equals("true")).findAny();
+                                    if (!dropDownsTrue.isPresent()) {
+                                        return;
+                                    }
+                                    QuXT quXT = JSONObject.parseObject(JSONObject.parseObject(waterSituationClient.queryQuXT(dropDownsTrue.get().getId())).get("data").toString(), QuXT.class);
+                                    List<CurveParam> curveParams = new ArrayList<>();
+                                    quXT.getTab().forEach(tab ->
+                                            curveParams.add(new CurveParam(){{
+                                                setLevel(tab.getV0());
+                                                setValue(tab.getV1());
+                                            }}));
+                                    reqCurve.getCapacityCurves().put(reservoir.getName(), curveParams);
+
+                                    reservoir.getGates().forEach(gate -> {
+                                        Optional<ExternStations> anyGate = externStations.stream().filter(station -> station.getName().equals(gate.getName())).findAny();
+                                        if (!anyGate.isPresent()) {
+                                            return;
+                                        }
+                                        List<DropDown> dropDownsGate = JSONObject.parseArray(JSONObject.parseObject(waterSituationClient.dropDown(anyGate.get().getId())).get("data").toString(), DropDown.class);
+                                        Optional<DropDown> dropDownsTrueGate = dropDownsGate.stream().filter(d -> d.getEnable().equals("true")).findAny();
+                                        if (!dropDownsTrueGate.isPresent()) {
+                                            return;
+                                        }
+                                        QuXT quXTGate = JSONObject.parseObject(JSONObject.parseObject(waterSituationClient.queryQuXT(dropDownsTrueGate.get().getId())).get("data").toString(), QuXT.class);
+                                        List<CurveParam> curveParamsGate = new ArrayList<>();
+                                        quXTGate.getTab().forEach(tab ->
+                                                curveParamsGate.add(new CurveParam(){{
+                                                    setLevel(tab.getV0());
+                                                    setValue(tab.getV1());
+                                                }}));
+                                        if (!reqCurve.getGateCurves().containsKey(reservoir.getName())) {
+                                            reqCurve.getGateCurves().put(reservoir.getName(), new HashMap<String, List<CurveParam>>() {{put(gate.getName(), curveParamsGate);}});
+                                        } else {
+                                            reqCurve.getGateCurves().get(reservoir.getName()).put(gate.getName(), curveParamsGate);
+                                        }
+                                    });
+                                }
+                        );
+
+                        List<ResOption> calculator = Cascade.calculator(JSONObject.toJSONString(PublicParam.basinParam), paramReq, reqCurve);
                         for (ResOption resOption : calculator) {
                             String path = resOption.getPath();
                             String[] pathSplit = path.split("\\\\");
@@ -211,7 +274,11 @@ public class FloodControlOperationServiceImpl extends ServiceImpl<FloodControlOp
                             String ss = DateUtil.format(date, "ss");
                             ObjectWriteResponse objectWriteResponse = minioUtils.putObject("tth", yyyyMMdd + "/" + hh + "/" + mm + "/" + ss + "/" + UUID.fastUUID().toString(true) + "/" + pathSplit[pathSplit.length - 1], path);
                             String object = objectWriteResponse.object();
-                            floodControlOperationService.lambdaUpdate().set(FloodControlOperation::getStatus, 2).set(FloodControlOperation::getModelResultAddress, object).eq(FloodControlOperation::getSchemeName, resOption.getName()).update();
+                            floodControlOperationService.lambdaUpdate()
+                                    .set(FloodControlOperation::getStatus, 2)
+                                    .set(FloodControlOperation::getModelResultAddress, object)
+                                    .set(StringUtils.hasText(resOption.getInform()), FloodControlOperation::getRemark, resOption.getInform())
+                                    .eq(FloodControlOperation::getSchemeName, resOption.getName()).update();
                         }
                         tth.close();
                     } catch (Exception e) {

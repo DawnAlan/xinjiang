@@ -1,6 +1,7 @@
 package com.cj.model.func.modular.FloodPrevent.function;
 
 import com.cj.common.util.UUIDUtils;
+import com.cj.model.func.modular.FloodPrevent.bean.req.ReqCurve;
 import com.cj.model.func.modular.FloodPrevent.bean.req.ReqFloodPrevent;
 import com.cj.model.func.modular.FloodPrevent.bean.res.ResOption;
 import com.cj.model.func.modular.FloodPrevent.entity.*;
@@ -25,11 +26,13 @@ import static com.cj.model.func.modular.FloodPredict.utils.ExcelTool.downloadFil
 
 public class Cascade{
 
-    public static List<ResOption> calculator(String basinStr , ReqFloodPrevent reqFloodPrevent) throws Exception {
+    public static List<ResOption> calculator(String basinStr,ReqFloodPrevent reqFloodPrevent, ReqCurve reqCurve) throws Exception {
         Basin basin = new Basin();
-        //配置文件
+        //配置文件内包含的参数
         Read(basin,basinStr);
-        //前端传来的数据
+        //从水情管理处获得的曲线数据
+        String inform=Update(basin,reqCurve);
+        //前端传来的数据(本水库数据)
         for (Reservoir reservoir : basin.getReservoirs()) {
             //水库名
             String reservoirName = reservoir.getName();
@@ -78,6 +81,28 @@ public class Cascade{
             catch (Exception e){
                 throw new Exception("模型精度异常");
             }
+        }
+        //前端传来的数据(本水库下游断面数据)
+        for (int i = 0; i < basin.getReservoirs().size(); i++) {
+            Reservoir reservoir = basin.getReservoirs().get(i);
+            if(i==basin.getReservoirs().size()-1){
+                List<Double> Q_interval = new ArrayList<>();
+                for (int j = 0; j < reservoir.getTime().size(); j++) {
+                    Q_interval.add(0.0);
+                }
+                reservoir.setQ_Interval(Q_interval);
+            }
+            else{
+                Reservoir nextReservoir = basin.getReservoirs().get(i+1);
+                String name = nextReservoir.getName();
+                List<DataFloodPrevent> dataFloodPrevents= reqFloodPrevent.getIntervals().get(name);
+                List<Double> Q_interval = new ArrayList<>();
+                for (DataFloodPrevent dataFloodPrevent : dataFloodPrevents) {
+                    Q_interval.add(dataFloodPrevent.getPre());
+                }
+                reservoir.setQ_Interval(Q_interval);
+            }
+
         }
         //自动更新和转化的参数
         for (Reservoir reservoir : basin.getReservoirs()) {
@@ -187,21 +212,23 @@ public class Cascade{
         ResOption resOption1 = new ResOption();
         resOption1.setPath(path1);
         resOption1.setName(reqFloodPrevent.getProgrammeName()+"-常规调度");
+        resOption1.setInform(inform);
         result.add(resOption1);
 
         ResOption resOption2 = new ResOption();
         resOption2.setPath(path2);
         resOption2.setName(reqFloodPrevent.getProgrammeName()+"-灵活调度");
+        resOption2.setInform(inform);
         result.add(resOption2);
 
         ResOption resOption3 = new ResOption();
         resOption3.setPath(path3);
         resOption3.setName(reqFloodPrevent.getProgrammeName()+"-预泄调度");
+        resOption3.setInform(inform);
         result.add(resOption3);
 
         return result;
     }
-
 
 
     public static void Read(Basin basin,String basinStr) {
@@ -215,6 +242,76 @@ public class Cascade{
         catch (Exception e){
             throw new RuntimeException("流域参数读取有误");
         }
+    }
+    public static String Update(Basin basin,ReqCurve reqCurve){
+        String inform="";
+        if(reqCurve==null){
+            inform+="未获得曲线；";
+        }
+        else{
+            if(reqCurve.getCapacityCurves()==null){
+                inform+="未获得库容曲线；";
+            }
+            else{
+                Map<String,List<CurveParam>> capacityCurves = reqCurve.getCapacityCurves();
+                for(Reservoir reservoir:basin.getReservoirs()){
+                    boolean judge=true;
+                    String reservoirName = reservoir.getName();
+                    //库容曲线
+                    for(String string:capacityCurves.keySet()){
+                        if(string.equals(reservoirName)&&capacityCurves.get(string).size()!=0){
+                            reservoir.setCapacityCurve(capacityCurves.get(string));
+                            judge=false;
+                            break;
+                        }
+                    }
+                    if(judge) inform+="未获得"+reservoirName+"库容曲线；";
+                }
+            }
+
+            if(reqCurve.getGateCurves()==null){
+                inform+="未获得闸门曲线；";
+            }
+            else{
+                Map<String,Map<String,List<CurveParam>>> gateCurves=reqCurve.getGateCurves();
+                //创建一个全为true的judge键值对
+                Map<String,Map<String,Boolean>> judge =new HashMap<>();
+                for(Reservoir reservoir:basin.getReservoirs()){
+                    Map<String,Boolean> judge1=new HashMap<>();
+                    for (Gate gate:reservoir.getGates()){
+                        judge1.put(gate.getName(),true);
+                    }
+                    judge.put(reservoir.getName(),judge1);
+
+                }
+                //逐个水库的逐个闸门进行遍历
+                for(Reservoir reservoir:basin.getReservoirs()){
+                    String reservoirName = reservoir.getName();
+                    for (Gate gate:reservoir.getGates()){
+                        String gateName = gate.getName();
+                        for(String string:gateCurves.keySet()){
+                            if(string.equals(reservoirName)&&gateCurves.get(string)!=null){
+                                for(String str:gateCurves.get(string).keySet()){
+                                    if(str.equals(gateName)&&gateCurves.get(string).get(str).size()!=0){
+                                        gate.setCurve(gateCurves.get(string).get(str));
+                                        judge.get(reservoirName).put(gateName,false);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                //判断哪个曲线未进行更新
+                for(String string:judge.keySet()){
+                    for(String str:judge.get(string).keySet()){
+                        if(judge.get(string).get(str)){
+                            inform+="未获得"+string+str+"闸门曲线；";
+                        }
+                    }
+                }
+            }
+        }
+        return inform;
     }
     public static void Write(String path,List<Option> options) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
