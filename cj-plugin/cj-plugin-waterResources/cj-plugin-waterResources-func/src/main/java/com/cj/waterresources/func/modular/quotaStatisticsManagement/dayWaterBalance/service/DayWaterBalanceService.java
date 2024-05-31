@@ -21,5 +21,7 @@ public interface DayWaterBalanceService extends IService<DayWaterBalance> {
     RestResponse addFirst(List<WaterFeeStatisticsDetails> detailsList, Integer day);
     RestResponse update(List<WaterFeeStatisticsDetails> detailsList,Integer day);
 
+    Double getStationTotalValue(String station,String time);
+
 }
 

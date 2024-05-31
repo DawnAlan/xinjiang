@@ -30,5 +30,7 @@ public class WaterDailyParamSelectRes implements Serializable {
     @ApiModelProperty(value = "类别（1、流量  2、水位 3、库容  4、浊度）")
     private Integer category;
 
+    private String unitId;
+
     private List<WaterDailyParamSelectRes> children;
 }

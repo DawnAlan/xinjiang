@@ -203,7 +203,7 @@ public class TrendsTableParamServiceImpl extends ServiceImpl<TrendsTableParamMap
             TrendsTableParam tableParam = this.getById(req.getParam().getId());
             if(StringUtils.isNotEmpty(tableParam.getUnitId())){
                 if(!tableParam.getUnitId().equals(req.getParam().getUnitId())){
-                    List<TrendsTableParam> listed = this.lambdaQuery().eq(TrendsTableParam::getUnitId, req.getParam().getUnitId()).list();
+                    List<TrendsTableParam> listed = this.lambdaQuery().eq(TrendsTableParam::getUnitId, req.getParam().getUnitId()).eq(TrendsTableParam::getUseType,req.getParam().getUseType()).list();
                     if(!listed.isEmpty()){
                         return RestResponse.no("请勿重复选择");
                     }

@@ -23,5 +23,7 @@ public interface TenDaysWaterBalanceService extends IService<TenDaysWaterBalance
 
     RestResponse selectTotalForIndexWarning(String stationName,String time);
 
+    Double getStationTotalValue(String station,Integer year,Integer month,String tenDays);
+
 }
 

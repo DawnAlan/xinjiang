@@ -36,6 +36,10 @@ import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.service.
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.service.WaterFeeStatisticsTotalService;
 import com.cj.waterresources.func.modular.waterPrice.waterPriceManagement.entity.WaterPriceManagement;
 import com.cj.waterresources.func.modular.waterPrice.waterPriceManagement.service.WaterPriceManagementService;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hd.mapper.DayWaterSituationStatisticsTableHdMapper;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hx.mapper.DayWaterSituationStatisticsTableHxMapper;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.mapper.DayWaterSituationStatisticsTableQsLhMapper;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.mapper.DayWaterSituationStatisticsTableQsMapper;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.service.DayWaterSituationStatisticsTableQsService;
 import org.apache.commons.lang3.StringUtils;
 import org.checkerframework.checker.units.qual.A;
@@ -99,6 +103,18 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
 
     @Autowired
     private IndustrialWaterFeeService industrialWaterFeeService;
+
+    @Autowired
+    private DayWaterSituationStatisticsTableHdMapper hdMapper;
+
+    @Autowired
+    private DayWaterSituationStatisticsTableHxMapper hxMapper;
+
+    @Autowired
+    private DayWaterSituationStatisticsTableQsMapper qsMapper;
+
+    @Autowired
+    private DayWaterSituationStatisticsTableQsLhMapper qsLhMapper;
 
     @Autowired
     private RedisUtil redisUtil;
@@ -1347,56 +1363,6 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                     }
                 }
             }
-            /*if(station.equals("渠首管理站")){
-                Double laishui = 0.0;
-                Double yinshui = 0.0;
-                Double zonggan = 0.0;
-
-                for(WaterFeeStatisticsDetails details:waterFeeStatisticsDetails){
-                    String paramName = (String)redisUtil.get("trendsTableParam:name:"+details.getTableHeadId());
-                    //String paramName = trendsTableParamService.getById(details.getTableHeadId()).getParamName();
-                    if(!paramName.equals("合计") && !paramName.equals("来水") && !paramName.equals("引水") && !paramName.equals("泄洪") && (paramName.equals("东干") || paramName.equals("西干") || paramName.equals("漏斗"))){
-                        zonggan += details.getV()==null?0.0:details.getV();
-                    }
-                }
-                for(WaterFeeStatisticsDetails details:waterFeeStatisticsDetails){
-                    String paramName = (String)redisUtil.get("trendsTableParam:name:"+details.getTableHeadId());
-                    //String paramName = trendsTableParamService.getById(details.getTableHeadId()).getParamName();
-                    if(paramName.equals("总干")){
-                        details.setV(zonggan);
-                    }
-                }
-
-                for(WaterFeeStatisticsDetails details:waterFeeStatisticsDetails){
-                    String paramName = (String)redisUtil.get("trendsTableParam:name:"+details.getTableHeadId());
-                    //String paramName = trendsTableParamService.getById(details.getTableHeadId()).getParamName();
-                    if(!paramName.equals("合计") && !paramName.equals("来水") && !paramName.equals("引水") && !paramName.equals("总干") && !paramName.equals("泄洪")){
-                        yinshui += details.getV()==null?0.0:details.getV();
-                    }
-                }
-                for(WaterFeeStatisticsDetails details:waterFeeStatisticsDetails){
-                    String paramName = (String)redisUtil.get("trendsTableParam:name:"+details.getTableHeadId());
-                    //String paramName = trendsTableParamService.getById(details.getTableHeadId()).getParamName();
-                    if(paramName.equals("引水")){
-                        details.setV(yinshui);
-                    }
-                }
-
-                for(WaterFeeStatisticsDetails details:waterFeeStatisticsDetails){
-                    String paramName = (String)redisUtil.get("trendsTableParam:name:"+details.getTableHeadId());
-                    //String paramName = trendsTableParamService.getById(details.getTableHeadId()).getParamName();
-                    if(!paramName.equals("合计") && (paramName.equals("引水") || paramName.equals("泄洪"))){
-                        laishui += details.getV()==null?0.0:details.getV();
-                    }
-                }
-                for(WaterFeeStatisticsDetails details:waterFeeStatisticsDetails){
-                    String paramName = (String)redisUtil.get("trendsTableParam:name:"+details.getTableHeadId());
-                    //String paramName = trendsTableParamService.getById(details.getTableHeadId()).getParamName();
-                    if(paramName.equals("来水")){
-                        details.setV(laishui);
-                    }
-                }
-            }*/
             boolean b = this.updateBatchById(waterFeeStatisticsDetails);
             if (b) {
                 return RestResponse.ok("更新成功");
@@ -2094,14 +2060,8 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
             }
             List<TrendsTableParam> trendsTableParamListTemp = JSONObject.parseArray(mk, TrendsTableParam.class);
             List<TrendsTableParam> trendsTableParamList = trendsTableParamListTemp.stream().filter(t -> t.getUseType() == 2).collect(Collectors.toList());
-            String start = details1.getYear()+"-"+details1.getStatisticsDate().substring(0,2)+"-"+details1.getStatisticsDate().substring(3,5);
-            String end = details2.getYear()+"-"+details2.getStatisticsDate().substring(0,2)+"-"+details2.getStatisticsDate().substring(3,5);
-            List<TrendsTableParam> collect5 = trendsTableParamList.stream().filter(t -> t.getUseType() == 2).filter(t -> t.getUseStation().equals(details1.getStation())).collect(Collectors.toList());
-            List<String> tableHeadName = getTableHeadName(collect5);
             long ss = System.currentTimeMillis();
-            List<IrrigatedPlatformDataInfo> list3 = irrigatedPlatformDataInfoService.lambdaQuery().in(IrrigatedPlatformDataInfo::getMonitorName,tableHeadName).between(IrrigatedPlatformDataInfo::getMonitorTime,start+" 00:00:00",end+" 23:59:59").list();
-            long ee = System.currentTimeMillis();
-            log.warn("方法耗时：" + (ee - ss) + "ms");
+
             for(List<WaterFeeStatisticsDetails> waterFeeStatisticsDetails:waterFeeStatisticsDetailsList){
                 WaterFeeStatisticsDetails details = waterFeeStatisticsDetails.get(0);
                 Map<String, String> timeRange = getTimeRange(details.getYear(), details.getMonth(), details.getTenDays());
@@ -2113,15 +2073,23 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                             String tableParamString = (String)redisUtil.get("trendsTableParam:object:"+t.getTableHeadId());
                             TrendsTableParam tableParam = JSONObject.parseObject(tableParamString, TrendsTableParam.class);
                             if(t.getStation().contains("河东")){
-                                Double v = (Double)redisUtil.get("A3:data:hd:waterFee:today:"+dateTemp+":"+tableParam.getUnitId());
-                                t.setV(v==null?null:v);
+                                String s = trendsTableParamListTemp.stream().filter(p ->p.getUseStation().contains("河东") && p.getUseType() == 1 && p.getUnitId() != null && p.getUnitId().equals(tableParam.getUnitId())).map(TrendsTableParam::getId).findFirst().get();
+                                Double aDouble = hdMapper.selectValueByTime(dateTemp, s,"今日均");
+                                //Double v = (Double)redisUtil.get("A3:data:hd:waterFee:today:"+dateTemp+":"+tableParam.getUnitId());
+                                t.setV(aDouble==null?null:aDouble);
                             }
                             if(t.getStation().contains("河西")){
-                                Double v = (Double)redisUtil.get("A3:data:hx:waterFee:today:"+dateTemp+":"+tableParam.getUnitId());
-                                t.setV(v==null?null:v);
+                                String s = trendsTableParamListTemp.stream().filter(p ->p.getUseStation().contains("河西") &&  p.getUseType() == 1 && p.getUnitId() != null && p.getUnitId().equals(tableParam.getUnitId())).map(TrendsTableParam::getId).findFirst().get();
+                                Double aDouble = hxMapper.selectValueByTime(dateTemp, s,"今日均");
+                                //Double v = (Double)redisUtil.get("A3:data:hx:waterFee:today:"+dateTemp+":"+tableParam.getUnitId());
+                                t.setV(aDouble==null?null:aDouble);
                             }
                             if(t.getStation().contains("渠首")){
-                                Double v = (Double)redisUtil.get("A3:data:qs:waterFee:today:"+dateTemp+":"+tableParam.getUnitId());
+                                String s = trendsTableParamListTemp.stream().filter(p ->p.getUseStation().contains("渠首") &&  p.getUseType() == 1 && p.getUnitId() != null && p.getUnitId().equals(tableParam.getUnitId())).map(TrendsTableParam::getId).findFirst().get();
+                                Double aDouble1 = qsMapper.selectValueByTime(dateTemp, s,"今日均");
+                                Double aDouble2 = qsLhMapper.selectValueByTime(dateTemp, s,"今日均");
+                                Double v = (aDouble1==null?0.00:aDouble1)+(aDouble2==null?0.00:aDouble2);
+                                //Double v = (Double)redisUtil.get("A3:data:qs:waterFee:today:"+dateTemp+":"+tableParam.getUnitId());
                                 t.setV(v==null?null:v);
                             }
                         }
@@ -3228,6 +3196,8 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                 }
             }
             redisUtil.del("waterFee:"+details1.getStation()+details1.getYear()+details1.getMonth()+details1.getTenDays());
+            long ee = System.currentTimeMillis();
+            log.warn("方法耗时：" + (ee - ss) + "ms");
             return RestResponse.ok("添加成功");
         }catch (Exception e){
             log.error("水费创建失败，事务回滚");

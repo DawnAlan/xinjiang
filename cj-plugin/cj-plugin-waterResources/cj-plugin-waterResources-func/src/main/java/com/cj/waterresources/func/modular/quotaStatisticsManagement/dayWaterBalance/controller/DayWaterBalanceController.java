@@ -41,5 +41,13 @@ public class DayWaterBalanceController{
         return dayWaterBalanceService.selectList(req);
     }
 
+    @ApiOperationSupport(order = 8)
+    @ApiOperation("查询管理站总水量")
+    @CommonLog(value = "查询管理站总水量")
+    @GetMapping("/getStationTotalValue")
+    public Double getStationTotalValue(@RequestParam("station") String station,
+                                       @RequestParam("time") String time) {
+        return dayWaterBalanceService.getStationTotalValue(station,time);
+    }
 }
 

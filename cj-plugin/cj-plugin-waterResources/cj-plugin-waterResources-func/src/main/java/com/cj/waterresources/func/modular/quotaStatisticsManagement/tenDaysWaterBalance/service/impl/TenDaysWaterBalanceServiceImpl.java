@@ -19,6 +19,7 @@ import com.cj.waterresources.func.modular.waterPrice.waterDistributionRatio.serv
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.bean.res.SelectTotalForIndexRes;
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.bean.vo.TrendsTableParamVo;
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.entity.WaterFeeStatisticsTotal;
+import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.service.WaterFeeStatisticsTotalService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,9 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.text.DecimalFormat;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.lang.Float.NaN;
@@ -47,6 +46,9 @@ public class TenDaysWaterBalanceServiceImpl extends ServiceImpl<TenDaysWaterBala
 
     @Autowired
     private WaterDistributionRatioService waterDistributionRatioService;
+
+    @Autowired
+    private WaterFeeStatisticsTotalService waterFeeStatisticsTotalService;
 
     @Autowired
     private RedisUtil redisUtil;
@@ -80,7 +82,8 @@ public class TenDaysWaterBalanceServiceImpl extends ServiceImpl<TenDaysWaterBala
         List<TrendsTableParam> trendsTableParamList = trendsTableParamListTemp.stream().filter(t -> t.getUseType() == 2 && t.getUseStation().equals(totalList.get(0).getStation())).collect(Collectors.toList());
         List<TenDaysWaterBalance> result = new ArrayList<>();
         Double actualWaterReceived = 0.0;
-        Double allRatio = 0.00;
+        WaterFeeStatisticsTotal total1 = totalList.get(0);
+        Double stationTotalValue = getStationTotalValue(total1.getStation(), total1.getYear(), total1.getMonth(), total1.getTenDays());
         List<String> tableHeadIdList = totalList.stream().map(WaterFeeStatisticsTotal::getTableHeadId).collect(Collectors.toList());
         TrendsTableParam trendsTableParamForTotal = null;
         for(TrendsTableParam param:trendsTableParamList){
@@ -94,22 +97,6 @@ public class TenDaysWaterBalanceServiceImpl extends ServiceImpl<TenDaysWaterBala
             actualWaterReceived = resultTemp.get(0).getCurrentWaterVolume();
         }
 
-        for(WaterFeeStatisticsTotal total:totalList){
-            TrendsTableParam param = trendsTableParamService.lambdaQuery().
-                    eq(TrendsTableParam::getId, total.getTableHeadId()).
-                    eq(TrendsTableParam::getPId, "0").
-                    eq(TrendsTableParam::getParamName, "合计").one();
-            if(null!= param){
-                WaterDistributionRatio ratio = waterDistributionRatioService.lambdaQuery().eq(WaterDistributionRatio::getStation, total.getStation()).
-                        eq(WaterDistributionRatio::getYear, total.getYear()).
-                        eq(WaterDistributionRatio::getMonth, total.getMonth()).
-                        eq(WaterDistributionRatio::getTenDays, total.getTenDays()).
-                        eq(WaterDistributionRatio::getTableHeadId, total.getTableHeadId()).one();
-                if(null != ratio){
-                    allRatio = ratio.getV();
-                }
-            }
-        }
         for(WaterFeeStatisticsTotal total:totalList){
             TenDaysWaterBalance balance = new TenDaysWaterBalance();
             TrendsTableParam param = trendsTableParamService.lambdaQuery().
@@ -135,12 +122,12 @@ public class TenDaysWaterBalanceServiceImpl extends ServiceImpl<TenDaysWaterBala
                     eq(WaterDistributionRatio::getTableHeadId, total.getTableHeadId()).one();
             if(null != ratio){
                 //按比例水量
-                balance.setProportionalWaterQuantity(allRatio==0.00?null: NumberUtil.holdDecimal(((ratio.getV()==null?0.0:ratio.getV())/allRatio)* actualWaterReceived,3));
+                balance.setProportionalWaterQuantity(NumberUtil.holdDecimal(((ratio.getV()==null?0.0:ratio.getV())/100)* (stationTotalValue==null?0.0:stationTotalValue),0));
             }
             //实际水量
             balance.setActualWaterVolume(total.getCurrentWaterVolume());
             //实际比例
-            Double actualProportion = actualWaterReceived==0.0?0.0:balance.getActualWaterVolume()/actualWaterReceived;
+            Double actualProportion = stationTotalValue==0.0?0.0:balance.getActualWaterVolume()/stationTotalValue;
             balance.setActualProportion(Double.isNaN(actualProportion)?null:Double.parseDouble(df.format(actualProportion*100)));
             //盈亏水量
             balance.setProfitAndLossWaterVolume(balance.getActualWaterVolume()-(balance.getProportionalWaterQuantity()==null?0.0:balance.getProportionalWaterQuantity()));
@@ -176,6 +163,8 @@ public class TenDaysWaterBalanceServiceImpl extends ServiceImpl<TenDaysWaterBala
             List<TrendsTableParam> trendsTableParamList = trendsTableParamListTemp.stream().filter(t -> t.getUseType() == 2 && t.getUseStation().equals(totalList.get(0).getStation())).collect(Collectors.toList());
             List<TenDaysWaterBalance> result = new ArrayList<>();
             Double actualWaterReceived = 0.0;
+            WaterFeeStatisticsTotal total1 = totalList.get(0);
+            Double stationTotalValue = getStationTotalValue(total1.getStation(), total1.getYear(), total1.getMonth(), total1.getTenDays());
             List<String> tableHeadIdList = totalList.stream().map(WaterFeeStatisticsTotal::getTableHeadId).collect(Collectors.toList());
             TrendsTableParam trendsTableParamForTotal = null;
             for(TrendsTableParam param:trendsTableParamList){
@@ -189,23 +178,7 @@ public class TenDaysWaterBalanceServiceImpl extends ServiceImpl<TenDaysWaterBala
                 List<WaterFeeStatisticsTotal> resultTemp = totalList.stream().filter(t -> t.getTableHeadId().equals(id)).collect(Collectors.toList());
                 actualWaterReceived = resultTemp.get(0).getCurrentWaterVolume();
             }
-            Double allRatio = 0.00;
-            for(WaterFeeStatisticsTotal total:totalList){
-                TrendsTableParam param = trendsTableParamService.lambdaQuery().eq(TrendsTableParam::getId, total.getTableHeadId()).eq(TrendsTableParam::getPId, "0").eq(TrendsTableParam::getParamName, "合计").one();
-                if(null!= param){
-                    WaterDistributionRatio ratio = waterDistributionRatioService.lambdaQuery().eq(WaterDistributionRatio::getStation, total.getStation()).
-                            eq(WaterDistributionRatio::getYear, total.getYear()).
-                            eq(WaterDistributionRatio::getMonth, total.getMonth()).
-                            eq(WaterDistributionRatio::getTenDays, total.getTenDays()).
-                            eq(WaterDistributionRatio::getTableHeadId, total.getTableHeadId()).one();
-                    if(null != ratio) {
-                        //总实收水量
-                        allRatio = ratio.getV();
-                    }
-                }
-            }
             for(TenDaysWaterBalance balance:list){
-
                 for(WaterFeeStatisticsTotal total:totalList){
                     if(balance.getTableHeadId().equals(total.getTableHeadId())){
                         TrendsTableParam param = trendsTableParamService.lambdaQuery().eq(TrendsTableParam::getId, total.getTableHeadId()).eq(TrendsTableParam::getPId, "0").eq(TrendsTableParam::getParamName, "合计").one();
@@ -221,12 +194,12 @@ public class TenDaysWaterBalanceServiceImpl extends ServiceImpl<TenDaysWaterBala
                                 eq(WaterDistributionRatio::getTableHeadId, total.getTableHeadId()).one();
                         if(null != ratio){
                             //按比例水量
-                            balance.setProportionalWaterQuantity(allRatio==0.00?null: NumberUtil.holdDecimal(((ratio.getV()==null?0.0:ratio.getV())/allRatio)* actualWaterReceived,3));
+                            balance.setProportionalWaterQuantity(NumberUtil.holdDecimal(((ratio.getV()==null?0.0:ratio.getV())/100)* (stationTotalValue==null?0.0:stationTotalValue),0));
                         }
                         //实际水量
                         balance.setActualWaterVolume(total.getCurrentWaterVolume()==null?0.0:total.getCurrentWaterVolume());
                         //实际比例
-                        Double actualProportion = actualWaterReceived==0.0?0.0:balance.getActualWaterVolume()/actualWaterReceived;
+                        Double actualProportion = stationTotalValue==0.0?0.0:balance.getActualWaterVolume()/stationTotalValue;
                         balance.setActualProportion(Double.isNaN(actualProportion)?null:Double.parseDouble(df.format(actualProportion*100)));
                         //盈亏水量
                         balance.setProfitAndLossWaterVolume(balance.getActualWaterVolume()-(balance.getProportionalWaterQuantity()==null?0.0:balance.getProportionalWaterQuantity()));
@@ -320,6 +293,73 @@ public class TenDaysWaterBalanceServiceImpl extends ServiceImpl<TenDaysWaterBala
         String format = df.format(value);
         double v = Double.parseDouble(format);
         return v;
+    }
+    @Override
+    public Double getStationTotalValue(String station,Integer year,Integer month,String tenDays){
+        String mk = (String) redisUtil.get("trendsTableParam:list");
+        if(StringUtils.isEmpty(mk)){
+            trendsTableParamService.updateCache();
+            mk = (String) redisUtil.get("trendsTableParam:list");
+        }
+        List<TrendsTableParam> trendsTableParamListTemp = JSONObject.parseArray(mk, TrendsTableParam.class);
+        List<TrendsTableParam> trendsTableParamList = trendsTableParamListTemp.stream().filter(t -> t.getUseType() == 2).collect(Collectors.toList());
+        Map<String, List<TrendsTableParam>> collect = trendsTableParamList.stream().collect(Collectors.groupingBy(TrendsTableParam::getUseStation));
+        Set<String> strings = collect.keySet();
+        if (station.contains("河东")){
+            List<String> ids = new ArrayList<>();
+            for(String s: strings){
+                if(s.contains("河东")){
+                    List<TrendsTableParam> list = collect.get(s);
+                    ids.add(list.stream().filter(t->t.getPId().equals("0") && t.getParamName().equals("合计")).map(TrendsTableParam::getId).findFirst().get());
+                }
+            }
+            List<WaterFeeStatisticsTotal> waterFeeStatisticsTotalList = waterFeeStatisticsTotalService.lambdaQuery().
+                    eq(WaterFeeStatisticsTotal::getYear, year).
+                    eq(WaterFeeStatisticsTotal::getMonth, month).
+                    eq(WaterFeeStatisticsTotal::getTenDays, tenDays).
+                    in(WaterFeeStatisticsTotal::getTableHeadId, ids).list();
+            if(waterFeeStatisticsTotalList.isEmpty()){
+                return 0.00;
+            }
+            return waterFeeStatisticsTotalList.stream().map(WaterFeeStatisticsTotal::getCurrentWaterVolume).reduce(Double::sum).orElse(0.00);
+        }
+        if (station.contains("河西")){
+            List<String> ids = new ArrayList<>();
+            for(String s: strings){
+                if(s.contains("河西")){
+                    List<TrendsTableParam> list = collect.get(s);
+                    ids.add(list.stream().filter(t->t.getPId().equals("0") && t.getParamName().equals("合计")).map(TrendsTableParam::getId).findFirst().get());
+                }
+            }
+            List<WaterFeeStatisticsTotal> waterFeeStatisticsTotalList = waterFeeStatisticsTotalService.lambdaQuery().
+                    eq(WaterFeeStatisticsTotal::getYear, year).
+                    eq(WaterFeeStatisticsTotal::getMonth, month).
+                    eq(WaterFeeStatisticsTotal::getTenDays, tenDays).
+                    in(WaterFeeStatisticsTotal::getTableHeadId, ids).list();
+            if(waterFeeStatisticsTotalList.isEmpty()){
+                return 0.00;
+            }
+            return waterFeeStatisticsTotalList.stream().map(WaterFeeStatisticsTotal::getCurrentWaterVolume).reduce(Double::sum).orElse(0.00);
+        }
+        if (station.contains("渠首")){
+            List<String> ids = new ArrayList<>();
+            for(String s: strings){
+                if(s.contains("渠首")){
+                    List<TrendsTableParam> list = collect.get(s);
+                    ids.add(list.stream().filter(t->t.getPId().equals("0") && t.getParamName().equals("合计")).map(TrendsTableParam::getId).findFirst().get());
+                }
+            }
+            List<WaterFeeStatisticsTotal> waterFeeStatisticsTotalList = waterFeeStatisticsTotalService.lambdaQuery().
+                    eq(WaterFeeStatisticsTotal::getYear, year).
+                    eq(WaterFeeStatisticsTotal::getMonth, month).
+                    eq(WaterFeeStatisticsTotal::getTenDays, tenDays).
+                    in(WaterFeeStatisticsTotal::getTableHeadId, ids).list();
+            if(waterFeeStatisticsTotalList.isEmpty()){
+                return 0.00;
+            }
+            return waterFeeStatisticsTotalList.stream().map(WaterFeeStatisticsTotal::getCurrentWaterVolume).reduce(Double::sum).orElse(0.00);
+        }
+        return 0.00;
     }
 }
 

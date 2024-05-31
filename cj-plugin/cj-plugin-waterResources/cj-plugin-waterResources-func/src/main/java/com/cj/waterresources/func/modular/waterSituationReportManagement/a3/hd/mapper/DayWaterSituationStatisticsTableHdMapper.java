@@ -58,5 +58,8 @@ public interface DayWaterSituationStatisticsTableHdMapper extends BaseMapper<Day
 
     List<DayWaterSituationStatisticsTableHd> planComparedToActual(@Param("ids")List<String> ids, @Param("startTime")String startTime, @Param("endTime")String endTime);
 
+    @Select("select V from DAY_WATER_SITUATION_STATISTICS_TABLE_HD WHERE TO_CHAR(RECORD_TIME,'YYYY-MM-DD') = #{recordTime}  and TIME = #{time} and TABLE_HEAD_ID = #{tableHeadId}")
+    Double selectValueByTime(@Param("recordTime")String recordTime,@Param("tableHeadId")String tableHeadId,@Param("time") String time);
+
 }
 

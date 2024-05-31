@@ -48,5 +48,16 @@ public class TenDaysWaterBalanceController{
     public RestResponse selectTotalForIndexWarning(@RequestParam("stationName") String stationName,@RequestParam("time") String time) {
         return tenDaysWaterBalanceService.selectTotalForIndexWarning(stationName,time);
     }
+
+    @ApiOperationSupport(order = 8)
+    @ApiOperation("查询管理站总水量")
+    @CommonLog(value = "查询管理站总水量")
+    @GetMapping("/getStationTotalValue")
+    public Double getStationTotalValue(@RequestParam("station") String station,
+                                             @RequestParam("year") Integer year,
+                                             @RequestParam("month") Integer month,
+                                             @RequestParam("tenDays") String tenDays) {
+        return tenDaysWaterBalanceService.getStationTotalValue(station, year, month, tenDays);
+    }
 }
 
