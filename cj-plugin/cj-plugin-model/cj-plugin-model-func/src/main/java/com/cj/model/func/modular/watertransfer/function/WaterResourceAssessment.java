@@ -112,9 +112,10 @@ public class WaterResourceAssessment {
         appraise11.put("可用水量利用率",waterRate);
 
         for (int i=0;i<reqList.size();i++){
-             appraise+= schemeName[i]+"：在调度区间内来水预报总水量为"+inflowWater[i]+"万m³,"+"生态水量为"+ecologyWater[i]+"万m³,"+"各单位需水总量为"+
+            double ecoWater=Double.parseDouble(da.format(ecologyWater[i]+wasteWater[i]));
+             appraise+= schemeName[i]+"：在调度区间内来水预报总水量为"+inflowWater[i]+"万m³,"+"生态水量为"+ecoWater+"万m³,"+"各单位需水总量为"+
             waterDemand[i]+"万m³,"+"各单位供水缺额总量为"+ waterLack[i]+"万m³,"+"在楼庄子的蓄水量为"+dischargeLzz[i]+"万m³,头屯河蓄水量为"+dischargeTth[i]+"万m³,总蓄水量为"+storgeAll[i]+
-                     "万m³,可供水量浪费量为"+wasteWater[i]+"万m³,可供水量利用率为"+waterRate[i]+";";
+                     "万m³,可供水量利用率为"+waterRate[i]+";";
         }
         schemeOptimization="推荐方案："+schemeName[(int)n]+",可供水量利用率较高;";
         appraise=appraise+schemeOptimization;
@@ -363,7 +364,7 @@ public class WaterResourceAssessment {
 
         for (int i = 0; i < data.size(); i++)
         {
-            if (data.get(i).getStationName().equals("楼庄子生态用水")){
+            if (data.get(i).getStationName().equals("头屯河生态用水")){
                 ecologyWater+=data.get(i).getWater();
             }
 
