@@ -52,13 +52,20 @@ public class DevLogServiceImpl extends ServiceImpl<DevLogMapper, DevLog> impleme
     @Override
     public Page<DevLog> page(DevLogPageParam devLogPageParam) {
         QueryWrapper<DevLog> queryWrapper = new QueryWrapper<>();
-        if(ObjectUtil.isNotEmpty(devLogPageParam.getCategory())) {
+        if (ObjectUtil.isNotEmpty(devLogPageParam.getCategory())) {
             queryWrapper.lambda().eq(DevLog::getCategory, devLogPageParam.getCategory());
         }
-        if(ObjectUtil.isNotEmpty(devLogPageParam.getSearchKey())) {
+        if (ObjectUtil.isNotEmpty(devLogPageParam.getSearchKey())) {
             queryWrapper.lambda().like(DevLog::getName, devLogPageParam.getSearchKey());
         }
-        if(ObjectUtil.isAllNotEmpty(devLogPageParam.getSortField(), devLogPageParam.getSortOrder())) {
+        if (devLogPageParam.getStartTime() != null && devLogPageParam.getEndTime() != null) {
+            queryWrapper.lambda().between(DevLog::getOpTime,devLogPageParam.getStartTime(),devLogPageParam.getEndTime());
+        }
+        if (ObjectUtil.isNotEmpty(devLogPageParam.getName())) {
+            queryWrapper.lambda().like(DevLog::getOpUser, devLogPageParam.getName());
+        }
+
+        if (ObjectUtil.isAllNotEmpty(devLogPageParam.getSortField(), devLogPageParam.getSortOrder())) {
             CommonSortOrderEnum.validate(devLogPageParam.getSortOrder());
             queryWrapper.orderBy(true, devLogPageParam.getSortOrder().equals(CommonSortOrderEnum.ASC.getValue()),
                     StrUtil.toUnderlineCase(devLogPageParam.getSortField()));

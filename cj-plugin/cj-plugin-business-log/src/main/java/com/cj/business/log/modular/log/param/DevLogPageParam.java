@@ -5,6 +5,8 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Date;
+
 /**
  * 日志查询参数
  *
@@ -38,4 +40,15 @@ public class DevLogPageParam {
     /** 日志名称关键词 */
     @ApiModelProperty(value = "日志名称关键词")
     private String searchKey;
+
+    //率定开始时间
+    @ApiModelProperty(value = "开始时间")
+    private Date startTime;
+    //率定结束时间
+    @ApiModelProperty(value = "结束时间")
+    private Date endTime;
+
+    /** 日志名称关键词 */
+    @ApiModelProperty(value = "操作员")
+    private String name;
 }
