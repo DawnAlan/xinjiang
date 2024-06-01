@@ -14,6 +14,7 @@ import cn.hutool.json.JSONObject;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.cj.auth.modular.login.service.AuthService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import com.cj.auth.api.SaBaseLoginUserApi;
 import com.cj.auth.core.enums.SaClientTypeEnum;
@@ -68,10 +69,13 @@ public class AuthServiceImpl implements AuthService {
     @Resource
     private CommonCacheOperator commonCacheOperator;
 
+    @Value("${auth.captcha.circleCount:0}")
+    private Integer circleCount;
+
     @Override
     public AuthPicValidCodeResult getPicCaptcha(String type) {
         // 生成验证码，随机4位字符
-        CircleCaptcha circleCaptcha = CaptchaUtil.createCircleCaptcha(100, 38, 4, 10);
+        CircleCaptcha circleCaptcha = CaptchaUtil.createCircleCaptcha(100, 38, 4, circleCount);
         // 定义返回结果
         AuthPicValidCodeResult authPicValidCodeResult = new AuthPicValidCodeResult();
         // 获取验证码的值
