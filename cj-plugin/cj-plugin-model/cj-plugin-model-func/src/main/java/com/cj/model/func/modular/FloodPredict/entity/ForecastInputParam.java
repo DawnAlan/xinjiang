@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +31,8 @@ public class ForecastInputParam {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date preEndTime;//预报结束时间，必要
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private Date calibrationTime;//参数率定时间，必要
     //预报断面
     private String location;
     //预报时间类型
@@ -48,27 +51,42 @@ public class ForecastInputParam {
     private Boolean isSimulation;
     //是否为融雪模型
     private Boolean isSnowMeltModel;
+    //模型所用数据类型(前期径流，降雨，温度)
+    private Map<String,Integer> factors;
+
     //是否需要重新训练模型
     private Boolean isTrain;
+    //是否为距平值
+    private Boolean isAverage;
     //模型名称
     private String model;
     //分解层数
     public Integer vmdK;
     //模型参数表格路径
     private List<TemporaryXlsx> xlsx;
-    //前期径流
-    private Double preFlow;
-    //前期累计降雨
-    private Double preRainFall;
+
     //前期因子的数量
     public Integer history_factor;
     //前期天数
     public Integer history_day;
+    //预报天数
+    public Integer predict_day;
     //文件路径
     public String basinStr;
     //参数
     public Map<String, ShanbeiParam> paramMap;
+    //日尺度预报数据
+    private List<PredictInputData> preRainTem;
+    //前期径流
+    private Double preFlow;
+    //前期累计降雨
+    private Double preRainFall;
+    //预报雨量
+    private List<RainFallDto> rainFallDtos;
 
+    /**
+     * 模型内部参数
+     */
     private String netClass;//神经网络模式，必要
 
     private String clusterMethod;//聚类方式,在径向基网络下，必要

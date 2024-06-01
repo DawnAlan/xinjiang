@@ -7,6 +7,7 @@ import com.cj.model.func.modular.FloodPredict.Calibration.pso.*;
 import com.cj.model.func.modular.FloodPredict.entity.*;
 import com.cj.model.func.modular.FloodPredict.model.function.SnowMeltModel;
 import com.cj.model.func.modular.FloodPredict.utils.*;
+import com.cj.model.func.modular.entity.Flood;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 
 import java.io.IOException;
@@ -159,9 +160,9 @@ public class ShanBeiCalibration {
         Date startTimeBefore = cal.getTime();
         if (location.equals("3号桥")) {
             area = 690.0;
-            List<List<PredictInputData>> lzzIntegration = dataUtils.lzzRainIntegration(paramNew);
-            hour = dataUtils.pointToSurface(lzzIntegration.get(0), "小时", "3号桥");//前24小时以及期间的降雨
-            day = dataUtils.pointToSurface(lzzIntegration.get(1), "日", "3号桥");//前20天累积雨量
+            List<Map<String,List<PredictInputData>>> lzzIntegration = dataUtils.lzzRainIntegration(paramNew);
+            hour = dataUtils.pointToSurface(lzzIntegration.get(0),  "3号桥");//前24小时以及期间的降雨
+            day = dataUtils.pointToSurface(lzzIntegration.get(1),  "3号桥");//前20天累积雨量
             threeFlow = paramNew.getLzzHydrologyParam().getThreeGaugingStation();//3号桥流量
             for (int i = 0; i < threeFlow.size(); i++) {
                 if (threeFlow.get(i).getGatherTime().after(startTimeBefore) && threeFlow.get(i).getGatherTime().before(endTime)) {
@@ -175,9 +176,9 @@ public class ShanBeiCalibration {
         }
         if (location.equals("楼庄子")) {
             area = 1174.0;
-            List<List<PredictInputData>> lzzIntegration = dataUtils.lzzRainIntegration(paramNew);
-            hour = dataUtils.pointToSurface(lzzIntegration.get(0), "小时", "楼庄子");//前10小时以及期间的降雨
-            day = dataUtils.pointToSurface(lzzIntegration.get(1), "日", "楼庄子");//前20天累积雨量
+            List<Map<String,List<PredictInputData>>> lzzIntegration = dataUtils.lzzRainIntegration(paramNew);
+            hour = dataUtils.pointToSurface(lzzIntegration.get(0),  "楼庄子");//前10小时以及期间的降雨
+            day = dataUtils.pointToSurface(lzzIntegration.get(1),  "楼庄子");//前20天累积雨量
             threeFlow = paramNew.getLzzHydrologyParam().getLzzInput();//流量
             for (int i = 0; i < threeFlow.size(); i++) {
                 if (threeFlow.get(i).getGatherTime().after(startTimeBefore) && threeFlow.get(i).getGatherTime().before(endTime)) {
@@ -187,9 +188,9 @@ public class ShanBeiCalibration {
         }
         if (location.equals("头屯河")) {
             area = 259.0;
-            List<List<PredictInputData>> qjIntegration = dataUtils.irrigateRainIntegration(paramNew);
-            hour = dataUtils.pointToSurface(qjIntegration.get(0), "小时", "头屯河");//前10小时以及期间的降雨
-            day = dataUtils.pointToSurface(qjIntegration.get(1), "日", "头屯河");//前20天累积雨量
+            List<Map<String,List<PredictInputData>>> qjIntegration = dataUtils.irrigateRainIntegration(paramNew);
+            hour = dataUtils.pointToSurface(qjIntegration.get(0),  "头屯河");//前10小时以及期间的降雨
+            day = dataUtils.pointToSurface(qjIntegration.get(1),  "头屯河");//前20天累积雨量
             qjFlow = paramNew.getIrrigatedHydrologyParam().getTthInput();//流量
             for (int i = 0; i < qjFlow.size(); i++) {
                 if (qjFlow.get(i).getMonitorTime().after(startTimeBefore) && qjFlow.get(i).getMonitorTime().before(endTime)) {
@@ -342,10 +343,9 @@ public class ShanBeiCalibration {
      * @return
      * @throws IOException
      */
-    public Object[][] oneSnowFlow(String location, Date startTime, int number) throws IOException {
+    public Object[][] oneSnowFlow(String location, Date startTime, int number) {
         Object[][] result = new Object[number / 24 + 1][2];
         location = (location.equals("头屯河") ? "楼头区间" : location);
-//        Object[][] input = ExcelTool.readExcel(inputUtils.dataPath + "头屯河历史数据1.xlsx", location + "日");
         Object[][] input = InputUtils.historyData.get(location+"日");
         int days = number / 24 + 1;
         for (int i = 0; i < days; i++) {
@@ -360,19 +360,26 @@ public class ShanBeiCalibration {
             Object[][] snowMeltInput = new MachineDataUtils().snowMeltDate(snowData, location);
             SnowMeltModel snowMeltModel = new SnowMeltModel();
             ForecastInputParam snowParam = new ForecastInputParam();
-            InputUtils inputUtils = new InputUtils();
             snowParam.setLocation(location);
             snowParam.setPreStartTime(startTime);
             snowParam.setIsSnowMeltModel(true);
+            snowParam.setIsAverage(true);
             snowParam.setPeriodStepNumber(1);
             snowParam.setPeriodStepSize(1);
+            ForecastInputParamNew aNew = new ForecastInputParamNew();
+            aNew.setPeriodTimeNum(1);
+            aNew.setPeriodTimeStep(1);
+            aNew.setPredictionTime(startTime);
+            dataUtils.getDaysData(aNew);
+            snowParam.setPreRainTem(aNew.getPreRainTem());
 //            snowParam = inputUtils.getMachineParams(snowParam);
-            Object[] snow = snowMeltModel.snowForecast(snowMeltInput, snowParam);
+            List<Flood> snowList = snowMeltModel.snowForecast(snowMeltInput, snowParam);
             Calendar cal = Calendar.getInstance();
             cal.setTime(startTime);
             cal.add(Calendar.DAY_OF_MONTH, 1);
             startTime = cal.getTime();
-            result[i] = snow;
+            result[i][0] = snowList.get(0).getTime();
+            result[i][1] = snowList.get(0).getPreQ();
         }
         return result;
     }
@@ -396,6 +403,7 @@ public class ShanBeiCalibration {
                 new Interval(0.1, 0.3),//K
                 new Interval(0.3, 0.4),//B
                 new Interval(0.96, 0.98),//CS
+                new Interval(1, 18),//L
         };
         //导入输入数据
 
@@ -423,6 +431,7 @@ public class ShanBeiCalibration {
         shanbeiParamNew.setK(result.Position[5]);
         shanbeiParamNew.setB(result.Position[6]);
         shanbeiParamNew.setCS(result.Position[7]);
+        shanbeiParamNew.setL((int) result.Position[8]);
 
         List<CalibrationFlow> flowList = new ArrayList<>();
         List<Double> hisList = new ArrayList<>();

@@ -1,5 +1,6 @@
 package com.cj.model.func.modular.FloodPredict.model.function;
 
+import com.cj.model.func.modular.FloodPrevent.bean.req.ReqCurve;
 import com.cj.model.func.modular.FloodPrevent.entity.*;
 import com.cj.model.func.modular.FloodPrevent.function.Cascade;
 import com.cj.model.func.modular.FloodPrevent.model.Model;
@@ -7,27 +8,35 @@ import com.cj.model.func.modular.FloodPrevent.model.Model;
 import java.io.FileNotFoundException;
 import java.util.*;
 
+import static com.cj.model.func.modular.FloodPrevent.function.Cascade.Update;
+
 public class LZZ {
 
-    public static List<Option> Calculate(String basinStr, Object[][] pre, int delta) throws FileNotFoundException {
+    public static List<Option> Calculate(String basinStr, Object[][] pre, int delta, ReqCurve reqCurve)  {
         List<Option> result ;
 
         Basin basin = new Basin();
         //配置文件
         Cascade.Read(basin,basinStr);
+        //从水情管理处获得的曲线数据
+        String inform=Update(basin,reqCurve);
         //楼庄子水库
         Reservoir reservoir = basin.getReservoirs().get(0);
-
         //预报来水数据
         List<Date> Time = new ArrayList<>();
         List<Double> Q_Input=new ArrayList<>();
+        List<Double> Q_interval = new ArrayList<>();
         for (Object[] objects : pre) {
             Date t = (Date) objects[0];
             Time.add(t);
             Q_Input.add((double) objects[1]);
         }
+        for (int j = 0; j < reservoir.getTime().size(); j++) {
+            Q_interval.add(0.0);
+        }
         reservoir.setTime(Time);
         reservoir.setQ_Input(Q_Input);
+        reservoir.setQ_Interval(Q_interval);
         reservoir.setT_Delta(delta);
         //起调水位
         reservoir.setH_begin(1394.5);

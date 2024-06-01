@@ -19,11 +19,12 @@ import static com.cj.model.func.modular.FloodPredict.utils.Tools.array2String;
 
 
 public class LongForecast {
-    DataUtils dataUtils = new DataUtils();
 
-    MachineDataUtils machineDataUtils = new MachineDataUtils();
+    MachineDataUtils mdu = new MachineDataUtils();
 
-    TimeUtils timeUtils = new TimeUtils();
+    DataUtils du = new DataUtils();
+
+    TimeUtils tu = new TimeUtils();
 
     Params params = new Params();
 
@@ -40,25 +41,37 @@ public class LongForecast {
     public ModelSaveEntity longTermForecast(ForecastInputParam param, Object[][] input, Object[][] maxminOldTemp, Object[][] para) {
         //模型参数
         Boolean isRealTime = param.getIsRealtime();
-        double[][] DNNpara = new double[para.length][para[0].length];
+        String[] layer = param.getLayerCount().split(",");
+        int[] layers = new int[layer.length];
+        for(int i = 0; i < layer.length; i++){
+            layers[i] = Integer.parseInt(layer[i]);
+        }
+        double[][] DNNpara = new double[para.length][4];
         double[][] maxminOld = new double[maxminOldTemp.length][2];
-
+        double[] context = new double[layers[2]];
         if (isRealTime) {
             for (int i = 0; i < para.length; i++) {
-                for (int j = 0; j < para[0].length; j++) {
+                for (int j = 0; j < 4; j++) {
                     DNNpara[i][j] = (double) para[i][j];
                 }
+            }
+            for (int i = 0; i < context.length; i++) {
+                context[i] = (double) para[i][4];
             }
             for (int k = 0; k < maxminOldTemp.length; k++) {
                 for (int j = 0; j < 2; j++) {
                     maxminOld[k][j] = Double.parseDouble(maxminOldTemp[k][j].toString());
                 }
             }
-        } else {
+        }
+        else {
             for (int i = 0; i < para.length; i++) {
-                for (int j = 0; j < para[0].length; j++) {
+                for (int j = 0; j < 4; j++) {
                     DNNpara[i][j] = 0.0;
                 }
+            }
+            for (int i = 0; i < context.length; i++) {
+                context[i] = 0.0;
             }
             for (int k = 0; k < maxminOldTemp.length; k++) {
                 for (int j = 0; j < 2; j++) {
@@ -66,8 +79,6 @@ public class LongForecast {
                 }
             }
         }
-
-
 
 
         if (param.getTrainNum() == 0) {
@@ -140,27 +151,24 @@ public class LongForecast {
         rainData = new double[input.length];
         if (input[0].length >= 4) {
             for (int i = 0; i < input.length; i++) {
-                if (input[i][3] instanceof String) {
-                    input[i][3] = 0.0;
-                }
-                rainData[i] = (double) input[i][3];
+                rainData[i] = du.rainStringToDouble(input[i]);
             }
             datalist.add(rainData);
         }
 
 
         //训练集测试集划分
-        double[][] trainData = null;
-        double[][] testData = null;
-        double[][] data = null;
+        List<double[][]> trainData = new ArrayList<>();
+        List<double[][]> testData = new ArrayList<>();
+        List<double[][]> data = new ArrayList<>();
         //融雪径流
-        if (param.getIsSnowMeltModel()) {
+        if (!(param.getPeriod().equals("月")||param.getPeriod().equals("旬"))) {
             try {
                 if (isRealTime) {
-                    data = machineDataUtils.inputData_Real_Snow(datalist, param);
+                    data = mdu.inputData_Real_Snow(datalist, param,datalist.get(0).length,0);
                 } else {
-                    trainData = machineDataUtils.inputData_Train_Snow(datalist, param, false);
-                    testData = machineDataUtils.inputData_Train_Snow(datalist, param, true);
+                    trainData = mdu.inputData_Train_Snow(datalist, param, false);
+                    testData = mdu.inputData_Train_Snow(datalist, param, true);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -170,25 +178,23 @@ public class LongForecast {
         else {
             try {
                 if (isRealTime) {
-                    data = machineDataUtils.inputData_Real(datalist, param);
+                    data = mdu.inputData_Real(datalist, param);
                 } else {
-                    trainData = machineDataUtils.inputData_Train(datalist, param, false);
-                    testData = machineDataUtils.inputData_Train(datalist, param, true);
+                    trainData = mdu.inputData_Train(datalist, param, false);
+                    testData = mdu.inputData_Train(datalist, param, true);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
         ModelSaveEntity result;
-
-
         //训练模型或者预报
         if (isRealTime) {
-            result = real_time_Forecast(param, data, maxminOld, DNNpara);
-        } else {
+            result = real_time_Forecast(param, data, maxminOld, DNNpara,context);
+        }
+        else {
             result = trainProcess(param, trainData, testData);
         }
-//        params.paramReset();
 
         return result;
     }
@@ -200,7 +206,7 @@ public class LongForecast {
      * @param testData  测试数据
      * @return 训练完成的神经网络
      */
-    private ModelSaveEntity trainProcess(ForecastInputParam param, double[][] trainData, double[][] testData) {
+    private ModelSaveEntity trainProcess(ForecastInputParam param, List<double[][]> trainData, List<double[][]> testData) {
 
         TrainResult trainResult = new TrainResult();//检验的结果
         TrainResult trainResult1 = new TrainResult();//训练的结果
@@ -213,17 +219,15 @@ public class LongForecast {
         String trainModel = param.getModel();
         String clusterMethod = "adam";
         //数据归一化
-        List<double[][]> normInput = trainNormalInput(trainData, testData, param);
+        List<double[][]> normInput = trainNormalInput(trainData, testData);
         double[][] norm_input = normInput.get(0);
         double[][] norm_output = normInput.get(1);
         double[][] norm_testInput = normInput.get(2);
         double[][] norm_testOutput = normInput.get(3);
         double[][] maxAndMinOfinput = normInput.get(4);
         double[][] maxAndMinOfoutput = normInput.get(5);
-        double[][] trainInput = normInput.get(6);
-        double[][] testInput = normInput.get(7);
-        double[][] trainOutput = normInput.get(8);
-        double[][] testOutput = normInput.get(9);
+        double[][] trainOutput = trainData.get(2);
+        double[][] testOutput = testData.get(2);
 
         List<SimMaxMinEntity> maxAndMinSaveEntity = maxAndMinSave(param, maxAndMinOfinput, maxAndMinOfoutput);
         modelSaveEntity.setMaxmin(maxAndMinSaveEntity);
@@ -233,10 +237,12 @@ public class LongForecast {
                 trainModels = new DNN_ADAM(params.dnnNet, params.rate, params.mobp, params.maxRate, params.minRate,
                         params.batch);
             }
-        } else if (trainModel.equals("Elman神经网络")) {
+        }
+        else if (trainModel.equals("Elman神经网络")) {
             trainModels = new Elman(norm_input, params.elmanNet, params.LEARN_RATE, params.TRAINING_REPS,
                     params.epsilon);
-        } else {
+        }
+        else {
             trainResult = new TrainResult();
             trainResult.setErrorMessage("未选择训练方式");
             return null;
@@ -268,21 +274,34 @@ public class LongForecast {
             hlr1.setTestDatasetEnd(param.getTestSetEndTime());
             hlr1.setPeriod(param.getPeriod());
             hlr1.setModelName(param.getNetClass() + "_训练");
-            hlr1.setOutputNum(1.0);
+            hlr1.setOutputNum(param.getPredict_day());
             hlr1.setOutputIndex(0.0);
             if (isCascade && param.getPeriod().equals("小时")) {
                 hlr1.setInputIndex("all");
-            } else {
+            }
+            else {
                 hlr1.setInputIndex(inputIndex);
             }
             hlr1.setInputIndex(inputIndex);
-            hlr1.setRealOutput(trainOutput[i][0]);
-            hlr1.setSimOutput(result1[i][0]);
-            Date date = new Date((long) trainData[i][0]);
+            hlr1.setRealOutput(trainOutput[i]);
+            hlr1.setSimOutput(result1[i]);
+            Date[] date = new Date[param.getPredict_day()];
+            for (int j = 0; j < param.getPredict_day(); j++) {
+                date[j] = new Date((long) (trainData.get(0)[i][j]));
+            }
             hlr1.setResultDate(date);
             hlr1.setUserName("hust");
             resultList.add(hlr1);
         }
+
+        //训练集
+        modelSaveEntity2 = modelSave(trainModels, param, isCascade, 0);
+        modelSaveEntity2.getModels().get(0).setRmse(rmse1);
+        modelSaveEntity2.getModels().get(0).setMre(mre1);
+        modelSaveEntity2.getModels().get(0).setDc(dc1);
+        modelSaveEntity2.getModels().get(0).setQr(qr1);
+        modelSaveEntity2.getModels().get(0).setQMax(param.getQ_max());
+        modelSaveEntity2.getModels().get(0).setQMin(param.getQ_min());
 
         /**
          * 测试集储存*/
@@ -306,17 +325,21 @@ public class LongForecast {
             hlr.setTestDatasetEnd(param.getTestSetEndTime());
             hlr.setPeriod(param.getPeriod());
             hlr.setModelName(param.getNetClass());
-            hlr.setOutputNum(1.0);
+            hlr.setOutputNum(param.getPredict_day());
             hlr.setOutputIndex(0.0);
             if (isCascade && param.getPeriod().equals("小时")) {
                 hlr.setInputIndex("all");
-            } else {
+            }
+            else {
                 hlr.setInputIndex(inputIndex);
             }
             hlr.setInputIndex(inputIndex);
-            hlr.setRealOutput(testOutput[i][0]);
-            hlr.setSimOutput(result[i][0]);
-            Date date = new Date((long) (testData[i][0]));
+            hlr.setRealOutput(testOutput[i]);
+            hlr.setSimOutput(result[i]);
+            Date[] date = new Date[param.getPredict_day()];
+            for (int j = 0; j < param.getPredict_day(); j++) {
+                date[j] = new Date((long) (testData.get(0)[i][j]));
+            }
             hlr.setResultDate(date);
             hlr.setUserName("hust");
             resultList.add(hlr);
@@ -333,14 +356,6 @@ public class LongForecast {
         modelSaveEntity1.getModels().get(0).setQMax(param.getQ_max());
         modelSaveEntity1.getModels().get(0).setQMin(param.getQ_min());
 
-        //训练集
-        modelSaveEntity2 = modelSave(trainModels, param, isCascade, 0);
-        modelSaveEntity2.getModels().get(0).setRmse(rmse1);
-        modelSaveEntity2.getModels().get(0).setMre(mre1);
-        modelSaveEntity2.getModels().get(0).setDc(dc1);
-        modelSaveEntity2.getModels().get(0).setQr(qr1);
-        modelSaveEntity2.getModels().get(0).setQMax(param.getQ_max());
-        modelSaveEntity2.getModels().get(0).setQMin(param.getQ_min());
 
         List<TthModelEntity> hlme1 = modelSaveEntity1.getModels();
         List<TthModelEntity> hlme2 = modelSaveEntity2.getModels();
@@ -375,9 +390,11 @@ public class LongForecast {
             TthModelEntity mle = new TthModelEntity();
             if (category == 0) {
                 mle.setModelName(model.getName() + "_训练");
-            } else if (category == 1) {
+            }
+            else if (category == 1) {
                 mle.setModelName(model.getName());
-            } else if (category == 2) {
+            }
+            else if (category == 2) {
                 mle.setModelName(model.getName() + "_实时");
             }
             mle.setPeriod(param.getPeriod());
@@ -389,7 +406,8 @@ public class LongForecast {
             mle.setForecastDuanmian(param.getLocation());
             if (isCascade && param.getPeriod().equals("小时")) {
                 mle.setInputIndex("all");
-            } else {
+            }
+            else {
                 mle.setInputIndex(inputIndex);
             }
             mle.setErrorad(params.ERROR);
@@ -402,6 +420,7 @@ public class LongForecast {
             mle.setGamma(params.gamma);
             mle.setC(params.c);
             mle.setClusterad(params.cluster);
+
             Date createTime = new Date();
             mle.setUpdatead(createTime);
             mle.setUserName("hust");
@@ -446,11 +465,13 @@ public class LongForecast {
                         }
                     }
                 }
-            } else if (model.getName().equals("Elman神经网络")) {
+            }
+            else if (model.getName().equals("Elman神经网络")) {
                 mle.setErrorad(params.epsilon);
                 mle.setTrainNum((double) params.TRAINING_REPS);
                 mle.setMaxRate(params.LEARN_RATE);
                 Elman elman = (Elman) model;
+                mle.setContext(((Elman) model).getContext());
                 int[] layer = elman.getLayernum();
                 for (int i = 0; i < layer.length; i++) {
                     if (i != layer.length - 1) {
@@ -492,7 +513,6 @@ public class LongForecast {
             modelSaveEntity.setParams(paramList);
         }
         return modelSaveEntity;
-
     }
 
     /**
@@ -571,7 +591,7 @@ public class LongForecast {
      * @param DNNpara
      * @return
      */
-    private ModelSaveEntity real_time_Forecast(ForecastInputParam param, double[][] data, double[][] maxminOld, double[][] DNNpara) {
+    private ModelSaveEntity real_time_Forecast(ForecastInputParam param, List<double[][]> data, double[][] maxminOld, double[][] DNNpara, double[]context) {
         TrainResult trainResult;
         ModelSaveEntity modelSaveEntity;
         NeuralNetwork trainModels;
@@ -579,7 +599,7 @@ public class LongForecast {
         String trainModel = param.getModel();
         Boolean isRealTime = param.getIsRealtime();
         Boolean isCascade = false;
-        List<double[][]> normalInput = predictNormalInput(data, maxminOld, param);
+        List<double[][]> normalInput = predictNormalInput(data, maxminOld);
         double[][] norm_input = normalInput.get(0);
         double[][] norm_output = normalInput.get(1);
         double[][] maxAndMinOfoutput = normalInput.get(2);
@@ -589,13 +609,15 @@ public class LongForecast {
             trainModels = new DNN_ADAM(params.dnnNet, params.rate, params.mobp, params.maxRate, params.minRate,
                     params.batch);
             double[][][] layer_weight = getParams(DNNpara);//输入率定好的参数
-            trainResult = trainModels.simOutput1(norm_input, norm_output, layer_weight, params.dnnNet);//用率定好的参数模拟
-        } else if (trainModel.equals("Elman神经网络")) {
+            trainResult = trainModels.simOutput1(norm_input, norm_output, layer_weight, params.dnnNet,context);//用率定好的参数模拟
+        }
+        else if (trainModel.equals("Elman神经网络")) {
             trainModels = new Elman(norm_input, params.elmanNet, params.LEARN_RATE, params.TRAINING_REPS,
                     params.epsilon);
             double[][][] layer_weight = getParams(DNNpara);//输入率定好的参数
-            trainResult = trainModels.simOutput1(norm_input, norm_output, layer_weight, params.elmanNet);//用率定好的参数模拟
-        } else {
+            trainResult = trainModels.simOutput1(norm_input, norm_output, layer_weight, params.elmanNet,context);//用率定好的参数模拟
+        }
+        else {
             trainResult = new TrainResult();
             trainResult.setErrorMessage("未选择训练方式");
             return null;
@@ -611,13 +633,16 @@ public class LongForecast {
         int outputNum = result[0].length;
         Date[][] dates;
         if (param.getPeriod().equals("月")) {
-            dates = timeUtils.getMonthDateList(startDate, result.length);
-        } else if (param.getPeriod().equals("旬")) {
-            dates = timeUtils.getDateList(startDate, result.length, 10, 0);
-        } else if (param.getPeriod().equals("日")) {
-            dates = timeUtils.getDateList(startDate, result.length, 1, 0);
-        } else {
-            dates = timeUtils.getDateList(startDate, result.length, 0, 1);
+            dates = tu.getMonthDateList(startDate, result.length,outputNum);
+        }
+        else if (param.getPeriod().equals("旬")) {
+            dates = tu.getDateList(startDate, result.length, 10, 0);
+        }
+        else if (param.getPeriod().equals("日")) {
+            dates = tu.getDateList(startDate, result.length, 1, 0);
+        }
+        else {
+            dates = tu.getDateList(startDate, result.length, 0, 1);
         }
         List<TthResultEntity> resultList = new ArrayList();
         String inputIndex1 = array2String(param.getInputIndex());
@@ -631,7 +656,7 @@ public class LongForecast {
             hlr.setTestDatasetEnd(param.getTestSetEndTime());
             hlr.setPeriod(param.getPeriod());
             hlr.setModelName(param.getNetClass() + "_实时");
-            hlr.setOutputNum(1.0);
+            hlr.setOutputNum(param.getPredict_day());
             hlr.setOutputIndex(0.0);
             if (isCascade && param.getPeriod().equals("小时")) {
                 hlr.setInputIndex("all");
@@ -639,9 +664,9 @@ public class LongForecast {
                 hlr.setInputIndex(inputIndex1);
             }
             hlr.setInputIndex(inputIndex1);
-            hlr.setRealOutput(output[i][0]);
-            hlr.setSimOutput(result[i][0]);
-            hlr.setResultDate(dates[i][0]);
+            hlr.setRealOutput(output[i]);
+            hlr.setSimOutput(result[i]);
+            hlr.setResultDate(dates[i]);
             if (i == output.length - 1) {
                 if (isRealTime) {
                     hlr.setRainfall(null);
@@ -671,416 +696,105 @@ public class LongForecast {
     }
 
     /**
-     * 训练数据归一化
-     *
-     * @param trainData
-     * @param testData
-     * @param param
+     * 训练数据归一
      * @return
      */
-    private List<double[][]> trainNormalInput(double[][] trainData, double[][] testData, ForecastInputParam param) {
+    private List<double[][]> trainNormalInput(List<double[][]> train, List<double[][]> test) {
         List<double[][]> normalInput = new ArrayList<>();
-        int h = param.getHistory_day();
-        int n = param.getHistory_factor();
-        //如果是融雪径流
-        if (param.getIsSnowMeltModel()) {
-            double[][] trainInputFlow = new double[trainData.length][h];
-            double[][] trainInputTemperature = new double[trainData.length][h];
-            double[][] trainInputRain = new double[trainData.length][h];
-            double[][] trainOutput = new double[trainData.length][1];
+        double[][] trainInput = train.get(1);
+        double[][] trainOutput = train.get(2);
+        double[][] testInput = test.get(1);
+        double[][] testOutput = test.get(2);
+        //遍历数据的最大最小值，便于归一化处理
+        double[][] maxAndMinOfinput = MathUtils.findMaxAndMin(trainInput);
+        double[][] maxAndMinOfoutput = MathUtils.findMaxAndMin(trainOutput);
+        double[][] maxAndMinOfinput_test = MathUtils.findMaxAndMin(testInput);
+        double[][] maxAndMinOfoutput_test = MathUtils.findMaxAndMin(testOutput);
 
-            double[][] testInputFlow = new double[testData.length][h];
-            double[][] testInputTemperature = new double[testData.length][h];
-            double[][] testInputRain = new double[testData.length][h];
-            double[][] testOutput = new double[testData.length][1];
+        for (int i = 0; i < maxAndMinOfinput[0].length; i++) {// 输入
 
-
-            for (int i = 0; i < trainData.length; i++) {
-                for (int j = 0; j < h; j++) {
-                    trainInputFlow[i][j] = trainData[i][j + 1];
-                    if (n >= 2) {
-                        trainInputTemperature[i][j] = trainData[i][j + 1 + h];
-                        if (n >= 3) {
-                            trainInputRain[i][j] = trainData[i][j + 1 + 2 * h];
-                        }
-                    }
-                }
-                trainOutput[i][0] = trainData[i][h * n + 1];
+            if (maxAndMinOfinput[0][i] < maxAndMinOfinput_test[0][i]) {
+                maxAndMinOfinput[0][i] = maxAndMinOfinput_test[0][i];
             }
 
-            for (int i = 0; i < testData.length; i++) {
-                for (int j = 0; j < h; j++) {
-                    testInputFlow[i][j] = testData[i][j + 1];
-                    if (n >= 2) {
-                        testInputTemperature[i][j] = testData[i][j + 1 + h];
-                        if (n >= 3) {
-                            testInputRain[i][j] = testData[i][j + 1 + 2 * h];
-                        }
-                    }
-
-                }
-                testOutput[i][0] = testData[i][h * n + 1];
+            if (maxAndMinOfinput[1][i] > maxAndMinOfinput_test[1][i]) {
+                maxAndMinOfinput[1][i] = maxAndMinOfinput_test[1][i];
             }
-
-            //遍历数据的最大最小值，便于归一化处理
-            double[][] maxAndMinOfinputFlow = MathUtils.findMaxAndMin(trainInputFlow);
-            double[][] maxAndMinOfinputTemperature = new double[0][];
-            double[][] maxAndMinOfinputRain = new double[0][];
-            int l = maxAndMinOfinputFlow[0].length;
-            if (n >= 2) {
-                maxAndMinOfinputTemperature = MathUtils.findMaxAndMin(trainInputTemperature);
-                l = l + maxAndMinOfinputTemperature[0].length;
-                if (n >= 3) {
-                    maxAndMinOfinputRain = MathUtils.findMaxAndMin(trainInputRain);
-                    l = l + maxAndMinOfinputRain[0].length;
-                }
-            }
-            double[][] maxAndMinOfoutput = MathUtils.findMaxAndMin(trainOutput);
-            double[][] maxAndMinOfinput = new double[maxAndMinOfinputFlow.length][l];
-            for (int i = 0; i < maxAndMinOfinputFlow[0].length; i++) {
-                for (int j = 0; j < maxAndMinOfinputFlow.length; j++) {
-                    maxAndMinOfinput[j][i] = maxAndMinOfinputFlow[j][i];
-                }
-            }
-            if (n >= 2) {
-                for (int i = 0; i < maxAndMinOfinputTemperature[0].length; i++) {
-                    for (int j = 0; j < maxAndMinOfinputFlow.length; j++) {
-                        maxAndMinOfinput[j][i + maxAndMinOfinputFlow[0].length] = maxAndMinOfinputTemperature[j][i];
-                    }
-                }
-                if (n >= 3) {
-                    for (int i = 0; i < maxAndMinOfinputRain[0].length; i++) {
-                        for (int j = 0; j < maxAndMinOfinputFlow.length; j++) {
-                            maxAndMinOfinput[j][i + maxAndMinOfinputFlow[0].length + maxAndMinOfinputTemperature[0].length] = maxAndMinOfinputRain[j][i];
-                        }
-                    }
-                }
-            }
-
-            double[][] maxAndMinOfinput_testFlow = MathUtils.findMaxAndMin(testInputFlow);
-            double[][] maxAndMinOfinput_testTemperature = new double[0][];
-            double[][] maxAndMinOfinput_testRain = new double[0][];
-            if (n >= 2) {
-                maxAndMinOfinput_testTemperature = MathUtils.findMaxAndMin(testInputTemperature);
-                if (n >= 3) {
-                    maxAndMinOfinput_testRain = MathUtils.findMaxAndMin(testInputRain);
-                }
-            }
-            double[][] maxAndMinOfoutput_test = MathUtils.findMaxAndMin(testOutput);
-
-            for (int i = 0; i < maxAndMinOfinputFlow[0].length; i++) {// 输入
-
-                if (maxAndMinOfinputFlow[0][i] < maxAndMinOfinput_testFlow[0][i]) {
-                    maxAndMinOfinputFlow[0][i] = maxAndMinOfinput_testFlow[0][i];
-                }
-
-                if (maxAndMinOfinputFlow[1][i] > maxAndMinOfinput_testFlow[1][i]) {
-                    maxAndMinOfinputFlow[1][i] = maxAndMinOfinput_testFlow[1][i];
-                }
-            }
-            if (n >= 2) {
-                for (int i = 0; i < maxAndMinOfinputTemperature[0].length; i++) {// 输入
-
-                    if (maxAndMinOfinputTemperature[0][i] < maxAndMinOfinput_testTemperature[0][i]) {
-                        maxAndMinOfinputTemperature[0][i] = maxAndMinOfinput_testTemperature[0][i];
-                    }
-
-                    if (maxAndMinOfinputTemperature[1][i] > maxAndMinOfinput_testTemperature[1][i]) {
-                        maxAndMinOfinputTemperature[1][i] = maxAndMinOfinput_testTemperature[1][i];
-                    }
-                }
-                if (n >= 3) {
-                    for (int i = 0; i < maxAndMinOfinputRain[0].length; i++) {// 输入
-
-                        if (maxAndMinOfinputRain[0][i] < maxAndMinOfinput_testRain[0][i]) {
-                            maxAndMinOfinputRain[0][i] = maxAndMinOfinput_testRain[0][i];
-                        }
-
-                        if (maxAndMinOfinputRain[1][i] > maxAndMinOfinput_testRain[1][i]) {
-                            maxAndMinOfinputRain[1][i] = maxAndMinOfinput_testRain[1][i];
-                        }
-                    }
-                }
-            }
-
-            for (int i = 0; i < maxAndMinOfoutput[0].length; i++) {// 输出
-
-                if (maxAndMinOfoutput[0][i] < maxAndMinOfoutput_test[0][i]) {
-                    maxAndMinOfoutput[0][i] = maxAndMinOfoutput_test[0][i];
-                }
-
-                if (maxAndMinOfoutput[1][i] > maxAndMinOfoutput_test[1][i]) {
-                    maxAndMinOfoutput[1][i] = maxAndMinOfoutput_test[1][i];
-                }
-            }
-
-            // 归一化
-            double[][] norm_inputFlow = MathUtils.normalization(trainInputFlow, maxAndMinOfinputFlow);
-            double[][] norm_inputTemperature = new double[0][];
-            double[][] norm_inputRain = new double[0][];
-            if (n >= 2) {
-                norm_inputTemperature = MathUtils.normalization(trainInputTemperature, maxAndMinOfinputTemperature);
-                if (n >= 3) {
-                    norm_inputRain = MathUtils.normalization(trainInputRain, maxAndMinOfinputRain);
-                }
-            }
-            double[][] norm_output = MathUtils.normalization(trainOutput, maxAndMinOfoutput);
-
-            double[][] norm_testInputFlow = MathUtils.normalization(testInputFlow, maxAndMinOfinputFlow);
-            double[][] norm_testInputTemperature = new double[0][];
-            double[][] norm_testInputRain = new double[0][];
-            if (n >= 2) {
-                norm_testInputTemperature = MathUtils.normalization(testInputTemperature, maxAndMinOfinputTemperature);
-                if (n >= 3) {
-                    norm_testInputRain = MathUtils.normalization(testInputRain, maxAndMinOfinputRain);
-                }
-            }
-            double[][] norm_testOutput = MathUtils.normalization(testOutput, maxAndMinOfoutput);
-
-            double[][] norm_input = new double[norm_inputFlow.length][norm_inputFlow[0].length * n];
-            for (int i = 0; i < norm_inputFlow.length; i++) {
-                for (int j = 0; j < norm_inputFlow[0].length; j++) {
-                    norm_input[i][j] = norm_inputFlow[i][j];
-                }
-            }
-            if (n >= 2) {
-                for (int i = 0; i < norm_inputTemperature.length; i++) {
-                    for (int j = 0; j < norm_inputTemperature[0].length; j++) {
-                        norm_input[i][j + norm_inputFlow[0].length] = norm_inputTemperature[i][j];
-                    }
-                }
-                if (n >= 3) {
-                    for (int i = 0; i < norm_inputRain.length; i++) {
-                        for (int j = 0; j < norm_inputRain[0].length; j++) {
-                            norm_input[i][j + norm_inputFlow[0].length + norm_inputTemperature[0].length] = norm_inputRain[i][j];
-                        }
-                    }
-                }
-            }
-
-
-            double[][] norm_testInput = new double[norm_testInputFlow.length][norm_testInputFlow[0].length * n];
-            for (int i = 0; i < norm_testInputFlow.length; i++) {
-                for (int j = 0; j < norm_testInputFlow[0].length; j++) {
-                    norm_testInput[i][j] = norm_testInputFlow[i][j];
-                }
-            }
-            if (n >= 2) {
-                for (int i = 0; i < norm_testInputTemperature.length; i++) {
-                    for (int j = 0; j < norm_testInputTemperature[0].length; j++) {
-                        norm_testInput[i][j + norm_testInputFlow[0].length] = norm_testInputTemperature[i][j];
-                    }
-                }
-                if (n >= 3) {
-                    for (int i = 0; i < norm_testInputRain.length; i++) {
-                        for (int j = 0; j < norm_testInputRain[0].length; j++) {
-                            norm_testInput[i][j + norm_testInputFlow[0].length + norm_testInputTemperature[0].length] = norm_testInputRain[i][j];
-                        }
-                    }
-                }
-            }
-            normalInput.add(norm_input);
-            normalInput.add(norm_output);
-            normalInput.add(norm_testInput);
-            normalInput.add(norm_testOutput);
-            normalInput.add(maxAndMinOfinput);
-            normalInput.add(maxAndMinOfoutput);
-            normalInput.add(trainInputFlow);
-            normalInput.add(testInputFlow);
-            normalInput.add(trainOutput);
-            normalInput.add(testOutput);
-        } else {
-            double[][] trainInput = new double[trainData.length][param.getHistory_day()];
-            double[][] trainOutput = new double[trainData.length][1];
-            double[][] testInput = new double[testData.length][param.getHistory_day()];
-            double[][] testOutput = new double[testData.length][1];
-
-
-            for (int i = 0; i < trainData.length; i++) {
-                for (int j = 0; j < param.getHistory_day(); j++) {
-                    trainInput[i][j] = trainData[i][j + 1];
-                }
-                trainOutput[i][0] = trainData[i][param.getHistory_day() + 1];
-            }
-
-            for (int i = 0; i < testData.length; i++) {
-                for (int j = 0; j < param.getHistory_day(); j++) {
-                    testInput[i][j] = testData[i][j + 1];
-                }
-                testOutput[i][0] = testData[i][param.getHistory_day() + 1];
-            }
-
-            //遍历数据的最大最小值，便于归一化处理
-            double[][] maxAndMinOfinput = MathUtils.findMaxAndMin(trainInput);
-            double[][] maxAndMinOfoutput = MathUtils.findMaxAndMin(trainOutput);
-
-            double[][] maxAndMinOfinput_test = MathUtils.findMaxAndMin(testInput);
-            double[][] maxAndMinOfoutput_test = MathUtils.findMaxAndMin(testOutput);
-
-            for (int i = 0; i < maxAndMinOfinput[0].length; i++) {// 输入
-
-                if (maxAndMinOfinput[0][i] < maxAndMinOfinput_test[0][i]) {
-                    maxAndMinOfinput[0][i] = maxAndMinOfinput_test[0][i];
-                }
-
-                if (maxAndMinOfinput[1][i] > maxAndMinOfinput_test[1][i]) {
-                    maxAndMinOfinput[1][i] = maxAndMinOfinput_test[1][i];
-                }
-            }
-            for (int i = 0; i < maxAndMinOfoutput[0].length; i++) {// 输出
-
-                if (maxAndMinOfoutput[0][i] < maxAndMinOfoutput_test[0][i]) {
-                    maxAndMinOfoutput[0][i] = maxAndMinOfoutput_test[0][i];
-                }
-
-                if (maxAndMinOfoutput[1][i] > maxAndMinOfoutput_test[1][i]) {
-                    maxAndMinOfoutput[1][i] = maxAndMinOfoutput_test[1][i];
-                }
-            }
-
-            // 归一化
-            double[][] norm_input = MathUtils.normalization(trainInput, maxAndMinOfinput);
-            double[][] norm_output = MathUtils.normalization(trainOutput, maxAndMinOfoutput);
-            double[][] norm_testInput = MathUtils.normalization(testInput, maxAndMinOfinput);
-            double[][] norm_testOutput = MathUtils.normalization(testOutput, maxAndMinOfoutput);
-            normalInput.add(norm_input);
-            normalInput.add(norm_output);
-            normalInput.add(norm_testInput);
-            normalInput.add(norm_testOutput);
-            normalInput.add(maxAndMinOfinput);
-            normalInput.add(maxAndMinOfoutput);
-            normalInput.add(trainInput);
-            normalInput.add(testInput);
-            normalInput.add(trainOutput);
-            normalInput.add(testOutput);
         }
+        for (int i = 0; i < maxAndMinOfoutput[0].length; i++) {// 输出
 
+            if (maxAndMinOfoutput[0][i] < maxAndMinOfoutput_test[0][i]) {
+                maxAndMinOfoutput[0][i] = maxAndMinOfoutput_test[0][i];
+            }
+
+            if (maxAndMinOfoutput[1][i] > maxAndMinOfoutput_test[1][i]) {
+                maxAndMinOfoutput[1][i] = maxAndMinOfoutput_test[1][i];
+            }
+        }
+        // 归一化
+        double[][] norm_input = MathUtils.normalization(trainInput, maxAndMinOfinput);
+        double[][] norm_output = MathUtils.normalization(trainOutput, maxAndMinOfoutput);
+        double[][] norm_testInput = MathUtils.normalization(testInput, maxAndMinOfinput);
+        double[][] norm_testOutput = MathUtils.normalization(testOutput, maxAndMinOfoutput);
+        normalInput.add(norm_input);
+        normalInput.add(norm_output);
+        normalInput.add(norm_testInput);
+        normalInput.add(norm_testOutput);
+        normalInput.add(maxAndMinOfinput);
+        normalInput.add(maxAndMinOfoutput);
         return normalInput;
     }
 
     /**
      * 预报数据归一化
      *
-     * @param data
+     * @param
      * @param maxminOld
-     * @param param
      * @return
      */
-    private List<double[][]> predictNormalInput(double[][] data, double[][] maxminOld, ForecastInputParam param) {
+    private List<double[][]> predictNormalInput(List<double[][]> inputData, double[][] maxminOld) {
         List<double[][]> normalInput = new ArrayList<>();
-        int h = param.getHistory_day();
-        int n = param.getHistory_factor();
-
-        if (param.getIsSnowMeltModel()) {
-            double[][] input = new double[data.length][h * n];
-            double[][] output = new double[data.length][1];
-
-            for (int i = 0; i < data.length; i++) {
-                for (int j = 0; j < h; j++) {
-                    input[i][j] = data[i][j + 1];
-                    if (n >= 2) {
-                        input[i][j + h] = data[i][j + 1 + h];
-                        if (n >= 3) {
-                            input[i][j + h * 2] = data[i][j + 1 + 2 * h];
-                        }
-                    }
-                }
-                output[i][0] = data[i][h * n + 1];
-            }
-
-
-            double[][] maxAndMinOfinput1 = MathUtils.findMaxAndMin(input);
-            double[][] maxAndMinOfoutput1 = MathUtils.findMaxAndMin(output);
-            //读取训练数据时的最大最小值，与输入数据比较，实现与参数吻合的归一化处理
-            double[][] maxAndMinOfinput = new double[maxAndMinOfinput1.length][maxAndMinOfinput1[0].length];
-            double[][] maxAndMinOfoutput = new double[maxAndMinOfoutput1.length][maxAndMinOfoutput1[0].length];
-
-            //输入层各层最大最小值  li
-            for (int i = 0; i < maxAndMinOfinput[0].length; i++) {
-                maxAndMinOfinput[0][i] = maxminOld[i][0];//最大值
-                maxAndMinOfinput[1][i] = maxminOld[i][1];//最小值
-            }
-
-            //输出层各层最大最小值
-            for (int i = 0; i < maxAndMinOfoutput[0].length; i++) {
-                maxAndMinOfoutput[0][i] = (double) maxminOld[i + maxAndMinOfinput[0].length][0];//最大值
-                maxAndMinOfoutput[1][i] = (double) maxminOld[i + maxAndMinOfinput[0].length][1];//最小值
-            }
-
-            for (int i = 0; i < maxAndMinOfinput[0].length; i++) {
-                if (maxAndMinOfinput[0][i] < maxAndMinOfinput1[0][i]) {
-                    maxAndMinOfinput[0][i] = maxAndMinOfinput1[0][i];
-                }
-                if (maxAndMinOfinput[1][i] > maxAndMinOfinput1[1][i]) {
-                    maxAndMinOfinput[1][i] = maxAndMinOfinput1[1][i];
-                }
-            }
-            for (int i = 0; i < maxAndMinOfoutput[0].length; i++) {
-                if (maxAndMinOfoutput[0][i] < maxAndMinOfoutput1[0][i]) {
-                    maxAndMinOfoutput[0][i] = maxAndMinOfoutput1[0][i];
-                }
-                if (maxAndMinOfoutput[1][i] > maxAndMinOfoutput1[1][i]) {
-                    maxAndMinOfoutput[1][i] = maxAndMinOfoutput1[1][i];
-                }
-            }
-            double[][] norm_input = MathUtils.normalization(input, maxAndMinOfinput);
-            double[][] norm_output = MathUtils.normalization(output, maxAndMinOfoutput);
-
-            normalInput.add(norm_input);
-            normalInput.add(norm_output);
-            normalInput.add(maxAndMinOfoutput);
-            normalInput.add(output);
-        } else {
-            double[][] input = new double[data.length][param.getHistory_day()];
-            double[][] output = new double[data.length][1];
-
-            for (int i = 0; i < data.length; i++) {
-                for (int j = 0; j < param.getHistory_day(); j++) {
-                    input[i][j] = data[i][j + 1];
-                }
-                output[i][0] = data[i][param.getHistory_day() + 1];
-            }
-            double[][] maxAndMinOfinput1 = MathUtils.findMaxAndMin(input);
-            double[][] maxAndMinOfoutput1 = MathUtils.findMaxAndMin(output);
-            //读取训练数据时的最大最小值，与输入数据比较，实现与参数吻合的归一化处理
-            double[][] maxAndMinOfinput = new double[maxAndMinOfinput1.length][maxAndMinOfinput1[0].length];
-            double[][] maxAndMinOfoutput = new double[maxAndMinOfoutput1.length][maxAndMinOfoutput1[0].length];
-
-            //输入层各层最大最小值  li
-            for (int i = 0; i < maxAndMinOfinput[0].length; i++) {
-                maxAndMinOfinput[0][i] = maxminOld[i][0];//最大值
-                maxAndMinOfinput[1][i] = maxminOld[i][1];//最小值
-            }
-
-            //输出层各层最大最小值
-            for (int i = 0; i < maxAndMinOfoutput[0].length; i++) {
-                maxAndMinOfoutput[0][i] = (double) maxminOld[i + maxAndMinOfinput[0].length][0];//最大值
-                maxAndMinOfoutput[1][i] = (double) maxminOld[i + maxAndMinOfinput[0].length][1];//最小值
-            }
-
-            for (int i = 0; i < maxAndMinOfinput[0].length; i++) {
-                if (maxAndMinOfinput[0][i] < maxAndMinOfinput1[0][i]) {
-                    maxAndMinOfinput[0][i] = maxAndMinOfinput1[0][i];
-                }
-                if (maxAndMinOfinput[1][i] > maxAndMinOfinput1[1][i]) {
-                    maxAndMinOfinput[1][i] = maxAndMinOfinput1[1][i];
-                }
-            }
-            for (int i = 0; i < maxAndMinOfoutput[0].length; i++) {
-                if (maxAndMinOfoutput[0][i] < maxAndMinOfoutput1[0][i]) {
-                    maxAndMinOfoutput[0][i] = maxAndMinOfoutput1[0][i];
-                }
-                if (maxAndMinOfoutput[1][i] > maxAndMinOfoutput1[1][i]) {
-                    maxAndMinOfoutput[1][i] = maxAndMinOfoutput1[1][i];
-                }
-            }
-            double[][] norm_input = MathUtils.normalization(input, maxAndMinOfinput);
-            double[][] norm_output = MathUtils.normalization(output, maxAndMinOfoutput);
-            normalInput.add(norm_input);
-            normalInput.add(norm_output);
-            normalInput.add(maxAndMinOfoutput);
-            normalInput.add(output);
+        double[][] input = inputData.get(1);
+        double[][] output = inputData.get(2);
+        double[][] maxAndMinOfinput1 = MathUtils.findMaxAndMin(input);
+        double[][] maxAndMinOfoutput1 = MathUtils.findMaxAndMin(output);
+        double[][] maxAndMinOfinput = new double[maxAndMinOfinput1.length][maxAndMinOfinput1[0].length];
+        double[][] maxAndMinOfoutput = new double[maxAndMinOfoutput1.length][maxAndMinOfoutput1[0].length];
+        //读取训练数据时的最大最小值，与输入数据比较，实现与参数吻合的归一化处理
+        //输入层各层最大最小值
+        for (int i = 0; i < maxAndMinOfinput[0].length; i++) {
+            maxAndMinOfinput[0][i] = maxminOld[i][0];//最大值
+            maxAndMinOfinput[1][i] = maxminOld[i][1];//最小值
         }
+
+        //输出层各层最大最小值
+        for (int i = 0; i < maxAndMinOfoutput[0].length; i++) {
+            maxAndMinOfoutput[0][i] = maxminOld[i + maxAndMinOfinput[0].length][0];//最大值
+            maxAndMinOfoutput[1][i] = maxminOld[i + maxAndMinOfinput[0].length][1];//最小值
+        }
+
+        for (int i = 0; i < maxAndMinOfinput[0].length; i++) {
+            if (maxAndMinOfinput[0][i] < maxAndMinOfinput1[0][i]) {
+                maxAndMinOfinput[0][i] = maxAndMinOfinput1[0][i];
+            }
+            if (maxAndMinOfinput[1][i] > maxAndMinOfinput1[1][i]) {
+                maxAndMinOfinput[1][i] = maxAndMinOfinput1[1][i];
+            }
+        }
+        for (int i = 0; i < maxAndMinOfoutput[0].length; i++) {
+            if (maxAndMinOfoutput[0][i] < maxAndMinOfoutput1[0][i]) {
+                maxAndMinOfoutput[0][i] = maxAndMinOfoutput1[0][i];
+            }
+            if (maxAndMinOfoutput[1][i] > maxAndMinOfoutput1[1][i]) {
+                maxAndMinOfoutput[1][i] = maxAndMinOfoutput1[1][i];
+            }
+        }
+        double[][] norm_input = MathUtils.normalization(input, maxAndMinOfinput);
+        double[][] norm_output = MathUtils.normalization(output, maxAndMinOfoutput);
+        normalInput.add(norm_input);
+        normalInput.add(norm_output);
+        normalInput.add(maxAndMinOfoutput);
+        normalInput.add(output);
         return normalInput;
     }
 }

@@ -3,6 +3,7 @@ package com.cj.model.func.modular.FloodPredict.entity;
 import com.cj.model.func.modular.FloodPredict.Calibration.entity.ShanbeiParam;
 import lombok.Data;
 
+import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +29,8 @@ public class ForecastInputParamNew {
     private IrrigatedHydrologyParam irrigatedHydrologyParam;
     //预报雨量
     private List<RainFallDto> rainFallDtos;
+    //日尺度预报数据
+    private List<PredictInputData> preRainTem;
     //A3表日均进库
     private List<PredictInputData> inflowRunoffs;
     //前期径流

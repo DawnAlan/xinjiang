@@ -23,7 +23,7 @@ public class TthResultEntity implements Serializable {
 	private String modelName;
     @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss",timezone="GMT+8")
     @Id
-	private Date resultDate;//当前预报的流量对应的时间
+	private Date[] resultDate;//当前预报的流量对应的时间
     @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss",timezone="GMT+8")
     @Id
 	private Date datasetStart;
@@ -41,11 +41,11 @@ public class TthResultEntity implements Serializable {
 
 	private double[] time;
 
-	private double realOutput;//实测流量值
+	private double[] realOutput;//实测流量值
 
-	private double simOutput;//预报流量值
+	private double[] simOutput;//预报流量值
 
-	private Double outputNum;
+	private Integer outputNum;
 
 	private Double outputIndex;
 

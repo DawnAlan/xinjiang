@@ -11,11 +11,8 @@ import com.cj.model.func.modular.FloodPredict.utils.TimeUtils;
 import com.cj.model.func.modular.FloodPrevent.entity.Option;
 import com.cj.model.func.modular.entity.Flood;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 
 public class PhysicalForecast {
@@ -32,72 +29,289 @@ public class PhysicalForecast {
 
     /**
      * 获得场次洪水预报数据
-     *
      * @param param
      * @param Data
      * @param snowData
      * @return
      * @throws IOException
      */
-    public List<Flood> getShortResult(ForecastInputParam param, List<List<PredictInputData>> Data, Object[][] snowData)
-            throws IOException {
-        ShanBeiModel shanBeiModel = new ShanBeiModel();
-        String sheetPara = param.getLocation() + "参数";
+    public List<Flood> getShortResult(ForecastInputParam param, List<Map<String,List<PredictInputData>>> Data, Object[][] snowData) {
+        ShanbeiParam shanbeiparam;
+        //各个雨量站的面积和汇流时间
+        Map<String,Double> areaMap = new HashMap<>();
+        areaMap.put("八一林场自动雨量站", 411.23);
+        areaMap.put("东南沟自动雨量站", 186.29);
+        areaMap.put("黑沟自动雨量站",52.72);
+        areaMap.put("加普沙自动雨量站",176.21);
+        areaMap.put("喀什沟自动雨量站",98.41);
+        areaMap.put("煤矿沟自动雨量站",35.52);
+        areaMap.put("萨尔达万自动雨量站",22.55);
+        areaMap.put("无名沟自动雨量站",22.98);
+        areaMap.put("宰尔德自动雨量站",50.67);
+        areaMap.put("制材厂自动雨量站",137.44);
+        areaMap.put("小渠子雨量站",85.0);
+        areaMap.put("团结一队雨量站",85.0);
+        areaMap.put("头屯河水库雨量站",85.0);
+        Map<String,Integer> lMap = new HashMap<>();
+        lMap.put("八一林场自动雨量站", 14);
+        lMap.put("东南沟自动雨量站", 14);
+        lMap.put("黑沟自动雨量站",6);
+        lMap.put("加普沙自动雨量站",18);
+        lMap.put("喀什沟自动雨量站",4);
+        lMap.put("煤矿沟自动雨量站",10);
+        lMap.put("萨尔达万自动雨量站",10);
+        lMap.put("无名沟自动雨量站",12);
+        lMap.put("宰尔德自动雨量站",12);
+        lMap.put("制材厂自动雨量站",2);
+        lMap.put("小渠子雨量站",4);
+        lMap.put("团结一队雨量站",2);
+        lMap.put("头屯河水库雨量站",2);
         //陕北模型输入、蒸散发和前期雨量
-        List<PredictInputData> PreFlow = Data.get(0);
-        List<PredictInputData> PointPreREDataList = Data.get(1);
-        List<PredictInputData> PointHistoryRDataList = Data.get(2);
-        List<PredictInputData> preREDataList = dataUtils.pointToSurface(PointPreREDataList, "小时", param.getLocation());
-        List<PredictInputData> historyRDataList = dataUtils.pointToSurface(PointHistoryRDataList, "日", param.getLocation());
+        List<PredictInputData> PreFlow = Data.get(0).get("流量");
+        List<PredictInputData> bylch = Data.get(1).get("八一林场自动雨量站");//蒸散发和降雨
+        List<PredictInputData> bylcd = Data.get(2).get("八一林场自动雨量站");//前期雨量
+        List<PredictInputData> dngh = Data.get(1).get("东南沟自动雨量站");//蒸散发和降雨
+        List<PredictInputData> dngd = Data.get(2).get("东南沟自动雨量站");//前期雨量
+        List<PredictInputData> hgh = Data.get(1).get("黑沟自动雨量站");//蒸散发和降雨
+        List<PredictInputData> hgd = Data.get(2).get("黑沟自动雨量站");//前期雨量
+        List<PredictInputData> jpsh = Data.get(1).get("加普沙自动雨量站");//蒸散发和降雨
+        List<PredictInputData> jpsd = Data.get(2).get("加普沙自动雨量站");//前期雨量
+        List<PredictInputData> ksgh = Data.get(1).get("喀什沟自动雨量站");//蒸散发和降雨
+        List<PredictInputData> ksgd = Data.get(2).get("喀什沟自动雨量站");//前期雨量
+        List<PredictInputData> mkgh = Data.get(1).get("煤矿沟自动雨量站");//蒸散发和降雨
+        List<PredictInputData> mkgd = Data.get(2).get("煤矿沟自动雨量站");//前期雨量
+        List<PredictInputData> sedwh = Data.get(1).get("萨尔达万自动雨量站");//蒸散发和降雨
+        List<PredictInputData> sedwd = Data.get(2).get("萨尔达万自动雨量站");//前期雨量
+        List<PredictInputData> wmgh = Data.get(1).get("无名沟自动雨量站");//蒸散发和降雨
+        List<PredictInputData> wmgd = Data.get(2).get("无名沟自动雨量站");//前期雨量
+        List<PredictInputData> zedh = Data.get(1).get("宰尔德自动雨量站");//蒸散发和降雨
+        List<PredictInputData> zedd = Data.get(2).get("宰尔德自动雨量站");//前期雨量
+        List<PredictInputData> zcch = Data.get(1).get("制材厂自动雨量站");//蒸散发和降雨
+        List<PredictInputData> zccd = Data.get(2).get("制材厂自动雨量站");//前期雨量
+        List<PredictInputData> xqzh = Data.get(1).get("小渠子雨量站");//蒸散发和降雨
+        List<PredictInputData> xqzd = Data.get(2).get("小渠子雨量站");//前期雨量
+        List<PredictInputData> tjydh = Data.get(1).get("团结一队雨量站");//蒸散发和降雨
+        List<PredictInputData> tjydd = Data.get(2).get("团结一队雨量站");//前期雨量
+        List<PredictInputData> tthh = Data.get(1).get("头屯河水库雨量站");//蒸散发和降雨
+        List<PredictInputData> tthd = Data.get(2).get("头屯河水库雨量站");//前期雨量
+        Map<String,double[]> flow = new HashMap<>();
+        int l = param.getPeriodStepNumber()*param.getPeriodStepSize();
+        double[] rainQ = new double[l];
+        if (param.getLocation().equals("3号桥")){
+            shanbeiparam = param.getParamMap().get(param.getLocation());
+            shanbeiparam.setFB(0.008);//后续需改
+            shanbeiparam.setWM(150.0);
+            shanbeiparam.setKC(1.0);
+            shanbeiparam.setFC(20.0);
+            shanbeiparam.setFM(60.0);
+            shanbeiparam.setK(0.2);
+            shanbeiparam.setB(0.3);
+            shanbeiparam.setCS(0.96);
+            shanbeiparam.setArea(areaMap.get("八一林场自动雨量站"));
+            shanbeiparam.setL(lMap.get("八一林场自动雨量站")-2);
+            double[] bylcq = getSubBasinQ(shanbeiparam,bylch,bylcd);
+            flow.put("八一林场自动雨量站",bylcq);
+            for (int i = 0; i < rainQ.length; i++) {
+                rainQ[i] += bylcq[i];
+            }
+            shanbeiparam.setArea(areaMap.get("东南沟自动雨量站"));
+            shanbeiparam.setL(lMap.get("东南沟自动雨量站")-2);
+            double[] dngq = getSubBasinQ(shanbeiparam,dngh,dngd);
+            flow.put("东南沟自动雨量站",dngq);
+            for (int i = 0; i < rainQ.length; i++) {
+                rainQ[i] += dngq[i];
+            }
+            shanbeiparam.setArea(areaMap.get("加普沙自动雨量站"));
+            shanbeiparam.setL(lMap.get("加普沙自动雨量站")-2);
+            double[] jpsq = getSubBasinQ(shanbeiparam,jpsh,jpsd);
+            flow.put("加普沙自动雨量站",jpsq);
+            for (int i = 0; i < rainQ.length; i++) {
+                rainQ[i] += jpsq[i];
+            }
+            shanbeiparam.setArea(areaMap.get("煤矿沟自动雨量站"));
+            shanbeiparam.setL(lMap.get("煤矿沟自动雨量站")-2);
+            double[] mkgq = getSubBasinQ(shanbeiparam,mkgh,mkgd);
+            flow.put("煤矿沟自动雨量站",mkgq);
+            for (int i = 0; i < rainQ.length; i++) {
+                rainQ[i] += mkgq[i];
+            }
+            shanbeiparam.setArea(areaMap.get("萨尔达万自动雨量站"));
+            shanbeiparam.setL(lMap.get("萨尔达万自动雨量站")-2);
+            double[] sedwq = getSubBasinQ(shanbeiparam,sedwh,sedwd);
+            flow.put("萨尔达万自动雨量站",sedwq);
+            for (int i = 0; i < rainQ.length; i++) {
+                rainQ[i] += sedwq[i];
+            }
+            shanbeiparam.setArea(areaMap.get("无名沟自动雨量站"));
+            shanbeiparam.setL(lMap.get("无名沟自动雨量站")-2);
+            double[] wmgq = getSubBasinQ(shanbeiparam,wmgh,wmgd);
+            flow.put("无名沟自动雨量站",wmgq);
+            for (int i = 0; i < rainQ.length; i++) {
+                rainQ[i] += wmgq[i];
+            }
+            shanbeiparam.setArea(areaMap.get("宰尔德自动雨量站"));
+            shanbeiparam.setL(lMap.get("宰尔德自动雨量站")-2);
+            double[] zedq = getSubBasinQ(shanbeiparam,zedh,zedd);
+            flow.put("宰尔德自动雨量站",zedq);
+            for (int i = 0; i < rainQ.length; i++) {
+                rainQ[i] += zedq[i];
+            }
+        }
+        else if (param.getLocation().equals("楼庄子")) {
+            shanbeiparam = param.getParamMap().get(param.getLocation());
+            shanbeiparam.setFB(0.008);//后续需改
+            shanbeiparam.setWM(150.0);
+            shanbeiparam.setKC(1.0);
+            shanbeiparam.setFC(20.0);
+            shanbeiparam.setFM(60.0);
+            shanbeiparam.setK(0.2);
+            shanbeiparam.setB(0.3);
+            shanbeiparam.setCS(0.96);
+            shanbeiparam.setArea(areaMap.get("八一林场自动雨量站"));
+            shanbeiparam.setL(lMap.get("八一林场自动雨量站"));
+            double[] bylcq = getSubBasinQ(shanbeiparam,bylch,bylcd);
+            flow.put("八一林场自动雨量站",bylcq);
+            for (int i = 0; i < rainQ.length; i++) {
+                rainQ[i] += bylcq[i];
+            }
+            shanbeiparam.setArea(areaMap.get("东南沟自动雨量站"));
+            shanbeiparam.setL(lMap.get("东南沟自动雨量站"));
+            double[] dngq = getSubBasinQ(shanbeiparam,dngh,dngd);
+            flow.put("东南沟自动雨量站",dngq);
+            for (int i = 0; i < rainQ.length; i++) {
+                rainQ[i] += dngq[i];
+            }
+            shanbeiparam.setArea(areaMap.get("黑沟自动雨量站"));
+            shanbeiparam.setL(lMap.get("黑沟自动雨量站"));
+            double[] hgq = getSubBasinQ(shanbeiparam,hgh,hgd);
+            flow.put("黑沟自动雨量站",hgq);
+            for (int i = 0; i < rainQ.length; i++) {
+                rainQ[i] += hgq[i];
+            }
+            shanbeiparam.setArea(areaMap.get("加普沙自动雨量站"));
+            shanbeiparam.setL(lMap.get("加普沙自动雨量站"));
+            double[] jpsq = getSubBasinQ(shanbeiparam,jpsh,jpsd);
+            flow.put("加普沙自动雨量站",jpsq);
+            for (int i = 0; i < rainQ.length; i++) {
+                rainQ[i] += jpsq[i];
+            }
+            shanbeiparam.setArea(areaMap.get("喀什沟自动雨量站"));
+            shanbeiparam.setL(lMap.get("喀什沟自动雨量站"));
+            double[] ksgq = getSubBasinQ(shanbeiparam,ksgh,ksgd);
+            flow.put("喀什沟自动雨量站",ksgq);
+            for (int i = 0; i < rainQ.length; i++) {
+                rainQ[i] += ksgq[i];
+            }
+            shanbeiparam.setArea(areaMap.get("煤矿沟自动雨量站"));
+            shanbeiparam.setL(lMap.get("煤矿沟自动雨量站"));
+            double[] mkgq = getSubBasinQ(shanbeiparam,mkgh,mkgd);
+            flow.put("煤矿沟自动雨量站",mkgq);
+            for (int i = 0; i < rainQ.length; i++) {
+                rainQ[i] += mkgq[i];
+            }
+            shanbeiparam.setArea(areaMap.get("萨尔达万自动雨量站"));
+            shanbeiparam.setL(lMap.get("萨尔达万自动雨量站"));
+            double[] sedwq = getSubBasinQ(shanbeiparam,sedwh,sedwd);
+            flow.put("萨尔达万自动雨量站",sedwq);
+            for (int i = 0; i < rainQ.length; i++) {
+                rainQ[i] += sedwq[i];
+            }
+            shanbeiparam.setArea(areaMap.get("无名沟自动雨量站"));
+            shanbeiparam.setL(lMap.get("无名沟自动雨量站"));
+            double[] wmgq = getSubBasinQ(shanbeiparam,wmgh,wmgd);
+            flow.put("无名沟自动雨量站",wmgq);
+            for (int i = 0; i < rainQ.length; i++) {
+                rainQ[i] += wmgq[i];
+            }
+            shanbeiparam.setArea(areaMap.get("宰尔德自动雨量站"));
+            shanbeiparam.setL(lMap.get("宰尔德自动雨量站"));
+            double[] zedq = getSubBasinQ(shanbeiparam,zedh,zedd);
+            flow.put("宰尔德自动雨量站",zedq);
+            for (int i = 0; i < rainQ.length; i++) {
+                rainQ[i] += zedq[i];
+            }
+            shanbeiparam.setArea(areaMap.get("制材厂自动雨量站"));
+            shanbeiparam.setL(lMap.get("制材厂自动雨量站"));
+            double[] zccq = getSubBasinQ(shanbeiparam,zcch,zccd);
+            flow.put("制材厂自动雨量站",zccq);
+            for (int i = 0; i < rainQ.length; i++) {
+                rainQ[i] += zccq[i];
+            }
+        }
+        else if (param.getLocation().equals("楼头区间")) {
+            shanbeiparam = param.getParamMap().get(param.getLocation());
+            shanbeiparam.setFB(0.008);//后续需改
+            shanbeiparam.setWM(150.0);
+            shanbeiparam.setKC(1.0);
+            shanbeiparam.setFC(20.0);
+            shanbeiparam.setFM(60.0);
+            shanbeiparam.setK(0.2);
+            shanbeiparam.setB(0.3);
+            shanbeiparam.setCS(0.96);
+            shanbeiparam.setArea(areaMap.get("小渠子雨量站"));
+            shanbeiparam.setL(lMap.get("小渠子雨量站"));
+            double[] xqzq = getSubBasinQ(shanbeiparam,xqzh,xqzd);
+            flow.put("小渠子雨量站",xqzq);
+            for (int i = 0; i < rainQ.length; i++) {
+                rainQ[i] += xqzq[i];
+            }
+            shanbeiparam.setArea(areaMap.get("团结一队雨量站"));
+            shanbeiparam.setL(lMap.get("团结一队雨量站"));
+            double[] tjydq = getSubBasinQ(shanbeiparam,tjydh,tjydd);
+            flow.put("团结一队雨量站",tjydq);
+            for (int i = 0; i < rainQ.length; i++) {
+                rainQ[i] += tjydq[i];
+            }
+            shanbeiparam.setArea(areaMap.get("头屯河水库雨量站"));
+            shanbeiparam.setL(lMap.get("头屯河水库雨量站"));
+            double[] tthq = getSubBasinQ(shanbeiparam,tthh,tthd);
+            flow.put("头屯河水库雨量站",tthq);
+            for (int i = 0; i < rainQ.length; i++) {
+                rainQ[i] += tthq[i];
+            }
+        }
+
+        //获得径流序列包含了降水融雪地下水
+        Object[][] shortFlow = mixedFlood(param, rainQ, Data, snowData);
+        floodSource = getFloodSources(flow, param);//洪水来源
+        floodComposition = getFloodComposition(param, PreFlow, rainQ, snowData);//洪水组成
+        floodLevel = getFloodLevel(shortFlow, "楼庄子");//洪水等级
+        //将Object转化为Flood类型
+        List<PredictInputData> surface = dataUtils.pointToSurface(Data.get(1), param.getLocation());
+        double[] surfaceRain = new double[l];
+        for (int i = 0; i < surfaceRain.length; i++) {
+            surfaceRain[i] = surface.get(i + beforeHours).getRainfall();
+        }
+        List<Flood> result = setShortFlood(shortFlow, param, surfaceRain);
+
+        return result;
+    }
+
+    public double[] getSubBasinQ(ShanbeiParam param,List<PredictInputData> preData,List<PredictInputData> hisData){
+        ShanBeiModel shanBeiModel = new ShanBeiModel();
         //蒸发量、降雨量赋值
-        Object[][] preREData = new Object[preREDataList.size()][3];
-        for (int i = 0; i < preREDataList.size(); i++) {
-            preREData[i][0] = preREDataList.get(i).getDates();
-            preREData[i][1] = preREDataList.get(i).getTemperature();
-            preREData[i][2] = preREDataList.get(i).getRainfall();
+        Object[][] preREData = new Object[preData.size()][3];
+        for (int i = 0; i < preData.size(); i++) {
+            preREData[i][0] = preData.get(i).getDates();
+            preREData[i][1] = preData.get(i).getTemperature();
+            preREData[i][2] = preData.get(i).getRainfall();
         }
         preREData = dataUtils.temToEva(preREData);//将温度转为蒸发量
         //前期累计雨量
-        Object[][] historyRData = new Object[historyRDataList.size()][2];
-        for (int i = 0; i < historyRDataList.size(); i++) {
-            historyRData[i][0] = historyRDataList.get(i).getDates();
-            historyRData[i][1] = historyRDataList.get(i).getRainfall();
-        }
-        //模型参数赋值
-        Object[][] params = InputUtils.hortonParam.get(sheetPara);
-        ShanbeiParam shanbeiparam = new ShanbeiParam();
-        shanbeiparam = param.getParamMap().get(param.getLocation());
-        //是否为模拟降雨，模拟降雨使用固定参数
-        if (param.getIsSimulation()) {
-            for (int i = 0; i < historyRDataList.size(); i++) {
-                historyRData[i][0] = historyRDataList.get(i).getDates();
-                historyRData[i][1] = param.getPreRainFall() / historyRDataList.size();
-            }
-            params[0][1]=0.008;params[0][2]=120.0;params[0][3]=1.0;params[0][4]=32.0;params[0][5]=100.0;params[0][6]=0.022;params[0][7]=0.3;params[0][8]=0.966;
-            shanbeiparam.setArea((double) params[0][0]);
-            shanbeiparam.setFB((double) params[0][1]);
-            shanbeiparam.setWM((double) params[0][2]);
-            shanbeiparam.setKC((double) params[0][3]);
-            shanbeiparam.setFC((double) params[0][4]);
-            shanbeiparam.setFM((double) params[0][5]);
-            shanbeiparam.setK((double) params[0][6]);
-            shanbeiparam.setB((double) params[0][7]);
-            shanbeiparam.setCS((double) params[0][8]);
+        Object[][] historyRData = new Object[hisData.size()][2];
+        for (int i = 0; i < hisData.size(); i++) {
+            historyRData[i][0] = hisData.get(i).getDates();
+            historyRData[i][1] = hisData.get(i).getRainfall();
         }
         //模型计算过程
-        shanBeiModel.InputData(shanbeiparam, preREData, historyRData);
+        shanBeiModel.InputData(param, preREData, historyRData);
         shanBeiModel.InitialMoistureContentCalculation();
         shanBeiModel.RunoffYieldCalculation_UnevenInfiltration();
         shanBeiModel.ConfluenceCalculation();
-        //获得径流序列包含了降水融雪地下水
-        Object[][] shortFlow = mixedFlood(param, shanBeiModel.Q, Data, snowData);
-        floodSource = getFloodSources(PointPreREDataList, param);//洪水来源
-        floodComposition = getFloodComposition(param, PreFlow, shanBeiModel.Q, snowData);//洪水组成
-        floodLevel = getFloodLevel(shortFlow, "楼庄子");//洪水等级
-
-        //将Object转化为Flood类型
-        List<Flood> result = setShortFlood(shortFlow, param, preREData);
-
+        double[] result = new double[shanBeiModel.Q.length];
+        for (int i = 0; i < result.length; i++) {
+            result[i] = shanBeiModel.Q[i];
+        }
         return result;
     }
 
@@ -108,7 +322,7 @@ public class PhysicalForecast {
      * @param param
      * @return
      */
-    public List<Flood> setShortFlood(Object[][] predict, ForecastInputParam param, Object[][] rain) throws FileNotFoundException {
+    public List<Flood> setShortFlood(Object[][] predict, ForecastInputParam param, double[] rain) {
         List<Flood> result = new ArrayList<>();
         int n = param.getPeriodStepNumber();
         int l = param.getPeriodStepSize();
@@ -116,25 +330,30 @@ public class PhysicalForecast {
         Object[][] floodIndex = floodInformation.get(0);//洪号
         Object[][] floodNature = floodInformation.get(1);//洪水信息
         Object[][] water_outQ = new Object[n][3];//水位、出库流量、汛限水位
-        if (param.getLocation().equals("楼庄子")) {
-            Object[][] input = new Object[n][2];
-            for (int i = 0; i < n; i++) {
-                input[i][0] = predict[i * l][0];
-                input[i][1] = predict[i * l][1];
-            }
-            int timeLength = 3600 * l;
-            List<Option> lzzOutList = LZZ.Calculate(param.getBasinStr(), input, timeLength);
-            for (int i = 0; i < n; i++) {
-                water_outQ[i][0] = lzzOutList.get(i).getH1();
-                water_outQ[i][1] = lzzOutList.get(i).getQOut();
-                water_outQ[i][2] = (((double) water_outQ[i][0] > 1394.5) ? 1 : 0);
-            }
-        } else {
-            for (int i = 0; i < n; i++) {
-                water_outQ[i][0] = getWaterLevel(predict, param)[i];
-                water_outQ[i][1] = predict[i * l][1];
-                water_outQ[i][2] = (((double) predict[i][1] > 30.0) ? 1 : 0);
-            }
+//        if (param.getLocation().equals("楼庄子")) {
+//            Object[][] input = new Object[n][2];
+//            for (int i = 0; i < n; i++) {
+//                input[i][0] = predict[i * l][0];
+//                input[i][1] = predict[i * l][1];
+//            }
+//            int timeLength = 3600 * l;
+//            List<Option> lzzOutList = LZZ.Calculate("../file/Basin.json",input, timeLength);
+//            for (int i = 0; i < n; i++) {
+//                water_outQ[i][0] = lzzOutList.get(i).getH1();
+//                water_outQ[i][1] = lzzOutList.get(i).getQOut();
+//                water_outQ[i][2] = (((double) water_outQ[i][0] > 1394.5) ? 1 : 0);
+//            }
+//        } else {
+//            for (int i = 0; i < n; i++) {
+//                water_outQ[i][0] = getWaterLevel(predict, param)[i];
+//                water_outQ[i][1] = predict[i * l][1];
+//                water_outQ[i][2] = (((double) predict[i][1] > 60.0) ? 1 : 0);
+//            }
+//        }
+        for (int i = 0; i < n; i++) {
+            water_outQ[i][0] = getWaterLevel(predict, param)[i];
+            water_outQ[i][1] = predict[i * l][1];
+            water_outQ[i][2] = (((double) predict[i][1] > 60.0) ? 1 : 0);
         }
         //连续列的赋值
         for (int i = 0; i < n; i++) {
@@ -150,7 +369,7 @@ public class PhysicalForecast {
             flood.setFloodVolume((Double) floodNature[0][1]);//洪量
             flood.setQCause(floodSource);//洪水来源
             flood.setQComposition(floodComposition);//洪水组成
-            flood.setRainProcess(Math.round((double) rain[i + beforeHours][2]) * 100 / 100.0);//雨情
+            flood.setRainProcess(Math.round(rain[i]) * 100 / 100.0);//雨情
             flood.setWaterLevel((double) water_outQ[i][0]);//相应水位
             flood.setOutQ((double) water_outQ[i][1]);//出库流量
             flood.setWarningTime((Integer) water_outQ[i][2]);//是否超过汛限水位
@@ -405,97 +624,109 @@ public class PhysicalForecast {
         String result = "一年一遇";
         Object[][] floodNature = getFloodInformation(input).get(1);
         double maxQ = (double) floodNature[2][1];
-        Object[][] flood = getFloodInformation(input).get(0);
-        double volume = 0.0;
-        double minVolume = 0.0;
-        //获得一日洪量
-        if (flood.length < 24) {//获得一日洪量
-            for (int i = 0; i < flood.length; i++) {
-                volume += (double) flood[i][2];
+        //根据位置返回洪水等级
+        if (location.equals("楼庄子")||location.equals("3号桥")) {
+            if (maxQ >= 944) {
+                result = "万年一遇";
             }
-            volume = volume / flood.length * 24 * 3600 / 1000000;//10^6立方米
-        } else {
-            for (int i = 0; i < flood.length - 24; i++) {
-                for (int j = 0; j < 24; j++) {
-                    minVolume += (double) flood[i + j][2];
-                }
-                minVolume = minVolume * 3600 / 1000000;
-                if (minVolume > volume) {
-                    volume = minVolume;
-                }
+            else if (maxQ >= 750) {
+                result = "二千年一遇";
+            }
+            else if (maxQ >= 668) {
+                result = "千年一遇";
+            }
+            else if (maxQ >= 587) {
+                result = "五百年一遇";
+            }
+            else if (maxQ >= 530) {
+                result = "三百年一遇";
+            }
+            else if (maxQ >= 482) {
+                result = "二百年一遇";
+            }
+            else if (maxQ >= 405) {
+                result = "百年一遇";
+            }
+            else if (maxQ >= 330) {
+                result = "五十年一遇";
+            }
+            else if (maxQ >= 277) {
+                result = "三十年一遇";
+            }
+            else if (maxQ >= 236) {
+                result = "二十年一遇";
+            }
+            else if (maxQ >= 171) {
+                result = "十年一遇";
+            }
+            else if (maxQ >= 114) {
+                result = "五年一遇";
+            }
+            else {
+                result = "一年一遇";
             }
         }
-        //根据位置返回洪水等级
-        if (location.equals("楼庄子")) {
-            if (maxQ >= 944 || volume >= 37.7) {
-                result = "万年一遇";
-            } else if (maxQ >= 750 || volume >= 30.0) {
-                result = "二千年一遇";
-            } else if (maxQ >= 668 || volume >= 26.7) {
+        else if (location.equals("楼头区间")) {
+            if (maxQ >= 807) {
                 result = "千年一遇";
-            } else if (maxQ >= 587 || volume >= 23.5) {
+            }
+            else if (maxQ >= 708) {
                 result = "五百年一遇";
-            } else if (maxQ >= 530 || volume >= 21.2) {
-                result = "三百年一遇";
-            } else if (maxQ >= 482 || volume >= 19.3) {
-                result = "二百年一遇";
-            } else if (maxQ >= 405 || volume >= 16.2) {
+            }
+            else if (maxQ >= 581) {
+                result = "两百年一遇";
+            }
+            else if (maxQ >= 486) {
                 result = "百年一遇";
-            } else if (maxQ >= 330 || volume >= 13.3) {
+            }
+            else if (maxQ >= 395) {
                 result = "五十年一遇";
-            } else if (maxQ >= 277 || volume >= 11.2) {
+            }
+            else if (maxQ >= 329) {
                 result = "三十年一遇";
-            } else if (maxQ >= 236 || volume >= 9.7) {
+            }
+            else if (maxQ >= 279) {
                 result = "二十年一遇";
-            } else if (maxQ >= 171 || volume >= 7.2) {
+            }
+            else if (maxQ >= 198) {
                 result = "十年一遇";
-            } else if (maxQ >= 114 || volume >= 5.1) {
+            }
+            else if (maxQ >= 126) {
                 result = "五年一遇";
-            } else {
+            }
+            else {
                 result = "一年一遇";
             }
-        } else if (location.equals("楼头区间")) {
-            if (maxQ >= 807 || volume >= 12.26) {
+        }
+        else if (location.equals("头屯河")) {
+            if (maxQ >= 1013) {
                 result = "千年一遇";
-            } else if (maxQ >= 708 || volume >= 10.53) {
-                result = "五百年一遇";
-            } else if (maxQ >= 581 || volume >= 8.3) {
-                result = "两百年一遇";
-            } else if (maxQ >= 486 || volume >= 6.69) {
-                result = "百年一遇";
-            } else if (maxQ >= 395 || volume >= 5.16) {
-                result = "五十年一遇";
-            } else if (maxQ >= 329 || volume >= 4.11) {
-                result = "三十年一遇";
-            } else if (maxQ >= 279 || volume >= 3.33) {
-                result = "二十年一遇";
-            } else if (maxQ >= 198 || volume >= 2.15) {
-                result = "十年一遇";
-            } else if (maxQ >= 126 || volume >= 1.27) {
-                result = "五年一遇";
-            }else {
-                result = "一年一遇";
             }
-        } else if (location.equals("头屯河")) {
-            if (maxQ >= 1013 || volume >= 28) {
-                result = "千年一遇";
-            } else if (maxQ >= 883 || volume >= 25.5) {
+            else if (maxQ >= 883) {
                 result = "五百年一遇";
-            } else if (maxQ >= 713 || volume >= 22.2) {
+            }
+            else if (maxQ >= 713) {
                 result = "两百年一遇";
-            } else if (maxQ >= 590 || volume >= 17.8) {
+            }
+            else if (maxQ >= 590) {
                 result = "百年一遇";
-            } else if (maxQ >= 470 || volume >= 17.4) {
+            }
+            else if (maxQ >= 470) {
                 result = "五十年一遇";
-            } else if (maxQ >= 402 || volume >= 15.9) {
+            }
+            else if (maxQ >= 402) {
                 result = "三十年一遇";
-            } else if (maxQ >= 320 || volume >= 14.1) {
+            }
+            else if (maxQ >= 320) {
                 result = "二十年一遇";
-            } else if (maxQ >= 219 || volume >= 11.7) {
+            }
+            else if (maxQ >= 219) {
                 result = "十年一遇";
-            } else if (maxQ >= 134 || volume >= 5.2) {
+            }
+            else if (maxQ >= 134) {
                 result = "五年一遇";
-            }else {
+            }
+            else {
                 result = "一年一遇";
             }
         }
@@ -526,137 +757,48 @@ public class PhysicalForecast {
     /**
      * 面雨量权重
      * 求洪水组成，各个雨量站代表的汇流面贡献多少水量
-     *
      * @param pointData
      * @return
      */
-    public String getFloodSources(List<PredictInputData> pointData, ForecastInputParam param) {
+    public String getFloodSources(Map<String,double[]> pointData, ForecastInputParam param) {
         String result = new String();
-        String stationName = pointData.get(0).getLocation();
-        int number = 0;
-        for (int i = 0; i < pointData.size(); i++) {
-            if (pointData.get(i).getLocation().equals(stationName)) {
-                number++;
-            }
-        }
-        PredictInputData hourData;
-        List<PredictInputData> hourDatalist = new ArrayList<>();
-        List<List<PredictInputData>> hourDataList = new ArrayList<>();
-        for (int j = 0; j < number; j++) {
-            hourDatalist = new ArrayList<>();
-            for (int i = 0; i < pointData.size(); i++) {
-                Boolean dateCompare = timeUtils.DateCompare(pointData.get(j).getDates(), pointData.get(i).getDates(), "小时");
-                if (dateCompare) {
-                    hourData = pointData.get(i);
-                    hourDatalist.add(hourData);
-                }
-            }
-            hourDataList.add(hourDatalist);
-        }
-        //number代表几个时段
-        Object[][] rainSum = new Object[13][2];
-        for (int i = 0; i < 13; i++) {
-            rainSum[i][1] = 0.0;
-        }
-        for (int i = 0; i < number; i++) {
-            PredictInputData hourResult = new PredictInputData();
-            hourDatalist = hourDataList.get(i);
-            Object[][] rainFall = new Object[13][2];//13个雨量站的雨量
-            for (int j = 0; j < 13; j++) {
-                rainFall[j][1] = 0.0;
-            }
-            hourResult.setDates(hourDatalist.get(0).getDates());
-            //hourDatalist为同一时间段不同雨量站
-            for (int j = 0; j < hourDataList.get(i).size(); j++) {
-                if (hourDatalist.get(j).getLocation().equals("八一林场自动雨量站")) {
-                    rainFall[0][0] = hourDatalist.get(j).getLocation();
-                    rainFall[0][1] = (double) rainFall[0][1] + hourDatalist.get(j).getRainfall() * 0.1;
-                }
-                if (hourDatalist.get(j).getLocation().equals("加普沙自动雨量站")) {
-                    rainFall[1][0] = hourDatalist.get(j).getLocation();
-                    rainFall[1][1] = (double) rainFall[1][1] + hourDatalist.get(j).getRainfall() * 0.1;
-                }
-                if (hourDatalist.get(j).getLocation().equals("东南沟自动雨量站")) {
-                    rainFall[2][0] = hourDatalist.get(j).getLocation();
-                    rainFall[2][1] = (double) rainFall[2][1] + hourDatalist.get(j).getRainfall() * 0.1;
-                }
-                if (hourDatalist.get(j).getLocation().equals("宰尔德自动雨量站")) {
-                    rainFall[3][0] = hourDatalist.get(j).getLocation();
-                    rainFall[3][1] = (double) rainFall[3][1] + hourDatalist.get(j).getRainfall() * 0.1;
-                }
-                if (hourDatalist.get(j).getLocation().equals("无名沟自动雨量站")) {
-                    rainFall[4][0] = hourDatalist.get(j).getLocation();
-                    rainFall[4][1] = (double) rainFall[4][1] + hourDatalist.get(j).getRainfall() * 0.1;
-                }
-                if (hourDatalist.get(j).getLocation().equals("萨尔达万自动雨量站")) {
-                    rainFall[5][0] = hourDatalist.get(j).getLocation();
-                    rainFall[5][1] = (double) rainFall[5][1] + hourDatalist.get(j).getRainfall() * 0.1;
-                }
-                if (hourDatalist.get(j).getLocation().equals("煤矿沟自动雨量站")) {
-                    rainFall[6][0] = hourDatalist.get(j).getLocation();
-                    rainFall[6][1] = (double) rainFall[6][1] + hourDatalist.get(j).getRainfall() * 0.1;
-                }
-                if (hourDatalist.get(j).getLocation().equals("黑沟自动雨量站")) {
-                    rainFall[7][0] = hourDatalist.get(j).getLocation();
-                    rainFall[7][1] = (double) rainFall[7][1] + hourDatalist.get(j).getRainfall() * 0.1;
-                }
-                if (hourDatalist.get(j).getLocation().equals("喀什沟自动雨量站")) {
-                    rainFall[8][0] = hourDatalist.get(j).getLocation();
-                    rainFall[8][1] = (double) rainFall[8][1] + hourDatalist.get(j).getRainfall() * 0.1;
-                }
-                if (hourDatalist.get(j).getLocation().equals("制材厂自动雨量站")) {
-                    rainFall[9][0] = hourDatalist.get(j).getLocation();
-                    rainFall[9][1] = (double) rainFall[9][1] + hourDatalist.get(j).getRainfall() * 0.1;
-                }
-                if (hourDatalist.get(j).getLocation().equals("小渠子雨量站")) {
-                    rainFall[10][0] = hourDatalist.get(j).getLocation();
-                    rainFall[10][1] = (double) rainFall[10][1] + hourDatalist.get(j).getRainfall() * 0.1;
-                }
-                if (hourDatalist.get(j).getLocation().equals("团结一队雨量站")) {
-                    rainFall[11][0] = hourDatalist.get(j).getLocation();
-                    rainFall[11][1] = (double) rainFall[11][1] + hourDatalist.get(j).getRainfall() * 0.1;
-                }
-                if (hourDatalist.get(j).getLocation().equals("头屯河水库雨量站")) {
-                    rainFall[12][0] = hourDatalist.get(j).getLocation();
-                    rainFall[12][1] = (double) rainFall[12][1] + hourDatalist.get(j).getRainfall() * 0.1;
-                }
-            }
-            //各个时间段雨量站降雨总和
-            for (int j = 0; j < 13; j++) {
-                if (rainSum[j][0] == null) {
-                    rainSum[j][0] = rainFall[j][0];
-                }
-                rainSum[j][1] = (double) rainSum[j][1] + (double) rainFall[j][1];
-            }
-        }
+        int l = param.getPeriodStepNumber()*param.getPeriodStepSize();
         //三号桥断面返回三个地区的雨量比值
         if (param.getLocation().equals("3号桥")) {
             double Sum = 0.0;
             double qiaoSum = 0.0;
             double dongSum = 0.0;
             double sanSum = 0.0;
-            qiaoSum = (double) rainSum[0][1];
-            dongSum = (double) rainSum[1][1] + (double) rainSum[2][1] + (double) rainSum[3][1] + (double) rainSum[4][1];
-            sanSum = (double) rainSum[5][1] + (double) rainSum[6][1];
+            for (int i = 0; i < l; i++) {
+                qiaoSum += pointData.get("八一林场自动雨量站")[i];
+                dongSum += (pointData.get("加普沙自动雨量站")[i] + pointData.get("东南沟自动雨量站")[i] +
+                        pointData.get("宰尔德自动雨量站")[i] + pointData.get("无名沟自动雨量站")[i]);
+                sanSum += (pointData.get("萨尔达万自动雨量站")[i] + pointData.get("煤矿沟自动雨量站")[i]);
+            }
             Sum = qiaoSum + dongSum + sanSum;
             if (Sum != 0.0) {
                 double qiao = Math.round((float) qiaoSum / Sum * 100) / 100.0;
                 double dong = Math.round((float) dongSum / Sum * 100) / 100.0;
                 double san = Math.round((1.00 - qiao - dong) * 100) / 100.0;
                 result = "乔楞格尔地区:" + qiao + "," + "东南沟地区:" + dong + "," + "3号桥地区:" + san;
-            } else {
+            }
+            else {
                 result = "乔楞格尔地区:0.34," + "东南沟地区:0.33," + "3号桥地区:0.33";
             }
-        } else if (param.getLocation().equals("楼庄子")) {
+        }
+        else if (param.getLocation().equals("楼庄子")) {
             double Sum = 0.0;
             double qiaoSum = 0.0;
             double dongSum = 0.0;
             double sanSum = 0.0;
             double zhiSum = 0.0;
-            qiaoSum = (double) rainSum[0][1];
-            dongSum = (double) rainSum[1][1] + (double) rainSum[2][1] + (double) rainSum[3][1] + (double) rainSum[4][1];
-            sanSum = (double) rainSum[5][1] + (double) rainSum[6][1];
-            zhiSum = (double) rainSum[7][1] + (double) rainSum[8][1] + (double) rainSum[9][1];
+            for (int i = 0; i < l; i++) {
+                qiaoSum += pointData.get("八一林场自动雨量站")[i];
+                dongSum += (pointData.get("加普沙自动雨量站")[i] + pointData.get("东南沟自动雨量站")[i] +
+                        pointData.get("宰尔德自动雨量站")[i] + pointData.get("无名沟自动雨量站")[i]);
+                sanSum += (pointData.get("萨尔达万自动雨量站")[i] + pointData.get("煤矿沟自动雨量站")[i]);
+                zhiSum += (pointData.get("黑沟自动雨量站")[i] + pointData.get("喀什沟自动雨量站")[i] + pointData.get("制材厂自动雨量站")[i]);
+            }
             Sum = qiaoSum + dongSum + sanSum + zhiSum;
             if (Sum != 0) {
                 double qiao = Math.round((float) qiaoSum / Sum * 100) / 100.0;
@@ -664,23 +806,31 @@ public class PhysicalForecast {
                 double san = Math.round((float) sanSum / Sum * 100) / 100.0;
                 double zhi = Math.round((1.00 - qiao - dong - san) * 100) / 100.0;
                 result = "乔楞格尔地区:" + qiao + "," + "东南沟地区:" + dong + "," + "3号桥地区:" + san + "," + "制材厂地区:" + zhi;
-            } else {
+            }
+            else {
                 result = "乔楞格尔地区:0.25," + "东南沟地区:0.25," + "3号桥地区:0.25," + "制材厂地区:0.25";
             }
 
-        } else if (param.getLocation().equals("楼头区间")) {
+        }
+        else if (param.getLocation().equals("楼头区间")) {
             double Sum = 0.0;
-            double xiaoSum = (double) rainSum[10][1];
-            double tuanSum = (double) rainSum[11][1];
-            double toSum = (double) rainSum[12][1];
+            double xiaoSum = 0.0;
+            double tuanSum = 0.0;
+            double toSum = 0.0;
+            for (int i = 0; i < l; i++) {
+                xiaoSum += pointData.get("小渠子雨量站")[i];
+                tuanSum += pointData.get("团结一队雨量站")[i];;
+                toSum += pointData.get("头屯河水库雨量站")[i];;
+            }
             Sum = xiaoSum + tuanSum + toSum;
             if (Sum != 0) {
                 double xiao = Math.round((float) xiaoSum / Sum * 100) / 100.0;
                 double tuan = Math.round((float) tuanSum / Sum * 100) / 100.0;
                 double to = Math.round((1.00 - xiao - tuan) * 100) / 100.0;
-                result = "小渠子沟:" + xiao + "," + "团结一队:" + tuan + "," + "头屯河入库:" + to;
-            } else {
-                result = "小渠子沟:0.34," + "团结一队:0.33," + "头屯河入库:0.33";
+                result = "小渠子沟:" + xiao + "," + "团结一队:" + tuan + "," + "头屯河坝前:" + to;
+            }
+            else {
+                result = "小渠子沟:0.34," + "团结一队:0.33," + "头屯河坝前:0.33";
             }
         }
         return result;
@@ -700,12 +850,11 @@ public class PhysicalForecast {
         String result = new String();
         double snowFlow = 0.0;
         double preFlowSum = 0.0;
-        int preFlowNum = 0;
         double preFlow = 0.0;
         double shanbeiFlow = 0.0;
-
+        int number = Q_shanbei.length;
+        double base = (param.getLocation().equals("楼头区间")?0.16:1.28)*number;
         if (param.getIsSnowMeltModel()) {
-            int number = Q_shanbei.length;
             for (int i = 0; i < snowData.length; i++) {
                 snowFlow += (double) snowData[i][1];
             }
@@ -713,15 +862,18 @@ public class PhysicalForecast {
             for (int i = 0; i < Q_shanbei.length; i++) {
                 shanbeiFlow = shanbeiFlow + Q_shanbei[i];
             }
-            double Sum = snowFlow + shanbeiFlow;
-            double shanbei = Math.round((float) shanbeiFlow / Sum * 95) / 100.0;
-            double rong = Math.round((float) snowFlow / Sum * 95) / 100.0;
+            double Sum = snowFlow + shanbeiFlow + base;
+            double shanbei = Math.round((float) shanbeiFlow / Sum * 100) / 100.0;
+            double rong = Math.round((float) snowFlow / Sum * 100) / 100.0;
+            double di = Math.round((float) base / Sum * 100) / 100.0;
             if (Sum == 0.0) {
                 result += "地下水:1.00";
-            } else {
-                result += "降水:" + shanbei + "," + "融雪:" + rong + "," + "地下水:0.05";
             }
-        } else {
+            else {
+                result += "降水:" + shanbei + "," + "融雪:" + rong + "," + "地下水:" + di;
+            }
+        }
+        else {
             for (int i = 0; i < Q_shanbei.length; i++) {
                 shanbeiFlow = shanbeiFlow + Q_shanbei[i];
             }
@@ -733,13 +885,14 @@ public class PhysicalForecast {
             }
             int n = PreFlow.size() == 0 ? 1 : PreFlow.size();
             preFlow = preFlowSum / n * Q_shanbei.length;
-            double Sum = preFlow + shanbeiFlow;
-            double shanbei = Math.round((float) shanbeiFlow / Sum * 95) / 100.0;
-            double rong = Math.round((float) preFlow / Sum * 95) / 100.0;
+            double Sum = preFlow + shanbeiFlow + base;
+            double shanbei = Math.round((float) shanbeiFlow / Sum * 100) / 100.0;
+            double rong = Math.round((float) preFlow / Sum * 100) / 100.0;
+            double di = Math.round((float) base / Sum * 100) / 100.0;
             if (Sum == 0.0) {
                 result += "地下水:1.00";
             } else {
-                result += "降水:" + shanbei + "," + "融雪:" + rong + "," + "地下水:0.05";
+                result += "降水:" + shanbei + "," + "融雪:" + rong + "," + "地下水:" + di;
             }
         }
         return result;
@@ -747,19 +900,16 @@ public class PhysicalForecast {
 
     /**
      * 陕北模型计算所得降水数据与前期径流数据、融雪数据整合
-     * （后续更改）预报后所得时间
-     *
      * @param param
      * @param shanBeiQ 降水所得
-     * @param Data     data.get0为前期径流，data.get1为前10小时和预报雨量。
      * @param snowFlow 融雪径流
      * @return 预报的径流值
      */
     public Object[][] mixedFlood(ForecastInputParam param, double[] shanBeiQ,
-                                 List<List<PredictInputData>> Data, Object[][] snowFlow) {
-        List<PredictInputData> preFlow = Data.get(0);
-        List<PredictInputData> preTemperature = dataUtils.pointToSurface(Data.get(1), "小时", param.getLocation());
-        int preNumber = param.getPeriodStepNumber();
+                                 List<Map<String,List<PredictInputData>>> Data, Object[][] snowFlow) {
+        List<PredictInputData> preFlow = Data.get(0).get("流量");
+        List<PredictInputData> preTemperature = Data.get(1).get("制材厂自动雨量站");
+        int preNumber = param.getPeriodStepNumber()* param.getPeriodStepSize();
         Object[][] result = new Object[param.getPeriodStepNumber()][2];
         //减去汇流滞时
         Date currentDate = param.getPreStartTime();
@@ -777,7 +927,8 @@ public class PhysicalForecast {
                 }
                 baseAve += baseFlow;
             }
-            baseAve = baseAve / preFlow.size();
+//            baseAve = baseAve / preFlow.size();
+            baseAve = preFlow.get(preFlow.size()-1).getFlow();
         } else {
             baseAve = 100.0;
         }
@@ -825,16 +976,15 @@ public class PhysicalForecast {
                         baseAve = 1.52;
                         break;
                 }
-            } else {
+            }
+            else {
                 baseAve = 1.29;
             }
         }
         if (param.getIsSimulation()) {
             baseAve = param.getPreFlow();
         }
-
-        double[] snowDistribution = flowDistribution(preNumber, snowFlow, baseAve, preTemperature);//融雪随温度分配曲线
-
+        double[] snowDistribution = flowDistribution(param, snowFlow, baseAve, preTemperature);//融雪随温度分配曲线
 
         //获得混合后的径流序列
         for (int i = 0; i < shanBeiQ.length; i++) {
@@ -851,7 +1001,7 @@ public class PhysicalForecast {
     /**
      * 融雪径流减去基流后，根据温度进行分布
      */
-    public double[] flowDistribution(int preNumber, Object[][] snowFlow, Double baseData, List<PredictInputData> input) {
+    public double[] flowDistribution(ForecastInputParam param, Object[][] snowFlow, Double baseData, List<PredictInputData> input) {
         //融雪基流
         Double averageData = 0.0;
         Double snowSum = 0.0;
@@ -861,7 +1011,15 @@ public class PhysicalForecast {
         }
         averageData = snowSum / snowFlow.length;
 
-        int l = preNumber + beforeHours;
+        int l = param.getPeriodStepNumber()*param.getPeriodStepSize() + beforeHours;
+        double[] flow = new double[l];
+        double[] result = new double[param.getPeriodStepNumber()*param.getPeriodStepSize()];
+        if (param.getLocation().equals("楼头区间")){
+            for (int i = beforeHours; i < l; i++) {
+                result[i - beforeHours] = flow[i];
+            }
+            return result;
+        }
         double[] temperature = new double[l];
         for (int i = 0; i < l; i++) {
             temperature[i] = input.get(i).getTemperature();
@@ -870,7 +1028,8 @@ public class PhysicalForecast {
         for (int i = 0; i < temperature.length; i++) {
             if (!(temperature[i] >= 5)) {
                 temperature[i] = 0.0;
-            } else {
+            }
+            else {
                 number++;
             }
         }
@@ -879,21 +1038,20 @@ public class PhysicalForecast {
             sum += num;
         }
 
-        double[] flow = new double[l];
-        double[] result = new double[preNumber];
+
         if (number == 0) {//如果没有超过5摄氏度
-            for (int i = 0; i < preNumber; i++) {
+            for (int i = 0; i < param.getPeriodStepNumber()*param.getPeriodStepSize(); i++) {
                 result[i] = baseData;
             }
             return result;
         }
         if (averageData > baseData) {//若预报融雪大于基础流量，先去除基流影响再按温度分布
-
             Double data = (averageData - baseData);
             for (int i = 0; i < l; i++) {
                 if (sum == 0) {
                     flow[i] = data;
-                } else {
+                }
+                else {
                     if (temperature[i] < 0) {
                         temperature[i] = 0;
                     }
@@ -908,7 +1066,7 @@ public class PhysicalForecast {
                 flow[i] = baseData;
             }
         }
-        for (int i = beforeHours; i < preNumber + beforeHours; i++) {
+        for (int i = beforeHours; i < l; i++) {
             result[i - beforeHours] = flow[i];
         }
         return result;

@@ -391,7 +391,7 @@ public class DNN_ADAM implements NeuralNetwork {
 		return result;
 	}
 	public TrainResult simOutput1(double[][] input, double[][] realOutput,
-								  double[][][]layer_weight, int[] layernum) {
+								  double[][][]layer_weight, int[] layernum,double[]context) {
 		TrainResult trainResult = new TrainResult();
 		double[][] output = new double[input.length][];
 		for (int i = 0; i < input.length; i++) {

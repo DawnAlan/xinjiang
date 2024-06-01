@@ -1,13 +1,16 @@
 package com.cj.model.func.modular.FloodPredict.utils;
 
+import com.alibaba.excel.metadata.csv.CsvRow;
 import com.cj.common.util.UUIDUtils;
 import com.cj.model.func.core.util.MinioUtils;
 import com.cj.model.func.modular.FloodPredict.entity.DataWrite;
 import com.cj.model.func.modular.FloodPredict.entity.PredictInputData;
+import javafx.scene.shape.Line;
 import lombok.SneakyThrows;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.openxml4j.util.ZipSecureFile;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Component;
@@ -26,8 +29,23 @@ import java.util.*;
 @Component
 public class ExcelTool {
     public static void writeDoubleExcel(String path, String sheetName, double[][] data) throws IOException, InvalidFormatException {
-        XSSFWorkbook workbook = new XSSFWorkbook();
-        XSSFSheet sheet = workbook.createSheet();
+        XSSFWorkbook workbook = null;
+
+        // 检查文件是否存在
+        File file = new File(path);
+        if (file.exists()) {
+            try {
+                FileInputStream fis = new FileInputStream(path);
+                workbook = new XSSFWorkbook(fis);
+                fis.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            // 创建一个新的工作表
+            workbook = new XSSFWorkbook();
+        }
+        XSSFSheet sheet = workbook.getSheet(sheetName);
         CellStyle cellStyle = workbook.createCellStyle();
         cellStyle.setDataFormat(workbook.getCreationHelper().createDataFormat().getFormat("yyyy-mm-dd hh:mm:ss"));
 // 先判断工作簿是否存在，不存在则创建，存在则清空
@@ -43,23 +61,15 @@ public class ExcelTool {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            // 在单元格中写入数据
-            sheet = workbook.createSheet(sheetName);
-            for (int i = 0; i < data.length; i++) {
-                Row row = sheet.createRow(i);
-                for (int j = 0; j < data[i].length; j++) {
-                    Cell cell = row.createCell(j);
-                    cell.setCellValue(data[i][j]);
-                }
-            }
+
         } else {
             sheet = workbook.createSheet(sheetName);
-            for (int i = 0; i < data.length; i++) {
-                Row row = sheet.createRow(i);
-                for (int j = 0; j < data[i].length; j++) {
-                    Cell cell = row.createCell(j);
-                    cell.setCellValue(data[i][j]);
-                }
+        }
+        for (int i = 0; i < data.length; i++) {
+            Row row = sheet.createRow(i);
+            for (int j = 0; j < data[i].length; j++) {
+                Cell cell = row.createCell(j);
+                cell.setCellValue(data[i][j]);
             }
         }
         try {
@@ -135,6 +145,71 @@ public class ExcelTool {
         } else {
             sheet = workbook.createSheet(sheetName);
             fillSheet(workbook, sheet, data);
+        }
+    }
+
+    public static void writeLastingExcel(String path, String sheetName, Object[][] data)  {
+        XSSFWorkbook workbook = null;
+
+        // 检查文件是否存在
+        File file = new File(path);
+        if (file.exists()) {
+            try {
+                FileInputStream fis = new FileInputStream(path);
+                workbook = new XSSFWorkbook(fis);
+                fis.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            // 创建一个新的工作表
+            workbook = new XSSFWorkbook();
+        }
+
+        assert workbook != null;
+        boolean sheetExists = false;
+        int sheetIndex = workbook.getSheetIndex(sheetName);
+        if (sheetIndex != -1) {
+            sheetExists = true;
+        }
+        XSSFSheet sheet;
+        if (sheetExists) {
+            sheet = workbook.getSheet(sheetName);
+        } else {
+            sheet = workbook.createSheet(sheetName);
+        }
+        CellStyle cellStyle = workbook.createCellStyle();
+        cellStyle.setDataFormat(workbook.getCreationHelper().createDataFormat().getFormat("yyyy-mm-dd hh:mm:ss"));
+// 先判断工作簿是否存在，不存在则创建，存在则清空
+        if (sheet != null) {
+            int l = sheet.getLastRowNum()+1;
+            for (int i = 0; i < data.length; i++) {
+                Row row = sheet.createRow(i+l);
+                for (int j = 0; j < data[i].length; j++) {
+                    Cell cell = row.createCell(j);
+                    if (data[i][j] instanceof String) {
+                        cell.setCellValue((String) data[i][j]);
+                    } else if (data[i][j] instanceof Double) {
+                        cell.setCellValue((Double) data[i][j]);
+                    } else if (data[i][j] instanceof Integer) {
+                        cell.setCellValue((Integer) data[i][j]);
+                    } else if (data[i][j] instanceof Date) {
+                        cell.setCellValue((Date) data[i][j]);
+                        cell.setCellStyle(cellStyle);
+                    }
+                }
+            }
+        } else {
+            sheet = workbook.createSheet(sheetName);
+            fillSheet(workbook, sheet, data);
+        }
+        try {
+            FileOutputStream fop = new FileOutputStream(path);
+            workbook.write(fop);
+            fop.flush();
+            fop.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -225,9 +300,23 @@ public class ExcelTool {
         writeObjectExcel(path, sheetName, inputData);
     }
 
-    public static void writeList2DoubleExcel(String path, String sheetName, List<List<Double>> data) throws IOException, InvalidFormatException {
-        XSSFWorkbook workbook = new XSSFWorkbook();
-        XSSFSheet sheet = workbook.createSheet();
+    public static void writeList2DoubleExcel(String path, String sheetName, List<List<Double>> data) {
+        XSSFWorkbook workbook = null;
+        // 检查文件是否存在
+        File file = new File(path);
+        if (file.exists()) {
+            try {
+                FileInputStream fis = new FileInputStream(path);
+                workbook = new XSSFWorkbook(fis);
+                fis.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            // 创建一个新的工作表
+            workbook = new XSSFWorkbook();
+        }
+        XSSFSheet sheet = workbook.getSheet(sheetName);
         CellStyle cellStyle = workbook.createCellStyle();
         cellStyle.setDataFormat(workbook.getCreationHelper().createDataFormat().getFormat("yyyy-mm-dd hh:mm:ss"));
 // 先判断工作簿是否存在，不存在则创建，存在则清空
@@ -243,21 +332,21 @@ public class ExcelTool {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            // 在单元格中写入数据
-            sheet = workbook.createSheet(sheetName);
-            for (int i = 0; i < data.get(0).size(); i++) {
-                Row row = sheet.createRow(i);
-                for (int j = 0; j < data.size(); j++) {
-                    Cell cell = row.createCell(j);
-                    cell.setCellValue(data.get(j).get(i));
-                }
-            }
+
         } else {
             sheet = workbook.createSheet(sheetName);
-            for (int i = 0; i < data.get(0).size(); i++) {
-                Row row = sheet.createRow(i);
-                for (int j = 0; j < data.size(); j++) {
-                    Cell cell = row.createCell(j);
+        }
+        int l = 0;
+        for (int i = 0; i < data.size(); i++) {
+            if (data.get(i).size()>l){
+                l=data.get(i).size();
+            }
+        }
+        for (int i = 0; i < data.get(0).size(); i++) {
+            Row row = sheet.createRow(i);
+            for (int j = 0; j < data.size(); j++) {
+                Cell cell = row.createCell(j);
+                if (i<data.get(j).size()){
                     cell.setCellValue(data.get(j).get(i));
                 }
             }
@@ -374,8 +463,8 @@ public class ExcelTool {
 
     public static Map<String,Object[][]> readExcel(String path, String name) throws IOException {
         Map<String,Object[][]> result = new HashMap<>();
-        String savePath = System.getProperty("java.io.tmpdir") + File.separator + name +".xlsx";
-        String filePath = path + name+".xlsx";
+        String savePath = System.getProperty("java.io.tmpdir")+ name +".xlsx";
+        String filePath = path + name +".xlsx";
         downloadFile(filePath, savePath);
         InputStream fis = new FileInputStream(savePath);
         ZipSecureFile.setMinInflateRatio(-1.0d);
@@ -388,12 +477,19 @@ public class ExcelTool {
         return result;
     }
 
-//    public static Object[][] readExcel(InputStream fis, String sheetName) throws IOException {
-//        ZipSecureFile.setMinInflateRatio(-1.0d);
-//        Workbook wb = new XSSFWorkbook(fis);
-//        Sheet sheet = wb.getSheet(sheetName);
-//        return readSheet(sheet);
-//    }
+    public static Map<String,Object[][]> readExcel2(String path, String name) throws IOException {
+        Map<String,Object[][]> result = new HashMap<>();
+        String filePath = path+name+".xlsx";
+        InputStream fis = new FileInputStream(filePath);
+        ZipSecureFile.setMinInflateRatio(-1.0d);
+        Workbook wb = new XSSFWorkbook(fis);
+        int numberOfSheets = wb.getNumberOfSheets();
+        for (int i = 0; i < numberOfSheets; i++) {
+            Sheet sheet = wb.getSheetAt(i);
+            result.put(sheet.getSheetName(),readSheet(sheet));
+        }
+        return result;
+    }
     public static Object[][] readStringExcel(String path, String sheetName) throws IOException {
         InputStream fis = new FileInputStream(path);
         ZipSecureFile.setMinInflateRatio(-1.0d);

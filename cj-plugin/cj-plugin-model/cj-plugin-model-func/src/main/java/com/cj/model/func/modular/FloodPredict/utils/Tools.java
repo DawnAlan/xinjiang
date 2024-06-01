@@ -2,6 +2,7 @@ package com.cj.model.func.modular.FloodPredict.utils;
 
 import com.cj.model.func.modular.FloodPredict.entity.TemporaryXlsx;
 import com.cj.model.func.modular.entity.Flood;
+import lombok.SneakyThrows;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 
 import java.io.File;
@@ -19,7 +20,8 @@ public class Tools {
      * @throws IOException
      * @throws InvalidFormatException
      */
-    public static TemporaryXlsx resultToXlsx(List<Flood> Flood) throws IOException {
+    @SneakyThrows
+    public static TemporaryXlsx resultToXlsx(List<Flood> Flood){
         File tempFile = File.createTempFile("PRE_RESULT", ".xlsx");
         String path = tempFile.getAbsolutePath();
         Object[][] floodObject = new Object[Flood.size()][16];

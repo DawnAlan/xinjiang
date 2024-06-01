@@ -15,8 +15,7 @@ public class ModelSaveEntity {
 
 	private List<SimMaxMinEntity> maxmin;
 
-	private List<TemporaryXlsx> maxminxlsx;
+	private TemporaryXlsx tempXlsx;
 
-	private List<TemporaryXlsx> paramxlsx;
 
 }

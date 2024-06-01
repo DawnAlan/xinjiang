@@ -174,8 +174,8 @@ public class TimeUtils {
 	 * @param len 预见期的长度
 	 * @return 除去基础数据日期的所有日期
 	 */
-	public Date[][] getMonthDateList(Date startDate,int len) {
-		Date[][] dates = new Date[len][1];
+	public Date[][] getMonthDateList(Date startDate,int len,int out) {
+		Date[][] dates = new Date[len][out];
 		int day = getSpecificDate(startDate).get("日");
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(startDate);
@@ -183,9 +183,11 @@ public class TimeUtils {
 		startDate=cal.getTime();
 		for(int i = 0; i < len; i++){
 			cal.setTime(startDate);
-			dates[i][0]=cal.getTime();
-			cal.add(Calendar.MONTH,1);
-			startDate = cal.getTime();
+			for (int j = 0; j < out; j++) {
+				dates[i][j]=cal.getTime();
+				cal.add(Calendar.MONTH,1);
+			}
+			startDate = addCalendar(startDate,"月",1);
 		}
 		return dates;
 	}
@@ -196,23 +198,28 @@ public class TimeUtils {
 	 */
 	public int duration(Date dateStart,Date dateEnd,String period){
 		int result = 0;
+		LocalDate localDate1 = dateStart.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+		LocalDate localDate2 = dateEnd.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 		if (period.equals("年")){
-			LocalDate localDate1 = dateStart.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-			LocalDate localDate2 = dateEnd.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 			Period duration = Period.between(localDate1, localDate2);
 			int years = duration.getYears();
 			result =years;
 		}
 		if (period.equals("月")){
-			LocalDate localDate1 = dateStart.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-			LocalDate localDate2 = dateEnd.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 			long months = ChronoUnit.MONTHS.between(localDate1, localDate2);
 			result =Math.toIntExact(months);
 		}
+		if (period.equals("旬")){
+			Period duration = Period.between(localDate1, localDate2);
+			int year = duration.getYears();
+			long months = ChronoUnit.MONTHS.between(localDate1, localDate2);
+			int month =Math.toIntExact(months);
+			long days =  Duration.between(localDate1.atStartOfDay(), localDate2.atStartOfDay()).toDays();
+			int day = Math.toIntExact(days);
+			result = year * 12 * 3 + month * 3 + day / 10 +1;
+			return result;
+		}
 		if (period.equals("日")){
-			LocalDate localDate1 = dateStart.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-			LocalDate localDate2 = dateEnd.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-			// 计算相差天数并返回
 			long duration =  Duration.between(localDate1.atStartOfDay(), localDate2.atStartOfDay()).toDays();
 			result = Math.toIntExact(duration);
 		}
@@ -248,17 +255,6 @@ public class TimeUtils {
 		return days;
 	}
 
-	/**
-	 * 返回旬相差的数量
-	 */
-	public int xunDuration(Date dateStart,Date dateEnd){
-		int result = 0;
-		int year = duration(dateStart,dateEnd,"年");
-		int month = duration(dateStart,dateEnd,"月");
-		int day = duration(dateStart,dateEnd,"日");
-		result = year * 12 * 3 + month * 3 + day / 10 +1;
-		return result;
-	}
 
 	/**
 	 * 日期比较
@@ -341,6 +337,26 @@ public class TimeUtils {
 //			return index-1;
 //		}
 		return index;
+	}
+	/**
+	 * 获取时间区间内的Object
+	 * @param input
+	 * @param startTime
+	 * @param endTime
+	 * @return
+	 */
+	public List<Object[]> getTimeIntervalList(Object[][] input,Date startTime,Date endTime){
+		List<Object[]> result = new ArrayList<>();
+		for (int i = 0; i < input.length; i++) {
+			if (DateCompare((Date)input[i][0],startTime,"日")){
+				result.add(input[i]);
+			} else if (((Date)input[i][0]).after(startTime)&&((Date)input[i][0]).before(endTime)) {
+				result.add(input[i]);
+			} else if (DateCompare((Date) input[i][0], endTime, "日")) {
+				result.add(input[i]);
+			}
+		}
+		return result;
 	}
 
 	/**

@@ -99,13 +99,13 @@ public class MathUtils {
 
 	/**
 	 * 找到最大值
-	 * 
 	 * @param data
-	 * @return
+	 * @return 第一行最大值，第二行最小值
 	 */
 	public static double[][] findMaxAndMin(double[][] data) {
 		double[][] maxAndMin = new double[2][data[0].length];
 		for (int j = 0; j < data[0].length; j++) {
+			maxAndMin[0][j] = -Double.MAX_VALUE;
 			for (int i = 0; i < data.length; i++) {
 				if (data[i][j] > maxAndMin[0][j]) {
 					maxAndMin[0][j] = data[i][j];

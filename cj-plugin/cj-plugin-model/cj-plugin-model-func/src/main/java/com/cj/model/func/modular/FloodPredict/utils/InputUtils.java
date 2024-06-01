@@ -9,9 +9,11 @@ public class InputUtils {
 
     static TimeUtils timeUtils = new TimeUtils();
 
-    public static int beforeDays = 30;
+    public static int beforeDays = 20;
 
-    public static int beforeHours = 10;
+    public static int beforeHours = 20;
+
+    public static Date historyDate;
 
     public static Map<String,Object[][]> historyData;
 
@@ -26,6 +28,14 @@ public class InputUtils {
         hortonParam = ExcelTool.readExcel(path, "HORTON-PARAM");
         machineParam = ExcelTool.readExcel(path,"MACHINE-PARAM");
         machineMaxMin = ExcelTool.readExcel(path,"MACHINE-MAXMIN");
+        historyDate = (Date) historyData.get("楼庄子日")[historyData.get("楼庄子日").length-1][0];
+    }
+    public static void getData2(String path) throws IOException {
+        historyData = ExcelTool.readExcel2(path, "HISTORY-DATA");
+        hortonParam = ExcelTool.readExcel2(path, "HORTON-PARAM");
+        machineParam = ExcelTool.readExcel2(path,"MACHINE-PARAM");
+        machineMaxMin = ExcelTool.readExcel2(path,"MACHINE-MAXMIN");
+        historyDate = (Date) historyData.get("楼庄子日")[historyData.get("楼庄子日").length-1][0];
     }
 
     /**
@@ -36,11 +46,10 @@ public class InputUtils {
      */
     public static List<Date> judgeDate(Date predictTime, int n) {
         List<Date> result = new ArrayList<>();
-        Object[][] historyInput = historyData.get("楼庄子日");
-        Date historyTime = (Date) historyInput[historyInput.length - 1][0];
-        int number = timeUtils.duration(historyTime, predictTime, "日");
+        Date hisDate = timeUtils.addCalendar(InputUtils.historyDate,"日",1);
+        int number = timeUtils.duration(hisDate, predictTime, "日");
         if (number > beforeDays) {
-            result.add(historyTime);
+            result.add(hisDate);
         } else {
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(predictTime);

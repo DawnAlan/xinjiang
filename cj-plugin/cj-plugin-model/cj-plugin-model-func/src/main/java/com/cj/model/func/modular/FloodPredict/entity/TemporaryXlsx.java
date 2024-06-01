@@ -10,4 +10,6 @@ public class TemporaryXlsx {
     private String sheetName;//Sheet名称
 
     private String updateFilePath;
+    private String updateParamPath;
+    private String updateMaxPath;
 }

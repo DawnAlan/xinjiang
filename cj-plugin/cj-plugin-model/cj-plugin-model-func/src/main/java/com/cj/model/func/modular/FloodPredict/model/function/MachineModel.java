@@ -5,10 +5,12 @@ import com.cj.model.func.modular.FloodPredict.model.entity.ModelSaveEntity;
 import com.cj.model.func.modular.FloodPredict.entity.TemporaryXlsx;
 import com.cj.model.func.modular.FloodPredict.utils.*;
 import com.cj.model.func.modular.entity.Flood;
+import lombok.SneakyThrows;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -33,7 +35,7 @@ public class MachineModel {
         param.setHistory_factor(1);
         switch (period) {
             case "月":
-                param.setHistory_day(4);
+                param.setHistory_day(24);
                 break;
             case "旬":
                 param.setHistory_day(18);
@@ -55,11 +57,11 @@ public class MachineModel {
         param.setMobp(0.08);
         param.setMinRate(0.0001);
         param.setMaxRate(0.03);
-        String layers = param.getHistory_day() + ",14,14,1";//，输入前几个时段径流，k为输入的因素数量输出未来流量
+        String layers = param.getHistory_day() + ",30,30," + param.getPredict_day();//，输入前几个时段径流，k为输入的因素数量输出未来流量
         param.setLayerCount(layers);
         param.setTrainNum(20000);
-        param.setERROR(0.00001);
-        param.setQ_max(200.0);
+        param.setERROR(0.0001);
+        param.setQ_max(1.0);
         param.setQ_min(0.0);
         //输入时间的确定
         Date startDate = (Date) modelTrainInput[param.history_day - 1][0];
@@ -77,50 +79,42 @@ public class MachineModel {
     /**
      * 数据驱动模型训练
      *
-     * @param modelTrainInput
+     * @param inputTemp
      * @param param
      * @return
      * @throws IOException
      * @throws InvalidFormatException
      */
-    public void modelTrain(Object[][] modelTrainInput, ForecastInputParam param) throws IOException, InvalidFormatException {
-        paramSet(modelTrainInput, param);//设置输入
+    public ModelSaveEntity modelTrain(Object[][] inputTemp, ForecastInputParam param) {
+        paramSet(inputTemp, param);//设置输入
         param.setIsRealtime(false);
-        //数值的赋值
-        int K = param.vmdK;//分解层数
-        int length = modelTrainInput.length;
-        int trainLength = length / 4 * 3;//训练集个数
-        int historyDay = param.getHistory_day();//前期天数
-        int outputNumber = modelTrainInput.length - historyDay * 2 + 2;
-
-        Object[][] inputTemp = modelTrainInput;//输入数据，第一列为时间，第二列为历史径流
-        Object[][] modelparaTemp = new Object[10][10];//初始化模型参数
-        //VMD分解
-        double[] vmdInput = new double[inputTemp.length];
-        double[][] vmdOutput;
-        for (int i = 0; i < inputTemp.length; i++) {
-            vmdInput[i] = Double.parseDouble(inputTemp[i][1].toString());
-        }
-        VMD vmd = new VMD();
-        vmdOutput = vmd.vmd(vmdInput, K);
-
+        int l = inputTemp.length;
+        int K = param.vmdK;
+        int outputNumber = l - 2 * (param.getHistory_day() + param.getPredict_day() - 1);
+        double[][] vmdOutput = vmdOutput(inputTemp,K);//分解
         //输入赋值
-        Object[][] de_result = new Object[outputNumber + 1][K + 1];
-        double[][] preResult = new double[outputNumber][1];//分解后的预测值
-
+        Object[][] de_result = new Object[outputNumber * param.getPredict_day()][K + 1];
+        double[][] preResult = new double[outputNumber][K+param.getPredict_day()];//分解后的预测值
         List<List<Double>> paramResult = new ArrayList<>();
-        double[][] maxmin = new double[param.getHistory_day() + 1][2 * param.getVmdK()];
+        double[][] maxmin = new double[param.getHistory_day() + param.getPredict_day()][2 * param.getVmdK()];
+        Object[][] modelparaTemp = new Object[10][10];
+        ModelSaveEntity results = new ModelSaveEntity();
+        int[] historyDays = new int[K];
+        if (param.getPeriod().equals("月")){
+            historyDays = new int[]{70,12,6,6,12,6,6,30,6,6,30,16};
+        } else if (param.getPeriod().equals("旬")) {
+            historyDays = new int[]{40,30,10,16,6,6,6,30,6,36,8,38};
+        }
         //K个子序列逐步训练
         for (int k = 0; k < K; k++) {
-            Object[][] input = new Object[inputTemp.length][2];//多少列可以根据输入来改变
+            String layer = historyDays[k] + ",30,30," + param.getPredict_day();//，输入前几个时段径流，k为输入的因素数量输出未来流量
+            param.setLayerCount(layer);
+            Object[][] input = new Object[l][2];//多少列可以根据输入来改变
             Object[][] para = new Object[modelparaTemp.length][modelparaTemp[0].length];
             Object[][] maxminOld = new Object[maxmin.length][maxmin[0].length];
-            List<Double> paramdim1 = new ArrayList<>();
-            List<Double> paramdim2 = new ArrayList<>();
-            List<Double> paramdim3 = new ArrayList<>();
-            List<Double> paramvalue = new ArrayList<>();
 
-            for (int i = 0; i < inputTemp.length; i++) {
+
+            for (int i = 0; i < l; i++) {
                 input[i][0] = inputTemp[i][0];//时间
                 input[i][1] = vmdOutput[k][i];
             }
@@ -139,82 +133,20 @@ public class MachineModel {
              *  分解后模型训练
              */
             LongForecast longForecast = new LongForecast();
-            ModelSaveEntity results = longForecast.longTermForecast(param, input, maxminOld, para);
-
-            for (int i = 0; i < results.getParams().size(); i++) {
-                paramdim1.add(Double.parseDouble(results.getParams().get(i).getParamDim1()));
-                paramdim2.add(Double.parseDouble(results.getParams().get(i).getParamDim2()));
-                paramdim3.add(Double.parseDouble(results.getParams().get(i).getParamDim3()));
-                if (results.getParams().get(i).getValue().isNaN()) {
-                    results.getParams().get(i).setValue(1.0);
-                }
-                paramvalue.add(results.getParams().get(i).getValue());
-            }
-            paramResult.add(paramdim1);
-            paramResult.add(paramdim2);
-            paramResult.add(paramdim3);
-            paramResult.add(paramvalue);
-
-            for (int i = 0; i < maxmin.length; i++) {
-                maxmin[i][2 * k] = results.getMaxmin().get(i).getMaxValue();//最大值
-                maxmin[i][2 * k + 1] = results.getMaxmin().get(i).getMinValue();//最小值
-            }
-
-            if (k >= param.getVmdK() - 1) {
-                //模型参数写入
-                TemporaryXlsx temxParam = new TemporaryXlsx();
-                List<TemporaryXlsx> paramList = new ArrayList<>();
-                String period = param.getPeriod();
-                String location = param.getLocation();
-                String pathParam = param.getBasinStr() + "MACHINE-PARAM.xlsx";
-                ExcelTool.writeList2DoubleExcel(pathParam, location+period+"-模型参数", paramResult);
-                temxParam.setPath(pathParam);
-                temxParam.setSheetName(location+period+"-模型参数");
-                paramList.add(temxParam);
-                results.setParamxlsx(paramList);
-                //最大最小值写入
-                TemporaryXlsx temxMaxmin = new TemporaryXlsx();
-                List<TemporaryXlsx> maxminList = new ArrayList<>();
-                String pathMaxmin = param.getBasinStr() + "MACHINE-MAXMIN.xlsx";
-                ExcelTool.writeDoubleExcel(pathMaxmin, location+period+"-最大最小值", maxmin);
-                temxMaxmin.setPath(pathMaxmin);
-                temxMaxmin.setSheetName(location+period+"-最大最小值");
-                maxminList.add(temxMaxmin);
-                results.setMaxminxlsx(maxminList);
-            }
-
+            results = longForecast.longTermForecast(param, input, maxminOld, para);
+            //模型参数的存储
+            results = machineDataUtils.setModelParams(results,param,k,paramResult,maxmin);
             //分解后数据储存
-            de_result[0][0] = "时间";
-            de_result[0][k + 1] = "预报流量";
             for (int i = 0; i < results.getResult().size(); i++) {
-                de_result[i + 1][0] = results.getResult().get(i).getResultDate();
-                de_result[i + 1][k + 1] = results.getResult().get(i).getSimOutput();
-            }
-
-        }
-
-
-        double[][] vmdreaResult = new double[outputNumber][1];//分解后的实际值
-        double[][] reaResult = new double[outputNumber][1];//真实值
-        //最终数据输出
-        for (int i = 0; i < outputNumber; i++) {
-            for (int j = 0; j < K; j++) {
-                preResult[i][0] = preResult[i][0] + Double.parseDouble(de_result[i + 1][j + 1].toString());
+                for (int j = 0; j < param.getPredict_day(); j++) {
+                    de_result[i * param.getPredict_day() + j][0] = results.getResult().get(i).getResultDate()[j];
+                    de_result[i * param.getPredict_day() + j][k + 1] = results.getResult().get(i).getSimOutput()[j];
+                }
             }
         }
-        for (int i = 0; i < trainLength - historyDay + 1; i++) {
-            reaResult[i][0] = Double.parseDouble(inputTemp[i + historyDay - 1][1].toString());
-            for (int j = 0; j < K; j++) {
-                vmdreaResult[i][0] = vmdreaResult[i][0] + vmdOutput[j][i + historyDay - 1];
-            }
-        }
-        for (int i = trainLength - historyDay + 1; i < outputNumber; i++) {
-            reaResult[i][0] = Double.parseDouble(inputTemp[i + historyDay * 2 - 2][1].toString());
-            for (int j = 0; j < K; j++) {
-                vmdreaResult[i][0] = vmdreaResult[i][0] + vmdOutput[j][i + historyDay * 2 - 2];
-            }
-        }
-//        trainResult(de_result, reaResult, preResult, vmdreaResult, param);
+        //训练结果与指标的储存
+        trainResult(de_result, inputTemp,preResult, param);
+        return results;
     }
 
     /**
@@ -225,55 +157,97 @@ public class MachineModel {
      * @return
      * @throws IOException
      */
-    public List<Flood> machineForecast(Object[][] inputTemp, ForecastInputParam param) throws IOException {
+    @SneakyThrows
+    public List<Flood> machineForecast(Object[][] inputTemp, ForecastInputParam param) {
         MachineModel machineModel = new MachineModel();
         List<Flood> result = new ArrayList<>();
         machineModel.paramSet(inputTemp, param);//设置输入
         param.setIsRealtime(true);
-        String location = param.getLocation().equals("3号桥")?"楼庄子": param.getLocation();
+        String location = param.getLocation().equals("3号桥") ? "楼庄子" : param.getLocation();
         String period = param.getPeriod();
-
+        int m = 0;//输入时序的长度
+        for (Object[] temp : inputTemp) {
+            Date date = (Date) temp[0];
+            if (date.before(param.getPreStartTime()) && date.before(param.getCalibrationTime())) {
+                m++;
+            }
+        }
+        int p = 0;//输出时序的长度，预报截止时间到率定时间的长度
+        if (param.getPreStartTime().after(param.getCalibrationTime())){
+            p = timeUtils.duration(param.getCalibrationTime(), param.getPreStartTime(), param.getPeriod())-1;
+            p = Math.max(p, 0);
+        }
+        int n = param.getPeriodStepNumber();//前段输入的预报时段
+        param.setPeriodStepNumber(p+n);
         //数值的赋值
         int K = param.vmdK;//分解层数
         int history_day = param.getHistory_day();//影响因子个数
         int outputNumber = inputTemp.length - history_day + 1;
         int l = param.getPeriodStepNumber() * param.getPeriodStepSize();
-        //VMD分解
-        double[] vmdInput = new double[inputTemp.length];
-        double[][] vmdOutput;
+        double[][] vmdOutput = vmdOutput(inputTemp,K);//分解
 
-        for (int i = 0; i < inputTemp.length; i++) {
-            vmdInput[i] = Double.parseDouble(inputTemp[i][1].toString());
-        }
-        VMD vmd = new VMD();
-        vmdOutput = vmd.vmd(vmdInput, K);
-
+//        InputUtils.getData(param.getFilePath());
+//        InputUtils.getData2(param.getFilePath());
         //输入赋值
         Object[][] de_result = new Object[l + 1][K + 1];
         Object[][] preResult = new Object[l][2];//分解后的预测值
-        double[][] vmdreaResult = new double[outputNumber][1];//分解后的实际值
+        for (int i = 0; i < l; i++) {preResult[i][1] = 0.0;}//初始值
+        Object[][] result1 = new Object[l][K + 1];//de_result去除第一行
+        double[][] vmdreaResult = new double[outputNumber][K + 1];//分解后的实际值
         double[][] reaResult = new double[outputNumber][1];//真实值
         Object[][] peakFlood;
+
         for (int i = 0; i < outputNumber; i++) {
             reaResult[i][0] = Double.parseDouble(inputTemp[i + history_day - 1][1].toString());
             for (int j = 0; j < K; j++) {
-                vmdreaResult[i][0] = vmdreaResult[i][0] + vmdOutput[j][i + history_day - 1];
+                vmdreaResult[i][j+1] = vmdOutput[j][i + history_day - 1];
+                vmdreaResult[i][0] += vmdOutput[j][i + history_day - 1];
             }
         }
-
+        int[] historyDays = new int[K];
+        if (param.getPeriod().equals("月")){
+            historyDays = new int[]{70,12,6,6,12,6,6,30,6,6,30,16};
+        } else if (param.getPeriod().equals("旬")) {
+            historyDays = new int[]{40,30,10,16,6,6,6,30,6,36,8,38};
+        }
         for (int k = 0; k < K; k++) {
+            String lay = historyDays[k] + ",30,30," + param.getPredict_day();//，输入前几个时段径流，k为输入的因素数量输出未来流量
+            param.setLayerCount(lay);
             //读取训练数据时的最大最小值，与输入数据比较，实现与参数吻合的归一化处理
-            Object[][] maxminOldTemp = InputUtils.machineMaxMin.get(location+period+"-最大最小值");
+            Object[][] maxminOldTemp = InputUtils.machineMaxMin.get(location + period + "-最大最小值");
             //读取模型参数
-            Object[][] paraTemp = InputUtils.machineParam.get(location+period+"-模型参数");
-            Object[][] input = new Object[inputTemp.length][2];
-            for (int i = 0; i < inputTemp.length; i++) {
+            Object[][] paraTemp = InputUtils.machineParam.get(location + period + "-模型参数");
+            Object[][] maxmin = new Object[maxminOldTemp.length][2];
+            for (int i = 0; i < maxminOldTemp.length; i++) {
+                for (int j = 0; j < 2; j++) {
+                    maxmin[i][j] = maxminOldTemp[i][j+2*k];
+                }
+            }
+            Object[][] para = new Object[paraTemp.length][5];
+            String[] layer = param.getLayerCount().split(",");
+            int[] layers = new int[layer.length];
+            for(int i = 0; i < layer.length; i++){
+                layers[i] = Integer.parseInt(layer[i]);
+            }
+            int layersNum = layers[2];
+            for (int i = 0; i < paraTemp.length; i++) {
+                if (i<layersNum){
+                    for (int j = 0; j < 5; j++) {
+                        para[i][j] = paraTemp[i][j+5*k];
+                    }
+                }else {
+                    for (int j = 0; j < 4; j++) {
+                        para[i][j] = paraTemp[i][j+5*k];
+                    }
+                }
+            }
+            Object[][] input = new Object[m][2];
+            for (int i = 0; i < m; i++) {
                 input[i][0] = inputTemp[i][0];
                 input[i][1] = vmdOutput[k][i];
             }
-
             //径流预报
-            peakFlood = realTimeForecast(param, input, maxminOldTemp, paraTemp);
+            peakFlood = realTimeForecast(param, input, maxmin, para);
             de_result[0][0] = "时间";
             de_result[0][k + 1] = "预报流量";
             for (int i = 1; i < peakFlood.length + 1; i++) {
@@ -282,16 +256,32 @@ public class MachineModel {
             }
         }
         for (int i = 0; i < l; i++) {
-            preResult[i][1] = 0.0;//初始值
-        }
-        for (int i = 0; i < l; i++) {
             for (int j = 0; j < K; j++) {
                 preResult[i][0] = de_result[i + 1][0];
                 preResult[i][1] = (double) preResult[i][1] + (double) de_result[i + 1][j + 1];
             }
         }
-        machineDataUtils.resultProcessing(preResult, param);//恢复为径流量
-        result = setLongFlood(preResult, param);
+        for (int i = 0; i < result1.length; i++) {
+            for (int j = 0; j < result1[0].length; j++) {
+                result1[i][j]=de_result[i+1][j];
+            }
+        }
+        if (param.getIsAverage()){
+            machineDataUtils.resultProcessing(preResult, param.getLocation());//恢复为径流量
+        }
+        machineDataUtils.resultReasonable(preResult,param.getLocation());
+//        ExcelTool.writeLastingExcel("D:\\204\\2.头屯河\\径流预报数据文件\\" + param.getNetClass() + "-RESULT.xlsx", "分解预测值", result1);
+        for (int i = 0; i < preResult.length; i++) {
+            System.out.println(preResult[i][1]);
+        }
+        param.setPeriodStepNumber(n);
+        Object[][] preResult_1 = new Object[n][2];//分解后的预测值
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < 2; j++) {
+                preResult_1[i][j] = preResult[i+p][j];
+            }
+        }
+        result = machineDataUtils.setLongFlood(preResult_1, param);
         return result;
     }
 
@@ -308,13 +298,14 @@ public class MachineModel {
         LongForecast longForecast = new LongForecast();
         param.setIsRealtime(true);
         int l = param.getPeriodStepNumber() * param.getPeriodStepSize();
+        int m = input.length - param.getHistory_day() - param.getPredict_day();
         //日期赋值
         Date startDate = param.getPreStartTime();
         Date[][] dates;
         //预报期时间、流量赋值
         switch (param.getPeriod()) {
             case "月":
-                dates = timeUtils.getMonthDateList(startDate, l);
+                dates = timeUtils.getMonthDateList(startDate, l, param.getPredict_day());
                 break;
             case "旬":
                 dates = timeUtils.getDateList(startDate, l, 10, 0);
@@ -332,22 +323,39 @@ public class MachineModel {
         //预报赋值
         Object[][] predict = new Object[param.getPeriodStepSize() * param.getPeriodStepNumber() + 1][2];
         predict[0][1] = input[input.length - 1][1];
-        for (int A = 1; A < param.getPeriodStepSize() * param.getPeriodStepNumber() + 1; A++) {
-            Object[][] pre_input = new Object[input.length + A][2];
+        if (param.getPredict_day() == 1) {
+            for (int A = 1; A < param.getPeriodStepSize() * param.getPeriodStepNumber() + 1; A++) {
+                Object[][] pre_input = new Object[input.length + A][2];
+                for (int i = 0; i < input.length; i++) {
+                    for (int j = 0; j < input[0].length; j++) {
+                        pre_input[i][j] = input[i][j];
+                    }
+                }
+                for (int a = 0; a < A; a++) {
+                    predict[a][0] = dates[a][0];
+                    pre_input[input.length + a][0] = dates[a][0];
+                    pre_input[input.length + a][1] = predict[a][1];
+                }
+                ModelSaveEntity pre_results = longForecast.longTermForecast(param, pre_input, maxminOld, paraTemp);
+                predict[A - 1][1] = pre_results.getResult().get(m + A).getSimOutput()[0];
+                predict[A][1] = input[0][1];
+            }
+        } else {
+            Object[][] pre_input = new Object[input.length + 1][2];
             for (int i = 0; i < input.length; i++) {
                 for (int j = 0; j < input[0].length; j++) {
                     pre_input[i][j] = input[i][j];
                 }
             }
-            for (int a = 0; a < A; a++) {
-                predict[a][0] = dates[a][0];
-                pre_input[input.length + a][0] = dates[a][0];
-                pre_input[input.length + a][1] = predict[a][1];
-            }
+            pre_input[input.length][0] = dates[0][0];
+            pre_input[input.length][1] = predict[0][1];
             ModelSaveEntity pre_results = longForecast.longTermForecast(param, pre_input, maxminOld, paraTemp);
-            predict[A - 1][1] = pre_results.getResult().get(input.length - param.getHistory_day() + A).getSimOutput();
-            predict[A][1] = input[0][1];
+            for (int i = 0; i < param.getPredict_day(); i++) {
+                predict[i][0] = pre_results.getResult().get(m).getResultDate()[i];
+                predict[i][1] = pre_results.getResult().get(m).getSimOutput()[i];
+            }
         }
+
         Object[][] result = new Object[param.getPeriodStepSize() * param.getPeriodStepNumber()][2];//把前面predict的最后一行去掉
         for (int i = 0; i < param.getPeriodStepSize() * param.getPeriodStepNumber(); i++) {
             for (int j = 0; j < 2; j++) {
@@ -357,130 +365,67 @@ public class MachineModel {
         return result;
     }
 
-    /**
-     * 中长期返回表格
-     *
-     * @param predict
-     * @param param
-     * @return
-     */
-    public List<Flood> setLongFlood(Object[][] predict, ForecastInputParam param) {
-        List<Flood> result = new ArrayList<>();
-        double peakFlood = 0;
-        int t = 0;
-        for (int i = 0; i < predict.length; i++) {
-            if (peakFlood <= (double) predict[i][1]) {
-                peakFlood = (double) predict[i][1];//洪峰
-                t = i;
-            }
-        }
-        int days = 0;
-        int timeLength = 0;
-        switch (param.getPeriod()) {
-            case "月":
-                days = 30;
-                timeLength = 30 * 24 * 3600;
-                break;
-            case "旬":
-                days = 10;
-                timeLength = 10 * 24 * 3600;
-                break;
-            case "日":
-                days = 1;
-                timeLength = param.getPeriodStepSize() * 24 * 3600;
-                break;
-        }
-        //连续列的赋值
-        for (int i = 0; i < param.getPeriodStepNumber(); i++) {
-            Flood flood = new Flood();
-            flood.setLocation(param.getLocation());
-            flood.setScale(String.valueOf(timeLength));
-            flood.setPeakIndex(0);
-            flood.setTime((Date) predict[i * param.getPeriodStepSize()][0]);
-            flood.setPreQ(Math.round((double) predict[i * param.getPeriodStepSize()][1] * 100.0) / 100.0);
-            flood.setOutQ(Math.round((double) predict[i * param.getPeriodStepSize()][1] * 100.0) / 100.0);
-            flood.setWaterLevel(0.0);
-            flood.setPeakFlood(peakFlood);
-            flood.setPeakTime((Date) predict[t][0]);
-            flood.setFloodVolume(Math.round(3600 * 24 * days * param.getPeriodStepSize() * (double) predict[i * param.getPeriodStepSize()][1] / 10000 * 100.0) / 100.0);
-            flood.setFloodLevel(judgingYearLeve(predict, param));
-            flood.setRainProcess(0.0);
-            result.add(flood);
-        }
-        return result;
-    }
+     public double[][] vmdOutput(Object[][] inputTemp,int K){
+         //VMD分解
+         double[] vmdInput = new double[inputTemp.length];
+         for (int i = 0; i < inputTemp.length; i++) {
+             vmdInput[i] = Double.parseDouble(inputTemp[i][1].toString());
+         }
+         VMD vmd = new VMD();
+         double[][] vmdOutput = vmd.vmd(vmdInput, K);
+         return vmdOutput;
+     }
 
-    /**
-     * 判断来水年的类别，丰平枯是根据历史来水量作为评判标准的
-     *
-     * @param input
-     * @param param
-     * @return
-     */
-    public String judgingYearLeve(Object[][] input, ForecastInputParam param) {
-        String result = "";
-        double[] water = new double[input.length];
-        if (param.getPeriod().equals("月")) {
-            for (int i = 0; i < water.length; i++) {
-                water[i] = (double) input[i][1] * 3600 * 24 * 30;
-            }
-            double waterSum = 0.0;
-            for (double v : water) {
-                waterSum += v;
-            }
-            waterSum = waterSum / 100000000;
-            if (param.getLocation().equals("3号桥") || param.getLocation().equals("楼庄子")) {
-                if (waterSum >= 2.476) {
-                    result = "丰水年";
-                }
-                if (waterSum < 2.246 && waterSum >= 1.998) {
-                    result = "平水年";
-                }
-                if (waterSum < 1.998) {
-                    result = "枯水年";
-                }
-            }
-            if (param.getLocation().equals("楼头区间")) {
-                if (waterSum >= 0.1443) {
-                    result = "丰水年";
-                }
-                if (waterSum < 0.1443 && waterSum >= 0.1164) {
-                    result = "平水年";
-                }
-                if (waterSum < 0.1164) {
-                    result = "枯水年";
-                }
-            }
-        } else {
-            result = "平水年";
-        }
-        return result;
-    }
 
     /**
      * 方便检验训练成果
      *
      * @param de_result
-     * @param reaResult
      * @param preResult
-     * @param vmdreaResult
-     * @param pvo
+     * @param param
      * @return
      */
-    public Object[][] trainResult(Object[][] de_result, double[][] reaResult, double[][] preResult,
-                                  double[][] vmdreaResult, ForecastInputParam pvo) throws IOException, InvalidFormatException {
-        Object[][] longResult = new Object[de_result.length][9];
-        longResult[0][0] = "时间";
-        longResult[0][1] = "实测流量";
-        longResult[0][2] = "预报流量";
-        longResult[0][3] = "分解流量";
-        longResult[0][4] = "评价指标";
-        longResult[1][4] = pvo.getNetClass() + "模型训练集";
-        longResult[2][4] = pvo.getNetClass() + "模型测试集";
-        longResult[0][5] = "均方差";
-        longResult[0][6] = "平均相对误差";
-        longResult[0][7] = "一致性系数";
-        longResult[0][8] = "合格率";
+    public void trainResult(Object[][] de_result, Object[][] inputTemp,double[][] preResult, ForecastInputParam param) {
+
+        int l = inputTemp.length;
+        //数值的赋值
+        int K = param.vmdK;//分解层数
+        int trainLength = l / 4 * 3;//训练集个数
+        int historyDay = param.getHistory_day();//前期天数
+        int outputNumber = l - 2 * (param.getHistory_day() + param.getPredict_day() - 1);
+
+        double[][] vmdrealResult = new double[outputNumber][K+param.getPredict_day()];//分解后的实际值
+        double[][] reaResult = new double[outputNumber][param.getPredict_day()];//真实值
+        double[][] vmdOutput = vmdOutput(inputTemp,K);//分解
+        //最终数据输出
+        for (int i = 0; i < outputNumber; i++) {
+            for (int k = 0; k < K; k++) {
+                for (int j = 0; j < param.getPredict_day(); j++) {
+                    preResult[i][param.getPredict_day()+k] = Double.parseDouble(de_result[i * param.getPredict_day() + j][k + 1].toString());
+                    preResult[i][j] += Double.parseDouble(de_result[i * param.getPredict_day() + j][k + 1].toString());
+                }
+            }
+        }
+        for (int i = 0; i < trainLength - historyDay - param.getPredict_day() + 1; i++) {
+            for (int j = 0; j < param.getPredict_day(); j++) {
+                reaResult[i][j] = Double.parseDouble(inputTemp[i + historyDay + param.getPredict_day() - 1 + j][1].toString());
+                for (int k = 0; k < K; k++) {
+                    vmdrealResult[i][param.getPredict_day()+k] = vmdOutput[k][i + historyDay + param.getPredict_day() - 1 + j];
+                    vmdrealResult[i][j] += vmdOutput[k][i + historyDay + param.getPredict_day() - 1 + j];
+                }
+            }
+        }
+        for (int i = trainLength - historyDay - param.getPredict_day() + 1; i < outputNumber; i++) {
+            for (int j = 0; j < param.getPredict_day(); j++) {
+                reaResult[i][j] = Double.parseDouble(inputTemp[i + (historyDay + param.getPredict_day() - 1) * 2 + j][1].toString());
+                for (int k = 0; k < K; k++) {
+                    vmdrealResult[i][param.getPredict_day()+k] = vmdOutput[k][i + (historyDay + param.getPredict_day() - 1) * 2 + j];
+                    vmdrealResult[i][j] += vmdOutput[k][i + (historyDay + param.getPredict_day() - 1) * 2 + j];
+                }
+            }
+        }
+
+        Object[][] longResult = new Object[de_result.length][4];
         double rmse_train = 0;
         double dc_train = 0;
         double mre_train = 0;
@@ -490,49 +435,109 @@ public class MachineModel {
         double mre_test = 0;
         double qr_test = 0;
         //结果赋值
-        for (int i = 1; i < de_result.length; i++) {
+        for (int i = 0; i < de_result.length; i++) {
             longResult[i][0] = de_result[i][0];
-//            longResult[i][0] = i;
-            longResult[i][1] = reaResult[i - 1][0];//实测流量
-            longResult[i][2] = preResult[i - 1][0];//预报流量
-            longResult[i][3] = vmdreaResult[i - 1][0];//vmd实测流量
+            int i1 = i / param.getPredict_day();
+            longResult[i][1] = reaResult[i1][i - i1 * param.getPredict_day()];//实测流量
+            longResult[i][2] = preResult[i1][i - i1 * param.getPredict_day()];//预报流量
+            longResult[i][3] = vmdrealResult[i1][i - i1 * param.getPredict_day()];//vmd实测流量
         }
-        String Option = pvo.getLocation() + pvo.getPeriod();
-        double[][] trainPreResult = new double[reaResult.length / 4 * 3][1];
-        double[][] testPreResult = new double[reaResult.length / 4][1];
-        double[][] trainResult = new double[reaResult.length / 4 * 3][1];
-        double[][] testResult = new double[reaResult.length / 4][1];
-        for (int i = 0; i < reaResult.length / 4 * 3; i++) {
-            trainResult[i][0] = reaResult[i][0];
-            trainPreResult[i][0] = preResult[i][0];
+        if (param.getIsAverage()){
+            Object[][] realObject = new Object[longResult.length][2];
+            Object[][] preObject = new Object[longResult.length][2];
+            Object[][] vmdObject = new Object[longResult.length][2];
+            for (int i = 0; i < longResult.length; i++) {
+                realObject[i][0]=longResult[i][0];
+                realObject[i][1]=longResult[i][1];
+                preObject[i][0]=longResult[i][0];
+                preObject[i][1]=longResult[i][2];
+                vmdObject[i][0]=longResult[i][0];
+                vmdObject[i][1]=longResult[i][3];
+            }
+            realObject = machineDataUtils.resultProcessing(realObject, param.getLocation());
+            preObject = machineDataUtils.resultProcessing(preObject, param.getLocation());
+            vmdObject = machineDataUtils.resultProcessing(vmdObject, param.getLocation());
+            for (int i = 0; i < longResult.length; i++) {
+                longResult[i][1] = realObject[i][1];
+                longResult[i][2] = preObject[i][1];
+                longResult[i][3] = vmdObject[i][1];
+            }
         }
-        for (int i = 0; i < reaResult.length / 4; i++) {
-            testResult[i][0] = reaResult[i + reaResult.length / 4 * 3][0];
-            testPreResult[i][0] = preResult[i + reaResult.length / 4 * 3][0];
+
+
+        String Option = param.getLocation() + param.getPeriod();
+        double[][] trainPreResult = new double[longResult.length / 4 * 3][1];
+        double[][] testPreResult = new double[longResult.length / 4][1];
+        double[][] trainResult = new double[longResult.length / 4 * 3][1];
+        double[][] testResult = new double[longResult.length / 4][1];
+        for (int i = 0; i < longResult.length / 4 * 3; i++) {
+            trainResult[i][0] = (double) longResult[i][1];
+            trainPreResult[i][0] = (double) longResult[i][2];
         }
-        rmse_train = MathUtils.RMSE(trainPreResult, trainResult);
-        mre_train = MathUtils.MRE(trainPreResult, trainResult);
-        dc_train = MathUtils.DC(trainPreResult, trainResult);
-        qr_train = MathUtils.QualifyRate(trainPreResult, trainResult);
-        rmse_test = MathUtils.RMSE(testPreResult, testResult);
-        mre_test = MathUtils.MRE(testPreResult, testResult);
-        dc_test = MathUtils.DC(testPreResult, testResult);
-        qr_test = MathUtils.QualifyRate(testPreResult, testResult);
+        for (int i = 0; i < longResult.length / 4; i++) {
+            testResult[i][0] = (double) longResult[i + longResult.length / 4 * 3][1];
+            testPreResult[i][0] = (double) longResult[i + longResult.length / 4 * 3][2];
+        }
+        rmse_train = MathUtils.RMSE(trainResult,trainPreResult);
+        mre_train = MathUtils.MRE(trainResult,trainPreResult);
+        dc_train = MathUtils.DC(trainResult,trainPreResult);
+        qr_train = MathUtils.QualifyRate(trainResult,trainPreResult);
+        rmse_test = MathUtils.RMSE(testResult,testPreResult);
+        mre_test = MathUtils.MRE(testResult,testPreResult);
+        dc_test = MathUtils.DC(testResult,testPreResult);
+        qr_test = MathUtils.QualifyRate(testResult,testPreResult);
         DecimalFormat df = new DecimalFormat("#.###");
-        longResult[1][5] = df.format(rmse_train);
-        longResult[1][6] = df.format(mre_train);
-        longResult[1][7] = df.format(dc_train);
-        longResult[1][8] = df.format(qr_train * 100) + "%";
-        longResult[2][5] = df.format(rmse_test);
-        longResult[2][6] = df.format(mre_test);
-        longResult[2][7] = df.format(dc_test);
-        longResult[2][8] = df.format(qr_test * 100) + "%";
+        Object[][] result = new Object[longResult.length + 1][9];
+        result[0][0] = "时间";
+        result[0][1] = "实测流量";
+        result[0][2] = "预报流量";
+        result[0][3] = "分解流量";
+        result[0][4] = "评价指标";
+        result[1][4] = param.getNetClass() + "模型训练集";
+        result[2][4] = param.getNetClass() + "模型测试集";
+        result[0][5] = "均方差";
+        result[0][6] = "平均相对误差";
+        result[0][7] = "一致性系数";
+        result[0][8] = "合格率";
+        result[1][5] = df.format(rmse_train);
+        result[1][6] = df.format(mre_train);
+        result[1][7] = df.format(dc_train);
+        result[1][8] = df.format(qr_train * 100) + "%";
+        result[2][5] = df.format(rmse_test);
+        result[2][6] = df.format(mre_test);
+        result[2][7] = df.format(dc_test);
+        result[2][8] = df.format(qr_test * 100) + "%";
+        for (int i = 0; i < longResult.length; i++) {
+            for (int j = 0; j < longResult[0].length; j++) {
+                result[i + 1][j] = longResult[i][j];
+            }
+        }
         System.out.println("均方差\t平均相对误差\t一致性系数\t合格率");
         System.out.println("----------------------------------");
         System.out.printf("%-10.3f %-10.3f %-10.3f %-10.3f\n", rmse_test, mre_test, dc_test, qr_test);
-        ExcelTool.writeObjectExcel("D:\\204\\2.头屯河\\径流预报数据文件\\" + pvo.getNetClass() + "-RESULT.xlsx", Option, longResult);
-        return longResult;
+        ExcelTool.writeObjectExcel("D:\\204\\2.头屯河\\径流预报数据文件\\" + param.getNetClass() + "-RESULT.xlsx", Option, result);
+        Object[][] vmdPredict = new Object[preResult.length+1][1+param.getVmdK()*2];
+        double[][] vmd;
+        double[][] pre;
+        double dc_vmd;
+        double qr_vmd;
+        for (int j = 0; j < param.getVmdK(); j++){
+            vmd = new double[preResult.length][1];
+            pre = new double[preResult.length][1];
+            for (int i = 0; i < preResult.length; i++) {
+                vmd[i][0] = vmdrealResult[i][param.getPredict_day()+j];
+                pre[i][0] = preResult[i][param.getPredict_day()+j];
+                dc_vmd = MathUtils.DC(vmd,pre);
+                qr_vmd = MathUtils.QualifyRate(vmd,pre);
+                vmdPredict[0][2*j+1]="R:"+dc_vmd;
+                vmdPredict[0][2*j+2]="QC:"+qr_vmd;
+                vmdPredict[0][0]="评价指标";
+                vmdPredict[i+1][0]=de_result[i][0];
+                vmdPredict[i+1][2*j+1]=vmdrealResult[i][param.getPredict_day()+j];
+                vmdPredict[i+1][2*j+2]=preResult[i][param.getPredict_day()+j];
+            }
+        }
+        ExcelTool.writeObjectExcel("D:\\204\\2.头屯河\\径流预报数据文件\\" + param.getNetClass() + "-RESULT.xlsx", Option+"分解", vmdPredict);
     }
-
 }
 

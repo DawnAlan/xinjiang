@@ -1,5 +1,9 @@
 package com.cj.model.func.modular.FloodPredict.model.function;
 
+import com.cj.model.func.modular.FloodPredict.utils.ExcelTool;
+import com.cj.model.func.modular.FloodPredict.utils.MachineDataUtils;
+import com.cj.model.func.modular.FloodPredict.utils.MathUtils;
+import lombok.SneakyThrows;
 import org.apache.commons.math3.complex.Complex;
 import org.jtransforms.fft.DoubleFFT_1D;
 
@@ -29,22 +33,80 @@ import java.util.Arrays;
  * @return子序列 这个模型只返回了分解子序列的集合--u，其它两个可根据自己需求设置输出；其中行数K为分解层数，列数T为信号数
  */
 public class VMD {
-//        public static void main(String[] args) throws IOException, InvalidFormatException {
-//            Object[][] input = ExcelTool.readExcel("D:\\14年前数据.xlsx","Sheet1");
-//            double[] signal=new double[input.length];
-//            for (int i = 0; i < input.length; i++) {
-//                signal[i]=(double) input[i][1];
+//        @SneakyThrows
+//        public static void main(String[] args) {
+//            Object[][] input = ExcelTool.readStringExcel("D:\\tth_system\\end\\file\\HISTORY-DATA.xlsx","楼庄子月");
+//            MachineDataUtils m = new MachineDataUtils();
+//            input = m.inputProcessing(input, "楼庄子");//获得距平值
+//            int number0 = 780;
+//            int number1 = 781;
+//            double[] signal0=new double[number0];
+//            for (int i = 0; i < number0; i++) {
+//                signal0[i]=(double) input[i][1];
+////                signal0[i+number0]=(double) input[i][1];
 //            }
-//            int K=6;
-//            double[][] a =vmd(signal,K);
-//            Object[][] result = new Object[a[0].length][a.length];
-//            for (int i = 0; i < a.length; i++) {
-//                for (int j = 0; j < a[0].length; j++) {
-//                    result[j][i]=a[i][j];
+//
+//
+//            double[] signal1=new double[number1];
+//            for (int i = 0; i < number1; i++) {
+//                signal1[i]=(double) input[i][1];
+////                signal1[i+number0]=(double) input[i][1];
+//            }
+////            signal1[768] = 1.463;
+////            signal1[769] = 1.347;
+////            signal1[770] = 1.297;
+////            signal1[771] = 1.938;
+////            signal1[772] = 7.07;
+////            signal1[773] = 11.85;
+////            signal1[774] = 12.09;
+////            signal1[775] = 15.36;
+////            signal1[776] = 4.61;
+////            signal1[777] = 1.95;
+////            signal1[778] = 1.59;
+////            signal1[779] = 1.39918181818182;
+//            int K = 3;
+//            VMD vmd =new VMD();
+//            double[][] a = vmd.vmd(signal0,K);
+//            double[][] b = vmd.vmd(signal1,K);
+//            Object[][] result = new Object[b[0].length][2 * K + 2];
+//            for (int i = 0; i < K; i++) {
+//                for (int j = 0; j < b[0].length; j++) {
+//                    if (j<a[0].length){
+//                        result[j][2*i]=a[i][j];
+//                    }
+//                    result[j][2*i+1]=b[i][j];
 //                }
 //            }
-//            ExcelTool.writeObjectExcel("D:\\14年前数据.xlsx","Sheet2",result);
-//            System.out.println(a);
+//            double[][] vmdresult = new double[result.length][1];
+//            double[][] realresult = new double[result.length][1];
+//            for (int i = 0; i < result.length; i++) {
+//                double sum = 0.0;
+//                for (int j = 0; j < K; j++) {
+//                    sum += (double) result[i][2*j+1];
+//                }
+//                vmdresult[i][0] = sum;
+//                realresult[i][0] = signal1[i];
+//                result[i][2*K] = sum;
+//                result[i][2*K+1]  = signal1[i];
+//            }
+//            double dc = MathUtils.DC(realresult,vmdresult);
+//            double qr = MathUtils.QualifyRate(realresult,vmdresult);
+//            Object[][] result1 = new Object[result.length+1][result[0].length+1];
+//            for (int j = 0; j < K; j++) {
+//                result1[0][2*j]="数量："+number0;
+//                result1[0][2*j+1]="数量："+number1;
+//            }
+//            result1[0][2*K] = "分解";
+//            result1[0][2*K+1] = "真实";
+//            result1[0][2*K+2] = "DC:"+dc;
+//            result1[1][2*K+2] = "QR:"+qr;
+//            for (int i = 0; i < result.length; i++) {
+//                for (int j = 0; j < result[0].length; j++) {
+//                    result1[i+1][j] = result[i][j];
+//                }
+//            }
+//            ExcelTool.writeObjectExcel("D:\\204\\2.头屯河\\径流预报数据文件\\分解测试.xlsx","差1-10-3",result1);
+//            System.out.println("…………done…………");
 //    }
     public double[][] vmd (double[] signal, int K) {
         //初始参数一般不做修改，如果分解拟合度较差，可以选择缩小alpha值
@@ -52,7 +114,7 @@ public class VMD {
         double tau = 0;
         int DC = 0;
         int init = 1;
-        double tol = 1e-7;
+        double tol = 1e-6;
 
 
         int save_T = signal.length;
@@ -108,9 +170,9 @@ public class VMD {
         }
 
         /**
-         * 注意N的值
+         * N为迭代次数
          */
-        int N = 100;
+        int N = 200;
 
         int[] Alpha = new int[K];
         for (int i = 0; i < K; i++) {

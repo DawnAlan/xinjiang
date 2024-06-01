@@ -77,4 +77,6 @@ public class TthModelEntity implements Serializable {
 	private Double qMax;//最大流量
 
 	private Double qMin;//最小流量
+
+	private double[] context;
 }

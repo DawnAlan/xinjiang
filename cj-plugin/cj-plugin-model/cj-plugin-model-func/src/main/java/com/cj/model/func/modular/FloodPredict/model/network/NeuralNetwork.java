@@ -14,7 +14,7 @@ public interface NeuralNetwork {
 	public TrainResult simOutput(double[][] input, double[][] realOutput);
 	
 	public TrainResult simOutput1(double[][] input, double[][] realOutput,
-                                  double[][][] layer_weight, int[] layernum);
+                                  double[][][] layer_weight, int[] layernum,double[] context);
 	
 	public double[][] getDNNLayer();
 	

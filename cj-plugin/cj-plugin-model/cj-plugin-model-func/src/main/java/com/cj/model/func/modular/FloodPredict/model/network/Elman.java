@@ -106,7 +106,6 @@ public class Elman implements NeuralNetwork {
 				stopLoop = true;
 			}
 			iterations++;
-
 		}
 
 	}
@@ -121,6 +120,7 @@ public class Elman implements NeuralNetwork {
 		trainResult.setSimResult(output);
 		return trainResult;
 	}
+
 
 	private void feedForward(boolean flag, double[][] input) {
 		if (flag == false) {
@@ -292,11 +292,10 @@ public class Elman implements NeuralNetwork {
 		return null;
 	}
 
-	private void feedForward1(boolean flag, double[][] input, double[][][] layer_weight, int[] Layernum) {
+	private void feedForward1(boolean flag, double[][] input, double[][][] layer_weight, int[] Layernum,double[] context) {
 		double[][] hidden = new double[input.length + 1][Layernum[1]];
 		double[][] actual = new double[input.length + 1][Layernum[3]];
 		int[] layernum = new int[Layernum.length];
-		double[] context = new double[Layernum[2]];
 		for (int l = 0; l < Layernum.length; l++)
 			layernum[l] = Layernum[l];
 
@@ -409,11 +408,11 @@ public class Elman implements NeuralNetwork {
 		return;
 	}
 
-	public TrainResult simOutput1(double[][] input, double[][] realOutput, double[][][] layer_weight, int[] Layernum) {
+	public TrainResult simOutput1(double[][] input, double[][] realOutput, double[][][] layer_weight, int[] Layernum,double[] context) {
 		// TODO Auto-generated method stub
 		TrainResult trainResult = new TrainResult();
 		double[][] output = new double[input.length][];
-		feedForward1(true, input, layer_weight, Layernum);
+		feedForward1(true, input, layer_weight, Layernum,context);
 		output = actual2;
 		trainResult.setSimResult(output);
 		return trainResult;
