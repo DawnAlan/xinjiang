@@ -172,9 +172,12 @@ public class ShanBeiModel {
         if (TempW > WM) {
             TempW = WM;
         }
+        if (Math.abs(TempW - W0) <= 0.01){
+            Tempf = fc + (fm - fc) * Math.exp(-K * Tempt);
+        }
         while (Math.abs(TempW - W0) > 0.01) {
-            Tempf = fm - K * (TempW - fc * Tempt);// 此处计算f的上下两种方法又没有区别了
-//            Tempf = fc + (fm - fc) * Math.exp(-K * Tempt);
+//            Tempf = fm - K * (TempW - fc * Tempt);// 此处计算f的上下两种方法又没有区别了
+            Tempf = fc + (fm - fc) * Math.exp(-K * Tempt);
             if (Tempf > fm) {
                 Tempf = fm;
             }
@@ -315,7 +318,6 @@ public class ShanBeiModel {
     // 汇流计算
     public ShanBeiModel ConfluenceCalculation() {
         int hours = InputUtils.beforeHours;
-//        int hours = 0;
         for (int j = 0; j < NumPeriod-1; j++) {
             if (j < L) {
                 Q[j+1] = CS * Q[j];
