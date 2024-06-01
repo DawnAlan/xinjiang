@@ -46,8 +46,8 @@ public class DevLogController {
      */
     @ApiOperationSupport(order = 1)
     @ApiOperation("获取日志分页")
-    @GetMapping("/dev/log/page")
-    public CommonResult<Page<DevLog>> page(DevLogPageParam devLogPageParam) {
+    @PostMapping("/dev/log/page")
+    public CommonResult<Page<DevLog>> page(@RequestBody DevLogPageParam devLogPageParam) {
         return CommonResult.data(devLogService.page(devLogPageParam));
     }
 
