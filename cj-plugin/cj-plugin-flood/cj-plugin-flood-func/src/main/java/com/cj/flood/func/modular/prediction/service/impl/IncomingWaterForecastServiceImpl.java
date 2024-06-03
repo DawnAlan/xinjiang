@@ -1,6 +1,7 @@
 package com.cj.flood.func.modular.prediction.service.impl;
 
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.lang.UUID;
 import cn.hutool.extra.spring.SpringUtil;
 import com.alibaba.fastjson.JSONObject;
@@ -543,6 +544,7 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                         String mm = DateUtil.format(date, "mm");
                         String ss = DateUtil.format(date, "ss");
                         ObjectWriteResponse objectWriteResponse = minioUtils.putObject("tth", yyyyMMdd+"/"+hh+"/"+mm+"/"+ss+"/"+ UUID.fastUUID().toString(true)+"/"+split[split.length-1], fileAddress);
+                        FileUtil.del(fileAddress);
                         String object = objectWriteResponse.object();
                         incomingWaterForecastService.lambdaUpdate().set(IncomingWaterForecast::getModelResultAddress,object).eq(IncomingWaterForecast::getId,incomingWaterForecast.getId()).update();
                     }catch (Exception e) {

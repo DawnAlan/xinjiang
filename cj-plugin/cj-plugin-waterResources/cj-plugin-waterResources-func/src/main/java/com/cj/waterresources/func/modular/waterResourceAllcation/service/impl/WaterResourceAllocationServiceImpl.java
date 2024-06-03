@@ -3,6 +3,7 @@ package com.cj.waterresources.func.modular.waterResourceAllcation.service.impl;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateField;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.io.FileUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -901,6 +902,8 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
         String customDataPathMinio = DateUtil.format(dateTime, "yyyyMMdd/HH/mm/ss/") + customDataPath.substring(customDataPath.lastIndexOf(File.separator) + 1);
         minioUtils.putObject("tth", displayDataPathMinio, displayDataPath);
         minioUtils.putObject("tth", customDataPathMinio, customDataPath);
+        FileUtil.del(displayDataPath);
+        FileUtil.del(customDataPath);
         allocation.setAllocationDataDisplayAddress(displayDataPathMinio);
         allocation.setAllocationDataCustomAddress(customDataPathMinio);
         return allocation;

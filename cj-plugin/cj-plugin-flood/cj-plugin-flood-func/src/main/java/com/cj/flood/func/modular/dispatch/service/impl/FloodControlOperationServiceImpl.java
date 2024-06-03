@@ -1,6 +1,7 @@
 package com.cj.flood.func.modular.dispatch.service.impl;
 
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.lang.UUID;
 import cn.hutool.extra.spring.SpringUtil;
 import com.alibaba.fastjson.JSONObject;
@@ -273,6 +274,7 @@ public class FloodControlOperationServiceImpl extends ServiceImpl<FloodControlOp
                             String mm = DateUtil.format(date, "mm");
                             String ss = DateUtil.format(date, "ss");
                             ObjectWriteResponse objectWriteResponse = minioUtils.putObject("tth", yyyyMMdd + "/" + hh + "/" + mm + "/" + ss + "/" + UUID.fastUUID().toString(true) + "/" + pathSplit[pathSplit.length - 1], path);
+                            FileUtil.del(path);
                             String object = objectWriteResponse.object();
                             floodControlOperationService.lambdaUpdate()
                                     .set(FloodControlOperation::getStatus, 2)
