@@ -75,11 +75,15 @@ public class ShanBeiModel {
     /// 透水层产流量,mm
     double[] R2;
 
+    /// 直接产流量,mm
+    double[] R3;
+
     /// 总的产流量,mm
     double[] R;
 
     /// 为入流过程(m3/s) 汇流计算中用到
     double[] I;
+    double[] I2;
 
     /// 为出流过程(m3/s) 汇流计算中用到
     public double[] Q;
@@ -117,8 +121,10 @@ public class ShanBeiModel {
         Time = new double[NumPeriod + 1]; // 计算结果（时间点）、输出数据
         R1 = new double[NumPeriod]; // 中间结果，输出数据
         R2 = new double[NumPeriod]; // 中间结果，输出数据
+        R3 = new double[NumPeriod]; // 中间结果，输出数据
         R = new double[NumPeriod]; // 中间结果，输出数据
         I = new double[NumPeriod]; // 中间结果，输入数据
+        I2 = new double[NumPeriod]; // 中间结果，输入数据
         Q = new double[NumPeriod]; // 计算结果、输出数据
         PreImpact_P = new double[PreImpactdays]; // 输入数据
 
@@ -155,7 +161,6 @@ public class ShanBeiModel {
 
         return this;
     }
-
 
     // 前一种不考虑流域下渗能力分布不均时，由于流域面积很大，降雨与下渗前度的大小关系对结果的影响很大，有时候没径流，有时候产生很大径流
     // 还有就是下渗曲线对结果的影响很大，几个参数稍微调整都会对结果产生较大的影响。尤其是K
@@ -233,7 +238,8 @@ public class ShanBeiModel {
                 W[j + 1] = W[j] + P[j] * PeriodLength - E[j] * PeriodLength - R2[j] * PeriodLength;
                 if (W[j + 1] >= WM)// 蓄水达到上限
                 {
-                    R2[j] = R2[j] + W[j + 1] - WM;
+                    R3[j] = W[j + 1] - WM;
+//                    R2[j] = R2[j] + W[j + 1] - WM;
                     W[j + 1] = WM;
                 }
             } else // 全流域上产流
@@ -246,7 +252,8 @@ public class ShanBeiModel {
                 W[j + 1] = W[j] + P[j] * PeriodLength - E[j] * PeriodLength - R2[j] * PeriodLength;
                 if (W[j + 1] >= WM)// 蓄水达到上限
                 {
-                    R2[j] = R2[j] + W[j + 1] - WM;
+                    R3[j] = W[j + 1] - WM;
+//                    R2[j] = R2[j] + W[j + 1] - WM;
                     W[j + 1] = WM;
                 }
 
@@ -280,7 +287,8 @@ public class ShanBeiModel {
                     W[j + 1] = W[j] + P[j] * PeriodLength - E[j] * PeriodLength - R2[j] * PeriodLength;
                     if (W[j + 1] >= WM)// 蓄水达到上限
                     {
-                        R2[j] = R2[j] + W[j + 1] - WM;
+                        R3[j] = W[j + 1] - WM;
+//                        R2[j] = R2[j] + W[j + 1] - WM;
                         W[j + 1] = WM;
                     }
                 } else // 全流域上产流
@@ -292,7 +300,8 @@ public class ShanBeiModel {
                     W[j + 1] = W[j] + P[j] * PeriodLength - E[j] * PeriodLength - R2[j] * PeriodLength;
                     if (W[j + 1] >= WM)// 蓄水达到上限
                     {
-                        R2[j] = R2[j] + W[j + 1] - WM;
+                        R3[j] = W[j + 1] - WM;
+//                        R2[j] = R2[j] + W[j + 1] - WM;
                         W[j + 1] = WM;
                     }
 
@@ -310,6 +319,7 @@ public class ShanBeiModel {
         for (int j = 0; j < NumPeriod; j++) {
             R[j] = R1[j] * FB + R2[j] * (1 - FB);// 单位mm/h
             I[j] = R1[j] / 1000 / 3600 * FB * Area * 1000000 + R2[j] / 1000 / 3600 * (1 - FB) * Area * 1000000;//  Area单位是km2
+            I2[j] = R3[j] / 1000 / 3600 * (1 - FB) * Area * 1000000;//  Area单位是km2
         }
         return this;
     }
@@ -323,6 +333,37 @@ public class ShanBeiModel {
                 Q[j+1] = CS * Q[j];
             } else {
                 Q[j+1] = CS * Q[j] + (1 - CS) * I[j - L];
+
+            }
+        }
+//        for (int j = 0; j < NumPeriod-1; j++) {
+//            if (j < L) {
+//                Q[j+1] = Q[j];
+//            } else {
+//                Q[j+1] += (1 - CS) * I2[j - L];
+//            }
+//        }
+        double[] qResult = new double[NumPeriod + zero];
+        System.arraycopy(Q,0,qResult,zero,NumPeriod);
+        Q = new double[zero + NumPeriod - hours];
+        System.arraycopy(qResult,hours,Q,0,Q.length);
+        return this;
+    }
+    public ShanBeiModel ConfluenceCalculation2() {
+        int hours = InputUtils.beforeHours;
+        for (int j = 0; j < NumPeriod-1; j++) {
+            if (j < L) {
+                Q[j+1] = CS * Q[j];
+            } else {
+                Q[j+1] = CS * Q[j] + (1 - CS) * I[j - L];
+
+            }
+        }
+        for (int j = 0; j < NumPeriod-1; j++) {
+            if (j < L) {
+                Q[j+1] = Q[j];
+            } else {
+                Q[j+1] += (1 - CS) * I2[j - L];
             }
         }
         double[] qResult = new double[NumPeriod + zero];

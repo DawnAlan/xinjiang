@@ -578,10 +578,18 @@ public class DataUtils {
      * @param input
      * @return
      */
-    public List<PredictInputData> getTwentyDaysRain(ForecastInputParamNew param, List<PredictInputData> input) {
+    public List<PredictInputData> getTwentyDaysRain(ForecastInputParamNew param, List<PredictInputData> input,String location) {
         List<PredictInputData> result = new ArrayList<>();
         Date dateStart = param.getPredictionTime();
         PredictInputData data = new PredictInputData();
+        if (input.isEmpty()){//未从数据库中获取雨量站数据
+            for (int i = 0; i < InputUtils.beforeDays; i++) {
+                Date date = timeUtils.addCalendar(dateStart,"日",i);
+                data = assignmentNullRAndT(date,location);
+                result.add(data);
+            }
+            return result;
+        }
         List<Date> dateList = new ArrayList<>();
         for (PredictInputData predictInputData : input) {
             dateList.add(predictInputData.getDates());
@@ -1154,70 +1162,70 @@ public class DataUtils {
         List<PredictInputData> KSG = lzzData.get(0);
         KSG = getHoursRain(paramNew, KSG,"喀什沟自动雨量站");
         List<PredictInputData> KSGDAY = lzzRainHourToDay(paramNew.getLzzHydrologyParam().getKsgRainfallStation());
-        KSGDAY = getTwentyDaysRain(paramNew, KSGDAY);
+        KSGDAY = getTwentyDaysRain(paramNew, KSGDAY,"喀什沟自动雨量站");
         RainDay.put("喀什沟自动雨量站",KSGDAY);
         RainHour.put("喀什沟自动雨量站",KSG);
         //黑沟
         List<PredictInputData> HG = lzzData.get(1);
         HG = getHoursRain(paramNew, HG,"黑沟自动雨量站");
         List<PredictInputData> HGDAY = lzzRainHourToDay(paramNew.getLzzHydrologyParam().getHgRainfallStation());
-        HGDAY = getTwentyDaysRain(paramNew, HGDAY);
+        HGDAY = getTwentyDaysRain(paramNew, HGDAY,"黑沟自动雨量站");
         RainDay.put("黑沟自动雨量站",HGDAY);
         RainHour.put("黑沟自动雨量站",HG);
         //煤矿沟
         List<PredictInputData> MKG = lzzData.get(2);
         MKG = getHoursRain(paramNew, MKG,"煤矿沟自动雨量站");
         List<PredictInputData> MKGDAY = lzzRainHourToDay(paramNew.getLzzHydrologyParam().getMkgRainfallStation());
-        MKGDAY = getTwentyDaysRain(paramNew, MKGDAY);
+        MKGDAY = getTwentyDaysRain(paramNew, MKGDAY,"煤矿沟自动雨量站");
         RainDay.put("煤矿沟自动雨量站",MKGDAY);
         RainHour.put("煤矿沟自动雨量站",MKG);
         //无名沟
         List<PredictInputData> WMG = lzzData.get(3);
         WMG = getHoursRain(paramNew, WMG,"无名沟自动雨量站");
         List<PredictInputData> WMGDAY = lzzRainHourToDay(paramNew.getLzzHydrologyParam().getWmgRainfallStation());
-        WMGDAY = getTwentyDaysRain(paramNew, WMGDAY);
+        WMGDAY = getTwentyDaysRain(paramNew, WMGDAY,"无名沟自动雨量站");
         RainDay.put("无名沟自动雨量站",WMGDAY);
         RainHour.put("无名沟自动雨量站",WMG);
         //加普沙
         List<PredictInputData> JPS = lzzData.get(4);
         JPS = getHoursRain(paramNew, JPS,"加普沙自动雨量站");
         List<PredictInputData> JPSDAY = lzzRainHourToDay(paramNew.getLzzHydrologyParam().getJpsRainfallStation());
-        JPSDAY = getTwentyDaysRain(paramNew, JPSDAY);
+        JPSDAY = getTwentyDaysRain(paramNew, JPSDAY,"加普沙自动雨量站");
         RainDay.put("加普沙自动雨量站",JPSDAY);
         RainHour.put("加普沙自动雨量站",JPS);
         //宰尔德
         List<PredictInputData> ZED = lzzData.get(5);
         ZED = getHoursRain(paramNew, ZED,"宰尔德自动雨量站");
         List<PredictInputData> ZEDDAY = lzzRainHourToDay(paramNew.getLzzHydrologyParam().getZrdRainfallStation());
-        ZEDDAY = getTwentyDaysRain(paramNew, ZEDDAY);
+        ZEDDAY = getTwentyDaysRain(paramNew, ZEDDAY,"宰尔德自动雨量站");
         RainDay.put("宰尔德自动雨量站",ZEDDAY);
         RainHour.put("宰尔德自动雨量站",ZED);
         //东南沟
         List<PredictInputData> DNG = lzzData.get(6);
         DNG = getHoursRain(paramNew, DNG,"东南沟自动雨量站");
         List<PredictInputData> DNGDAY = lzzRainHourToDay(paramNew.getLzzHydrologyParam().getDngRainfallStation());
-        DNGDAY = getTwentyDaysRain(paramNew, DNGDAY);
+        DNGDAY = getTwentyDaysRain(paramNew, DNGDAY,"东南沟自动雨量站");
         RainDay.put("东南沟自动雨量站",DNGDAY);
         RainHour.put("东南沟自动雨量站",DNG);
         //八一林场
         List<PredictInputData> BYLC = lzzData.get(7);
         BYLC = getHoursRain(paramNew, BYLC,"八一林场自动雨量站");
         List<PredictInputData> BYLCDAY = lzzRainHourToDay(paramNew.getLzzHydrologyParam().getBylcRainfallStation());
-        BYLCDAY = getTwentyDaysRain(paramNew, BYLCDAY);
+        BYLCDAY = getTwentyDaysRain(paramNew, BYLCDAY,"八一林场自动雨量站");
         RainDay.put("八一林场自动雨量站",BYLCDAY);
         RainHour.put("八一林场自动雨量站",BYLC);
         //萨尔达万
         List<PredictInputData> SEDW = lzzData.get(8);
         SEDW = getHoursRain(paramNew, SEDW,"萨尔达万自动雨量站");
         List<PredictInputData> SEDWDAY = lzzRainHourToDay(paramNew.getLzzHydrologyParam().getSedwRainfallStation());
-        SEDWDAY = getTwentyDaysRain(paramNew, SEDWDAY);
+        SEDWDAY = getTwentyDaysRain(paramNew, SEDWDAY,"萨尔达万自动雨量站");
         RainDay.put("萨尔达万自动雨量站",SEDWDAY);
         RainHour.put("萨尔达万自动雨量站",SEDW);
         //制材厂
         List<PredictInputData> ZCC = lzzData.get(9);
         ZCC = getHoursRain(paramNew, ZCC,"制材厂自动雨量站");
         List<PredictInputData> ZCCDAY = lzzRainHourToDay(paramNew.getLzzHydrologyParam().getZccRainfallStation());
-        ZCCDAY = getTwentyDaysRain(paramNew, ZCCDAY);
+        ZCCDAY = getTwentyDaysRain(paramNew, ZCCDAY,"制材厂自动雨量站");
         RainDay.put("制材厂自动雨量站",ZCCDAY);
         RainHour.put("制材厂自动雨量站",ZCC);
         //添加小时尺度雨量和日尺度雨量
@@ -1542,21 +1550,21 @@ public class DataUtils {
         List<PredictInputData> XQZ = rainStation.get(1);
         XQZ = getHoursRain(paramNew, XQZ,"小渠子雨量站");
         List<PredictInputData> XQZDAY = irrigateRainHourToDay(paramNew.getIrrigatedHydrologyParam().getXqzGaugingStation());
-        XQZDAY = getTwentyDaysRain(paramNew, XQZDAY);
+        XQZDAY = getTwentyDaysRain(paramNew, XQZDAY,"小渠子雨量站");
         RainDay.put("小渠子雨量站",XQZDAY);
         RainHour.put("小渠子雨量站",XQZ);
         //团结一队
         List<PredictInputData> TJYD = rainStation.get(2);
         TJYD = getHoursRain(paramNew, TJYD,"团结一队雨量站");
         List<PredictInputData> TJYDDAY = irrigateRainHourToDay(paramNew.getIrrigatedHydrologyParam().getTjydGaugingStation());
-        TJYDDAY = getTwentyDaysRain(paramNew, TJYDDAY);
+        TJYDDAY = getTwentyDaysRain(paramNew, TJYDDAY,"团结一队雨量站");
         RainDay.put("团结一队雨量站",TJYDDAY);
         RainHour.put("团结一队雨量站",TJYD);
         //头屯河水库
         List<PredictInputData> TTHR = rainStation.get(3);
         TTHR = getHoursRain(paramNew, TTHR,"头屯河水库雨量站");
         List<PredictInputData> TTHRDAY = irrigateRainHourToDay(paramNew.getIrrigatedHydrologyParam().getTthGaugingStation());
-        TTHRDAY = getTwentyDaysRain(paramNew, TTHRDAY);
+        TTHRDAY = getTwentyDaysRain(paramNew, TTHRDAY,"头屯河水库雨量站");
         RainDay.put("头屯河水库雨量站",TTHRDAY);
         RainHour.put("头屯河水库雨量站",TTHR);
         //添加小时尺度雨量和日尺度雨量
@@ -1726,43 +1734,43 @@ public class DataUtils {
         Map<String,List<PredictInputData>> RainDay = new HashMap<>();
         //喀什沟
         List<PredictInputData> KSGDAY = lzzRainHourToDay(param.getLzzHydrologyParam().getKsgRainfallStation());
-        KSGDAY = getTwentyDaysRain(param,KSGDAY);
+        KSGDAY = getTwentyDaysRain(param,KSGDAY,"喀什沟自动雨量站");
         RainDay.put("喀什沟自动雨量站",KSGDAY);
         //黑沟
         List<PredictInputData> HGDAY = lzzRainHourToDay(param.getLzzHydrologyParam().getHgRainfallStation());
-        HGDAY = getTwentyDaysRain(param,HGDAY);
+        HGDAY = getTwentyDaysRain(param,HGDAY,"黑沟自动雨量站");
         RainDay.put("黑沟自动雨量站",HGDAY);
         //煤矿沟
         List<PredictInputData> MKGDAY = lzzRainHourToDay(param.getLzzHydrologyParam().getMkgRainfallStation());
-        MKGDAY = getTwentyDaysRain(param,MKGDAY);
+        MKGDAY = getTwentyDaysRain(param,MKGDAY,"煤矿沟自动雨量站");
         RainDay.put("煤矿沟自动雨量站",MKGDAY);
         //无名沟
         List<PredictInputData> WMGDAY = lzzRainHourToDay(param.getLzzHydrologyParam().getWmgRainfallStation());
-        WMGDAY = getTwentyDaysRain(param,WMGDAY);
+        WMGDAY = getTwentyDaysRain(param,WMGDAY,"无名沟自动雨量站");
         RainDay.put("无名沟自动雨量站",WMGDAY);
         //加普沙
         List<PredictInputData> JPSDAY = lzzRainHourToDay(param.getLzzHydrologyParam().getJpsRainfallStation());
-        JPSDAY = getTwentyDaysRain(param,JPSDAY);
+        JPSDAY = getTwentyDaysRain(param,JPSDAY,"加普沙自动雨量站");
         RainDay.put("加普沙自动雨量站",JPSDAY);
         //宰尔德
         List<PredictInputData> ZEDDAY = lzzRainHourToDay(param.getLzzHydrologyParam().getZrdRainfallStation());
-        ZEDDAY = getTwentyDaysRain(param,ZEDDAY);
+        ZEDDAY = getTwentyDaysRain(param,ZEDDAY,"宰尔德自动雨量站");
         RainDay.put("宰尔德自动雨量站",ZEDDAY);
         //东南沟
         List<PredictInputData> DNGDAY = lzzRainHourToDay(param.getLzzHydrologyParam().getDngRainfallStation());
-        DNGDAY = getTwentyDaysRain(param,DNGDAY);
+        DNGDAY = getTwentyDaysRain(param,DNGDAY,"东南沟自动雨量站");
         RainDay.put("东南沟自动雨量站",DNGDAY);
         //八一林场
         List<PredictInputData> BYLCDAY = lzzRainHourToDay(param.getLzzHydrologyParam().getBylcRainfallStation());
-        BYLCDAY = getTwentyDaysRain(param,BYLCDAY);
+        BYLCDAY = getTwentyDaysRain(param,BYLCDAY,"八一林场自动雨量站");
         RainDay.put("八一林场自动雨量站",BYLCDAY);
         //萨尔达万
         List<PredictInputData> SEDWDAY = lzzRainHourToDay(param.getLzzHydrologyParam().getSedwRainfallStation());
-        SEDWDAY = getTwentyDaysRain(param,SEDWDAY);
+        SEDWDAY = getTwentyDaysRain(param,SEDWDAY,"萨尔达万自动雨量站");
         RainDay.put("萨尔达万自动雨量站",SEDWDAY);
         //制材厂
         List<PredictInputData> ZCCDAY = lzzRainHourToDay(param.getLzzHydrologyParam().getZccRainfallStation());
-        ZCCDAY = getTwentyDaysRain(param,ZCCDAY);
+        ZCCDAY = getTwentyDaysRain(param,ZCCDAY,"制材厂自动雨量站");
         RainDay.put("制材厂自动雨量站",ZCCDAY);
         //添加日尺度温度与降水
         List<PredictInputData> RAT = pointToSurface(RainDay,  "楼庄子");//转换为平均值

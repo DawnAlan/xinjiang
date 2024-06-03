@@ -1,6 +1,5 @@
 package com.cj.model.func.modular.FloodPrevent.entity;
 
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -43,6 +42,21 @@ public class BasinParam {
         @JsonProperty("ProofLevel")
         @ApiModelProperty(value = "校核洪水位")
         private Double proofLevel;
+        @JsonProperty("DownStream")
+        @ApiModelProperty(value = "下断面安全泄量")
+        private double downStream;
+        @JsonProperty("DownInput")
+        @ApiModelProperty(value = "下断面超标准洪水流量")
+        private double downInput;
+        @JsonProperty("Rise")
+        @ApiModelProperty(value = "单日水位增幅")
+        private double rise;
+        @JsonProperty("Decline")
+        @ApiModelProperty(value = "单日水位降幅")
+        private double decline;
+
+
+
         @JsonProperty("coefficient")
         @ApiModelProperty(value = "水位库容曲线数量级,万m³对应10000")
         private Integer coefficient;

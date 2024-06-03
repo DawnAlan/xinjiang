@@ -1,8 +1,5 @@
 package com.cj.model.func.modular.FloodPrevent.model;
 
-
-
-
 import com.cj.model.func.modular.FloodPrevent.entity.*;
 
 import java.math.BigDecimal;
@@ -720,7 +717,7 @@ public class Model {
         if(num!=0) delta=delta/num;
         //最高水位超过汛限水位的惩罚
         double over=Math.max(0,maxLevel-reservoir.getLimitLevel());
-        value=rate*delta+over;
+        value+=rate*delta+over;
         //末水位低于汛限水位的惩罚
         if(endLevel<reservoir.getLimitLevel()){
             value=value+100*(reservoir.getLimitLevel()-endLevel);

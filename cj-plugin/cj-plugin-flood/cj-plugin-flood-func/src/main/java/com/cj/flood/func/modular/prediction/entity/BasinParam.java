@@ -1,9 +1,6 @@
 package com.cj.flood.func.modular.prediction.entity;
 
-import com.cj.common.serializer.DoubleListScale2Serializer;
-import com.cj.common.serializer.DoubleScale2Serializer;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -29,28 +26,37 @@ public class BasinParam {
         private String name;
         @JsonProperty("DeadLevel")
         @ApiModelProperty(value = "死水位")
-        @JsonSerialize(using = DoubleScale2Serializer.class)
         private Double deadLevel;
         @JsonProperty("LimitLevel")
         @ApiModelProperty(value = "汛限水位")
-        @JsonSerialize(using = DoubleScale2Serializer.class)
         private Double limitLevel;
         @JsonProperty("NormalLevel")
         @ApiModelProperty(value = "正常蓄水位")
-        @JsonSerialize(using = DoubleScale2Serializer.class)
         private Double normalLevel;
         @JsonProperty("HeightLevel")
         @ApiModelProperty(value = "防洪高水位")
-        @JsonSerialize(using = DoubleScale2Serializer.class)
         private Double heightLevel;
         @JsonProperty("DesignLevel")
         @ApiModelProperty(value = "设计洪水位")
-        @JsonSerialize(using = DoubleScale2Serializer.class)
         private Double designLevel;
         @JsonProperty("ProofLevel")
         @ApiModelProperty(value = "校核洪水位")
-        @JsonSerialize(using = DoubleScale2Serializer.class)
         private Double proofLevel;
+        @JsonProperty("DownStream")
+        @ApiModelProperty(value = "下断面安全泄量")
+        private double downStream;
+        @JsonProperty("DownInput")
+        @ApiModelProperty(value = "下断面超标准洪水流量")
+        private double downInput;
+        @JsonProperty("Rise")
+        @ApiModelProperty(value = "单日水位增幅")
+        private double rise;
+        @JsonProperty("Decline")
+        @ApiModelProperty(value = "单日水位降幅")
+        private double decline;
+
+
+
         @JsonProperty("coefficient")
         @ApiModelProperty(value = "水位库容曲线数量级,万m³对应10000")
         private Integer coefficient;
@@ -68,11 +74,9 @@ public class BasinParam {
         private List<GateRulesDTO> flexibleRules;
         @JsonProperty("LimitLevels")
         @ApiModelProperty(value = "动态讯限水位")
-        @JsonSerialize(using = DoubleListScale2Serializer.class)
         private List<Double> limitLevels;
         @JsonProperty("eco")
         @ApiModelProperty(value = "生态流量")
-        @JsonSerialize(using = DoubleListScale2Serializer.class)
         private List<Double> eco;
 
         @NoArgsConstructor
@@ -80,11 +84,9 @@ public class BasinParam {
         public static class CapacityCurveDTO {
             @JsonProperty("level")
             @ApiModelProperty(value = "水位")
-            @JsonSerialize(using = DoubleScale2Serializer.class)
             private Double level;
             @JsonProperty("value")
             @ApiModelProperty(value = "水位对应的库容")
-            @JsonSerialize(using = DoubleScale2Serializer.class)
             private Double value;
         }
 
@@ -103,11 +105,9 @@ public class BasinParam {
             public static class CurveDTO {
                 @JsonProperty("level")
                 @ApiModelProperty(value = "水位")
-                @JsonSerialize(using = DoubleScale2Serializer.class)
                 private Double level;
                 @JsonProperty("value")
                 @ApiModelProperty(value = "水位对应的泄流能力")
-                @JsonSerialize(using = DoubleScale2Serializer.class)
                 private Double value;
             }
         }
@@ -117,26 +117,21 @@ public class BasinParam {
         public static class GateRulesDTO {
             @JsonProperty("minQ")
             @ApiModelProperty(value = "最小流量")
-            @JsonSerialize(using = DoubleScale2Serializer.class)
             private Double minQ;
             @JsonProperty("maxQ")
             @ApiModelProperty(value = "最大流量")
-            @JsonSerialize(using = DoubleScale2Serializer.class)
             private Double maxQ;
             @JsonProperty("minH")
             @ApiModelProperty(value = "最低水位")
-            @JsonSerialize(using = DoubleScale2Serializer.class)
             private Double minH;
             @JsonProperty("maxH")
             @ApiModelProperty(value = "最高水位")
-            @JsonSerialize(using = DoubleScale2Serializer.class)
             private Double maxH;
             @JsonProperty("gates")
             @ApiModelProperty(value = "闸门")
             private List<String> gates;
             @JsonProperty("qOut")
             @ApiModelProperty(value = "最大出库流量")
-            @JsonSerialize(using = DoubleScale2Serializer.class)
             private Double qOut;
         }
     }

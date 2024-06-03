@@ -1,17 +1,15 @@
 package com.cj.model.func.modular.FloodPredict.model;
 
-
 import com.cj.model.func.modular.FloodPredict.entity.*;
 import com.cj.model.func.modular.FloodPredict.model.entity.ModelSaveEntity;
 import com.cj.model.func.modular.FloodPredict.model.function.MachineModel;
-import com.cj.model.func.modular.FloodPredict.model.function.PhysicalForecast;
+import com.cj.model.func.modular.FloodPredict.model.function.SubBasinForecast;
 import com.cj.model.func.modular.FloodPredict.model.function.SimulatedRunoff;
 import com.cj.model.func.modular.FloodPredict.model.function.SnowMeltModel;
 import com.cj.model.func.modular.FloodPredict.utils.*;
 import com.cj.model.func.modular.entity.Flood;
 import lombok.SneakyThrows;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
-
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -88,19 +86,9 @@ public class TouTunHe {
     @SneakyThrows
     public Map<String, List<Map<String,List<PredictInputData>>>> getOneStationDataList(ForecastInputParamNew paramNew){
         Map<String, List<Map<String,List<PredictInputData>>>> threeResults = new HashMap<>();
-
-        List<PredictInputData> flowData = paramNew.getInflowRunoffs();//从A3表获取楼庄子和3号桥的日均流量
-        List<Map<String,List<PredictInputData>>> integration = ((paramNew.getModelType() == 3) ? du.lzzRainIntegration(paramNew) : new ArrayList<>());//整合雨量站数据转为模型所需类型
-        List<PredictInputData> RAT = du.getRAndT(paramNew);//获得相应的温度和降水
-
-        List<Map<String,List<PredictInputData>>> QJResult = new ArrayList<>();
-        List<Map<String,List<PredictInputData>>> LZZResult = new ArrayList<>();
-        //三号桥历史径流日尺度
+        //日尺度径流数据（从云端文件或者A3表中获取)
         List<PredictInputData> LZZ = new ArrayList<>();//从A3中获取的
         List<PredictInputData> QJ = new ArrayList<>();//从A3中获取的
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-//        Date dataDate = sdf.parse("2024-06-01 00:00:00");
-
         if (paramNew.getPredictionTime().before(InputUtils.historyDate)) {
             Object[][] lzzData = InputUtils.historyData.get("楼庄子日");
             Object[][] tthData = InputUtils.historyData.get("楼头区间日");
@@ -127,6 +115,7 @@ public class TouTunHe {
                 }
             }
         } else {//本地文件未能记录该数据，从A3表中读取
+            List<PredictInputData> flowData = paramNew.getInflowRunoffs();
             for (int i = 0; i < flowData.size(); i++) {
                 if (flowData.get(i).getLocation().equals("楼庄子")) {
                     if (flowData.get(i).getFlow() != null) {
@@ -148,18 +137,22 @@ public class TouTunHe {
             }
         }
 
-        //楼庄子历史径流日尺度
+        //返回所需数据类型数据
+        List<Map<String,List<PredictInputData>>> QJResult = new ArrayList<>();
+        List<Map<String,List<PredictInputData>>> LZZResult = new ArrayList<>();
+        List<PredictInputData> RAT = du.getRAndT(paramNew);//获得相应的温度和降水
         LZZ = du.addRAndT(LZZ, RAT);
         Map<String,List<PredictInputData>> LZZFlow = new HashMap<>();
         LZZFlow.put("流量",LZZ);
         LZZResult.add(LZZFlow);
         if (paramNew.getModelType() == 3) {
+            List<Map<String,List<PredictInputData>>> integration = du.lzzRainIntegration(paramNew);//整合雨量站数据转为模型所需类型
             LZZResult.add(integration.get(0));//前期雨量
             LZZResult.add(integration.get(1));//预报降雨
         }
         threeResults.put("楼庄子", LZZResult);
         threeResults.put("3号桥", LZZResult);
-
+        //区间数据
         QJ = du.addRAndT(QJ, RAT);
         Map<String,List<PredictInputData>> QJFlow = new HashMap<>();
         QJFlow.put("流量",QJ);
@@ -229,16 +222,16 @@ public class TouTunHe {
                 }
                 //陕北模型预报
                 param.setPreStartTime(time);
-                PhysicalForecast physicalForecast = new PhysicalForecast();
-                List<Flood> result = physicalForecast.getShortResult(param, Data, snowFlood);
+                SubBasinForecast subBasinForecast = new SubBasinForecast();
+                List<Flood> result = subBasinForecast.getShortResult(param, Data, snowFlood);
                 return result;
             }
             //非融雪洪水
             else {
                 param.setIsSnowMeltModel(false);
-                PhysicalForecast physicalForecast = new PhysicalForecast();
+                SubBasinForecast subBasinForecast = new SubBasinForecast();
                 snowFlood = new Object[0][];
-                List<Flood> result = physicalForecast.getShortResult(param, Data, snowFlood);
+                List<Flood> result = subBasinForecast.getShortResult(param, Data, snowFlood);
                 return result;
             }
         }
@@ -297,9 +290,9 @@ public class TouTunHe {
             lzzFlood += Lzz.get(i).getOutQ();
             qjFlood += qj.get(i).getPreQ();
         }
-        PhysicalForecast physicalForecast = new PhysicalForecast();
-        List<Object[][]> tthInformation = physicalForecast.getFloodInformation(tthIn);
-        String level = physicalForecast.getFloodLevel(tthIn, "头屯河");
+        SubBasinForecast subBasinForecast = new SubBasinForecast();
+        List<Object[][]> tthInformation = subBasinForecast.getFloodInformation(tthIn);
+        String level = subBasinForecast.getFloodLevel(tthIn, "头屯河");
         Object[][] tthIndex = tthInformation.get(0);
         Object[][] floodNature = tthInformation.get(1);
         StringBuilder tthRain = new StringBuilder();

@@ -245,73 +245,111 @@ public class Cascade{
     }
     public static String Update(Basin basin,ReqCurve reqCurve){
         String inform="";
-        // todo 曲线计算之前判断是否符合要求,不能使用的曲线提示用户,不替换默认曲线
-//        if(reqCurve==null){
-//            inform+="未获得曲线；";
-//        }
-//        else{
-//            if(reqCurve.getCapacityCurves()==null){
-//                inform+="未获得库容曲线；";
-//            }
-//            else{
-//                Map<String,List<CurveParam>> capacityCurves = reqCurve.getCapacityCurves();
-//                for(Reservoir reservoir:basin.getReservoirs()){
-//                    boolean judge=true;
-//                    String reservoirName = reservoir.getName();
-//                    //库容曲线
-//                    for(String string:capacityCurves.keySet()){
-//                        if(string.equals(reservoirName)&&capacityCurves.get(string).size()!=0){
-//                            reservoir.setCapacityCurve(capacityCurves.get(string));
-//                            judge=false;
-//                            break;
-//                        }
-//                    }
-//                    if(judge) inform+="未获得"+reservoirName+"库容曲线；";
-//                }
-//            }
-//
-//            if(reqCurve.getGateCurves()==null){
-//                inform+="未获得闸门曲线；";
-//            }
-//            else{
-//                Map<String,Map<String,List<CurveParam>>> gateCurves=reqCurve.getGateCurves();
-//                //创建一个全为true的judge键值对
-//                Map<String,Map<String,Boolean>> judge =new HashMap<>();
-//                for(Reservoir reservoir:basin.getReservoirs()){
-//                    Map<String,Boolean> judge1=new HashMap<>();
-//                    for (Gate gate:reservoir.getGates()){
-//                        judge1.put(gate.getName(),true);
-//                    }
-//                    judge.put(reservoir.getName(),judge1);
-//
-//                }
-//                //逐个水库的逐个闸门进行遍历
-//                for(Reservoir reservoir:basin.getReservoirs()){
-//                    String reservoirName = reservoir.getName();
-//                    for (Gate gate:reservoir.getGates()){
-//                        String gateName = gate.getName();
-//                        for(String string:gateCurves.keySet()){
-//                            if(string.equals(reservoirName)&&gateCurves.get(string)!=null){
-//                                for(String str:gateCurves.get(string).keySet()){
-//                                    if(str.equals(gateName)&&gateCurves.get(string).get(str).size()!=0){
-//                                        gate.setCurve(gateCurves.get(string).get(str));
-//                                        judge.get(reservoirName).put(gateName,false);
-//                                    }
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//                //判断哪个曲线未进行更新
-//                for(String string:judge.keySet()){
-//                    for(String str:judge.get(string).keySet()){
-//                        if(judge.get(string).get(str)){
-//                            inform+="未获得"+string+str+"闸门曲线；";
-//                        }
-//                    }
-//                }
-//            }
-//        }
+        if(reqCurve==null){
+            inform+="未获得曲线；";
+        }
+        else{
+            if(reqCurve.getCapacityCurves()==null){
+                inform+="未获得库容曲线；";
+            }
+            else{
+                Map<String,List<CurveParam>> capacityCurves = reqCurve.getCapacityCurves();
+                for(Reservoir reservoir:basin.getReservoirs()){
+                    boolean judge=true;
+                    String reservoirName = reservoir.getName();
+                    //库容曲线
+                    for(String string:capacityCurves.keySet()){
+                        boolean whether = true;
+                        if(string.equals(reservoirName)&&capacityCurves.get(string).size()!=0){
+                            //找到曲线
+                            judge=false;
+                            //检查曲线长度
+                            if(capacityCurves.get(string).size()<5){
+                                inform+=reservoirName+"库容曲线长度过小；";
+                                whether=false;
+                            }
+                            //检查曲线单调性
+                            else{
+                                List<CurveParam> curve = capacityCurves.get(string);
+                                for (int i = 0; i < curve.size() - 1; i++) {
+                                    if(curve.get(i).getLevel()>=curve.get(i+1).getLevel()||curve.get(i).getValue()>curve.get(i+1).getValue()){
+                                        inform+=reservoirName+"库容曲线单调性异常；";
+                                        whether=false;
+                                        break;
+                                    }
+                                }
+                            }
+                            if(whether){
+                                reservoir.setCapacityCurve(capacityCurves.get(string));
+                                break;
+                            }
+                        }
+                    }
+                    if(judge) inform+="未获得"+reservoirName+"库容曲线；";
+                }
+            }
+
+            if(reqCurve.getGateCurves()==null){
+                inform+="未获得闸门曲线；";
+            }
+            else{
+                Map<String,Map<String,List<CurveParam>>> gateCurves=reqCurve.getGateCurves();
+                //创建一个全为true的judge键值对
+                Map<String,Map<String,Boolean>> judge =new HashMap<>();
+                for(Reservoir reservoir:basin.getReservoirs()){
+                    Map<String,Boolean> judge1=new HashMap<>();
+                    for (Gate gate:reservoir.getGates()){
+                        judge1.put(gate.getName(),true);
+                    }
+                    judge.put(reservoir.getName(),judge1);
+
+                }
+                //逐个水库的逐个闸门进行遍历
+                for(Reservoir reservoir:basin.getReservoirs()){
+                    String reservoirName = reservoir.getName();
+                    for (Gate gate:reservoir.getGates()){
+                        String gateName = gate.getName();
+                        for(String string:gateCurves.keySet()){
+                            if(string.equals(reservoirName)&&gateCurves.get(string)!=null){
+                                for(String str:gateCurves.get(string).keySet()){
+                                    if(str.equals(gateName)&&gateCurves.get(string).get(str).size()!=0){
+                                        judge.get(reservoirName).put(gateName,false);
+                                        boolean whether =true;
+                                        //判断曲线长度
+                                        if(gateCurves.get(string).get(str).size()<5){
+                                            inform+=string+str+"闸门曲线长度过小";
+                                            whether=false;
+                                        }
+                                        else{
+                                            List<CurveParam> curve = gateCurves.get(string).get(str);
+                                            for (int i = 0; i < curve.size() - 1; i++) {
+                                                if(curve.get(i).getLevel()>=curve.get(i+1).getLevel()){
+                                                    inform+=string+str+"闸门曲线单调性异常；";
+                                                    whether=false;
+                                                    break;
+                                                }
+                                            }
+                                        }
+
+                                        if(whether){
+                                            gate.setCurve(gateCurves.get(string).get(str));
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                //判断哪个曲线未进行更新
+                for(String string:judge.keySet()){
+                    for(String str:judge.get(string).keySet()){
+                        if(judge.get(string).get(str)){
+                            inform+="未获得"+string+str+"闸门曲线；";
+                        }
+                    }
+                }
+            }
+        }
         return inform;
     }
     public static void Write(String path,List<Option> options) {
