@@ -31,9 +31,13 @@ public class WaterStorageSchedulingTotalForm extends Model<WaterStorageSchedulin
     @ApiModelProperty(value = "来水年份")
     private Integer inflowYear;
 
-    //上一年末水位
-    @ApiModelProperty(value = "上一年末水位")
+    //tth上一年末水位
+    @ApiModelProperty(value = "tth上一年末水位")
     private Double firstData;
+
+    //lzz上一年末水位
+    @ApiModelProperty(value = "lzz上一年末水位")
+    private Double secondData;
 
     //创建人
     @ApiModelProperty(value = "创建人")

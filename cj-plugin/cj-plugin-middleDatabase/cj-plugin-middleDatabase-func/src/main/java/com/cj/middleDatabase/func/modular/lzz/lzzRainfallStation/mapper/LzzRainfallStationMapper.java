@@ -25,7 +25,7 @@ public interface LzzRainfallStationMapper extends BaseMapper<LzzRainfallStation>
     @Select("SELECT * FROM LZZ_RAINFALL_STATION WHERE TREE_ID = #{id} AND RECORD_TIME = #{time} order by TIME DESC")
     List<LzzRainfallStation> selectInfoByCondition2(@Param("id")String id, @Param("time")String time);
 
-    @Select("SELECT * FROM LZZ_RAINFALL_STATION WHERE TREE_ID = #{id} AND TO_CHAR(TIME,'YYYY-MM-DD') BETWEEN #{startTime} AND #{endTime} order by TIME DESC")
+    @Select("SELECT * FROM LZZ_RAINFALL_STATION WHERE TREE_ID = #{id} AND TO_CHAR(TIME,'yyyy-MM-dd hh24:MI') BETWEEN #{startTime} AND #{endTime} order by TIME DESC")
     List<LzzRainfallStation> selectInfoByCondition3(@Param("id")String id,@Param("startTime")String startTime, @Param("endTime")String endTime);
 
     @Select("SELECT * FROM LZZ_RAINFALL_STATION WHERE STATION_NAME = #{name} AND TO_CHAR(TIME,'YYYY-MM-DD') = #{time}")

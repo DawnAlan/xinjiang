@@ -66,7 +66,11 @@ public class WaterStorageSchedulingTthController{
     @CommonLog("头屯河水库蓄水调度计划表模块查询列表")
     @GetMapping("/select")
     public RestResponse<List<WaterStorageSchedulingTth>> select(@RequestParam(value = "formId") String formId) {
-        List<WaterStorageSchedulingTth> list = waterStorageSchedulingTthService.lambdaQuery().eq(WaterStorageSchedulingTth::getFormId, formId).eq(WaterStorageSchedulingTth::getDel, 0).list();
+        List<WaterStorageSchedulingTth> list = waterStorageSchedulingTthService.lambdaQuery().
+                eq(WaterStorageSchedulingTth::getFormId, formId).
+                eq(WaterStorageSchedulingTth::getDel, 0).
+                orderByAsc(WaterStorageSchedulingTth::getSortNum).
+                list();
         if(null != list && list.size()>0){
             return RestResponse.ok(list);
         }else {

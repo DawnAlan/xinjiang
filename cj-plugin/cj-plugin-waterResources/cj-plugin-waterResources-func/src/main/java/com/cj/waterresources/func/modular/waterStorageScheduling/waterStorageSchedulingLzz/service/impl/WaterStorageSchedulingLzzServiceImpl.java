@@ -1,14 +1,19 @@
 package com.cj.waterresources.func.modular.waterStorageScheduling.waterStorageSchedulingLzz.service.impl;
 
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cj.auth.core.pojo.SaBaseLoginUser;
 import com.cj.auth.core.util.StpLoginUserUtil;
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.NumberUtil;
+import com.cj.common.util.RedisUtil;
 import com.cj.common.util.UUIDUtils;
 import com.cj.middleDatabase.func.modular.lzz.storageCapacityCurve.entity.StorageCapacityCurve;
 import com.cj.middleDatabase.func.modular.lzz.storageCapacityCurve.service.StorageCapacityCurveService;
+import com.cj.waterresources.func.core.utils.GetSzyDataUtils;
+import com.cj.waterresources.func.modular.overallSituationUnitMgr.entity.OverallSituationUnitMgr;
+import com.cj.waterresources.func.modular.overallSituationUnitMgr.service.OverallSituationUnitMgrService;
 import com.cj.waterresources.func.modular.surfaceWater.entity.QueryListReq;
 import com.cj.waterresources.func.modular.surfaceWater.entity.TypicalYearReq;
 import com.cj.waterresources.func.modular.surfaceWater.generator.domain.SurfaceWater;
@@ -28,6 +33,7 @@ import com.cj.waterresources.func.modular.waterStorageScheduling.waterStorageSch
 import com.cj.waterresources.func.modular.waterStorageScheduling.waterStorageSchedulingTotalForm.service.WaterStorageSchedulingTotalFormService;
 import com.cj.waterresources.func.modular.waterStorageScheduling.waterStorageSchedulingTth.entity.WaterStorageSchedulingTth;
 import com.cj.waterresources.func.modular.waterStorageScheduling.waterStorageSchedulingTth.service.WaterStorageSchedulingTthService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -67,6 +73,12 @@ public class WaterStorageSchedulingLzzServiceImpl extends ServiceImpl<WaterStora
     @Autowired
     private YearWaterUsePlanTrunkCanalService yearWaterUsePlanTrunkCanalService;
 
+    @Autowired
+    private OverallSituationUnitMgrService overallSituationUnitMgrService;
+
+    @Autowired
+    private RedisUtil redisUtil;
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public RestResponse add(String formId) {
@@ -99,7 +111,6 @@ public class WaterStorageSchedulingLzzServiceImpl extends ServiceImpl<WaterStora
         }
         List<WaterStorageSchedulingLzz> waterStorageSchedulingLzzList = new LinkedList<>();
         Integer sortNum = 1;
-        List<StorageCapacityCurve> storageCapacityCurveList = storageCapacityCurveService.lambdaQuery().eq(StorageCapacityCurve::getReservoir, "lzz").list();
         for(Integer month:list){
             List<RealFlowRes> tenDayVos = collect.get(month);
             tenDayVos.sort(Comparator.comparing(t -> t.getName()));
@@ -137,13 +148,14 @@ public class WaterStorageSchedulingLzzServiceImpl extends ServiceImpl<WaterStora
                             (lzz.getWaterSupplyVolumeTotal()==null?0.0:lzz.getWaterSupplyVolumeTotal())
                         )
                 );
-                if(vo.getMonth()==1 && vo.getName()==1){
-                    lzz.setWaterStorage(0.0);
-                }
                 lzz.setSortNum(sortNum++);
                 waterStorageSchedulingLzzList.add(lzz);
             }
         }
+        List<OverallSituationUnitMgr> unitList = getUnitList();
+        String id = unitList.stream().filter(t -> t.getPId().equals("0") && t.getUnitName().equals("楼庄子水库")).map(OverallSituationUnitMgr::getId).findFirst().get();
+        Double waterLevelByLevel1 = GetSzyDataUtils.getWaterLevelByLevel(byId.getSecondData(), id);
+        waterStorageSchedulingLzzList.get(0).setWaterStorage(waterLevelByLevel1+waterStorageSchedulingLzzList.get(0).getRegulatingWaterStorageCapacity());
         for(int j=1;j<waterStorageSchedulingLzzList.size();j++){
             WaterStorageSchedulingLzz lzz = waterStorageSchedulingLzzList.get(j);
             lzz.setWaterStorage(changeNum(
@@ -152,7 +164,7 @@ public class WaterStorageSchedulingLzzServiceImpl extends ServiceImpl<WaterStora
                     )
             );
         }
-        waterStorageSchedulingLzzList.forEach(t->t.setWaterStorageLevel(getWaterStorageLevel(storageCapacityCurveList,t.getWaterStorage())));
+        waterStorageSchedulingLzzList.forEach(t->t.setWaterStorageLevel(GetSzyDataUtils.getWaterLevelByFlow(t.getWaterStorage(),id)));
         boolean b = this.saveBatch(waterStorageSchedulingLzzList);
         if(b){
             return RestResponse.ok();
@@ -164,22 +176,31 @@ public class WaterStorageSchedulingLzzServiceImpl extends ServiceImpl<WaterStora
     @Override
     @Transactional(rollbackFor = Exception.class)
     public RestResponse edit(List<WaterStorageSchedulingLzz> waterStorageSchedulingLzzList) {
-        for(WaterStorageSchedulingLzz lzz :waterStorageSchedulingLzzList){
+        for(WaterStorageSchedulingLzz lzz:waterStorageSchedulingLzzList){
             lzz.setFineTuningReservoirInflow((lzz.getFineTuning()/100)*lzz.getReservoirInflow());
             lzz.setWaterSupplyVolumeTotal(
                     changeNum(
-                            (lzz.getWaterPlantDemand()==null?0.0:lzz.getWaterPlantDemand())+
-                                    (lzz.getReservoirWaterDemand()==null?0.0:lzz.getReservoirWaterDemand())+
-                                    (lzz.getWaterLoss()==null?0.0:lzz.getWaterLoss())
+                        (lzz.getWaterPlantDemand()==null?0.0:lzz.getWaterPlantDemand())+
+                        (lzz.getReservoirWaterDemand()==null?0.0:lzz.getReservoirWaterDemand())+
+                        (lzz.getWaterLoss()==null?0.0:lzz.getWaterLoss())
                     )
             );
             lzz.setRegulatingWaterStorageCapacity(changeNum
                     (
-                            (lzz.getFineTuningReservoirInflow()==null?0.0:lzz.getFineTuningReservoirInflow())-
-                                    (lzz.getWaterSupplyVolumeTotal()==null?0.0:lzz.getWaterSupplyVolumeTotal())
+                        (lzz.getFineTuningReservoirInflow()==null?0.0:lzz.getFineTuningReservoirInflow())-
+                        (lzz.getWaterSupplyVolumeTotal()==null?0.0:lzz.getWaterSupplyVolumeTotal())
                     )
             );
+            if(lzz.getSortNum()==1){
+                List<OverallSituationUnitMgr> unitList = getUnitList();
+                String id = unitList.stream().filter(t -> t.getPId().equals("0") && t.getUnitName().equals("楼庄子水库")).map(OverallSituationUnitMgr::getId).findFirst().get();
+                WaterStorageSchedulingTotalForm byId = waterStorageSchedulingTotalFormService.getById(lzz.getFormId());
+                Double waterLevelByLevel = GetSzyDataUtils.getWaterLevelByLevel(byId.getSecondData(), id);
+                lzz.setWaterStorage(lzz.getRegulatingWaterStorageCapacity()+waterLevelByLevel);
+                lzz.setWaterStorageLevel(GetSzyDataUtils.getWaterLevelByFlow(lzz.getWaterStorage(), id));
+            }
         }
+
         boolean b = this.updateBatchById(waterStorageSchedulingLzzList);
         if(b){
             if(updateAll(waterStorageSchedulingLzzList.get(0).getFormId())){
@@ -193,7 +214,6 @@ public class WaterStorageSchedulingLzzServiceImpl extends ServiceImpl<WaterStora
     }
 
     private Boolean updateAll(String formId){
-        List<StorageCapacityCurve> storageCapacityCurveList = storageCapacityCurveService.lambdaQuery().eq(StorageCapacityCurve::getReservoir, "lzz").list();
         List<WaterStorageSchedulingLzz> waterStorageSchedulingLzzList = this.lambdaQuery().eq(WaterStorageSchedulingLzz::getFormId,formId).list();
         waterStorageSchedulingLzzList.sort(Comparator.comparing(t -> t.getSortNum()));
         for(int j=1;j<waterStorageSchedulingLzzList.size();j++){
@@ -205,45 +225,15 @@ public class WaterStorageSchedulingLzzServiceImpl extends ServiceImpl<WaterStora
                     )
             );
         }
-        waterStorageSchedulingLzzList.forEach(t->t.setWaterStorageLevel(getWaterStorageLevel(storageCapacityCurveList,t.getWaterStorage())));
+        List<OverallSituationUnitMgr> unitList = getUnitList();
+        String id = unitList.stream().filter(t -> t.getPId().equals("0") && t.getUnitName().equals("楼庄子水库")).map(OverallSituationUnitMgr::getId).findFirst().get();
+        waterStorageSchedulingLzzList.forEach(t->t.setWaterStorageLevel(GetSzyDataUtils.getWaterLevelByFlow(t.getWaterStorage(),id)));
         boolean b = this.saveOrUpdateBatch(waterStorageSchedulingLzzList);
         if(b){
             return true;
         }else {
             return false;
         }
-    }
-
-    private Double getWaterStorageLevel(List<StorageCapacityCurve> storageCapacityCurveList,Double waterStorage){
-        List<StorageCapacityCurve> leftCollect = storageCapacityCurveList.stream().filter(t ->t.getStorageCapacity()!=null && t.getStorageCapacity().compareTo(new BigDecimal(waterStorage)) != 1).collect(Collectors.toList());
-        List<StorageCapacityCurve> rightCollect = storageCapacityCurveList.stream().filter(t ->t.getStorageCapacity()!=null && t.getStorageCapacity().compareTo(new BigDecimal(waterStorage)) != -1).collect(Collectors.toList());
-        leftCollect.sort(Comparator.comparing(t -> t.getStorageCapacity()));
-        rightCollect.sort(Comparator.comparing(t -> t.getStorageCapacity()));
-        if(null != leftCollect && leftCollect.size()>0 && null != rightCollect && rightCollect.size()>0){
-            StorageCapacityCurve leftStorageCapacityCurve = leftCollect.get(leftCollect.size()-1);
-            StorageCapacityCurve rightStorageCapacityCurve = rightCollect.get(0);
-            Double temp = (waterStorage-leftStorageCapacityCurve.getStorageCapacity().doubleValue())/(rightStorageCapacityCurve.getStorageCapacity().doubleValue()-leftStorageCapacityCurve.getStorageCapacity().doubleValue())/5;
-            int i = temp.intValue();
-            Double waterStorageLevel = i*0.01+(leftStorageCapacityCurve.getWaterLevel().doubleValue()+leftStorageCapacityCurve.getInterpolation().doubleValue());
-            return changeNum(waterStorageLevel);
-        }else {
-            return null;
-        }
-    }
-
-    private List<TenDayVo> getInflowData(Integer year) {
-        QueryListReq req = new QueryListReq();
-        req.setYear(year);
-        req.setTableName("楼庄子水库进库日均");
-        req.setManagerName("楼庄子水库");
-        req.setPageNo(1);
-        req.setPageSize(1);
-        IPage<SurfaceWater> surfaceWaterIPage = surfaceWaterService.queryList(req);
-        if(surfaceWaterIPage.getTotal()==0){
-            return null;
-        }
-        List<TenDayVo> tenDayVos = surfaceWaterFlowDetailService.ten_day(surfaceWaterIPage.getRecords().get(0).getId());
-        return tenDayVos;
     }
 
     private List<TenDayVo> getData1_12(SelectYearWaterUsePlanTrunkCanalForSum sum){
@@ -649,6 +639,17 @@ public class WaterStorageSchedulingLzzServiceImpl extends ServiceImpl<WaterStora
             return resultList;
         }
         return null;
+    }
+
+    private List<OverallSituationUnitMgr> getUnitList(){
+        String overall = (String) redisUtil.get("overallSituationUnitMgr:list");
+        if(StringUtils.isEmpty(overall)){
+            List<OverallSituationUnitMgr> overallSituationUnitMgrList = overallSituationUnitMgrService.list();
+            redisUtil.set("overallSituationUnitMgr:list", com.alibaba.fastjson.JSONObject.toJSONString(overallSituationUnitMgrList));
+            overall = JSONObject.toJSONString(overallSituationUnitMgrList);
+        }
+        List<OverallSituationUnitMgr> list = JSONObject.parseArray(overall, OverallSituationUnitMgr.class);
+        return list;
     }
 }
 

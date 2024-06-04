@@ -22,12 +22,12 @@ public class SelectInfoListReq {
     @ApiModelProperty(value = "查询当前时间")
     private String time;
 
-    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "查询时间区间-开始时间")
     private String startTime;
 
-    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "查询时间区间-结束时间")
     private String endTime;
