@@ -24,4 +24,5 @@ public interface IrrigatedAreaURL {
     public static String LOAD_PUBLIC_KEY = "/loadPublicKey";
 
     public final static String LOGIN_VERIFY = "/loginVerify";
+    public final static String GET_HISTORY_DATA = "/WebApi/api/BasicApi/Query";
 }

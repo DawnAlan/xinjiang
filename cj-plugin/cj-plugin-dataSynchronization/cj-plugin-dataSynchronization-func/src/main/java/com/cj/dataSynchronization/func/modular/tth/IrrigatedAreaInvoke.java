@@ -22,10 +22,7 @@ import org.springframework.util.MultiValueMap;
 import javax.annotation.PostConstruct;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @Component
@@ -125,6 +122,143 @@ public class IrrigatedAreaInvoke {
             JSONObject jsonObject1 = JSONObject.parseObject(post);
             String result = jsonObject1.getJSONArray("result").toJSONString();
             List<QueryRealTimeDataDto> queryRealTimeDataDtoList = JSONObject.parseArray(result, QueryRealTimeDataDto.class);
+            if(null != queryRealTimeDataDtoList && queryRealTimeDataDtoList.size()>0){
+                return queryRealTimeDataDtoList;
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static List<HistoryDataVo> getHistoryDataForWater(String MONITOR_ID,String startTime,String endTime){
+        try {
+            String url = ip+ IrrigatedAreaURL.GET_HISTORY_DATA;
+            JSONObject jsonObject = new JSONObject();
+            JSONObject jsonObjectParam = new JSONObject();
+            List<JSONObject> terms = new ArrayList<>();
+            JSONObject q1 = new JSONObject();
+            q1.put("Value",startTime);//开始时间
+            q1.put("Symbol",">=");
+            q1.put("Column","T.MONITOR_TIME");
+            terms.add(q1);
+            JSONObject q2 = new JSONObject();
+            q2.put("Value",endTime);//开始时间
+            q2.put("Symbol","<=");
+            q2.put("Column","T.MONITOR_TIME");
+            terms.add(q2);
+            JSONObject q3 = new JSONObject();
+            q3.put("Value","2-310-017");//开始时间
+            q3.put("Symbol","=");
+            q3.put("Column","T.REGION_ID");
+            terms.add(q3);
+            JSONObject q4 = new JSONObject();
+            q4.put("Value",MONITOR_ID);//开始时间
+            q4.put("Symbol","=");
+            q4.put("Column","T.MONITOR_ID");
+            terms.add(q4);
+            JSONObject q5 = new JSONObject();
+            q5.put("Value","0");//开始时间
+            q5.put("Symbol","=");
+            q5.put("Column","T.IS_SURPASS");
+            terms.add(q5);
+            jsonObjectParam.put("TermsQ",terms);
+            jsonObjectParam.put("Table","IA_TD_WATER_DATA");
+            jsonObject.put("token","holdetime");
+            jsonObject.put("EntityData", Arrays.asList(jsonObjectParam));
+            String token = getToken();
+            String post = RestTemplateUtil.post(url, jsonObject.toJSONString(), token);
+            JSONObject jsonObject1 = JSONObject.parseObject(post);
+            String result = jsonObject1.getJSONArray("result").toJSONString();
+            List<HistoryDataVo> queryRealTimeDataDtoList = JSONObject.parseArray(result, HistoryDataVo.class);
+            if(null != queryRealTimeDataDtoList && queryRealTimeDataDtoList.size()>0){
+                return queryRealTimeDataDtoList;
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static List<HistoryDataVo> getHistoryDataForRain(String MONITOR_ID,String startTime,String endTime){
+        try {
+            String url = ip+ IrrigatedAreaURL.GET_HISTORY_DATA;
+            JSONObject jsonObject = new JSONObject();
+            JSONObject jsonObjectParam = new JSONObject();
+            List<JSONObject> terms = new ArrayList<>();
+            JSONObject q1 = new JSONObject();
+            q1.put("Value",startTime);//开始时间
+            q1.put("Symbol",">=");
+            q1.put("Column","T.MONITOR_TIME");
+            terms.add(q1);
+            JSONObject q2 = new JSONObject();
+            q2.put("Value",endTime);//开始时间
+            q2.put("Symbol","<=");
+            q2.put("Column","T.MONITOR_TIME");
+            terms.add(q2);
+            JSONObject q3 = new JSONObject();
+            q3.put("Value","2-310-017");//开始时间
+            q3.put("Symbol","=");
+            q3.put("Column","T.REGION_ID");
+            terms.add(q3);
+            JSONObject q4 = new JSONObject();
+            q4.put("Value",MONITOR_ID);//开始时间
+            q4.put("Symbol","=");
+            q4.put("Column","T.MONITOR_ID");
+            terms.add(q4);
+            jsonObjectParam.put("TermsQ",terms);
+            jsonObjectParam.put("Table","IA_TD_RAIN_DATA");
+            jsonObject.put("token","holdetime");
+            jsonObject.put("EntityData", Arrays.asList(jsonObjectParam));
+            String token = getToken();
+            String post = RestTemplateUtil.post(url, jsonObject.toJSONString(), token);
+            JSONObject jsonObject1 = JSONObject.parseObject(post);
+            String result = jsonObject1.getJSONArray("result").toJSONString();
+            List<HistoryDataVo> queryRealTimeDataDtoList = JSONObject.parseArray(result, HistoryDataVo.class);
+            if(null != queryRealTimeDataDtoList && queryRealTimeDataDtoList.size()>0){
+                return queryRealTimeDataDtoList;
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static List<HistoryDataVo> getHistoryDataForPipeLine(String MONITOR_ID,String startTime,String endTime){
+        try {
+            String url = ip+ IrrigatedAreaURL.GET_HISTORY_DATA;
+            JSONObject jsonObject = new JSONObject();
+            JSONObject jsonObjectParam = new JSONObject();
+            List<JSONObject> terms = new ArrayList<>();
+            JSONObject q1 = new JSONObject();
+            q1.put("Value",startTime);//开始时间
+            q1.put("Symbol",">=");
+            q1.put("Column","T.MONITOR_TIME");
+            terms.add(q1);
+            JSONObject q2 = new JSONObject();
+            q2.put("Value",endTime);//开始时间
+            q2.put("Symbol","<=");
+            q2.put("Column","T.MONITOR_TIME");
+            terms.add(q2);
+            JSONObject q3 = new JSONObject();
+            q3.put("Value","2-310-017");//开始时间
+            q3.put("Symbol","=");
+            q3.put("Column","T.REGION_ID");
+            terms.add(q3);
+            JSONObject q4 = new JSONObject();
+            q4.put("Value",MONITOR_ID);//开始时间
+            q4.put("Symbol","=");
+            q4.put("Column","T.MONITOR_ID");
+            terms.add(q4);
+            jsonObjectParam.put("TermsQ",terms);
+            jsonObjectParam.put("Table","IA_TD_PIPELINE_DATA");
+            jsonObject.put("token","holdetime");
+            jsonObject.put("EntityData", Arrays.asList(jsonObjectParam));
+            String token = getToken();
+            String post = RestTemplateUtil.post(url, jsonObject.toJSONString(), token);
+            JSONObject jsonObject1 = JSONObject.parseObject(post);
+            String result = jsonObject1.getJSONArray("result").toJSONString();
+            List<HistoryDataVo> queryRealTimeDataDtoList = JSONObject.parseArray(result, HistoryDataVo.class);
             if(null != queryRealTimeDataDtoList && queryRealTimeDataDtoList.size()>0){
                 return queryRealTimeDataDtoList;
             }
@@ -275,53 +409,5 @@ public class IrrigatedAreaInvoke {
         }
         return null;
     }
-
-   /* public static List<AllHistoryDataDto> getAllHistoryData(String id, String date,String dataInfo,String MONITOR_TYPE){
-        try {
-            String cookie = "";
-            String post = "";
-            JSONObject jsonObject1 = new JSONObject();
-            cookie = (String)redisUtil.get("tth:cookie");
-            Map<String, String> request = new HashMap<>();
-            if(StringUtils.isEmpty(cookie)){
-                login();
-                cookie = (String)redisUtil.get("tth:cookie");
-            }
-            String url = ip1+IrrigatedAreaURL.GET_ALL_HISTORY_DATA;
-            MultiValueMap<String, Object> postParameters = new LinkedMultiValueMap<>();
-            postParameters.add("TABLE","IA_TD_WATER_DATA");
-            postParameters.add("ID",id);
-            postParameters.add("BEGIN_TIME_MARK","02");
-            postParameters.add("MONITOR_TYPE",MONITOR_TYPE);
-            postParameters.add("MONITOR_DATE",date);
-            postParameters.add("BEGIN_TIME",dataInfo);
-            postParameters.add("REGION_ID","2-310-017");
-            postParameters.add("pageSize","10000");
-            postParameters.add("pageNum","1");
-            String data = postParameters.toString();
-            log.info("调用灌区平台查询数据列表的url:"+url);
-            log.info("调用灌区平台查询数据列表的data:"+data);
-            post = RestTemplateUtil.post2(url, postParameters, cookie);
-            log.info("灌区平台的数据返回数据："+post);
-            try {
-                jsonObject1 = JSONObject.parseObject(post);
-            }catch (Exception e){
-                log.error("------------------------------------------查询列表异常信息cookie失效了:"+e.getMessage());
-                login();
-                cookie = (String)redisUtil.get("tth:cookie");
-                post = RestTemplateUtil.post2(url, postParameters, cookie);
-                jsonObject1 = JSONObject.parseObject(post);
-            }
-            JSONArray result = jsonObject1.getJSONArray("result");
-            List<AllHistoryDataDto> allHistoryDataDtos = JSONObject.parseArray(result.toString(), AllHistoryDataDto.class);
-            if(null != allHistoryDataDtos && allHistoryDataDtos.size() > 0 ){
-                return allHistoryDataDtos;
-            }
-        }catch (Exception e){
-            e.printStackTrace();
-            log.error("查询数据列表异常信息:"+e.getMessage());
-        }
-        return null;
-    }*/
 
 }

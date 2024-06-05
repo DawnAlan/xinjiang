@@ -14,4 +14,8 @@ public interface IrrigatedAreaService {
 
     RestResponse importHistoryData(MultipartFile file);
 
+    RestResponse selectHistoryData(String type,String id,String startTime,String endTime);
+
+    RestResponse saveHistoryData(String id,String startTime,String endTime);
+
 }

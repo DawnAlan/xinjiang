@@ -93,7 +93,6 @@ public class WaterStorageSchedulingLzzServiceImpl extends ServiceImpl<WaterStora
         //resultList.sort(realFlowResComparator);
         //倒叙
         Collections.sort(incomingWaterData, realFlowResComparator.reversed());
-
         Map<Integer, List<RealFlowRes>> collect = incomingWaterData.stream().collect(Collectors.groupingBy(RealFlowRes::getMonth));
         Set<Integer> integers = collect.keySet();
         //排序
@@ -104,6 +103,9 @@ public class WaterStorageSchedulingLzzServiceImpl extends ServiceImpl<WaterStora
         req.setUseWaterPlan("年用水计划");
         req.setArea("楼庄子水厂");
         SelectYearWaterUsePlanTrunkCanalForSum lzzTemp = yearWaterUsePlanTrunkCanalService.selectListForSum(req);
+        if(null==lzzTemp){
+            return RestResponse.no("请填报当年楼庄子水厂需水数据");
+        }
         List<TenDayVo> lzzData = getData1_12(lzzTemp);
         List<WaterStorageSchedulingTth> tth = waterStorageSchedulingTthService.lambdaQuery().eq(WaterStorageSchedulingTth::getFormId, formId).list();
         if(tth.isEmpty()){

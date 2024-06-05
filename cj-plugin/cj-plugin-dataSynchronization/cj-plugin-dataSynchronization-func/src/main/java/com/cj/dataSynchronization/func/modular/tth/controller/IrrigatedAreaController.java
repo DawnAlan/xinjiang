@@ -78,6 +78,23 @@ public class IrrigatedAreaController {
     @GetMapping(value = "/importHistoryData")
     public RestResponse importHistoryData(@RequestParam(value = "file",required = true) MultipartFile file) {
         return irrigatedAreaService.importHistoryData(file);
+    }
 
+    @ApiOperationSupport(order = 4)
+    @ApiOperation(value="查询历史记录", notes="查询历史记录")
+    @GetMapping(value = "/selectHistoryData")
+    public RestResponse selectHistoryData(@RequestParam(value = "type") String type,
+                                          @RequestParam(value = "id") String id,
+                                          @RequestParam(value = "startTime") String startTime,
+                                          @RequestParam(value = "endTime") String endTime) {
+        return irrigatedAreaService.selectHistoryData(type,id,startTime,endTime);
+    }
+    @ApiOperationSupport(order = 5)
+    @ApiOperation(value="保存历史记录", notes="保存历史记录")
+    @GetMapping(value = "/saveHistoryData")
+    public RestResponse saveHistoryData(@RequestParam(value = "id",required = false) String id,
+                                          @RequestParam(value = "startTime") String startTime,
+                                          @RequestParam(value = "endTime") String endTime) {
+        return irrigatedAreaService.saveHistoryData(id,startTime,endTime);
     }
 }

@@ -105,7 +105,7 @@ public class TenDaysWaterBalanceServiceImpl extends ServiceImpl<TenDaysWaterBala
                     eq(TrendsTableParam::getParamName, "合计").one();
             if(null!= param){
                 //总实收水量
-                balance.setActualWaterReceived(actualWaterReceived);
+                balance.setActualWaterReceived(NumberUtil.holdDecimal(actualWaterReceived,0));
             }
             balance.setId(UUIDUtils.getUUID());
             balance.setDel(0);
@@ -125,14 +125,14 @@ public class TenDaysWaterBalanceServiceImpl extends ServiceImpl<TenDaysWaterBala
                 balance.setProportionalWaterQuantity(NumberUtil.holdDecimal(((ratio.getV()==null?0.0:ratio.getV())/100)* (stationTotalValue==null?0.0:stationTotalValue),0));
             }
             //实际水量
-            balance.setActualWaterVolume(total.getCurrentWaterVolume());
+            balance.setActualWaterVolume(NumberUtil.holdDecimal(total.getCurrentWaterVolume(),0));
             //实际比例
             Double actualProportion = stationTotalValue==0.0?0.0:balance.getActualWaterVolume()/stationTotalValue;
             balance.setActualProportion(Double.isNaN(actualProportion)?null:Double.parseDouble(df.format(actualProportion*100)));
             //盈亏水量
             balance.setProfitAndLossWaterVolume(balance.getActualWaterVolume()-(balance.getProportionalWaterQuantity()==null?0.0:balance.getProportionalWaterQuantity()));
             //盈亏比例
-            balance.setProfitAndLossRatio((balance.getActualProportion()==null?0.0:balance.getActualProportion())-(ratio==null?0.0:ratio.getV()==null?0.0:ratio.getV()));
+            balance.setProfitAndLossRatio(NumberUtil.holdDecimal((balance.getActualProportion()==null?0.0:balance.getActualProportion())-(ratio==null?0.0:ratio.getV()==null?0.0:ratio.getV()),2));
             result.add(balance);
         }
 
@@ -184,7 +184,7 @@ public class TenDaysWaterBalanceServiceImpl extends ServiceImpl<TenDaysWaterBala
                         TrendsTableParam param = trendsTableParamService.lambdaQuery().eq(TrendsTableParam::getId, total.getTableHeadId()).eq(TrendsTableParam::getPId, "0").eq(TrendsTableParam::getParamName, "合计").one();
                         if(null!= param){
                             //总实收水量
-                            balance.setActualWaterReceived(total.getCurrentWaterVolume());
+                            balance.setActualWaterReceived(NumberUtil.holdDecimal(total.getCurrentWaterVolume(),0));
                         }
                         balance.setUpdateTime(new Date());
                         WaterDistributionRatio ratio = waterDistributionRatioService.lambdaQuery().eq(WaterDistributionRatio::getStation, total.getStation()).
@@ -197,14 +197,14 @@ public class TenDaysWaterBalanceServiceImpl extends ServiceImpl<TenDaysWaterBala
                             balance.setProportionalWaterQuantity(NumberUtil.holdDecimal(((ratio.getV()==null?0.0:ratio.getV())/100)* (stationTotalValue==null?0.0:stationTotalValue),0));
                         }
                         //实际水量
-                        balance.setActualWaterVolume(total.getCurrentWaterVolume()==null?0.0:total.getCurrentWaterVolume());
+                        balance.setActualWaterVolume(NumberUtil.holdDecimal(total.getCurrentWaterVolume()==null?0.0:total.getCurrentWaterVolume(),0));
                         //实际比例
                         Double actualProportion = stationTotalValue==0.0?0.0:balance.getActualWaterVolume()/stationTotalValue;
                         balance.setActualProportion(Double.isNaN(actualProportion)?null:Double.parseDouble(df.format(actualProportion*100)));
                         //盈亏水量
                         balance.setProfitAndLossWaterVolume(balance.getActualWaterVolume()-(balance.getProportionalWaterQuantity()==null?0.0:balance.getProportionalWaterQuantity()));
                         //盈亏比例
-                        balance.setProfitAndLossRatio((balance.getActualProportion()==null?0.0:balance.getActualProportion())-(ratio==null?0.0:ratio.getV()==null?0.0:ratio.getV()));
+                        balance.setProfitAndLossRatio(NumberUtil.holdDecimal((balance.getActualProportion()==null?0.0:balance.getActualProportion())-(ratio==null?0.0:ratio.getV()==null?0.0:ratio.getV()),2));
                         result.add(balance);
                     }
                 }

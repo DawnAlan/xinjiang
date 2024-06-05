@@ -2046,7 +2046,6 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
     public RestResponse addHistory(List<List<WaterFeeStatisticsDetails>> waterFeeStatisticsDetailsList) {
         WaterFeeStatisticsDetails details1 = waterFeeStatisticsDetailsList.get(0).get(0);
         try {
-            WaterFeeStatisticsDetails details2 = waterFeeStatisticsDetailsList.get(waterFeeStatisticsDetailsList.size()-1).get(0);
             String flag = (String) redisUtil.get("waterFee:"+details1.getStation()+details1.getYear()+details1.getMonth()+details1.getTenDays());
             if(StringUtils.isEmpty(flag)){
                 redisUtil.set("waterFee:"+details1.getStation()+details1.getYear()+details1.getMonth()+details1.getTenDays(),"1");
@@ -2073,23 +2072,23 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                             String tableParamString = (String)redisUtil.get("trendsTableParam:object:"+t.getTableHeadId());
                             TrendsTableParam tableParam = JSONObject.parseObject(tableParamString, TrendsTableParam.class);
                             if(t.getStation().contains("河东")){
-                                String s = trendsTableParamListTemp.stream().filter(p ->p.getUseStation().contains("河东") && p.getUseType() == 1 && p.getUnitId() != null && p.getUnitId().equals(tableParam.getUnitId())).map(TrendsTableParam::getId).findFirst().get();
+                                Optional<String> first = trendsTableParamListTemp.stream().filter(p ->p.getUseStation().contains("河东") && p.getUseType() == 1 && p.getUnitId() != null && p.getUnitId().equals(tableParam.getUnitId())).map(TrendsTableParam::getId).findFirst();
+                                String s = StringUtils.isEmpty(first.orElse(""))?"":first.get();
                                 Double aDouble = hdMapper.selectValueByTime(dateTemp, s,"今日均");
-                                //Double v = (Double)redisUtil.get("A3:data:hd:waterFee:today:"+dateTemp+":"+tableParam.getUnitId());
                                 t.setV(aDouble==null?null:aDouble);
                             }
                             if(t.getStation().contains("河西")){
-                                String s = trendsTableParamListTemp.stream().filter(p ->p.getUseStation().contains("河西") &&  p.getUseType() == 1 && p.getUnitId() != null && p.getUnitId().equals(tableParam.getUnitId())).map(TrendsTableParam::getId).findFirst().get();
+                                Optional<String> first = trendsTableParamListTemp.stream().filter(p ->p.getUseStation().contains("河西") &&  p.getUseType() == 1 && p.getUnitId() != null && p.getUnitId().equals(tableParam.getUnitId())).map(TrendsTableParam::getId).findFirst();
+                                String s = StringUtils.isEmpty(first.orElse(""))?"":first.get();
                                 Double aDouble = hxMapper.selectValueByTime(dateTemp, s,"今日均");
-                                //Double v = (Double)redisUtil.get("A3:data:hx:waterFee:today:"+dateTemp+":"+tableParam.getUnitId());
                                 t.setV(aDouble==null?null:aDouble);
                             }
                             if(t.getStation().contains("渠首")){
-                                String s = trendsTableParamListTemp.stream().filter(p ->p.getUseStation().contains("渠首") &&  p.getUseType() == 1 && p.getUnitId() != null && p.getUnitId().equals(tableParam.getUnitId())).map(TrendsTableParam::getId).findFirst().get();
+                                Optional<String> first = trendsTableParamListTemp.stream().filter(p -> (p.getUseStation().contains("渠首") || p.getUseStation().contains("灯笼渠")) && p.getUseType() == 1 && p.getUnitId() != null && p.getUnitId().equals(tableParam.getUnitId())).map(TrendsTableParam::getId).findFirst();
+                                String s = StringUtils.isEmpty(first.orElse(""))?"":first.get();
                                 Double aDouble1 = qsMapper.selectValueByTime(dateTemp, s,"今日均");
                                 Double aDouble2 = qsLhMapper.selectValueByTime(dateTemp, s,"今日均");
                                 Double v = (aDouble1==null?0.00:aDouble1)+(aDouble2==null?0.00:aDouble2);
-                                //Double v = (Double)redisUtil.get("A3:data:qs:waterFee:today:"+dateTemp+":"+tableParam.getUnitId());
                                 t.setV(v==null?null:v);
                             }
                         }
@@ -2101,7 +2100,6 @@ public class WaterFeeStatisticsDetailsServiceImpl extends ServiceImpl<WaterFeeSt
                     }
                     t.setId(UUIDUtils.getUUID());
                 });
-
                 List<TotalIdToStation> list = totalIdToStationService.lambdaQuery().eq(TotalIdToStation::getUseType, 2).eq(TotalIdToStation::getStation, waterFeeStatisticsDetails.get(0).getStation()).list();
                 //计算行合计
                 if(null != list && list.size()>0){
