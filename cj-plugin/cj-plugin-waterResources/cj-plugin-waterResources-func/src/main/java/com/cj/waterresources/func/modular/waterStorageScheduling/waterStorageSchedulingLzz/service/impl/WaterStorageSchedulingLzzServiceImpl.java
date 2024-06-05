@@ -88,6 +88,9 @@ public class WaterStorageSchedulingLzzServiceImpl extends ServiceImpl<WaterStora
             return RestResponse.no("方案有误，请重新选择");
         }
         List<RealFlowRes> incomingWaterData = getIncomingWaterData(byId.getInflowYear());
+        if(null==incomingWaterData){
+            return RestResponse.no("暂无典型年数据");
+        }
         Comparator<RealFlowRes> realFlowResComparator = Comparator.comparing(RealFlowRes::getMonth).thenComparing(RealFlowRes::getName);
         //正序
         //resultList.sort(realFlowResComparator);
