@@ -19,7 +19,7 @@ public class LZZ {
         //配置文件
         Cascade.Read(basin,basinStr);
         //从水情管理处获得的曲线数据
-        String inform=Update(basin,reqCurve);
+        String inform = Update(basin,reqCurve);
         //楼庄子水库
         Reservoir reservoir = basin.getReservoirs().get(0);
         //预报来水数据
@@ -31,10 +31,11 @@ public class LZZ {
             Time.add(t);
             Q_Input.add((double) objects[1]);
         }
+        reservoir.setTime(Time);
         for (int j = 0; j < reservoir.getTime().size(); j++) {
             Q_interval.add(0.0);
         }
-        reservoir.setTime(Time);
+
         reservoir.setQ_Input(Q_Input);
         reservoir.setQ_Interval(Q_interval);
         reservoir.setT_Delta(delta);

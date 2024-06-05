@@ -13,6 +13,7 @@ import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.util.StringUtils;
 
 import java.io.*;
 import java.math.BigDecimal;
@@ -349,6 +350,9 @@ public class Cascade{
                     }
                 }
             }
+        }
+        if (StringUtils.hasText(inform)) {
+            inform += "异常曲线将使用默认曲线替代，请从水情管理处核验曲线。";
         }
         return inform;
     }

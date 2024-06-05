@@ -135,7 +135,7 @@ public class MachineModel {
             LongForecast longForecast = new LongForecast();
             results = longForecast.longTermForecast(param, input, maxminOld, para);
             //模型参数的存储
-            results = machineDataUtils.setModelParams(results,param,k,paramResult,maxmin);
+//            results = machineDataUtils.setModelParams(results,param,k,paramResult,maxmin);
             //分解后数据储存
             for (int i = 0; i < results.getResult().size(); i++) {
                 for (int j = 0; j < param.getPredict_day(); j++) {

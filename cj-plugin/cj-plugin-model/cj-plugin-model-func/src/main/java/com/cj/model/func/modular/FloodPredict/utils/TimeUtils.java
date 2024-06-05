@@ -1,9 +1,7 @@
 package com.cj.model.func.modular.FloodPredict.utils;
 
 import com.cj.model.func.modular.FloodPredict.model.entity.DateIndex;
-import com.cj.model.func.modular.FloodPredict.entity.ForecastInputParam;
 import com.cj.model.func.modular.FloodPredict.entity.PredictInputData;
-
 import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.temporal.ChronoUnit;
@@ -52,11 +50,6 @@ public class TimeUtils {
 
 	/**
 	 * 获得预报时间序列（天、小时）
-	 * @param startDate
-	 * @param len
-	 * @param day
-	 * @param hours
-	 * @return
 	 */
 	public Date[][] getDateList(Date startDate,int len, int day, int hours){
 		Date[][] dates = new Date[len][1];
@@ -64,8 +57,7 @@ public class TimeUtils {
 		now.setTime(startDate);
 		startDate = now.getTime();
 		if(day == 10){
-			DateIndex index = getDateIndex(startDate);
-			DateIndex outputIndex = index;
+			DateIndex outputIndex = getDateIndex(startDate);
 			for(int i = 0; i < len; i++){
 				dates[i][0] = getDateByIndexTenDay(outputIndex);
 				outputIndex = outputIndex.getNextDateIndex(36);
@@ -89,11 +81,6 @@ public class TimeUtils {
 
 	/**
 	 * 获得融雪期预报时间序列（天、小时）
-	 * @param startDate
-	 * @param len
-	 * @param day
-	 * @param hours
-	 * @return
 	 */
 	public Date[][] getSelectDateList(Date startDate, int len, int day, int hours){
 		Date[][] dates = new Date[len][1];
@@ -104,7 +91,7 @@ public class TimeUtils {
 			int month = getSpecificDate(startDate).get("月");
 			DateIndex outputIndex = getDateIndex(startDate);
 			if (month<=9&&month>=5){
-				int judgeIndex = 0;
+				int judgeIndex;
 				for(int i = 0; i < len; i++){
 					dates[i][0] = getDateByIndexTenDay(outputIndex);
 					int year = getSpecificDate(dates[i][0]).get("年");
@@ -117,7 +104,7 @@ public class TimeUtils {
 				}
 			}
 			if (month<=4||month>=10){
-				int judgeIndex = 0;
+				int judgeIndex;
 				for(int i = 0; i < len; i++){
 					dates[i][0] = getDateByIndexTenDay(outputIndex);
 					outputIndex = outputIndex.getNextDateIndex(36);
@@ -131,7 +118,7 @@ public class TimeUtils {
 		else{
 			int month = getSpecificDate(startDate).get("月");
 			if (month<=9&&month>=5){
-				int judgeMonth = 0;
+				int judgeMonth;
 				for(int i = 0; i < len; i++){
 					now.setTime(startDate);
 					dates[i][0]=now.getTime();
@@ -148,7 +135,7 @@ public class TimeUtils {
 				}
 			}
 			if (month<=4||month>=10){
-				int judgeMonth = 0;
+				int judgeMonth;
 				for(int i = 0; i < len; i++){
 					now.setTime(startDate);
 					dates[i][0]=now.getTime();
@@ -202,8 +189,7 @@ public class TimeUtils {
 		LocalDate localDate2 = dateEnd.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 		if (period.equals("年")){
 			Period duration = Period.between(localDate1, localDate2);
-			int years = duration.getYears();
-			result =years;
+			result = duration.getYears();
 		}
 		if (period.equals("月")){
 			long months = ChronoUnit.MONTHS.between(localDate1, localDate2);
@@ -233,38 +219,16 @@ public class TimeUtils {
 		return result;
 	}
 
-	//判断每一旬的天数
-	public int getDays(Object[][] predict, ForecastInputParam param, int i) {//存在问题
-		Date date1= (Date) predict[i * param.getPeriodStepSize()][0];
-		LocalDate date = date1.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-
-		// 获取年份、月份和天数
-		int year = date.getYear();
-		int month = date.getMonthValue();
-		int day = date.getDayOfMonth();
-		// 判断旬
-		int days;
-		if (day <= 10) {
-			days = Math.min(day, 10);
-		} else if (day <= 20) {
-			days = Math.min(day - 10, 10);
-		} else {
-			int lastDayOfMonth = YearMonth.of(year, month).lengthOfMonth();
-			days = Math.min(day - 20, (month == 2 && lastDayOfMonth == 29) ? 11 : 10);
-		}
-		return days;
-	}
 
 
 	/**
 	 * 日期比较
-	 * @param date1
+	 * @param date1 最终返回date2=date1
 	 * @param date2 最终返回date2=date1
-	 * @param period
 	 * @return 如果两个日期在规定尺度上相等，则返回true
 	 */
 	public Boolean DateCompare(Date date1,Date date2,String period){
-		Boolean result = false;
+		boolean result = false;
 		int year = getSpecificDate(date1).get("年");
 		int month = getSpecificDate(date1).get("月");
 		int day = getSpecificDate(date1).get("日");
@@ -300,7 +264,6 @@ public class TimeUtils {
 	 * 返回的是这个时间或者他后面离他最近的值
 	 * @param timeSeries 按升序排列的时间list
 	 * @param inputTime 需要寻找的时间
-	 * @return
 	 */
 	public int findNearestTime(List<Date> timeSeries, Date inputTime) {
 		Collections.sort(timeSeries);
@@ -320,17 +283,17 @@ public class TimeUtils {
 			return timeSeries.size() - 1; // 输入时间点比时间序列中最大的时间还大
 		}
 
-		Date before = timeSeries.get(index - 1);
-		Date after = timeSeries.get(index);
-		LocalDate localDate1 = before.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-		LocalDate localDate2 = inputTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-		LocalDate localDate3 = after.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+//		Date before = timeSeries.get(index - 1);
+//		Date after = timeSeries.get(index);
+//		LocalDate localDate1 = before.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+//		LocalDate localDate2 = inputTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+//		LocalDate localDate3 = after.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 		// 计算相差天数并返回
-		long duration =  Duration.between(localDate1.atStartOfDay(), localDate2.atStartOfDay()).toHours();
-		int n = Math.toIntExact(duration);
+//		long duration =  Duration.between(localDate1.atStartOfDay(), localDate2.atStartOfDay()).toHours();
+//		int n = Math.toIntExact(duration);
 //		m是后面的时间与需要寻找的时间之间的差值
-		long duration2 =  Duration.between(localDate2.atStartOfDay(), localDate3.atStartOfDay()).toHours();
-		int m = Math.toIntExact(duration2);
+//		long duration2 =  Duration.between(localDate2.atStartOfDay(), localDate3.atStartOfDay()).toHours();
+//		int m = Math.toIntExact(duration2);
 //		if (m < n) {
 //			return index;
 //		} else {
@@ -340,20 +303,16 @@ public class TimeUtils {
 	}
 	/**
 	 * 获取时间区间内的Object
-	 * @param input
-	 * @param startTime
-	 * @param endTime
-	 * @return
 	 */
 	public List<Object[]> getTimeIntervalList(Object[][] input,Date startTime,Date endTime){
 		List<Object[]> result = new ArrayList<>();
-		for (int i = 0; i < input.length; i++) {
-			if (DateCompare((Date)input[i][0],startTime,"日")){
-				result.add(input[i]);
-			} else if (((Date)input[i][0]).after(startTime)&&((Date)input[i][0]).before(endTime)) {
-				result.add(input[i]);
-			} else if (DateCompare((Date) input[i][0], endTime, "日")) {
-				result.add(input[i]);
+		for (Object[] objects : input) {
+			if (DateCompare((Date) objects[0], startTime, "日")) {
+				result.add(objects);
+			} else if (((Date) objects[0]).after(startTime) && ((Date) objects[0]).before(endTime)) {
+				result.add(objects);
+			} else if (DateCompare((Date) objects[0], endTime, "日")) {
+				result.add(objects);
 			}
 		}
 		return result;
@@ -361,9 +320,6 @@ public class TimeUtils {
 
 	/**
 	 * 根据period将日尺度数据转换为相应尺度
-	 * @param data
-	 * @param period
-	 * @return
 	 */
 	public List<PredictInputData> ChangeDate(List<PredictInputData> data, String period){
 		List<PredictInputData>  result = new ArrayList<>();
@@ -435,7 +391,6 @@ public class TimeUtils {
 					time2 = data.get(i-1).getDates();
 					dayBefore = getSpecificDate(time2).get("日");
 				}
-
 				if(((day-dayBefore)<0)||i==data.size()-1){
 					if (flowNum==0){
 						flowNum=1;
@@ -476,7 +431,57 @@ public class TimeUtils {
 				}
 			}
 		}
-		//小时尺度和日尺度数据不做处理直接输出
+		else if(period.equals("日")){
+			for (int i = 0; i < data.size(); i++) {
+				Date time = data.get(i).getDates();
+				int hour = getSpecificDate(time).get("小时");
+				int hourBefore = 0;
+				Date time2 = new Date();
+				if(i!=0){
+					time2 = data.get(i-1).getDates();
+					hourBefore = getSpecificDate(time2).get("小时");
+				}
+				if(((hour-hourBefore)<0)||i==data.size()-1){
+					if (flowNum==0){
+						flowNum=1;
+					}
+					if (temperatureNum==0){
+						temperatureNum=1;
+					}
+					if (rainfallNum==0){
+						rainfallNum=1;
+					}
+					double flowY =flowSum / flowNum;
+					double temperatureY =temperatureSum / temperatureNum;
+					double rainfallY =rainfallSum / rainfallNum;
+					PredictInputData piece = new PredictInputData();
+					piece.setDates(time2);
+					piece.setFlow(flowY);
+					piece.setTemperature(temperatureY);
+					piece.setRainfall(rainfallY);
+					result.add(piece);
+					flowSum=0;
+					temperatureSum=0;
+					rainfallSum=0;
+					flowNum=0;
+					temperatureNum=0;
+					rainfallNum=0;
+				}
+				if (data.get(i).getFlow()!=null){
+					flowSum=flowSum + data.get(i).getFlow();
+					flowNum=flowNum + 1;
+				}
+				if(data.get(i).getTemperature()!=null){
+					temperatureSum=temperatureSum + data.get(i).getTemperature();
+					temperatureNum=temperatureNum+1;
+				}
+				if (data.get(i).getRainfall()!=null){
+					rainfallSum=rainfallSum + data.get(i).getRainfall();
+					rainfallNum=rainfallNum+1;
+				}
+			}
+		}
+		//小时尺度据不做处理直接输出
 		else result = data;
 
 		return result;
@@ -484,8 +489,6 @@ public class TimeUtils {
 
 	/**
 	 * 获得数据中的年、月、日、小时
-	 * @param date
-	 * @return
 	 */
 	public Map<String, Integer> getSpecificDate(Date date){
 		Map<String, Integer> result = new HashMap<>();
@@ -493,9 +496,8 @@ public class TimeUtils {
 		int month;
 		int day;
 		int hour;
-		Date time = date;
 		Calendar cal = Calendar.getInstance();
-		cal.setTime(time);
+		cal.setTime(date);
 		year = cal.get(Calendar.YEAR);
 		month = cal.get(Calendar.MONTH) + 1;
 		day = cal.get(Calendar.DAY_OF_MONTH);
@@ -509,8 +511,6 @@ public class TimeUtils {
 
 	/**
 	 * 添加时间
-	 * @param startDate
-	 * @return
 	 */
 	public Date addCalendar(Date startDate,String period,int l){
 		Calendar cal = Calendar.getInstance();
@@ -526,8 +526,7 @@ public class TimeUtils {
 				cal.add(Calendar.HOUR_OF_DAY,l);
 				break;
 		}
-		Date endDate = cal.getTime();
-		return endDate;
+		return cal.getTime();
 	}
 
 }

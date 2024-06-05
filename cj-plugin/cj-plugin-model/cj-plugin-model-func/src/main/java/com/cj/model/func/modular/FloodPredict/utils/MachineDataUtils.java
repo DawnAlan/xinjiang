@@ -5,17 +5,13 @@ import com.cj.model.func.modular.FloodPredict.model.TouTunHe;
 import com.cj.model.func.modular.FloodPredict.model.entity.ModelSaveEntity;
 import com.cj.model.func.modular.entity.Flood;
 import lombok.SneakyThrows;
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 
-import java.io.IOException;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class MachineDataUtils {
 
     TimeUtils tu =new TimeUtils();
-    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     @SneakyThrows
     public ForecastInputParam paramConvert(ForecastInputParamNew forecastParam) {
@@ -25,12 +21,19 @@ public class MachineDataUtils {
         param.setIsRealtime(true);
         Boolean isAverage = forecastParam.getPeriodTimeType() == 3 || forecastParam.getPeriodTimeType() == 4;
         param.setIsAverage(isAverage);
-        param.setIsTrain(false);
+        if (forecastParam.getIsTrain()==null){
+            param.setIsTrain(false);
+        }
+        else {
+            param.setIsTrain(forecastParam.getIsTrain());
+        }
         param.setVmdK(12);
         param.setIsShortForecast(forecastParam.getModelType() == 3);
         //率定时间
         //        param.setCalibrationTime(param.getPreStartTime());
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         param.setCalibrationTime(sdf.parse("2024-06-01 00:00:00"));
+//        param.setCalibrationTime(forecastParam.getPredictionTime());
         param.setPreStartTime(forecastParam.getPredictionTime());
         //时段
         if (forecastParam.getPeriodTimeType() == 1) {
@@ -65,19 +68,15 @@ public class MachineDataUtils {
         param.setPreRainTem(forecastParam.getPreRainTem());
         return param;
     }
-    /**
+    /*
      * 输入数据区分部分（训练、测试、区分融雪、区分丰枯）
      */
 
     /**
      * 模型预报时的输入
-     *
-     * @param dataList
-     * @param
-     * @return
      */
     public List<double[][]> inputData_Real(List<double[]> dataList, ForecastInputParam param) {
-        /**
+        /*
          * 前n旬流量
          */
         int a = dataList.get(0).length;
@@ -95,9 +94,8 @@ public class MachineDataUtils {
         result.add(data_date);
         double[][] data_input = new double[l][n];
         for (int i = 0; i < data_input.length; i++) {
-            for (int j = 0; j < n; j++) {
-                data_input[i][j] = dataList.get(1)[i + j];//前N旬流量
-            }
+            //前N旬流量
+            System.arraycopy(dataList.get(1), i, data_input[i], 0, n);
         }
         result.add(data_input);
         double[][] data_output = new double[l][m];
@@ -112,12 +110,6 @@ public class MachineDataUtils {
 
     /**
      * 训练模型时的输入
-     *
-     * @param dataList
-     * @param
-     * @param isTest
-     * @return
-     * @throws Exception
      */
     public List<double[][]> inputData_Train(List<double[]> dataList, ForecastInputParam param, boolean isTest) {
 
@@ -129,7 +121,7 @@ public class MachineDataUtils {
         int m = Integer.parseInt((layerNum[layerNum.length - 1]));//输出数据
         int l = b - n - m + 1;//行数
         int ll = c - n - m + 1;//行数
-        /**
+        /*
          * 前n旬流量+平均流量
          */
 //		 一般训练期：检验期=3:1
@@ -144,9 +136,8 @@ public class MachineDataUtils {
         }
         train.add(trainData_date);
         for (int i = 0; i < l; i++) {
-            for (int j = 0; j < n; j++) {
-                trainData_input[i][j] = dataList.get(1)[i + j];//前N旬流量
-            }
+            //前N旬流量
+            System.arraycopy(dataList.get(1), i, trainData_input[i], 0, n);
         }
         train.add(trainData_input);
         for (int i = 0; i < l; i++) {
@@ -189,10 +180,6 @@ public class MachineDataUtils {
 
     /**
      * 融雪模型数据输入
-     *
-     * @param dataList
-     * @param param
-     * @return
      */
     public List<double[][]> inputData_Real_Snow(List<double[]> dataList, ForecastInputParam param,int a,int b) {
         int n = param.getHistory_day();
@@ -210,9 +197,8 @@ public class MachineDataUtils {
         for (int i = b; i < a - n; i++) {
             if (factors.containsKey("径流")&&factors.containsKey("温度")){
                 int f = factors.get("径流");
-                for (int j = 0; j < f; j++) {
-                    data_input[i-b][j] = dataList.get(1)[i + j];//流量
-                }
+                //流量
+                if (f >= 0) System.arraycopy(dataList.get(1), i, data_input[i - b], 0, f);
                 int t = factors.get("温度");
                 for (int j = 0; j < t; j++) {
                     data_input[i-b][f+j] = dataList.get(3)[i + n - t + j + 1];//温度
@@ -226,13 +212,11 @@ public class MachineDataUtils {
             }
             else if (!factors.containsKey("径流") && factors.containsKey("温度") && factors.containsKey("降水")) {
                 int t = factors.get("温度");
-                for (int j = 0; j < t; j++) {
-                    data_input[i-b][j] = dataList.get(3)[i + n - t + j];//温度
-                }
+                //温度
+                if (t >= 0) System.arraycopy(dataList.get(3), i + n - t, data_input[i - b], 0, t);
                 int r = factors.get("降水");
-                for (int j = 0; j < r; j++) {
-                    data_input[i-b][t+j] = dataList.get(4)[i +n - r+ j];//流量
-                }
+                //流量
+                if (r >= 0) System.arraycopy(dataList.get(4), i + n - r , data_input[i - b], t , r);
             }
         }
         result.add(data_input);
@@ -246,12 +230,6 @@ public class MachineDataUtils {
 
     /**
      * 融雪模型训练数据输入
-     *
-     * @param dataList
-     * @param param
-     * @param isTest
-     * @return
-     * @throws Exception
      */
     public List<double[][]> inputData_Train_Snow(List<double[]> dataList, ForecastInputParam param, boolean isTest) {
         int a = dataList.get(0).length;
@@ -266,108 +244,95 @@ public class MachineDataUtils {
         }
     }
 
-    /**
-     * 获得丰水期和枯水期的预报开始时间和预报数量
-     *
-     * @param param
-     * @return result.get(0)丰水期
-     * result.get(1)枯水期
-     */
-    public List<Object[]> getSelectedData(ForecastInputParam param) {
-        List<Object[]> result = new ArrayList<>();
-        Object[] Feng = new Object[2];
-        Object[] Ku = new Object[2];
-        Date dateStart = param.getPreStartTime();
-        int number = param.getPeriodStepNumber() * param.getPeriodStepSize();
-        Date[][] date = new Date[number][1];
-        int fengNumber = 0;
-        int kuNumber = 0;
-        int month = 0;
-        switch (param.getPeriod()) {
-            case "月":
-                date = tu.getMonthDateList(dateStart, number,1);
-                break;
-            case "旬":
-                date = tu.getDateList(dateStart, number, 10, 0);
-                break;
-            case "日":
-                date = tu.getDateList(dateStart, number, 1, 0);
-                break;
-        }
-        for (int i = 0; i < number; i++) {
-            month = tu.getSpecificDate(date[i][0]).get("月");
-            if (month <= 10 && month >= 4) {
-                fengNumber++;
-            } else {
-                kuNumber++;
-            }
-        }
-        month = tu.getSpecificDate(date[0][0]).get("月");
-        if (month <= 10 && month >= 4) {
-            Feng[0] = date[0];
-            for (int i = 0; i < number; i++) {
-                month = tu.getSpecificDate(date[i][0]).get("月");
-                if (month == 11) {
-                    Ku[0] = date[i];
-                    break;
-                }
-            }
-        } else {
-            Ku[0] = date[0];
-            for (int i = 0; i < number; i++) {
-                month = tu.getSpecificDate(date[i][0]).get("月");
-                if (month == 4) {
-                    Feng[0] = date[i];
-                    break;
-                }
-            }
-        }
-        Feng[1] = fengNumber;
-        Ku[1] = kuNumber;
-        result.add(Feng);
-        result.add(Ku);
-        return result;
-    }
+//    /**
+//     * 获得丰水期和枯水期的预报开始时间和预报数量
+//     * @return result.get(0)丰水期
+//     * result.get(1)枯水期
+//     */
+//    public List<Object[]> getSelectedData(ForecastInputParam param) {
+//        List<Object[]> result = new ArrayList<>();
+//        Object[] Feng = new Object[2];
+//        Object[] Ku = new Object[2];
+//        Date dateStart = param.getPreStartTime();
+//        int number = param.getPeriodStepNumber() * param.getPeriodStepSize();
+//        Date[][] date = new Date[number][1];
+//        int fengNumber = 0;
+//        int kuNumber = 0;
+//        int month;
+//        switch (param.getPeriod()) {
+//            case "月":
+//                date = tu.getMonthDateList(dateStart, number,1);
+//                break;
+//            case "旬":
+//                date = tu.getDateList(dateStart, number, 10, 0);
+//                break;
+//            case "日":
+//                date = tu.getDateList(dateStart, number, 1, 0);
+//                break;
+//        }
+//        for (int i = 0; i < number; i++) {
+//            month = tu.getSpecificDate(date[i][0]).get("月");
+//            if (month <= 10 && month >= 4) {
+//                fengNumber++;
+//            } else {
+//                kuNumber++;
+//            }
+//        }
+//        month = tu.getSpecificDate(date[0][0]).get("月");
+//        if (month <= 10 && month >= 4) {
+//            Feng[0] = date[0];
+//            for (int i = 0; i < number; i++) {
+//                month = tu.getSpecificDate(date[i][0]).get("月");
+//                if (month == 11) {
+//                    Ku[0] = date[i];
+//                    break;
+//                }
+//            }
+//        } else {
+//            Ku[0] = date[0];
+//            for (int i = 0; i < number; i++) {
+//                month = tu.getSpecificDate(date[i][0]).get("月");
+//                if (month == 4) {
+//                    Feng[0] = date[i];
+//                    break;
+//                }
+//            }
+//        }
+//        Feng[1] = fengNumber;
+//        Ku[1] = kuNumber;
+//        result.add(Feng);
+//        result.add(Ku);
+//        return result;
+//    }
 
     /**
      * 筛选枯水期丰水期,4~10月为丰水期
-     *
-     * @param input
-     * @param preStartTime
-     * @return
      */
     public Object[][] SelectDate(Object[][] input, Date preStartTime) {
         List<Object[]> KuData = new ArrayList<>();
-        Object[] kudata = new Object[input[0].length];
+        Object[] kudata;
         List<Object[]> FengData = new ArrayList<>();
-        Object[] fengdata = new Object[input[0].length];
+        Object[] fengdata;
         List<Object[]> PingData = new ArrayList<>();
-        Object[] pingdata = new Object[input[0].length];
-        for (int i = 0; i < input.length; i++) {
-            Date time = (Date) input[i][0];
+        Object[] pingdata;
+        for (Object[] objects : input) {
+            Date time = (Date) objects[0];
             int month = tu.getSpecificDate(time).get("月");
             kudata = new Object[input[0].length];
             fengdata = new Object[input[0].length];
             pingdata = new Object[input[0].length];
-            if (month == 1 || month == 2||month == 3 || month == 11|| month == 12) {
-                for (int j = 0; j < input[0].length; j++) {
-                    kudata[j] = input[i][j];
-                }
+            if (month == 1 || month == 2 || month == 3 || month == 11 || month == 12) {
+                System.arraycopy(objects, 0, kudata, 0, input[0].length);
                 KuData.add(kudata);
-            } else if (month == 4 || month == 5||month == 9 || month == 10) {
-                for (int j = 0; j < input[0].length; j++) {
-                    pingdata[j] = input[i][j];
-                }
+            } else if (month == 4 || month == 5 || month == 9 || month == 10) {
+                System.arraycopy(objects, 0, pingdata, 0, input[0].length);
                 PingData.add(pingdata);
             } else {
-                for (int j = 0; j < input[0].length; j++) {
-                    fengdata[j] = input[i][j];
-                }
+                System.arraycopy(objects, 0, fengdata, 0, input[0].length);
                 FengData.add(fengdata);
             }
         }
-        Date time2 = preStartTime;
-        int month2 = tu.getSpecificDate(time2).get("月");
+        int month2 = tu.getSpecificDate(preStartTime).get("月");
         Object[][] longForecastInput;
         if (month2 == 1 || month2 == 2||month2 == 3 || month2 == 11|| month2 == 12) {
             longForecastInput = new Object[KuData.size()][input[0].length];
@@ -392,37 +357,32 @@ public class MachineDataUtils {
      * 筛选融雪期,楼头区间3月融雪，楼庄子上游5~7月份融雪
      *
      * @param input 历史径流+温度+降雨
-     * @return
      */
     public Object[][] snowMeltDate(Object[][] input, String location) {
         List<Object[]> Data = new ArrayList<>();
         Object[] data;
         int factor = 3;
         List<Object[]> snowData = new ArrayList<>();
-        for (int i = 0; i < input.length; i++) {
-            if (!(input[i][3] instanceof String)) {
+        for (Object[] objects : input) {
+            if (!(objects[3] instanceof String)) {
 //                if ((double) input[i][3] == 0.0) {
 //                    snowData.add(input[i]);
 //                }
-                snowData.add(input[i]);
+                snowData.add(objects);
             }
         }
-        for (int i = 0; i < snowData.size(); i++) {
-            Date time = (Date) snowData.get(i)[0];
+        for (Object[] snowDatum : snowData) {
+            Date time = (Date) snowDatum[0];
             int month = tu.getSpecificDate(time).get("月");
             data = new Object[factor];
             if (location.equals("楼头区间")) {
                 if (month == 3) {
-                    for (int j = 0; j < factor; j++) {
-                        data[j] = snowData.get(i)[j];
-                    }
+                    System.arraycopy(snowDatum, 0, data, 0, factor);
                     Data.add(data);
                 }
             } else {
                 if (month >= 5 && month <= 7) {
-                    for (int j = 0; j < factor; j++) {
-                        data[j] = snowData.get(i)[j];
-                    }
+                    System.arraycopy(snowDatum, 0, data, 0, factor);
                     Data.add(data);
                 }
             }
@@ -435,18 +395,15 @@ public class MachineDataUtils {
     }
 
 
-    /**
+    /*
      * 径流数据处理部分（距平值）
      */
 
     /**
      * 输入数据的处理，求与均值之间的偏差
-     *
-     * @param input
-     * @return
      */
     public Object[][] inputProcessing(Object[][] input, String location) {
-        int month = 0;
+        int month;
         Object[][] result = new Object[input.length][input[0].length];
         for (int i = 0; i < input.length; i++) {
             result[i][0] = input[i][0];
@@ -545,9 +502,6 @@ public class MachineDataUtils {
 
     /**
      * 将最后预测的相对误差转换为实际径流
-     *
-     * @param input
-     * @return
      */
     public Object[][] resultProcessing(Object[][] input, String location) {
         int month;
@@ -670,7 +624,7 @@ public class MachineDataUtils {
             else if (location.equals("楼头区间")) {
                 Date date = (Date) input[i][0];
                 month = tu.getSpecificDate(date).get("月");
-                double proportion = 0.058;
+                double proportion;
                 switch (month) {
                     case 1:
                         proportion = 0.116;
@@ -1047,11 +1001,8 @@ public class MachineDataUtils {
     }
     /**
      * 去除最后预报的偏差较大的值
-     *
-     * @param input
-     * @return
      */
-    public Object[][] resultReasonable(Object[][] input, String location) {
+    public void resultReasonable(Object[][] input, String location) {
         int month;
         for (int i = 0; i < input.length; i++) {
             if (location.equals("3号桥") || location.equals("楼庄子")) {
@@ -1160,7 +1111,7 @@ public class MachineDataUtils {
             else if (location.equals("楼头区间")) {
                 Date date = (Date) input[i][0];
                 month = tu.getSpecificDate(date).get("月");
-                double proportion = 0.058;
+                double proportion;
                 switch (month) {
                     case 1:
                         proportion = 0.116;
@@ -1273,17 +1224,11 @@ public class MachineDataUtils {
                 }
             }
         }
-        return input;
     }
 
 
     /**
      * 根据本地文件的最末时间和预报时间判断是否需要补充数据
-     *
-     * @param paramForecastInputParamNew
-     * @throws IOException
-     * @throws ParseException
-     * @throws InvalidFormatException
      */
     @SneakyThrows
     public String intervalData(ForecastInputParamNew paramForecastInputParamNew) {
@@ -1313,11 +1258,6 @@ public class MachineDataUtils {
 
     /**
      * 分断面进行输入数据处理
-     *
-     * @param input
-     * @param station
-     * @throws IOException
-     * @throws InvalidFormatException
      */
     public List<DataWrite> dataObject(List<PredictInputData> input, String station) {
         List<DataWrite> result = new ArrayList<>();
@@ -1329,12 +1269,6 @@ public class MachineDataUtils {
 
     /**
      * 对数据进行整合处理
-     *
-     * @param input
-     * @param station
-     * @param period
-     * @throws IOException
-     * @throws InvalidFormatException
      */
     public DataWrite differentInput(List<PredictInputData> input, String station, String period) {
         DataWrite result = new DataWrite();
@@ -1364,16 +1298,11 @@ public class MachineDataUtils {
             System.arraycopy(historyInput, 0, result, 0, historyInput.length - duration);
             return result;
         }
-        Object[][] result = integration(historyInput, preliminaryData, duration,param);
-        return result;
+        return integration(historyInput, preliminaryData, duration,param);
     }
 
     /**
      * 输入数据
-     *
-     * @param historyInput
-     * @param preliminaryData
-     * @return
      */
     @SneakyThrows
     public Object[][] getDataInput(Object[][] historyInput, Object[][] preliminaryData, ForecastInputParam param) {
@@ -1381,29 +1310,25 @@ public class MachineDataUtils {
 
         if (param.getPeriod().equals("日")) {//计算预报时间和历史记录时间的相差天数
             if (param.getPreStartTime().before(dateEnd)){
-                Object[][] result = copyPartData(historyInput,param.getPreStartTime());
-                return result;
+                return copyPartData(historyInput,param.getPreStartTime());
             }else {
                 Date dateStart = (Date) preliminaryData[0][0];
                 int duration = tu.duration(dateStart, dateEnd,"日");
                 if (duration < 0) {//输入数据在历史中没有
                     duration = 0;
                 }
-                Object[][] result = integration(historyInput, preliminaryData, duration,param);
-                return result;
+                return integration(historyInput, preliminaryData, duration,param);
             }
         }
         else  {
-            Object[][] result = copyPartData(historyInput,param.getCalibrationTime());
-            return result;
+            return copyPartData(historyInput,param.getCalibrationTime());
         }
     }
 
     public Object[][] copyPartData(Object[][] input,Date date){
         int l = 0;
-        for (int i = 0; i < input.length; i++) {
-            if (((Date)input[i][0]).before(date))
-            {
+        for (Object[] objects : input) {
+            if (((Date) objects[0]).before(date)) {
                 l++;
             }
         }
@@ -1416,7 +1341,6 @@ public class MachineDataUtils {
      * @param historyInput    历史数据
      * @param preliminaryData 获取数据
      * @param dayDuration     之间的差距
-     * @return
      */
     public Object[][] integration(Object[][] historyInput, Object[][] preliminaryData, int dayDuration, ForecastInputParam param) {
         int hisLength = historyInput.length;
@@ -1489,9 +1413,6 @@ public class MachineDataUtils {
 
     /**
      * 获取不同月份区间来水占头屯河比
-     *
-     * @param
-     * @return
      */
     public double setProportion(Date date) {
         int month = tu.getSpecificDate(date).get("月");
@@ -1538,10 +1459,6 @@ public class MachineDataUtils {
     }
     /**
      * 中长期返回表格
-     *
-     * @param predict
-     * @param param
-     * @return
      */
     public List<Flood> setLongFlood(Object[][] predict, ForecastInputParam param) {
         int l = param.getIsSnowMeltModel()?param.getPeriodStepNumber()* param.getPeriodStepSize()/24+1:param.getPeriodStepNumber()* param.getPeriodStepSize();
@@ -1591,10 +1508,6 @@ public class MachineDataUtils {
     }
     /**
      * 判断来水年的类别，丰平枯是根据历史来水量作为评判标准的
-     *
-     * @param input
-     * @param param
-     * @return
      */
     public String judgingYearLeve(Object[][] input, ForecastInputParam param) {
         String result = "";
@@ -1636,7 +1549,7 @@ public class MachineDataUtils {
         return result;
     }
     @SneakyThrows
-    public ModelSaveEntity setModelParams(ModelSaveEntity results, ForecastInputParam param, int k, List<List<Double>> paramResult ,double[][] maxmin){
+    public ModelSaveEntity setModelParams(ModelSaveEntity results, ForecastInputParam param, int k, List<List<Double>> paramResult ,List<List<Double>> maxminResult){
         List<Double> paramdim1 = new ArrayList<>();
         List<Double> paramdim2 = new ArrayList<>();
         List<Double> paramdim3 = new ArrayList<>();
@@ -1660,11 +1573,14 @@ public class MachineDataUtils {
         paramResult.add(paramvalue);
         paramResult.add(context);
         String savePath = System.getProperty("java.io.tmpdir");
-        for (int i = 0; i < maxmin.length; i++) {
-            maxmin[i][2 * k] = results.getMaxmin().get(i).getMaxValue();//最大值
-            maxmin[i][2 * k + 1] = results.getMaxmin().get(i).getMinValue();//最小值
+        List<Double> max = new ArrayList<>();
+        List<Double> min = new ArrayList<>();
+        for (int i = 0; i < results.getMaxmin().size(); i++) {
+            max.add(results.getMaxmin().get(i).getMaxValue());//最大值
+            min.add(results.getMaxmin().get(i).getMinValue());//最小值
         }
-
+        maxminResult.add(max);
+        maxminResult.add(min);
         if (k >= param.getVmdK() - 1) {
             //模型参数写入
             TemporaryXlsx temX = new TemporaryXlsx();
@@ -1681,7 +1597,7 @@ public class MachineDataUtils {
             //最大最小值写入
             String pathMaxmin = savePath + "MACHINE-MAXMIN.xlsx";
             String sheetName1 = location + period + "-最大最小值";
-            ExcelTool.writeDoubleExcel(pathMaxmin, sheetName1, maxmin);
+            ExcelTool.writeList2DoubleExcel(pathMaxmin, sheetName1, maxminResult);
             temX.setUpdateMaxPath(pathMaxmin);
             results.setTempXlsx(temX);
         }
@@ -1692,9 +1608,11 @@ public class MachineDataUtils {
         int month = tu.getSpecificDate(date).get("月");
         if (month == 1 || month == 2||month == 3 || month == 11|| month == 12){
             result = "丰";
-        } else if (month == 4 || month == 5||month == 9 || month == 10) {
+        }
+        else if (month == 4 || month == 5||month == 9 || month == 10) {
             result = "平";
-        } else {
+        }
+        else {
             result = "枯";
         }
         return result;

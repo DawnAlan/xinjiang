@@ -6,6 +6,8 @@ import com.cj.model.func.modular.FloodPredict.entity.ForecastInputParam;
 import com.cj.model.func.modular.FloodPredict.entity.RainFallDto;
 import com.cj.model.func.modular.FloodPredict.utils.InputUtils;
 import com.cj.model.func.modular.FloodPredict.utils.TimeUtils;
+import com.cj.model.func.modular.FloodPrevent.bean.req.ReqCurve;
+import com.cj.model.func.modular.FloodPrevent.entity.Option;
 import com.cj.model.func.modular.entity.Flood;
 import lombok.SneakyThrows;
 
@@ -146,7 +148,6 @@ public class SimulatedRunoff {
             case "3号桥": {
                 shanbeiparam = new ShanbeiParam();
                 shanbeiparam.setFB(0.008);//后续需改
-
                 shanbeiparam.setWM(200.0);
                 shanbeiparam.setKC(1.0);
                 shanbeiparam.setFC(20.0);
@@ -208,7 +209,6 @@ public class SimulatedRunoff {
             case "楼庄子": {
                 shanbeiparam = new ShanbeiParam();
                 shanbeiparam.setFB(0.008);//后续需改
-
                 shanbeiparam.setWM(200.0);
                 shanbeiparam.setKC(1.0);
                 shanbeiparam.setFC(20.0);
@@ -291,7 +291,6 @@ public class SimulatedRunoff {
             case "楼头区间":
                 shanbeiparam = new ShanbeiParam();
                 shanbeiparam.setFB(0.008);//后续需改
-
                 shanbeiparam.setWM(200.0);
                 shanbeiparam.setKC(1.0);
                 shanbeiparam.setFC(20.0);
@@ -444,31 +443,28 @@ public class SimulatedRunoff {
         Object[][] floodIndex = floodInformation.get(0);//洪号
         Object[][] floodNature = floodInformation.get(1);//洪水信息
         Object[][] water_outQ = new Object[n][3];//水位、出库流量、汛限水位
-//        if (param.getLocation().equals("楼庄子")) {
-//            Object[][] input = new Object[n][2];
-//            for (int i = 0; i < n; i++) {
-//                input[i][0] = predict[i * l][0];
-//                input[i][1] = predict[i * l][1];
-//            }
-//            int timeLength = 3600 * l;
-//            List<Option> lzzOutList = LZZ.Calculate("../file/Basin.json",input, timeLength);
-//            for (int i = 0; i < n; i++) {
-//                water_outQ[i][0] = lzzOutList.get(i).getH1();
-//                water_outQ[i][1] = lzzOutList.get(i).getQOut();
-//                water_outQ[i][2] = (((double) water_outQ[i][0] > 1394.5) ? 1 : 0);
-//            }
-//        } else {
-//            for (int i = 0; i < n; i++) {
-//                water_outQ[i][0] = getWaterLevel(predict, param)[i];
-//                water_outQ[i][1] = predict[i * l][1];
-//                water_outQ[i][2] = (((double) predict[i][1] > 60.0) ? 1 : 0);
-//            }
-//        }
-        for (int i = 0; i < n; i++) {
-            water_outQ[i][0] = new SubBasinForecast().getWaterLevel(predict, param)[i];
-            water_outQ[i][1] = predict[i * l][1];
-            water_outQ[i][2] = (((double) predict[i][1] > 60.0) ? 1 : 0);
+        if (param.getLocation().equals("楼庄子")) {
+            Object[][] input = new Object[n][2];
+            for (int i = 0; i < n; i++) {
+                input[i][0] = predict[i * l][0];
+                input[i][1] = predict[i * l][1];
+            }
+            int timeLength = 3600 * l;
+            ReqCurve reqCurve  = new ReqCurve();
+            List<Option> lzzOutList = LZZ.Calculate(param.getBasinStr(),input, timeLength,reqCurve);
+            for (int i = 0; i < n; i++) {
+                water_outQ[i][0] = lzzOutList.get(i).getH1();
+                water_outQ[i][1] = lzzOutList.get(i).getQOut();
+                water_outQ[i][2] = (((double) water_outQ[i][0] > 1394.5) ? 1 : 0);
+            }
+        } else {
+            for (int i = 0; i < n; i++) {
+                water_outQ[i][0] = new SubBasinForecast().getWaterLevel(predict, param)[i];
+                water_outQ[i][1] = predict[i * l][1];
+                water_outQ[i][2] = (((double) predict[i][1] > 60.0) ? 1 : 0);
+            }
         }
+
         //连续列的赋值
         for (int i = 0; i < n; i++) {
             Flood flood = new Flood();

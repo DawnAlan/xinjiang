@@ -94,7 +94,7 @@ public class SnowMeltModel {
         LongForecast longForecast = new LongForecast();
         ModelSaveEntity results = longForecast.longTermForecast(param, snowInput, maxminTemp, para);
         //模型参数的存储
-        results = mdu.setModelParams(results,param,0,paramResult,maxmin);
+//        results = mdu.setModelParams(results,param,0,paramResult,maxmin);
         //模型合格率
         trainResult(results,param);
     }

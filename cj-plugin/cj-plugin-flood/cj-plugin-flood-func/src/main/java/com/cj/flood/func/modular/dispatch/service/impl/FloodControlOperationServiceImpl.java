@@ -1,5 +1,6 @@
 package com.cj.flood.func.modular.dispatch.service.impl;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.lang.UUID;
@@ -212,59 +213,7 @@ public class FloodControlOperationServiceImpl extends ServiceImpl<FloodControlOp
                             put("头屯河", req.getEcosTth());
                         }});
 
-                        ReqCurve reqCurve = new ReqCurve();
-                        reqCurve.setCapacityCurves(new HashMap<>());
-                        reqCurve.setGateCurves(new HashMap<>());
-                        List<RRs> rrs = JSONObject.parseArray(JSONObject.parseObject(waterSituationClient.queryRRs("0")).get("data").toString(), RRs.class);
-                        List<ExternStations> externStations = JSONObject.parseArray(JSONObject.parseObject(waterSituationClient.queryExternStations()).get("data").toString(), ExternStations.class);
-                        PublicParam.basinParam.getReservoirs().forEach(
-                                reservoir ->
-                                {
-                                    Optional<RRs> anyRRs = rrs.stream().filter(r -> r.getName().contains(reservoir.getName())).findAny();
-                                    if (!anyRRs.isPresent()) {
-                                        return;
-                                    }
-                                    List<DropDown> dropDowns = JSONObject.parseArray(JSONObject.parseObject(waterSituationClient.dropDown(anyRRs.get().getId())).get("data").toString(), DropDown.class);
-                                    Optional<DropDown> dropDownsTrue = dropDowns.stream().filter(d -> d.getEnable().equals("true")).findAny();
-                                    if (!dropDownsTrue.isPresent()) {
-                                        return;
-                                    }
-                                    QuXT quXT = JSONObject.parseObject(JSONObject.parseObject(waterSituationClient.queryQuXT(dropDownsTrue.get().getId())).get("data").toString(), QuXT.class);
-                                    List<CurveParam> curveParams = new ArrayList<>();
-                                    quXT.getTab().forEach(tab ->
-                                            curveParams.add(new CurveParam(){{
-                                                setLevel(tab.getV0());
-                                                setValue(tab.getV1());
-                                            }}));
-                                    reqCurve.getCapacityCurves().put(reservoir.getName(), curveParams);
-
-                                    reservoir.getGates().forEach(gate -> {
-                                        Optional<ExternStations> anyGate = externStations.stream().filter(station -> station.getName().equals(gate.getName())).findAny();
-                                        if (!anyGate.isPresent()) {
-                                            return;
-                                        }
-                                        List<DropDown> dropDownsGate = JSONObject.parseArray(JSONObject.parseObject(waterSituationClient.dropDown(anyGate.get().getId())).get("data").toString(), DropDown.class);
-                                        Optional<DropDown> dropDownsTrueGate = dropDownsGate.stream().filter(d -> d.getEnable().equals("true")).findAny();
-                                        if (!dropDownsTrueGate.isPresent()) {
-                                            return;
-                                        }
-                                        QuXT quXTGate = JSONObject.parseObject(JSONObject.parseObject(waterSituationClient.queryQuXT(dropDownsTrueGate.get().getId())).get("data").toString(), QuXT.class);
-                                        List<CurveParam> curveParamsGate = new ArrayList<>();
-                                        quXTGate.getTab().forEach(tab ->
-                                                curveParamsGate.add(new CurveParam(){{
-                                                    setLevel(tab.getV0());
-                                                    setValue(tab.getV1());
-                                                }}));
-                                        if (!reqCurve.getGateCurves().containsKey(reservoir.getName())) {
-                                            reqCurve.getGateCurves().put(reservoir.getName(), new HashMap<String, List<CurveParam>>() {{put(gate.getName(), curveParamsGate);}});
-                                        } else {
-                                            reqCurve.getGateCurves().get(reservoir.getName()).put(gate.getName(), curveParamsGate);
-                                        }
-                                    });
-                                }
-                        );
-
-                        List<ResOption> calculator = Cascade.calculator(JSONObject.toJSONString(PublicParam.basinParam), paramReq, reqCurve);
+                        List<ResOption> calculator = Cascade.calculator(JSONObject.toJSONString(PublicParam.basinParam), paramReq, getReqCurves());
                         for (ResOption resOption : calculator) {
                             String path = resOption.getPath();
                             String[] pathSplit = path.split("\\\\");
@@ -507,6 +456,61 @@ public class FloodControlOperationServiceImpl extends ServiceImpl<FloodControlOp
         }else {
             return null;
         }
+    }
+
+    private ReqCurve getReqCurves() {
+        ReqCurve reqCurve = new ReqCurve();
+        reqCurve.setCapacityCurves(new HashMap<>());
+        reqCurve.setGateCurves(new HashMap<>());
+        List<RRs> rrs = JSONObject.parseArray(JSONObject.parseObject(waterSituationClient.queryRRs("0")).get("data").toString(), RRs.class);
+        List<ExternStations> externStations = JSONObject.parseArray(JSONObject.parseObject(waterSituationClient.queryExternStations()).get("data").toString(), ExternStations.class);
+        PublicParam.basinParam.getReservoirs().forEach(
+                reservoir ->
+                {
+                    Optional<RRs> anyRRs = rrs.stream().filter(r -> r.getName().contains(reservoir.getName())).findAny();
+                    if (!anyRRs.isPresent()) {
+                        return;
+                    }
+                    List<CurveParam> curveParams = getCurves(anyRRs.get().getId());
+                    if (CollectionUtil.isEmpty(curveParams)) {
+                        return;
+                    }
+                    reqCurve.getCapacityCurves().put(reservoir.getName(), curveParams);
+
+                    reservoir.getGates().forEach(gate -> {
+                        Optional<ExternStations> anyGate = externStations.stream().filter(station -> station.getName().equals(gate.getName())).findAny();
+                        if (!anyGate.isPresent()) {
+                            return;
+                        }
+                        List<CurveParam> curveParamsGate = getCurves(anyGate.get().getId());
+                        if (CollectionUtil.isEmpty(curveParamsGate)) {
+                            return;
+                        }
+                        if (!reqCurve.getGateCurves().containsKey(reservoir.getName())) {
+                            reqCurve.getGateCurves().put(reservoir.getName(), new HashMap<String, List<CurveParam>>() {{put(gate.getName(), curveParamsGate);}});
+                        } else {
+                            reqCurve.getGateCurves().get(reservoir.getName()).put(gate.getName(), curveParamsGate);
+                        }
+                    });
+                }
+        );
+        return reqCurve;
+    }
+
+    private List<CurveParam> getCurves(String ndcdId) {
+        List<DropDown> dropDowns = JSONObject.parseArray(JSONObject.parseObject(waterSituationClient.dropDown(ndcdId)).get("data").toString(), DropDown.class);
+        Optional<DropDown> dropDownsTrue = dropDowns.stream().filter(d -> d.getEnable().equals("true")).findAny();
+        if (!dropDownsTrue.isPresent()) {
+            return null;
+        }
+        QuXT quXT = JSONObject.parseObject(JSONObject.parseObject(waterSituationClient.queryQuXT(dropDownsTrue.get().getId())).get("data").toString(), QuXT.class);
+        List<CurveParam> curveParams = new ArrayList<>();
+        quXT.getTab().forEach(tab ->
+                curveParams.add(new CurveParam(){{
+                    setLevel(tab.getV0());
+                    setValue(tab.getV1());
+                }}));
+        return curveParams;
     }
 }
 
