@@ -399,6 +399,8 @@ public class AllServiceImpl implements AllService {
         if(StringUtils.isEmpty(req.getId())){
             return null;
         }
+        req.setStartTime(req.getStartTime().split(" ")[0]);
+        req.setEndTime(req.getEndTime().split(" ")[0]);
         String mk = (String) redisUtil.get("trendsTableParam:list");
         if(StringUtils.isEmpty(mk)){
             trendsTableParamService.updateCache();
