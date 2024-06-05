@@ -622,7 +622,7 @@ public class WaterStorageSchedulingLzzServiceImpl extends ServiceImpl<WaterStora
                 }
                 return resultList;
             }
-
+            return resultList;
         }else{
             String endTime = now.getYear() + "-" +month +"-"+day;
             List<RealFlowRes> resultList = this.baseMapper.selectRealFlowList(startTime, endTime);
@@ -643,7 +643,6 @@ public class WaterStorageSchedulingLzzServiceImpl extends ServiceImpl<WaterStora
             }
             return resultList;
         }
-        return null;
     }
 
     private List<OverallSituationUnitMgr> getUnitList(){
