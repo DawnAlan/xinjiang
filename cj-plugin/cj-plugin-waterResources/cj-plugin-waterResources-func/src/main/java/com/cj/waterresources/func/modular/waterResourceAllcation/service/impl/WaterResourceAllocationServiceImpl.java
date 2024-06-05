@@ -1231,11 +1231,13 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
         double wasteWater = displayDataList.stream().findAny().orElse(new AllocationDisplayData()).getWasteWater();
         res.setWasteWaterAmount(wasteWater);
         res.setWaterAvailableRate(1 - wasteWater / (incomingWater - (yieldWaterLzz + yieldWaterTth)));
-        res.setProportionList(excelList.stream().collect(Collectors.groupingBy(Excel2::getTime,
+        res.setProportionList(excelList.stream().filter(n -> n.getStationType().equals("总用水") && n.getStationName().equals("总用水"))
+                .collect(Collectors.groupingBy(Excel2::getTime,
                         Collectors.summingDouble(Excel2::getWater)))
                 .entrySet().stream().sorted(Map.Entry.comparingByKey())
                 .map(n -> new WaterDistributionOverviewRes.WaterDto(n.getKey(), n.getValue())).collect(Collectors.toList()));
-        res.setWaterLackList(excelList.stream().collect(Collectors.groupingBy(Excel2::getTime,
+        res.setWaterLackList(excelList.stream().filter(n -> n.getStationType().equals("总用水") && n.getStationName().equals("总用水"))
+                .collect(Collectors.groupingBy(Excel2::getTime,
                 Collectors.summingDouble(Excel2::getWaterLack)))
                 .entrySet().stream().sorted(Map.Entry.comparingByKey())
                 .map(n -> new WaterDistributionOverviewRes.WaterDto(n.getKey(), n.getValue())).collect(Collectors.toList()));

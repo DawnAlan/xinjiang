@@ -140,9 +140,9 @@ public class InputWay {
             data1.put(nameGreenQushou[x], demandGreenQushou[x]);
         }
 
-        double[] demand_bagang = setDataYearCity(waterDemandData, "月水量(万m³)", "八钢工业");
+        double[] demand_bagang = setDataYearCity(waterDemandData, "八钢流量", "八钢工业");
         List<List<Double>> update1=new ArrayList<>();
-        update1 = getDataMonthPlan(waterDemandData, "水量", "八钢工业");
+        update1 = getDataMonthPlan(waterDemandData, "八钢流量", "八钢工业");
 
         List<Double> month1 = update1.get(0);
         List<Double> waterData1 = update1.get(1);
@@ -152,9 +152,9 @@ public class InputWay {
             }
         }
 
-        double[] demand_hongyan = setDataYearCity(waterDemandData, "月水量", "红岩");
+        double[] demand_hongyan = setDataYearCity(waterDemandData, "红岩流量", "红岩");
         List<List<Double>> update2=new ArrayList<>();
-        update2 = getDataMonthPlan(waterDemandData, "水量", "红岩");
+        update2 = getDataMonthPlan(waterDemandData, "红岩流量", "红岩");
         List<Double> month2 = update2.get(0);
         List<Double> waterData2 = update2.get(1);
         for (int i=0;i<month2.size();i++){
@@ -163,9 +163,9 @@ public class InputWay {
             }
         }
 
-        double[] demand_lzz = setDataYearCity(waterDemandData, "月水量", "楼庄子水厂");
+        double[] demand_lzz = setDataYearCity(waterDemandData, "楼庄子水厂总量", "楼庄子水厂");
         List<List<Double>> update3=new ArrayList<>();
-        update3 = getDataMonthPlan(waterDemandData, "水量", "楼庄子水厂");
+        update3 = getDataMonthPlan(waterDemandData, "楼庄子水厂总量", "楼庄子水厂");
         List<Double> month3 = update3.get(0);
         List<Double> waterData3 = update3.get(1);
         for (int i=0;i<month3.size();i++){
@@ -358,11 +358,11 @@ public class InputWay {
         double[] demand_hongyan= new double[3];
         double[] demand_lzz =new double[3];
 
-            demand_bagang=setDataMonth(waterDemandData, "水量", "八钢工业");
+            demand_bagang=setDataMonth(waterDemandData, "八钢流量", "八钢工业");
 
-            demand_hongyan=setDataMonth(waterDemandData, "水量", "红岩");
+            demand_hongyan=setDataMonth(waterDemandData, "红岩流量", "红岩");
 
-            demand_lzz=setDataMonth(waterDemandData, "水量", "楼庄子水厂");
+            demand_lzz=setDataMonth(waterDemandData, "楼庄子水厂总量", "楼庄子水厂");
 
         if (isAllZeros(demand_bagang)==true){
             double[]datayear= (double[])dataYear.get("八钢");
