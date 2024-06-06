@@ -107,40 +107,44 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
     public CommandLineRunner loadWaterSupplyPriority() {
         return args -> {
             if (!redisUtil.hasKey(WATER_SUPPLY_PRIORITY_REDIS_KEY)) {
-                List<WaterSupplyPriority> waterSupplyPriorities = new ArrayList<>();
-                waterSupplyPriorities.add(new WaterSupplyPriority(){{
-                    setPriorityType("生态用水");
-                    setPriorityIndex(0);
-                    setPriorityValue(1);
-                    setIsBlock(0);
-                }});
-                waterSupplyPriorities.add(new WaterSupplyPriority(){{
-                    setPriorityType("生活用水");
-                    setPriorityIndex(1);
-                    setPriorityValue(2);
-                    setIsBlock(0);
-                }});
-                waterSupplyPriorities.add(new WaterSupplyPriority(){{
-                    setPriorityType("工业用水");
-                    setPriorityIndex(2);
-                    setPriorityValue(3);
-                    setIsBlock(0);
-                }});
-                waterSupplyPriorities.add(new WaterSupplyPriority(){{
-                    setPriorityType("灌溉用水");
-                    setPriorityIndex(3);
-                    setPriorityValue(4);
-                    setIsBlock(1);
-                }});
-                waterSupplyPriorities.add(new WaterSupplyPriority(){{
-                    setPriorityType("绿化用水");
-                    setPriorityIndex(4);
-                    setPriorityValue(5);
-                    setIsBlock(1);
-                }});
-                redisUtil.set(WATER_SUPPLY_PRIORITY_REDIS_KEY, JSONObject.toJSONString(waterSupplyPriorities), 0);
+                redisUtil.set(WATER_SUPPLY_PRIORITY_REDIS_KEY, JSONObject.toJSONString(initSupplyPriority()), 0);
             }
         };
+    }
+
+    private List<WaterSupplyPriority> initSupplyPriority() {
+        List<WaterSupplyPriority> waterSupplyPriorities = new ArrayList<>();
+        waterSupplyPriorities.add(new WaterSupplyPriority(){{
+            setPriorityType("生态用水");
+            setPriorityIndex(0);
+            setPriorityValue(1);
+            setIsBlock(0);
+        }});
+        waterSupplyPriorities.add(new WaterSupplyPriority(){{
+            setPriorityType("生活用水");
+            setPriorityIndex(1);
+            setPriorityValue(2);
+            setIsBlock(0);
+        }});
+        waterSupplyPriorities.add(new WaterSupplyPriority(){{
+            setPriorityType("工业用水");
+            setPriorityIndex(2);
+            setPriorityValue(3);
+            setIsBlock(0);
+        }});
+        waterSupplyPriorities.add(new WaterSupplyPriority(){{
+            setPriorityType("灌溉用水");
+            setPriorityIndex(3);
+            setPriorityValue(4);
+            setIsBlock(1);
+        }});
+        waterSupplyPriorities.add(new WaterSupplyPriority(){{
+            setPriorityType("绿化用水");
+            setPriorityIndex(4);
+            setPriorityValue(5);
+            setIsBlock(1);
+        }});
+        return waterSupplyPriorities;
     }
 
     @Override
@@ -1247,6 +1251,13 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
     @Override
     public RestResponse<List<WaterSupplyPriority>> getWaterSupplyPriority() {
         return RestResponse.ok(JSONObject.parseArray(redisUtil.get(WATER_SUPPLY_PRIORITY_REDIS_KEY).toString(), WaterSupplyPriority.class));
+    }
+
+    @Override
+    public RestResponse<List<WaterSupplyPriority>> resetWaterSupplyPriority() {
+        List<WaterSupplyPriority> waterSupplyPriorityList = initSupplyPriority();
+        redisUtil.set(WATER_SUPPLY_PRIORITY_REDIS_KEY, JSONObject.toJSONString(waterSupplyPriorityList), 0);
+        return RestResponse.ok(waterSupplyPriorityList);
     }
 }
 

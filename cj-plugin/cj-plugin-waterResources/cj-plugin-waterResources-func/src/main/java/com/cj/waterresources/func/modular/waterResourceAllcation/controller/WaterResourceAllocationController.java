@@ -116,5 +116,13 @@ public class WaterResourceAllocationController {
     public RestResponse<List<WaterSupplyPriority>> getWaterSupplyPriority() {
         return waterResourceAllocationService.getWaterSupplyPriority();
     }
+
+    @ApiOperationSupport(order = 9)
+    @ApiOperation("水资源调配模块查询供水优先级配置")
+    @CommonLog(value = "水资源调配模块查询供水优先级配置")
+    @GetMapping("/resetWaterSupplyPriority")
+    public RestResponse<List<WaterSupplyPriority>> resetWaterSupplyPriority() {
+        return waterResourceAllocationService.resetWaterSupplyPriority();
+    }
 }
 

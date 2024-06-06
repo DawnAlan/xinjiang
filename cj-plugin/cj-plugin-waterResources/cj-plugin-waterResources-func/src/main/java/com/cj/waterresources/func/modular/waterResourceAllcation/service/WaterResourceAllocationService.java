@@ -48,5 +48,7 @@ public interface WaterResourceAllocationService extends IService<WaterResourceAl
     RestResponse<WaterDistributionOverviewRes> waterDistributionOverview(String id);
 
     RestResponse<List<WaterSupplyPriority>> getWaterSupplyPriority();
+
+    RestResponse<List<WaterSupplyPriority>> resetWaterSupplyPriority();
 }
 
