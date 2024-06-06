@@ -452,7 +452,7 @@ public class WaterStorageSchedulingLzzServiceImpl extends ServiceImpl<WaterStora
         String startTime = now.getYear()+ "-01-01";
         List<Map<String, Object>> maps = surfaceWaterService.annualList();
         TypicalYearVo typicalYearVo = surfaceWaterService.typicalYear(new TypicalYearReq());
-        if(month>0 || month<6){
+        if(month>0 && month<6){
             String endTime = now.getYear() + "-" +month +"-"+day;
             List<RealFlowRes> resultList = this.baseMapper.selectRealFlowList(startTime, endTime);
             Comparator<RealFlowRes> realFlowResComparator = Comparator.comparing(RealFlowRes::getMonth).thenComparing(RealFlowRes::getName);
@@ -632,8 +632,18 @@ public class WaterStorageSchedulingLzzServiceImpl extends ServiceImpl<WaterStora
             //倒叙
             Collections.sort(resultList, realFlowResComparator.reversed());
             RealFlowRes realFlowRes = resultList.get(0);
-            for(int i=realFlowRes.getMonth();i<=12;i++){
+            Integer name = realFlowRes.getName();
+            for(int i=realFlowRes.getMonth();i<realFlowRes.getMonth()+1;i++){
                 for(int j=realFlowRes.getName()+1;j<=3;j++){
+                    RealFlowRes resTemp = new RealFlowRes();
+                    resTemp.setMonth(i);
+                    resTemp.setName(j);
+                    resTemp.setFlow(new BigDecimal(maps.get((i-1)*3+(j-1)).get(year.toString()).toString()).multiply(new BigDecimal("8.64")).setScale(3, RoundingMode.HALF_UP));
+                    resultList.add(resTemp);
+                }
+            }
+            for(int i=realFlowRes.getMonth()+1;i<=12;i++){
+                for(int j=1;j<=3;j++){
                     RealFlowRes resTemp = new RealFlowRes();
                     resTemp.setMonth(i);
                     resTemp.setName(j);

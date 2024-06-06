@@ -31,7 +31,7 @@ public interface IncomingWaterForecastMapper extends BaseMapper<IncomingWaterFor
             "where ((TO_NUMBER(TO_CHAR(PREDICTION_TIME,'MM'))- TO_NUMBER(TO_CHAR(END_TIME,'MM')) = 0) \n" +
             "AND (TO_NUMBER(TO_CHAR(PREDICTION_TIME,'DD'))- TO_NUMBER(TO_CHAR(END_TIME,'DD')) = -10)) or \n" +
             "((TO_NUMBER(TO_CHAR(PREDICTION_TIME,'MM'))- TO_NUMBER(TO_CHAR(END_TIME,'MM')) = -1) \n" +
-            "AND (TO_NUMBER(TO_CHAR(PREDICTION_TIME,'DD'))- TO_NUMBER(TO_CHAR(END_TIME,'DD')) = 20))")
+            "AND (TO_NUMBER(TO_CHAR(PREDICTION_TIME,'DD'))- TO_NUMBER(TO_CHAR(END_TIME,'DD')) = 20)) AND MODEL_TYPE != 3")
     List<IncomingWaterForecast> getPredictionListForTenDays();
     @Select("select * \n" +
             "from INCOMING_WATER_FORECAST \n" +
