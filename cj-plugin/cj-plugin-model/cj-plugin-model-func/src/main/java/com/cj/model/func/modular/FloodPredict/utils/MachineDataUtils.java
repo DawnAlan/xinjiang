@@ -1252,8 +1252,9 @@ public class MachineDataUtils {
             data.addAll(dataObject(Lou,"楼庄子"));
             data.addAll(dataObject(Qu,"楼头区间"));
             ExcelTool.writeExcel(savePath+"HISTORY-DATA.xlsx",data);
+            return savePath+"HISTORY-DATA.xlsx";
         }
-        return savePath+"HISTORY-DATA.xlsx";
+        return "";
     }
 
     /**

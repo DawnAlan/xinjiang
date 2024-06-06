@@ -12,18 +12,14 @@ import com.alibaba.fastjson.util.IOUtils;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.util.StringUtils;
 
 import java.io.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import static com.cj.model.func.modular.FloodPredict.utils.ExcelTool.downloadFile;
 
 public class Cascade{
 
