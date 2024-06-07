@@ -31,13 +31,13 @@ public class OutResult {
     public static List<ResOption> calculator(WaterTransferReq req) throws Exception
     {
         if (req.getName()==1){
-            req.setTypeName("供水比例最大");
+            req.setTypeName("供水缺额均衡分布");
         }
         if (req.getName()==2){
-            req.setTypeName("缺额最小");
+            req.setTypeName("供水缺额集中分布");
         }
         if (req.getName()==3){
-            req.setTypeName("单库调度");
+            req.setTypeName("楼庄子单库调度");
         }
         int step=req.getTimeCalStep();
 

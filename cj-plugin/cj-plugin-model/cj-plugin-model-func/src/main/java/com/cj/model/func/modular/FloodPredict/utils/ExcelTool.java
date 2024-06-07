@@ -1,21 +1,16 @@
 package com.cj.model.func.modular.FloodPredict.utils;
 
-import com.alibaba.excel.metadata.csv.CsvRow;
-import com.cj.common.util.UUIDUtils;
-import com.cj.model.func.core.util.MinioUtils;
+import cn.hutool.core.util.RandomUtil;
 import com.cj.model.func.modular.FloodPredict.entity.DataWrite;
 import com.cj.model.func.modular.FloodPredict.entity.PredictInputData;
-import javafx.scene.shape.Line;
 import lombok.SneakyThrows;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.openxml4j.util.ZipSecureFile;
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
 import java.io.*;
 import java.net.URL;
 import java.nio.file.Files;
@@ -463,7 +458,8 @@ public class ExcelTool {
 
     public static Map<String,Object[][]> readExcel(String path, String name) throws IOException {
         Map<String,Object[][]> result = new HashMap<>();
-        String savePath = System.getProperty("java.io.tmpdir")+ name +".xlsx";
+        long time = new Date().getTime();
+        String savePath = System.getProperty("java.io.tmpdir") + name + RandomUtil.randomString(10) + time+".xlsx";
         String filePath = path + name +".xlsx";
         downloadFile(filePath, savePath);
         InputStream fis = new FileInputStream(savePath);
@@ -474,6 +470,8 @@ public class ExcelTool {
             Sheet sheet = wb.getSheetAt(i);
             result.put(sheet.getSheetName(),readSheet(sheet));
         }
+        fis.close();
+        Files.delete(Paths.get(savePath));
         return result;
     }
 
@@ -488,6 +486,7 @@ public class ExcelTool {
             Sheet sheet = wb.getSheetAt(i);
             result.put(sheet.getSheetName(),readSheet(sheet));
         }
+        fis.close();
         return result;
     }
     public static Object[][] readStringExcel(String path, String sheetName) throws IOException {
@@ -544,9 +543,10 @@ public class ExcelTool {
             Files.delete(filePath);
         }
         Paths.get(savePath,getFileName(fileUrl));
-        Files.copy(inputStream, Paths.get(savePath));
+        Files.copy(inputStream, filePath);
         return savePath;
     }
+
     public static String getFileName(String fileUrl) {
         String[] parts = fileUrl.split("/");
         return parts[parts.length - 1];

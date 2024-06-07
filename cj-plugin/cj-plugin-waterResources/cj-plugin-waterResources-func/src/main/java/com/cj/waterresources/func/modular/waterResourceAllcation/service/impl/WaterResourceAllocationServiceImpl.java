@@ -103,15 +103,6 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
     private final static String WATER_SUPPLY_PRIORITY_REDIS_KEY = "WATER_SUPPLY_PRIORITY_REDIS_KEY";
     private Map<String, String> useWaterManagementUnitIdMap;
 
-    @Bean
-    public CommandLineRunner loadWaterSupplyPriority() {
-        return args -> {
-            if (!redisUtil.hasKey(WATER_SUPPLY_PRIORITY_REDIS_KEY)) {
-                redisUtil.set(WATER_SUPPLY_PRIORITY_REDIS_KEY, JSONObject.toJSONString(initSupplyPriority()), 0);
-            }
-        };
-    }
-
     private List<WaterSupplyPriority> initSupplyPriority() {
         List<WaterSupplyPriority> waterSupplyPriorities = new ArrayList<>();
         waterSupplyPriorities.add(new WaterSupplyPriority(){{
@@ -1225,7 +1216,7 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
         WaterDistributionOverviewRes res = new WaterDistributionOverviewRes();
         double incomingWater = displayDataList.stream().mapToDouble(AllocationDisplayData::getInflowWater).sum();
         res.setIncomingPreWaterAmount(incomingWater);
-        res.setUnitNeedWaterAmount(displayDataList.stream().mapToDouble(AllocationDisplayData::getWaterDemand).sum());
+        //res.setUnitNeedWaterAmount(displayDataList.stream().mapToDouble(AllocationDisplayData::getWaterDemand).sum());
         res.setEcologyWaterAmountLzz(displayDataList.stream().filter(n -> n.getStationName().equals("楼庄子")).mapToDouble(AllocationDisplayData::getEcologWater).sum());
         res.setEcologyWaterAmountTth(displayDataList.stream().filter(n -> n.getStationName().equals("头屯河")).mapToDouble(AllocationDisplayData::getEcologWater).sum());
         double yieldWaterLzz = displayDataList.stream().filter(n -> n.getStationName().equals("楼庄子")).mapToDouble(AllocationDisplayData::getDeltaWater).sum();
@@ -1245,12 +1236,23 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
                 Collectors.summingDouble(Excel2::getWaterLack)))
                 .entrySet().stream().sorted(Map.Entry.comparingByKey())
                 .map(n -> new WaterDistributionOverviewRes.WaterDto(n.getKey(), n.getValue())).collect(Collectors.toList()));
+        res.setIncomingWaterFreq(
+                incomingWater > 22190 ? "丰水年" :
+                incomingWater > 19980 ? "平水年" :
+                incomingWater > 17360 ? "枯水年" : "特枯水年");
+        res.setProportionAmount(res.getProportionList().stream().mapToDouble(WaterDistributionOverviewRes.WaterDto::getWaterAmount).sum());
+        res.setWaterLackAmount(res.getWaterLackList().stream().mapToDouble(WaterDistributionOverviewRes.WaterDto::getWaterAmount).sum());
+        //需水总量改成 供水总量+缺额总量
+        res.setUnitNeedWaterAmount(res.getProportionAmount() + res.getWaterLackAmount());
         return RestResponse.ok(res);
     }
 
     @Override
     public RestResponse<List<WaterSupplyPriority>> getWaterSupplyPriority() {
-        return RestResponse.ok(JSONObject.parseArray(redisUtil.get(WATER_SUPPLY_PRIORITY_REDIS_KEY).toString(), WaterSupplyPriority.class));
+        if (redisUtil.hasKey(WATER_SUPPLY_PRIORITY_REDIS_KEY)) {
+            return RestResponse.ok(JSONObject.parseArray(redisUtil.get(WATER_SUPPLY_PRIORITY_REDIS_KEY).toString(), WaterSupplyPriority.class));
+        }
+        return resetWaterSupplyPriority();
     }
 
     @Override

@@ -22,6 +22,7 @@ import com.cj.flood.func.core.common.feign.entity.RRs;
 import com.cj.flood.func.modular.dispatch.bean.req.FloodControlOperationAddReq;
 import com.cj.flood.func.modular.dispatch.bean.req.FloodControlOperationListReq;
 import com.cj.flood.func.modular.dispatch.bean.res.FloodControlOperationListRes;
+import com.cj.flood.func.modular.prediction.entity.BasinParam;
 import com.cj.model.func.core.util.MinioUtils;
 import com.cj.model.func.core.util.MultipartFileUtil;
 import com.cj.flood.func.modular.dispatch.mapper.FloodControlOperationMapper;
@@ -40,6 +41,7 @@ import com.cj.model.func.modular.FloodPrevent.function.*;
 import com.cj.model.func.modular.curve.service.CurveService;
 import com.cj.model.func.modular.entity.Flood;
 import io.minio.ObjectWriteResponse;
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -47,14 +49,14 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
-
-import com.cj.flood.func.core.common.PublicParam;
 
 /**
  * 防洪调度表(FloodControlOperation)表服务实现类
@@ -84,6 +86,13 @@ public class FloodControlOperationServiceImpl extends ServiceImpl<FloodControlOp
     private String floodModelFilePath;
 
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmmm");
+
+    private BasinParam loadBasinParam() throws IOException {
+        InputStream tth = minioUtils.getObject("tth", "tthUseFile/Basin.json");
+        String basin = IOUtils.toString(tth, StandardCharsets.UTF_8);
+        return JSONObject.parseObject(basin, BasinParam.class);
+    }
+
     @Override
     public RestResponse<Map<String,List<PredictionProcessDto>>> selectDetails(String id) {
         try {
@@ -215,7 +224,8 @@ public class FloodControlOperationServiceImpl extends ServiceImpl<FloodControlOp
                             put("头屯河", req.getEcosTth());
                         }});
 
-                        List<ResOption> calculator = Cascade.calculator(JSONObject.toJSONString(PublicParam.basinParam), paramReq, getReqCurves());
+                        BasinParam basinParam = loadBasinParam();
+                        List<ResOption> calculator = Cascade.calculator(JSONObject.toJSONString(basinParam), paramReq, getReqCurves(basinParam));
                         for (ResOption resOption : calculator) {
                             String path = resOption.getPath();
                             String[] pathSplit = path.split("\\\\");
@@ -460,13 +470,13 @@ public class FloodControlOperationServiceImpl extends ServiceImpl<FloodControlOp
         }
     }
 
-    private ReqCurve getReqCurves() {
+    private ReqCurve getReqCurves(BasinParam basinParam) {
         ReqCurve reqCurve = new ReqCurve();
         reqCurve.setCapacityCurves(new HashMap<>());
         reqCurve.setGateCurves(new HashMap<>());
         List<RRs> rrs = JSONObject.parseArray(JSONObject.parseObject(waterSituationClient.queryRRs("0")).get("data").toString(), RRs.class);
         List<ExternStations> externStations = JSONObject.parseArray(JSONObject.parseObject(waterSituationClient.queryExternStations()).get("data").toString(), ExternStations.class);
-        PublicParam.basinParam.getReservoirs().forEach(
+        basinParam.getReservoirs().forEach(
                 reservoir ->
                 {
                     Optional<RRs> anyRRs = rrs.stream().filter(r -> r.getName().contains(reservoir.getName())).findAny();

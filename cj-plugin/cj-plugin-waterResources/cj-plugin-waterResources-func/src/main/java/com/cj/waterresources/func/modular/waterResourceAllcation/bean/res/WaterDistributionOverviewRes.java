@@ -43,6 +43,14 @@ public class WaterDistributionOverviewRes {
     private List<WaterDto> proportionList;
     @ApiModelProperty(value = "缺额")
     private List<WaterDto> waterLackList;
+    @ApiModelProperty(value = "来水频率")
+    private String incomingWaterFreq;
+    @ApiModelProperty(value = "供水总量")
+    @JsonSerialize(using = DoubleScale2Serializer.class)
+    private Double proportionAmount;
+    @ApiModelProperty(value = "缺额总量")
+    @JsonSerialize(using = DoubleScale2Serializer.class)
+    private Double waterLackAmount;
 
     @Data
     @NoArgsConstructor

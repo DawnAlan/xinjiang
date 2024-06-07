@@ -10,10 +10,10 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cj.auth.core.pojo.SaBaseLoginUser;
 import com.cj.auth.core.util.StpLoginUserUtil;
+import com.cj.common.exception.CommonException;
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.ExcelUtils;
 import com.cj.common.util.UUIDUtils;
-import com.cj.flood.func.core.common.PublicParam;
 import com.cj.flood.func.modular.prediction.bean.dto.*;
 import com.cj.flood.func.modular.prediction.bean.req.IncomingWaterForecastAddReq;
 import com.cj.flood.func.modular.prediction.bean.req.WaterResourceAllocationTimeReq;
@@ -42,10 +42,9 @@ import io.minio.ObjectWriteResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
@@ -93,14 +92,6 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd");
 
-    @Bean
-    public CommandLineRunner loadModelData() {
-        return args -> {
-            InputUtils.getData(minioUrl+floodModelFilePath);
-            PublicParam.basinParam = loadBasinParam();
-        };
-    }
-
     private BasinParam loadBasinParam() throws IOException {
         InputStream tth = minioUtils.getObject("tth", "tthUseFile/Basin.json");
         String basin = IOUtils.toString(tth, StandardCharsets.UTF_8);
@@ -109,14 +100,11 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
 
     @Override
     public RestResponse<BasinParam> getBasinParam() {
-        if (PublicParam.basinParam == null) {
-            try {
-                loadBasinParam();
-            } catch (IOException e) {
-                log.error(e.getMessage());
-            }
+        try {
+            return RestResponse.ok(loadBasinParam());
+        } catch (Exception e){
+            throw new CommonException(e.getMessage());
         }
-        return RestResponse.ok(PublicParam.basinParam);
     }
 
     @Override
@@ -180,6 +168,7 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                 @Override
                 public void run() {
                     try {
+                        InputUtils.getData(minioUrl+floodModelFilePath);
                         ForecastInputParamNew forcastInputParamNew = new ForecastInputParamNew();
                         forcastInputParamNew.setPredictionTime(incomingWaterForecast.getPredictionTime());
                         forcastInputParamNew.setModelType(incomingWaterForecast.getModelType());
@@ -269,7 +258,7 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
 
                         //调用模型方法生成模型结果，更新到数据库
                         //System.out.println("Hello pool");
-                        forcastInputParamNew.setBasinStr(JSONObject.toJSONString(req.getBasinParam() == null ? PublicParam.basinParam : req.getBasinParam()));
+                        forcastInputParamNew.setBasinStr(JSONObject.toJSONString(req.getBasinParam() == null ? loadBasinParam() : req.getBasinParam()));
                         Map<String, ShanbeiParam> paramMap =  new HashMap<>();
                         modelParametersService.lambdaQuery().eq(ModelParameters::getIsDefault, 1).list()
                                 .forEach(param -> {
@@ -297,8 +286,12 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                         String hh = DateUtil.format(date, "HH");
                         String mm = DateUtil.format(date, "mm");
                         String ss = DateUtil.format(date, "ss");
-                        minioUtils.putObject("tth", "/tthUseFile/"+getFileName(floodList.getUpdateFilePath()),floodList.getUpdateFilePath());
+                        if (org.springframework.util.StringUtils.hasText(floodList.getUpdateFilePath())) {
+                            minioUtils.putObject("tth", "/tthUseFile/"+getFileName(floodList.getUpdateFilePath()),floodList.getUpdateFilePath());
+                            // FileUtil.del(floodList.getUpdateFilePath());
+                        }
                         ObjectWriteResponse objectWriteResponse = minioUtils.putObject("tth", yyyyMMdd+"/"+hh+"/"+mm+"/"+ss+"/"+ UUID.fastUUID().toString(true)+"/"+split[split.length-1], fileAddress);
+                        FileUtil.del(fileAddress);
                         String object = objectWriteResponse.object();
                         incomingWaterForecastService.lambdaUpdate().set(IncomingWaterForecast::getStatus,2).
                                 set(IncomingWaterForecast::getModelResultAddress,object).
@@ -307,7 +300,7 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                         e.printStackTrace();
                         log.error("-------------------------------------------error-------------------------------------------");
                         incomingWaterForecastService.lambdaUpdate().set(IncomingWaterForecast::getStatus,3).
-                                set(IncomingWaterForecast::getRemark,e.getMessage()).
+                                set(IncomingWaterForecast::getRemark, getStringBuilder(e).toString()).
                                 eq(IncomingWaterForecast::getId,incomingWaterForecast.getId()).update();
                     }
                 }
@@ -322,6 +315,24 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
             e.printStackTrace();
             return RestResponse.no(e.getMessage());
         }
+    }
+
+    @NotNull
+    private static StringBuilder getStringBuilder(Exception e) {
+        StringBuilder sb = new StringBuilder();
+        Throwable cause = e;
+        int deep = 0;
+        while (cause != null && deep < 3) {
+            sb.append(e.getMessage()+ "\n");
+            StackTraceElement[] stackTrace = cause.getStackTrace();
+            for (StackTraceElement stack: stackTrace) {
+                sb.append(stack.toString());
+                sb.append("\n");
+            }
+            cause = e.getCause();
+            deep++;
+        }
+        return sb;
     }
 
    /* @Override
