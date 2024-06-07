@@ -48,6 +48,10 @@
             <groupId>com.cj</groupId>
             <artifactId>cj-plugin-waterResources-api</artifactId>
         </dependency>
-
+        <!--rabbitmq-需要的 AMQP 依赖-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-amqp</artifactId>
+        </dependency>
     </dependencies>
 </project>

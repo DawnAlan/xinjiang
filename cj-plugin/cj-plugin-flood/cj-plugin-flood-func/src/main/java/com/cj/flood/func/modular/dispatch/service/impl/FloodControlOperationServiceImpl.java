@@ -134,6 +134,8 @@ public class FloodControlOperationServiceImpl extends ServiceImpl<FloodControlOp
             regularScheduling.setForecastingSchemeId(incomingWaterForecastId);
             regularScheduling.setStatus(1);
             regularScheduling.setCreateBy(saBaseLoginUser.getName());
+            regularScheduling.setForecastingTime(incomingWaterForecast.getPredictionTime());
+            regularScheduling.setForecastingSchemeName(incomingWaterForecast.getProgrammeName());
             //灵活调度
             FloodControlOperation minimumContainment =  new FloodControlOperation();
             minimumContainment.setId(UUIDUtils.getUUID());

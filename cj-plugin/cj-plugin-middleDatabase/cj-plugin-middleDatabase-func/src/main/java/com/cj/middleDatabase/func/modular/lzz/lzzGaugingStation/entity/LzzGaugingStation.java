@@ -1,11 +1,10 @@
 package com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.entity;
 
-import java.util.Date;
 import com.baomidou.mybatisplus.extension.activerecord.Model;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
-import java.io.Serializable;
+import java.util.Date;
 
 /**
  * 水位站数据表(LzzGaugingStation)表实体类
@@ -34,5 +33,16 @@ public class LzzGaugingStation extends Model<LzzGaugingStation> {
     //记录时间1
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
     private Date recordTime;
+
+    private Double flowRate;
+    private Double totalFlow;
+    private Double relativeWaterLevelTwo;
+    private Double flowTwo;
+    private Double flowRateTwo;
+    private Double relativeWaterLevelThree;
+    private Double flowThree;
+    private Double flowRateThree;
+    private Double totalFlowTwo;
+    private Double totalFlowThree;
 }
 

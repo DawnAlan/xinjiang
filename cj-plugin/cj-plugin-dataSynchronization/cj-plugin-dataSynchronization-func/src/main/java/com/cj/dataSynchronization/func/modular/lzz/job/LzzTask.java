@@ -1,24 +1,16 @@
 package com.cj.dataSynchronization.func.modular.lzz.job;
 
-import com.cj.common.model.RestResponse;
-import com.cj.common.util.RedisUtil;
-import com.cj.dataSynchronization.func.modular.lzz.bean.ParamDto;
+import com.alibaba.fastjson.JSONObject;
 import com.cj.dataSynchronization.func.modular.lzz.service.LzzPlatformService;
 import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.entity.LzzGaugingStation;
-import com.xxl.job.core.context.XxlJobHelper;
+import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.service.LzzGaugingStationService;
 import com.xxl.job.core.handler.annotation.XxlJob;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 //@EnableScheduling//开启定时任务
 @Component
@@ -27,6 +19,9 @@ public class LzzTask {
 
     @Autowired
     private LzzPlatformService lzzPlatformService;
+
+    @Autowired
+    private LzzGaugingStationService lzzGaugingStationService;
 
 
     @XxlJob("saveLzzDta")
@@ -51,5 +46,13 @@ public class LzzTask {
         calendar.add(Calendar.DATE,hour);
         Date date = calendar.getTime();
         return date;
+    }
+
+    @RabbitListener(queues = "lzzMsgQueue")
+    public void receive(String msg) {
+        log.info("接收到消息--" + msg);
+        LzzGaugingStation station = JSONObject.parseObject(msg, LzzGaugingStation.class);
+        boolean b = lzzGaugingStationService.saveOrUpdate(station);
+        log.info("存入数据库的结果：" + b);
     }
 }

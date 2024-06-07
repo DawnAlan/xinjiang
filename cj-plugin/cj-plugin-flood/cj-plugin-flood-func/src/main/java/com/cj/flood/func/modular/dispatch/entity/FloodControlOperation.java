@@ -32,5 +32,9 @@ public class FloodControlOperation extends Model<FloodControlOperation> {
 
     private String remark;
 
+    private Date forecastingTime;
+
+    private String forecastingSchemeName;
+
 }
 
