@@ -42,6 +42,7 @@ import io.minio.ObjectWriteResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -299,7 +300,7 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                         e.printStackTrace();
                         log.error("-------------------------------------------error-------------------------------------------");
                         incomingWaterForecastService.lambdaUpdate().set(IncomingWaterForecast::getStatus,3).
-                                set(IncomingWaterForecast::getRemark,e.getMessage()).
+                                set(IncomingWaterForecast::getRemark, getStringBuilder(e).toString()).
                                 eq(IncomingWaterForecast::getId,incomingWaterForecast.getId()).update();
                     }
                 }
@@ -314,6 +315,24 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
             e.printStackTrace();
             return RestResponse.no(e.getMessage());
         }
+    }
+
+    @NotNull
+    private static StringBuilder getStringBuilder(Exception e) {
+        StringBuilder sb = new StringBuilder();
+        Throwable cause = e;
+        int deep = 0;
+        while (cause != null && deep < 3) {
+            sb.append(e.getMessage()+ "\n");
+            StackTraceElement[] stackTrace = cause.getStackTrace();
+            for (StackTraceElement stack: stackTrace) {
+                sb.append(stack.toString());
+                sb.append("\n");
+            }
+            cause = e.getCause();
+            deep++;
+        }
+        return sb;
     }
 
    /* @Override
