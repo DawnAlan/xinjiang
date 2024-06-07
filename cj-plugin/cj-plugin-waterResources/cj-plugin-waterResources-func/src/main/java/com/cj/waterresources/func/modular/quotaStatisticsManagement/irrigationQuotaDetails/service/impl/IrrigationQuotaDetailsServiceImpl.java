@@ -2,6 +2,7 @@ package com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQ
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cj.common.model.RestResponse;
+import com.cj.common.util.NumberUtil;
 import com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuota.bean.req.IrrigationQuotaContrastReq;
 import com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuota.entity.IrrigationQuota;
 import com.cj.waterresources.func.modular.quotaStatisticsManagement.irrigationQuota.service.IrrigationQuotaService;
@@ -102,13 +103,13 @@ public class IrrigationQuotaDetailsServiceImpl extends ServiceImpl<IrrigationQuo
             for(String crop:strings1){
                 StatisticsByLocationRes res = new StatisticsByLocationRes();
                 Double aDouble = collect1.get(crop).stream().filter(t -> t.getTotalPlannedIrrigationArea() != null).map(IrrigationQuota::getTotalPlannedIrrigationArea).reduce(Double::sum).orElse(0.00);
-                res.setArea(aDouble);
+                res.setArea(NumberUtil.holdDecimal(aDouble,2));
                 res.setCrop(crop);
                 List<IrrigationQuotaDetails> list1 = this.lambdaQuery().in(IrrigationQuotaDetails::getWaterUser, strings).apply("CREATE_TIME BETWEEN '" + startTime + "' and '" + endTime + "'").list();
                 Double irrigationArea = list1.stream().filter(t -> t.getIrrigationCrop().equals(crop) && t.getIrrigationArea() != null).map(IrrigationQuotaDetails::getIrrigationArea).reduce(Double::sum).orElse(0.00);
                 Double irrigationWaterVolume = list1.stream().filter(t -> t.getIrrigationCrop().equals(crop) && t.getIrrigationWaterVolume() != null).map(IrrigationQuotaDetails::getIrrigationWaterVolume).reduce(Double::sum).orElse(0.00);
-                res.setIrrigation(irrigationArea);
-                res.setWaterConsumption(irrigationWaterVolume);
+                res.setIrrigation(NumberUtil.holdDecimal(irrigationArea,2));
+                res.setWaterConsumption(NumberUtil.holdDecimal(irrigationWaterVolume,2));
                 tempList.add(res);
             }
             //地区(1-十二师 2-乌鲁木齐经开区 3-昌吉)
