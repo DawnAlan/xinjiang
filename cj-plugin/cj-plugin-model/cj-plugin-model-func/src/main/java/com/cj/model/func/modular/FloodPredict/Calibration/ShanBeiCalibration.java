@@ -86,8 +86,14 @@ public class ShanBeiCalibration {
         try {
             threeOutput = oneStationCalibration(param);
         } catch (RuntimeException | IOException | InvalidFormatException | ParseException e) {
-            e.printStackTrace();
-            threeOutput.setError(String.valueOf(e));
+//            e.printStackTrace();
+//            String errorMessage = e.toString();
+//            int index = errorMessage.indexOf(":") + 1;
+//            if (index > 0) {
+//                errorMessage = errorMessage.substring(index).trim();
+//            }
+            threeOutput.setError(e.getMessage());
+//            threeOutput.setError(String.valueOf(e));
         }
         return threeOutput;
     }

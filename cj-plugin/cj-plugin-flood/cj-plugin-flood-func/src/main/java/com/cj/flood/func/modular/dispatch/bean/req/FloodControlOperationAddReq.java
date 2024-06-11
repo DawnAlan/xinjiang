@@ -42,6 +42,6 @@ public class FloodControlOperationAddReq implements Serializable {
     @ApiModelProperty(value = "头屯河各月份生态流量,供12个")
     private double[] ecosTth;
 
-    @ApiModelProperty(value = "头屯河各月份生态流量,供12个")
+    @ApiModelProperty(value = "流域参数")
     private BasinParam basinParam;
 }

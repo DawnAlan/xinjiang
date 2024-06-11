@@ -7,5 +7,6 @@ import java.util.List;
 @Data
 public class Gate {
     private String name;
+    private double minLevel;
     private List<CurveParam> curve;
 }
