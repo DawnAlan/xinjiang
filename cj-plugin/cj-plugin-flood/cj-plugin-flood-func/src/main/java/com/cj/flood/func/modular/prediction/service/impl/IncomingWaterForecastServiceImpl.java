@@ -299,8 +299,8 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                     }catch (Exception e) {
                         e.printStackTrace();
                         log.error("-------------------------------------------error-------------------------------------------");
+                        log.error("报错信息："+getStringBuilder(e).toString());
                         incomingWaterForecastService.lambdaUpdate().set(IncomingWaterForecast::getStatus,3).
-                                set(IncomingWaterForecast::getRemark, getStringBuilder(e).toString()).
                                 eq(IncomingWaterForecast::getId,incomingWaterForecast.getId()).update();
                     }
                 }

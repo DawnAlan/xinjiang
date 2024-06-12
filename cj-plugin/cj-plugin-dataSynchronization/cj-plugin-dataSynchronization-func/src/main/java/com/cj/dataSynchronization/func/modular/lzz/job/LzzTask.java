@@ -48,7 +48,7 @@ public class LzzTask {
         return date;
     }
 
-    @RabbitListener(queues = "lzzMsgQueue")
+    //@RabbitListener(queues = "lzzMsgQueue")
     public void receive(String msg) {
         log.info("接收到消息--" + msg);
         LzzGaugingStation station = JSONObject.parseObject(msg, LzzGaugingStation.class);

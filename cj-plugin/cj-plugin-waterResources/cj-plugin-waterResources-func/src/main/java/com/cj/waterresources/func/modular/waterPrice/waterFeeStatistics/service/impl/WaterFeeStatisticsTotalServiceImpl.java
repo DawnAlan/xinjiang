@@ -17,8 +17,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.text.DecimalFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -39,6 +42,7 @@ public class WaterFeeStatisticsTotalServiceImpl extends ServiceImpl<WaterFeeStat
     private TrendsTableParamService trendsTableParamService;
 
     private DecimalFormat df = new DecimalFormat("#0.00");
+    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
     @Override
     public RestResponse<List<WaterFeeStatisticsTotal>> selectInfoList(WaterFeeStatisticsDetailsSelectListReq req) {
@@ -72,6 +76,13 @@ public class WaterFeeStatisticsTotalServiceImpl extends ServiceImpl<WaterFeeStat
         Integer year = Integer.valueOf(split[0]);
         Integer month =Integer.valueOf(split[1]);
         Integer day = Integer.valueOf(split[2]);
+        try {
+            if(sdf.parse(time).compareTo(sdf.parse(sdf.format(new Date())))==0){
+                day = LocalDateTime.now().getDayOfMonth()-1;
+            }
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
         String s = determineTenDays(day);
         List<String> totalIds = trendsTableParamList.stream().map(TrendsTableParam::getId).collect(Collectors.toList());
         List<WaterFeeStatisticsTotal> waterFeeStatisticsTotalList = this.lambdaQuery().in(WaterFeeStatisticsTotal::getTableHeadId, totalIds).eq(WaterFeeStatisticsTotal::getYear, year).eq(WaterFeeStatisticsTotal::getMonth, month).

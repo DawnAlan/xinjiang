@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cj.auth.core.pojo.SaBaseLoginUser;
 import com.cj.auth.core.util.StpLoginUserUtil;
 import com.cj.common.model.RestResponse;
+import com.cj.common.util.NumberUtil;
 import com.cj.common.util.RedisUtil;
 import com.cj.common.util.UUIDUtils;
 import com.cj.middleDatabase.func.modular.lzz.storageCapacityCurve.entity.StorageCapacityCurve;
@@ -197,10 +198,10 @@ public class WaterStorageSchedulingTthServiceImpl extends ServiceImpl<WaterStora
         if(tth.getSortNum()==1){
             WaterStorageSchedulingTotalForm byId = waterStorageSchedulingTotalFormService.getById(tth.getFormId());
             Double waterLevelByLevel = GetSzyDataUtils.getWaterLevelByLevel(byId.getFirstData(), id);
-            tth.setRegulatingWaterStorageCapacity(tth.getWaterStorage()-waterLevelByLevel);
+            tth.setRegulatingWaterStorageCapacity(NumberUtil.holdDecimal(tth.getWaterStorage()-waterLevelByLevel,2));
         }else {
             WaterStorageSchedulingTth one = this.lambdaQuery().eq(WaterStorageSchedulingTth::getFormId, tth.getFormId()).eq(WaterStorageSchedulingTth::getSortNum, tth.getSortNum() - 1).one();
-            tth.setRegulatingWaterStorageCapacity(one.getWaterStorage()-tth.getWaterStorage());
+            tth.setRegulatingWaterStorageCapacity(NumberUtil.holdDecimal(one.getWaterStorage()-tth.getWaterStorage(),2));
         }
         tth.setWaterSupplyVolumeTotal(changeNum(
                     (tth.getIrrigationWaterDemand()==null?0.0:tth.getIrrigationWaterDemand())+
@@ -233,7 +234,7 @@ public class WaterStorageSchedulingTthServiceImpl extends ServiceImpl<WaterStora
         waterStorageSchedulingTthList.sort(Comparator.comparing(t -> t.getSortNum()));
         for(int j=1;j<waterStorageSchedulingTthList.size();j++){
             WaterStorageSchedulingTth tth = waterStorageSchedulingTthList.get(j);
-            tth.setRegulatingWaterStorageCapacity(changeNum(tth.getWaterStorage()-waterStorageSchedulingTthList.get(j-1).getWaterStorage()));
+            tth.setRegulatingWaterStorageCapacity(NumberUtil.holdDecimal((tth.getWaterStorage()-waterStorageSchedulingTthList.get(j-1).getWaterStorage()),2));
         }
         waterStorageSchedulingTthList.forEach(t-> {
             t.setReservoirInflow(t.getRegulatingWaterStorageCapacity()+t.getWaterSupplyVolumeTotal());

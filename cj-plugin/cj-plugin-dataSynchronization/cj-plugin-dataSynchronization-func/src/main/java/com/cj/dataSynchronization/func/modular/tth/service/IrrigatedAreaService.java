@@ -17,5 +17,6 @@ public interface IrrigatedAreaService {
     RestResponse selectHistoryData(String type,String id,String startTime,String endTime);
 
     RestResponse saveHistoryData(String id,String startTime,String endTime);
+    RestResponse saveHistoryDataForRain(String id,String startTime,String endTime);
 
 }

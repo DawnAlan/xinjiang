@@ -13,14 +13,7 @@ spring:
         file-extension: yaml
         username: nacos
         password: nacos
-  rabbitmq:
-    host: 192.168.50.15
-    username: tth
-    password: Lx@lw1996pqzzz
-    #虚拟主机
-    virtual-host: /
-    #端口
-    port: 5672
+
 
 #10.65.73.17
 irrigatedArea:

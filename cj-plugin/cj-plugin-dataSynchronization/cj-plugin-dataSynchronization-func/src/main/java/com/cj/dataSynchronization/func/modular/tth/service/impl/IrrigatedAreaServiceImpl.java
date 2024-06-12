@@ -371,95 +371,7 @@ public class IrrigatedAreaServiceImpl implements IrrigatedAreaService {
             IrrigatedPlatformTree byId = irrigatedPlatformTreeService.getById(id);
             if(byId.getMonitorType().equals("01")){
                 List<HistoryDataVo> historyDataForWater = IrrigatedAreaInvoke.getHistoryDataForWater(id, startTime, endTime);
-                for(HistoryDataVo vo:historyDataForWater){
-                    IrrigatedPlatformDataInfo info = new IrrigatedPlatformDataInfo();
-                    info.setMonitorName(vo.getMONITOR_NAME());
-                    info.setId(vo.getMONITOR_NAME()+"-"+sdf.parse(vo.getMONITOR_TIME()).getTime());
-                    info.setVoltage(vo.getVOLTAGE());
-                    info.setSqWaterLevel(vo.getWATER_LEVEL());
-                    info.setMonitorTime(DateUtil.parse(vo.getMONITOR_TIME(),"yyyy-MM-dd HH:mm"));
-                    info.setRecordTime(DateUtil.parse(vo.getMONITOR_TIME(),"yyyy-MM-dd"));
-                    info.setSqMonitorFlow(vo.getMONITOR_FLOW());
-                    info.setSqMonitorFlowRate(vo.getMONITOR_FLOW_RATE());
-                    info.setMonitorId(vo.getMONITOR_ID());
-                    info.setSqTotalFlow(vo.getTOTAL_FLOW());
-                    resultList.add(info);
-                }
-            }
-            if(byId.getMonitorType().equals("03")){
-                List<HistoryDataVo> historyDataForWater = IrrigatedAreaInvoke.getHistoryDataForRain(id, startTime, endTime);
-                for(HistoryDataVo vo:historyDataForWater){
-                    IrrigatedPlatformDataInfo info = new IrrigatedPlatformDataInfo();
-                    info.setMonitorName(vo.getMONITOR_NAME());
-                    info.setId(vo.getMONITOR_NAME()+"-"+sdf.parse(vo.getMONITOR_TIME()).getTime());
-                    info.setMonitorTime(DateUtil.parse(vo.getMONITOR_TIME(),"yyyy-MM-dd HH:mm"));
-                    info.setRecordTime(DateUtil.parse(vo.getMONITOR_TIME(),"yyyy-MM-dd"));
-                    info.setMonitorId(vo.getMONITOR_ID());
-                    info.setQxRainFall(vo.getRAIN_FALL());
-                    long between = DateUtil.between(sdf.parse(startTime), sdf.parse(endTime), DateUnit.HOUR);
-                    if(between>1 && between<3){
-                        List<HistoryDataVo> one = historyDataForWater.stream().filter(t -> DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isAfter(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"))
-                                        && DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isBefore(calculateTime(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"), -1)))
-                                .collect(Collectors.toList());
-                        info.setYqRainFallOne(one.stream().filter(t->t.getRAIN_FALL() !=null).map(HistoryDataVo::getRAIN_FALL).reduce(Double::sum).orElse(0.00));
-                    }
-                    if(between>3 && between<6){
-                        List<HistoryDataVo> three = historyDataForWater.stream().filter(t -> DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isAfter(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"))
-                                        && DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isBefore(calculateTime(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"), -3)))
-                                .collect(Collectors.toList());
-                        info.setYqRainFallThree(three.stream().filter(t->t.getRAIN_FALL() !=null).map(HistoryDataVo::getRAIN_FALL).reduce(Double::sum).orElse(0.00));
-                    }
-                    if(between>6 && between<12){
-                        List<HistoryDataVo> six = historyDataForWater.stream().filter(t -> DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isAfter(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"))
-                                        && DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isBefore(calculateTime(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"), -6)))
-                                .collect(Collectors.toList());
-                        info.setYqRainFallSix(six.stream().filter(t->t.getRAIN_FALL() !=null).map(HistoryDataVo::getRAIN_FALL).reduce(Double::sum).orElse(0.00));
-                    }
-                    if(between>12 && between<24){
-                        List<HistoryDataVo> twelve = historyDataForWater.stream().filter(t -> DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isAfter(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"))
-                                        && DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isBefore(calculateTime(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"), -12)))
-                                .collect(Collectors.toList());
-                        info.setYqRainFallTwelve(twelve.stream().filter(t->t.getRAIN_FALL() !=null).map(HistoryDataVo::getRAIN_FALL).reduce(Double::sum).orElse(0.00));
-                    }
-                    if(between>24){
-                        List<HistoryDataVo> twentyFour = historyDataForWater.stream().filter(t -> DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isAfter(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"))
-                                        && DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isBefore(calculateTime(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"), -24)))
-                                .collect(Collectors.toList());
-                        info.setYqRainFallTwentyFour(twentyFour.stream().filter(t->t.getRAIN_FALL() !=null).map(HistoryDataVo::getRAIN_FALL).reduce(Double::sum).orElse(0.00));
-                    }
-                    resultList.add(info);
-                }
-            }
-            if(byId.getMonitorType().equals("04")){
-                List<HistoryDataVo> historyDataForWater = IrrigatedAreaInvoke.getHistoryDataForPipeLine(id, startTime, endTime);
-                for(HistoryDataVo vo:historyDataForWater){
-                    IrrigatedPlatformDataInfo info = new IrrigatedPlatformDataInfo();
-                    info.setMonitorName(vo.getMONITOR_NAME());
-                    info.setId(vo.getMONITOR_NAME()+"-"+sdf.parse(vo.getMONITOR_TIME()).getTime());
-                    info.setMonitorTime(DateUtil.parse(vo.getMONITOR_TIME(),"yyyy-MM-dd HH:mm"));
-                    info.setRecordTime(DateUtil.parse(vo.getMONITOR_TIME(),"yyyy-MM-dd"));
-                    info.setMonitorId(vo.getMONITOR_ID());
-                    info.setVoltage(vo.getVOLTAGE());
-                    info.setGdMonitorFlowRate(vo.getMONITOR_FLOW_RATE());
-                    info.setGdMonitorFlow(vo.getMONITOR_FLOW());
-                    info.setGdTotalFlow(vo.getTOTAL_FLOW());
-                    info.setGdIsNullPipe(vo.getIS_NULL_PIPE());
-                    info.setGdPipePressure(vo.getPIPE_PRESSURE());
-                    resultList.add(info);
-                }
-            }
-            boolean b = irrigatedPlatformDataInfoService.saveOrUpdateBatch(resultList);
-            if(b){
-                return RestResponse.ok("保存历史数据成功");
-            }else {
-                return RestResponse.no("保存历史数据失败");
-            }
-        }else {
-            List<IrrigatedPlatformTree> list = irrigatedPlatformTreeService.lambdaQuery().eq(IrrigatedPlatformTree::getNodetype, "Monitor").ne(IrrigatedPlatformTree::getMonitorType, "21").isNotNull(IrrigatedPlatformTree::getMonitorType).list();
-            List<IrrigatedPlatformDataInfo> resultList = new ArrayList<>();
-            for(IrrigatedPlatformTree tree:list){
-                if(tree.getMonitorType().equals("01")){
-                    List<HistoryDataVo> historyDataForWater = IrrigatedAreaInvoke.getHistoryDataForWater(id, startTime, endTime);
+                if(historyDataForWater!=null && historyDataForWater.size()>0){
                     for(HistoryDataVo vo:historyDataForWater){
                         IrrigatedPlatformDataInfo info = new IrrigatedPlatformDataInfo();
                         info.setMonitorName(vo.getMONITOR_NAME());
@@ -475,8 +387,10 @@ public class IrrigatedAreaServiceImpl implements IrrigatedAreaService {
                         resultList.add(info);
                     }
                 }
-                if(tree.getMonitorType().equals("03")){
-                    List<HistoryDataVo> historyDataForWater = IrrigatedAreaInvoke.getHistoryDataForRain(id, startTime, endTime);
+            }
+            if(byId.getMonitorType().equals("03")){
+                List<HistoryDataVo> historyDataForWater = IrrigatedAreaInvoke.getHistoryDataForRain(id, startTime, endTime);
+                if(historyDataForWater!=null && historyDataForWater.size()>0){
                     for(HistoryDataVo vo:historyDataForWater){
                         IrrigatedPlatformDataInfo info = new IrrigatedPlatformDataInfo();
                         info.setMonitorName(vo.getMONITOR_NAME());
@@ -491,36 +405,38 @@ public class IrrigatedAreaServiceImpl implements IrrigatedAreaService {
                                             && DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isBefore(calculateTime(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"), -1)))
                                     .collect(Collectors.toList());
                             info.setYqRainFallOne(one.stream().filter(t->t.getRAIN_FALL() !=null).map(HistoryDataVo::getRAIN_FALL).reduce(Double::sum).orElse(0.00));
-                        }
-                        if(between>3 && between<6){
-                            List<HistoryDataVo> three = historyDataForWater.stream().filter(t -> DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isAfter(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"))
-                                            && DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isBefore(calculateTime(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"), -3)))
-                                    .collect(Collectors.toList());
-                            info.setYqRainFallThree(three.stream().filter(t->t.getRAIN_FALL() !=null).map(HistoryDataVo::getRAIN_FALL).reduce(Double::sum).orElse(0.00));
-                        }
-                        if(between>6 && between<12){
-                            List<HistoryDataVo> six = historyDataForWater.stream().filter(t -> DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isAfter(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"))
-                                            && DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isBefore(calculateTime(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"), -6)))
-                                    .collect(Collectors.toList());
-                            info.setYqRainFallSix(six.stream().filter(t->t.getRAIN_FALL() !=null).map(HistoryDataVo::getRAIN_FALL).reduce(Double::sum).orElse(0.00));
-                        }
-                        if(between>12 && between<24){
-                            List<HistoryDataVo> twelve = historyDataForWater.stream().filter(t -> DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isAfter(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"))
-                                            && DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isBefore(calculateTime(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"), -12)))
-                                    .collect(Collectors.toList());
-                            info.setYqRainFallTwelve(twelve.stream().filter(t->t.getRAIN_FALL() !=null).map(HistoryDataVo::getRAIN_FALL).reduce(Double::sum).orElse(0.00));
-                        }
-                        if(between>24){
-                            List<HistoryDataVo> twentyFour = historyDataForWater.stream().filter(t -> DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isAfter(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"))
-                                            && DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isBefore(calculateTime(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"), -24)))
-                                    .collect(Collectors.toList());
-                            info.setYqRainFallTwentyFour(twentyFour.stream().filter(t->t.getRAIN_FALL() !=null).map(HistoryDataVo::getRAIN_FALL).reduce(Double::sum).orElse(0.00));
+                            if(between>3 && between<6){
+                                List<HistoryDataVo> three = historyDataForWater.stream().filter(t -> DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isAfter(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"))
+                                                && DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isBefore(calculateTime(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"), -3)))
+                                        .collect(Collectors.toList());
+                                info.setYqRainFallThree(three.stream().filter(t->t.getRAIN_FALL() !=null).map(HistoryDataVo::getRAIN_FALL).reduce(Double::sum).orElse(0.00));
+                                if(between>6 && between<12){
+                                    List<HistoryDataVo> six = historyDataForWater.stream().filter(t -> DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isAfter(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"))
+                                                    && DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isBefore(calculateTime(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"), -6)))
+                                            .collect(Collectors.toList());
+                                    info.setYqRainFallSix(six.stream().filter(t->t.getRAIN_FALL() !=null).map(HistoryDataVo::getRAIN_FALL).reduce(Double::sum).orElse(0.00));
+                                    if(between>12 && between<24){
+                                        List<HistoryDataVo> twelve = historyDataForWater.stream().filter(t -> DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isAfter(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"))
+                                                        && DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isBefore(calculateTime(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"), -12)))
+                                                .collect(Collectors.toList());
+                                        info.setYqRainFallTwelve(twelve.stream().filter(t->t.getRAIN_FALL() !=null).map(HistoryDataVo::getRAIN_FALL).reduce(Double::sum).orElse(0.00));
+                                        if(between>24){
+                                            List<HistoryDataVo> twentyFour = historyDataForWater.stream().filter(t -> DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isAfter(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"))
+                                                            && DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isBefore(calculateTime(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"), -24)))
+                                                    .collect(Collectors.toList());
+                                            info.setYqRainFallTwentyFour(twentyFour.stream().filter(t->t.getRAIN_FALL() !=null).map(HistoryDataVo::getRAIN_FALL).reduce(Double::sum).orElse(0.00));
+                                        }
+                                    }
+                                }
+                            }
                         }
                         resultList.add(info);
                     }
                 }
-                if(tree.getMonitorType().equals("04")){
-                    List<HistoryDataVo> historyDataForWater = IrrigatedAreaInvoke.getHistoryDataForPipeLine(id, startTime, endTime);
+            }
+            if(byId.getMonitorType().equals("04")){
+                List<HistoryDataVo> historyDataForWater = IrrigatedAreaInvoke.getHistoryDataForPipeLine(id, startTime, endTime);
+                if(historyDataForWater!=null && historyDataForWater.size()>0){
                     for(HistoryDataVo vo:historyDataForWater){
                         IrrigatedPlatformDataInfo info = new IrrigatedPlatformDataInfo();
                         info.setMonitorName(vo.getMONITOR_NAME());
@@ -537,7 +453,221 @@ public class IrrigatedAreaServiceImpl implements IrrigatedAreaService {
                         resultList.add(info);
                     }
                 }
+            }
+            boolean b = irrigatedPlatformDataInfoService.saveOrUpdateBatch(resultList);
+            if(b){
+                return RestResponse.ok("保存历史数据成功");
+            }else {
+                return RestResponse.no("保存历史数据失败");
+            }
+        }else {
+            List<IrrigatedPlatformTree> list = irrigatedPlatformTreeService.lambdaQuery().eq(IrrigatedPlatformTree::getNodetype, "Monitor").ne(IrrigatedPlatformTree::getMonitorType, "21").isNotNull(IrrigatedPlatformTree::getMonitorType).list();
+            List<IrrigatedPlatformDataInfo> resultList = new ArrayList<>();
+            for(IrrigatedPlatformTree tree:list){
+                if(tree.getMonitorType().equals("01")){
+                    List<HistoryDataVo> historyDataForWater = IrrigatedAreaInvoke.getHistoryDataForWater(tree.getId(), startTime, endTime);
+                    if(historyDataForWater!=null && historyDataForWater.size()>0){
+                        for(HistoryDataVo vo:historyDataForWater){
+                            IrrigatedPlatformDataInfo info = new IrrigatedPlatformDataInfo();
+                            info.setMonitorName(vo.getMONITOR_NAME());
+                            info.setId(vo.getMONITOR_NAME()+"-"+sdf.parse(vo.getMONITOR_TIME()).getTime());
+                            info.setVoltage(vo.getVOLTAGE());
+                            info.setSqWaterLevel(vo.getWATER_LEVEL());
+                            info.setMonitorTime(DateUtil.parse(vo.getMONITOR_TIME(),"yyyy-MM-dd HH:mm"));
+                            info.setRecordTime(DateUtil.parse(vo.getMONITOR_TIME(),"yyyy-MM-dd"));
+                            info.setSqMonitorFlow(vo.getMONITOR_FLOW());
+                            info.setSqMonitorFlowRate(vo.getMONITOR_FLOW_RATE());
+                            info.setMonitorId(vo.getMONITOR_ID());
+                            info.setSqTotalFlow(vo.getTOTAL_FLOW());
+                            resultList.add(info);
+                        }
+                    }
+                }
+                if(tree.getMonitorType().equals("03")){
+                    List<HistoryDataVo> historyDataForWater = IrrigatedAreaInvoke.getHistoryDataForRain(tree.getId(), startTime, endTime);
+                    if(historyDataForWater!=null && historyDataForWater.size()>0){
+                        for(HistoryDataVo vo:historyDataForWater){
+                            IrrigatedPlatformDataInfo info = new IrrigatedPlatformDataInfo();
+                            info.setMonitorName(vo.getMONITOR_NAME());
+                            info.setId(vo.getMONITOR_NAME()+"-"+sdf.parse(vo.getMONITOR_TIME()).getTime());
+                            info.setMonitorTime(DateUtil.parse(vo.getMONITOR_TIME(),"yyyy-MM-dd HH:mm"));
+                            info.setRecordTime(DateUtil.parse(vo.getMONITOR_TIME(),"yyyy-MM-dd"));
+                            info.setMonitorId(vo.getMONITOR_ID());
+                            info.setQxRainFall(vo.getRAIN_FALL());
+                            long between = DateUtil.between(sdf.parse(startTime), sdf.parse(endTime), DateUnit.HOUR);
+                            if(between>1 && between<3){
+                                List<HistoryDataVo> one = historyDataForWater.stream().filter(t -> DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isAfter(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"))
+                                                && DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isBefore(calculateTime(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"), -1)))
+                                        .collect(Collectors.toList());
+                                info.setYqRainFallOne(one.stream().filter(t->t.getRAIN_FALL() !=null).map(HistoryDataVo::getRAIN_FALL).reduce(Double::sum).orElse(0.00));
+                                if(between>3 && between<6){
+                                    List<HistoryDataVo> three = historyDataForWater.stream().filter(t -> DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isAfter(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"))
+                                                    && DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isBefore(calculateTime(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"), -3)))
+                                            .collect(Collectors.toList());
+                                    info.setYqRainFallThree(three.stream().filter(t->t.getRAIN_FALL() !=null).map(HistoryDataVo::getRAIN_FALL).reduce(Double::sum).orElse(0.00));
+                                    if(between>6 && between<12){
+                                        List<HistoryDataVo> six = historyDataForWater.stream().filter(t -> DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isAfter(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"))
+                                                        && DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isBefore(calculateTime(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"), -6)))
+                                                .collect(Collectors.toList());
+                                        info.setYqRainFallSix(six.stream().filter(t->t.getRAIN_FALL() !=null).map(HistoryDataVo::getRAIN_FALL).reduce(Double::sum).orElse(0.00));
+                                        if(between>12 && between<24){
+                                            List<HistoryDataVo> twelve = historyDataForWater.stream().filter(t -> DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isAfter(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"))
+                                                            && DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isBefore(calculateTime(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"), -12)))
+                                                    .collect(Collectors.toList());
+                                            info.setYqRainFallTwelve(twelve.stream().filter(t->t.getRAIN_FALL() !=null).map(HistoryDataVo::getRAIN_FALL).reduce(Double::sum).orElse(0.00));
+                                            if(between>24){
+                                                List<HistoryDataVo> twentyFour = historyDataForWater.stream().filter(t -> DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isAfter(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"))
+                                                                && DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isBefore(calculateTime(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"), -24)))
+                                                        .collect(Collectors.toList());
+                                                info.setYqRainFallTwentyFour(twentyFour.stream().filter(t->t.getRAIN_FALL() !=null).map(HistoryDataVo::getRAIN_FALL).reduce(Double::sum).orElse(0.00));
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            resultList.add(info);
+                        }
+                    }
 
+                }
+                if(tree.getMonitorType().equals("04")){
+                    List<HistoryDataVo> historyDataForWater = IrrigatedAreaInvoke.getHistoryDataForPipeLine(tree.getId(), startTime, endTime);
+                    if(historyDataForWater!=null && historyDataForWater.size()>0){
+                        for(HistoryDataVo vo:historyDataForWater){
+                            IrrigatedPlatformDataInfo info = new IrrigatedPlatformDataInfo();
+                            info.setMonitorName(vo.getMONITOR_NAME());
+                            info.setId(vo.getMONITOR_NAME()+"-"+sdf.parse(vo.getMONITOR_TIME()).getTime());
+                            info.setMonitorTime(DateUtil.parse(vo.getMONITOR_TIME(),"yyyy-MM-dd HH:mm"));
+                            info.setRecordTime(DateUtil.parse(vo.getMONITOR_TIME(),"yyyy-MM-dd"));
+                            info.setMonitorId(vo.getMONITOR_ID());
+                            info.setVoltage(vo.getVOLTAGE());
+                            info.setGdMonitorFlowRate(vo.getMONITOR_FLOW_RATE());
+                            info.setGdMonitorFlow(vo.getMONITOR_FLOW());
+                            info.setGdTotalFlow(vo.getTOTAL_FLOW());
+                            info.setGdIsNullPipe(vo.getIS_NULL_PIPE());
+                            info.setGdPipePressure(vo.getPIPE_PRESSURE());
+                            resultList.add(info);
+                        }
+                    }
+                }
+
+            }
+            boolean b = irrigatedPlatformDataInfoService.saveOrUpdateBatch(resultList);
+            if(b){
+                return RestResponse.ok("保存历史数据成功");
+            }else {
+                return RestResponse.no("保存历史数据失败");
+            }
+        }
+    }
+
+    @SneakyThrows
+    @Override
+    public RestResponse saveHistoryDataForRain(String id, String startTime, String endTime) {
+        //monitorType 01-计量点  03-雨量站 04-管道
+        if(StringUtils.isNotEmpty(id)){
+            List<IrrigatedPlatformDataInfo> resultList = new ArrayList<>();
+            IrrigatedPlatformTree byId = irrigatedPlatformTreeService.getById(id);
+            List<HistoryDataVo> historyDataForWater = IrrigatedAreaInvoke.getHistoryDataForRain(id, startTime, endTime);
+            if(historyDataForWater!=null && historyDataForWater.size()>0){
+                for(HistoryDataVo vo:historyDataForWater){
+                    IrrigatedPlatformDataInfo info = new IrrigatedPlatformDataInfo();
+                    info.setMonitorName(vo.getMONITOR_NAME());
+                    info.setId(vo.getMONITOR_NAME()+"-"+sdf.parse(vo.getMONITOR_TIME()).getTime());
+                    info.setMonitorTime(DateUtil.parse(vo.getMONITOR_TIME(),"yyyy-MM-dd HH:mm"));
+                    info.setRecordTime(DateUtil.parse(vo.getMONITOR_TIME(),"yyyy-MM-dd"));
+                    info.setMonitorId(vo.getMONITOR_ID());
+                    info.setQxRainFall(vo.getRAIN_FALL());
+                    long between = DateUtil.between(sdf.parse(startTime), sdf.parse(endTime), DateUnit.HOUR);
+                    if(between>1){
+                        List<HistoryDataVo> one = historyDataForWater.stream().filter(t -> DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isAfter(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"))
+                                        && DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isBefore(calculateTime(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"), -1)))
+                                .collect(Collectors.toList());
+                        info.setYqRainFallOne(one.stream().filter(t->t.getRAIN_FALL() !=null).map(HistoryDataVo::getRAIN_FALL).reduce(Double::sum).orElse(0.00));
+                        if(between>3){
+                            List<HistoryDataVo> three = historyDataForWater.stream().filter(t -> DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isAfter(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"))
+                                            && DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isBefore(calculateTime(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"), -3)))
+                                    .collect(Collectors.toList());
+                            info.setYqRainFallThree(three.stream().filter(t->t.getRAIN_FALL() !=null).map(HistoryDataVo::getRAIN_FALL).reduce(Double::sum).orElse(0.00));
+                            if(between>6){
+                                List<HistoryDataVo> six = historyDataForWater.stream().filter(t -> DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isAfter(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"))
+                                                && DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isBefore(calculateTime(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"), -6)))
+                                        .collect(Collectors.toList());
+                                info.setYqRainFallSix(six.stream().filter(t->t.getRAIN_FALL() !=null).map(HistoryDataVo::getRAIN_FALL).reduce(Double::sum).orElse(0.00));
+                                if(between>12){
+                                    List<HistoryDataVo> twelve = historyDataForWater.stream().filter(t -> DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isAfter(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"))
+                                                    && DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isBefore(calculateTime(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"), -12)))
+                                            .collect(Collectors.toList());
+                                    info.setYqRainFallTwelve(twelve.stream().filter(t->t.getRAIN_FALL() !=null).map(HistoryDataVo::getRAIN_FALL).reduce(Double::sum).orElse(0.00));
+                                    if(between>24){
+                                        List<HistoryDataVo> twentyFour = historyDataForWater.stream().filter(t -> DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isAfter(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"))
+                                                        && DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isBefore(calculateTime(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"), -24)))
+                                                .collect(Collectors.toList());
+                                        info.setYqRainFallTwentyFour(twentyFour.stream().filter(t->t.getRAIN_FALL() !=null).map(HistoryDataVo::getRAIN_FALL).reduce(Double::sum).orElse(0.00));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    resultList.add(info);
+                }
+            }
+            boolean b = irrigatedPlatformDataInfoService.saveOrUpdateBatch(resultList);
+            if(b){
+                return RestResponse.ok("保存历史数据成功");
+            }else {
+                return RestResponse.no("保存历史数据失败");
+            }
+        }else {
+            List<IrrigatedPlatformTree> list = irrigatedPlatformTreeService.lambdaQuery().
+                    eq(IrrigatedPlatformTree::getNodetype, "Monitor").
+                    eq(IrrigatedPlatformTree::getMonitorType, "03").list();
+            List<IrrigatedPlatformDataInfo> resultList = new ArrayList<>();
+            for(IrrigatedPlatformTree tree:list){
+                List<HistoryDataVo> historyDataForWater = IrrigatedAreaInvoke.getHistoryDataForRain(tree.getId(), startTime, endTime);
+                if(historyDataForWater!=null && historyDataForWater.size()>0){
+                    for(HistoryDataVo vo:historyDataForWater){
+                        IrrigatedPlatformDataInfo info = new IrrigatedPlatformDataInfo();
+                        info.setMonitorName(vo.getMONITOR_NAME());
+                        info.setId(vo.getMONITOR_NAME()+"-"+sdf.parse(vo.getMONITOR_TIME()).getTime());
+                        info.setMonitorTime(DateUtil.parse(vo.getMONITOR_TIME(),"yyyy-MM-dd HH:mm"));
+                        info.setRecordTime(DateUtil.parse(vo.getMONITOR_TIME(),"yyyy-MM-dd"));
+                        info.setMonitorId(vo.getMONITOR_ID());
+                        info.setQxRainFall(vo.getRAIN_FALL());
+                        long between = DateUtil.between(sdf.parse(startTime), sdf.parse(endTime), DateUnit.HOUR);
+                        if(between>1){
+                            List<HistoryDataVo> one = historyDataForWater.stream().filter(t -> DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isAfter(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"))
+                                            && DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isBefore(calculateTime(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"), -1)))
+                                    .collect(Collectors.toList());
+                            info.setYqRainFallOne(one.stream().filter(t->t.getRAIN_FALL() !=null).map(HistoryDataVo::getRAIN_FALL).reduce(Double::sum).orElse(0.00));
+                            if(between>3){
+                                List<HistoryDataVo> three = historyDataForWater.stream().filter(t -> DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isAfter(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"))
+                                                && DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isBefore(calculateTime(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"), -3)))
+                                        .collect(Collectors.toList());
+                                info.setYqRainFallThree(three.stream().filter(t->t.getRAIN_FALL() !=null).map(HistoryDataVo::getRAIN_FALL).reduce(Double::sum).orElse(0.00));
+                                if(between>6){
+                                    List<HistoryDataVo> six = historyDataForWater.stream().filter(t -> DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isAfter(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"))
+                                                    && DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isBefore(calculateTime(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"), -6)))
+                                            .collect(Collectors.toList());
+                                    info.setYqRainFallSix(six.stream().filter(t->t.getRAIN_FALL() !=null).map(HistoryDataVo::getRAIN_FALL).reduce(Double::sum).orElse(0.00));
+                                    if(between>12){
+                                        List<HistoryDataVo> twelve = historyDataForWater.stream().filter(t -> DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isAfter(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"))
+                                                        && DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isBefore(calculateTime(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"), -12)))
+                                                .collect(Collectors.toList());
+                                        info.setYqRainFallTwelve(twelve.stream().filter(t->t.getRAIN_FALL() !=null).map(HistoryDataVo::getRAIN_FALL).reduce(Double::sum).orElse(0.00));
+                                        if(between>24){
+                                            List<HistoryDataVo> twentyFour = historyDataForWater.stream().filter(t -> DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isAfter(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"))
+                                                            && DateUtil.parse(t.getMONITOR_TIME(), "yyyy-MM-dd HH:mm").isBefore(calculateTime(DateUtil.parse(vo.getMONITOR_TIME(), "yyyy-MM-dd HH:mm"), -24)))
+                                                    .collect(Collectors.toList());
+                                            info.setYqRainFallTwentyFour(twentyFour.stream().filter(t->t.getRAIN_FALL() !=null).map(HistoryDataVo::getRAIN_FALL).reduce(Double::sum).orElse(0.00));
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        resultList.add(info);
+                    }
+                }
             }
             boolean b = irrigatedPlatformDataInfoService.saveOrUpdateBatch(resultList);
             if(b){

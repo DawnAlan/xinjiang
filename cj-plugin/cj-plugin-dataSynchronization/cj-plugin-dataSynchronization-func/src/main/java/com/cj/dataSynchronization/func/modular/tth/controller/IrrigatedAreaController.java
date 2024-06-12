@@ -97,4 +97,13 @@ public class IrrigatedAreaController {
                                           @RequestParam(value = "endTime") String endTime) {
         return irrigatedAreaService.saveHistoryData(id,startTime,endTime);
     }
+
+    @ApiOperationSupport(order = 6)
+    @ApiOperation(value="保存雨量站历史记录", notes="保存雨量站历史记录")
+    @GetMapping(value = "/saveHistoryDataForRain")
+    public RestResponse saveHistoryDataForRain(@RequestParam(value = "id",required = false) String id,
+                                        @RequestParam(value = "startTime") String startTime,
+                                        @RequestParam(value = "endTime") String endTime) {
+        return irrigatedAreaService.saveHistoryDataForRain(id,startTime,endTime);
+    }
 }

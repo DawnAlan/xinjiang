@@ -56,6 +56,7 @@ public interface DayWaterSituationStatisticsTableQsMapper extends BaseMapper<Day
     List<DayWaterSituationStatisticsTableQs> selectForApproval(@Param("recordTime")String recordTime);
 
     List<DayWaterSituationStatisticsTableQs> selectListByTime(@Param("waterLevelIds")List<String> waterLevelIds, @Param("startTime")String startTime, @Param("endTime")String endTime);
+    List<DayWaterSituationStatisticsTableQs> selectListByTimeForStatistics(@Param("waterLevelIds")List<String> waterLevelIds, @Param("startTime")String startTime, @Param("endTime")String endTime);
 
     @Select("select END_TABLE_LIST from DAY_WATER_SITUATION_STATISTICS_TABLE_QS WHERE RECORD_TIME = #{time}  and TIME = '08:00' order by time desc limit 1")
     String selectEndTableList(@Param("time")String time);
