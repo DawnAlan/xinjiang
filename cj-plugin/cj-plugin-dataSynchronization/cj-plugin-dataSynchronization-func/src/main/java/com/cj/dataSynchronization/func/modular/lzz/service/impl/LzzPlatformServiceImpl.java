@@ -267,6 +267,29 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
     }
 
     @Override
+    public RestResponse insertLzzKqRailBetweenTime(Date startTime, Date endTime) {
+        List<LzzRainfallStation> rainfallStationList = new ArrayList<>();
+        List<ParamDto> paramDtos = lzzPlatformMapper.selectInfoBetweenTime("9210201100100 ", sdf.format(startTime), sdf.format(endTime));
+        for (ParamDto paramDto :paramDtos){
+            LzzRainfallStation station = new LzzRainfallStation();
+            station.setTreeId("9210201100100");
+            station.setStationName("库区自动雨量站");
+            station.setRainfall(paramDto.getV());
+            station.setTime(paramDto.getTime());
+            station.setRecordTime(DateUtil.parse(sdf1.format(paramDto.getTime()),"yyyy-MM-dd"));
+            station.setYear(String.valueOf(sdf.format(paramDto.getTime()).split("-")[0]));
+            station.setId("库区自动雨量站:"+paramDto.getTime().getTime());
+            rainfallStationList.add(station);
+        }
+        boolean b = lzzRainfallStationService.saveOrUpdateBatch(rainfallStationList);
+        if(b){
+            return RestResponse.ok("ok");
+        }else {
+            return RestResponse.no("error");
+        }
+    }
+
+    @Override
     public RestResponse insertRainfallStationRainfallBetweenTime(Date startTime, Date endTime) {
         List<UserIdParam> rainfallStationPidList = pubUserService.selectPidList("雨量站");
         List<LzzRainfallStation> result = new ArrayList<>();

@@ -20,6 +20,7 @@ public interface LzzPlatformService {
     RestResponse insertLzzInfo(Date time);
 
     RestResponse insertLzzBetweenTime(Date startTime, Date endTime);
+    RestResponse insertLzzKqRailBetweenTime(Date startTime, Date endTime);
 
     RestResponse insertRainfallStationRainfallBetweenTime(Date startTime, Date endTime);
     RestResponse insertRainfallStationTemperatureBetweenTime(Date startTime, Date endTime);
