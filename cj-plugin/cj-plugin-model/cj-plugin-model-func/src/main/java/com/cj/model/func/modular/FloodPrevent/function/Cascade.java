@@ -214,13 +214,13 @@ public class Cascade{
 
         ResOption resOption2 = new ResOption();
         resOption2.setPath(path2);
-        resOption2.setName(reqFloodPrevent.getProgrammeName()+"-灵活调度");
+        resOption2.setName(reqFloodPrevent.getProgrammeName()+"-梯级联调");
         resOption2.setInform(inform);
         result.add(resOption2);
 
         ResOption resOption3 = new ResOption();
         resOption3.setPath(path3);
-        resOption3.setName(reqFloodPrevent.getProgrammeName()+"-预泄调度");
+        resOption3.setName(reqFloodPrevent.getProgrammeName()+"-优化调度");
         resOption3.setInform(inform);
         result.add(resOption3);
 

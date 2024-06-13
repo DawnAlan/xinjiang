@@ -160,7 +160,7 @@ public class Model {
             double percent2=aa[1];
             //补全方案
             option.setTime(time);
-            option.setType("灵活调度");
+            option.setType("梯级联调");
             option.setName(reservoir.getName());
             option.setH1(beginH);
             option.setH2(endH);
@@ -380,7 +380,7 @@ public class Model {
             p2=getPercentage(reservoir,V)[1];
 
             option.setName(reservoir.getName());
-            option.setType("预泄调度");
+            option.setType("优化调度");
             option.setTime(reservoir.getTime().get(i));
             option.setV(V);
             option.setRetain(Retain);

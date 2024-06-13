@@ -149,7 +149,7 @@ public class FloodControlOperationServiceImpl extends ServiceImpl<FloodControlOp
             FloodControlOperation minimumContainment =  new FloodControlOperation();
             minimumContainment.setId(UUIDUtils.getUUID());
             minimumContainment.setCreateTime(new Date());
-            minimumContainment.setSchemeName(incomingWaterForecast.getProgrammeName()+"-灵活调度");
+            minimumContainment.setSchemeName(incomingWaterForecast.getProgrammeName()+"-梯级联调");
             minimumContainment.setForecastingSchemeId(incomingWaterForecastId);
             minimumContainment.setStatus(1);
             minimumContainment.setCreateBy(saBaseLoginUser.getName());
@@ -157,7 +157,7 @@ public class FloodControlOperationServiceImpl extends ServiceImpl<FloodControlOp
             FloodControlOperation maximumPeakShaving =  new FloodControlOperation();
             maximumPeakShaving.setId(UUIDUtils.getUUID());
             maximumPeakShaving.setCreateTime(new Date());
-            maximumPeakShaving.setSchemeName(incomingWaterForecast.getProgrammeName()+"-预泄调度");
+            maximumPeakShaving.setSchemeName(incomingWaterForecast.getProgrammeName()+"-优化调度");
             maximumPeakShaving.setForecastingSchemeId(incomingWaterForecastId);
             maximumPeakShaving.setStatus(1);
             maximumPeakShaving.setCreateBy(saBaseLoginUser.getName());
