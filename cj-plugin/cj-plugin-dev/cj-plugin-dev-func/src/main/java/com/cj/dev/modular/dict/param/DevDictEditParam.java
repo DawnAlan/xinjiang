@@ -43,6 +43,14 @@ public class DevDictEditParam {
     @NotBlank(message = "category不能为空")
     private String category;
 
+    /** 字典组 */
+    @ApiModelProperty(value = "字典组", position = 5)
+    private String dictGroup;
+    /** 是否可用 */
+    @ApiModelProperty(value = "是否可用", position = 5)
+    private String enable;
+
+
     /** 排序码 */
     @ApiModelProperty(value = "排序码", position = 6)
     @NotNull(message = "sortCode不能为空")

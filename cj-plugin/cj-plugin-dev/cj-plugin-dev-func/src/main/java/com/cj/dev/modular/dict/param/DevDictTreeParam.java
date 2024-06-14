@@ -18,4 +18,12 @@ public class DevDictTreeParam {
     /** 字典分类 */
     @ApiModelProperty(value = "字典分类")
     private String category;
+
+    /** 字典组 */
+    @ApiModelProperty(value = "字典组")
+    private String dictGroup;
+
+    /** 是否可用 */
+    @ApiModelProperty(value = "是否可用")
+    private String enable;
 }

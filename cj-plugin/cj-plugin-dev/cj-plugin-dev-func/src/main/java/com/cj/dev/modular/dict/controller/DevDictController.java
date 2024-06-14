@@ -1,4 +1,3 @@
-
 package com.cj.dev.modular.dict.controller;
 
 import cn.hutool.core.lang.tree.Tree;
@@ -119,8 +118,8 @@ public class DevDictController {
     @CommonLog("删除字典")
     @PostMapping("/dev/dict/delete")
     public CommonResult<String> delete(@RequestBody @Valid @NotEmpty(message = "集合不能为空")
-                                           CommonValidList<DevDictIdParam> devDictIdParamList) {
-        devDictService.delete(devDictIdParamList);
+                                           List<String> idList) {
+        devDictService.delete(idList);
         return CommonResult.ok();
     }
 
@@ -133,7 +132,7 @@ public class DevDictController {
     @ApiOperationSupport(order = 7)
     @ApiOperation("获取字典详情")
     @GetMapping("/dev/dict/detail")
-    public CommonResult<DevDict> detail(@Valid DevDictIdParam devDictIdParam) {
-        return CommonResult.data(devDictService.detail(devDictIdParam));
+    public CommonResult<DevDict> detail(@Valid String id) {
+        return CommonResult.data(devDictService.detail(id));
     }
 }
