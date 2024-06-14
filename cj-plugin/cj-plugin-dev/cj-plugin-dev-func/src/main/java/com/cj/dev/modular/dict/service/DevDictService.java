@@ -63,7 +63,7 @@ public interface DevDictService extends IService<DevDict> {
      * @author xuyuxiang
      * @date 2022/4/24 21:18
      */
-    void delete(List<DevDictIdParam> devDictIdParamList);
+    void delete(List<String> idList);
 
     /**
      * 获取字典详情
@@ -71,7 +71,7 @@ public interface DevDictService extends IService<DevDict> {
      * @author xuyuxiang
      * @date 2022/4/24 21:18
      */
-    DevDict detail(DevDictIdParam devDictIdParam);
+    DevDict detail(String id);
 
     /**
      * 获取字典详情

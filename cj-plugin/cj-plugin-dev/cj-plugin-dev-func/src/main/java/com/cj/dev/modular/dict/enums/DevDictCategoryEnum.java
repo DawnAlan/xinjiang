@@ -26,7 +26,17 @@ public enum DevDictCategoryEnum {
     /**
      * 考证字典
      */
-    FIDUCIAL("FIDUCIAL");
+    FIDUCIAL("FIDUCIAL"),
+
+    /**
+     * MONITOR监测系统字典
+     */
+    MONITOR("MONITOR"),
+
+    /**
+     * 字典分类
+     */
+    DICT_CATEGORY("DICT_CATEGORY");
 
     private final String value;
 
@@ -35,7 +45,9 @@ public enum DevDictCategoryEnum {
     }
 
     public static void validate(String value) {
-        boolean flag = FRM.getValue().equals(value) || BIZ.getValue().equals(value)|| FIDUCIAL.getValue().equals(value);
+        boolean flag = FRM.getValue().equals(value) || BIZ.getValue().equals(value)||
+                FIDUCIAL.getValue().equals(value)|| MONITOR.getValue().equals(value)||
+                DICT_CATEGORY.getValue().equals(value);
         if(!flag) {
             throw new CommonException("不支持的字典分类：{}", value);
         }

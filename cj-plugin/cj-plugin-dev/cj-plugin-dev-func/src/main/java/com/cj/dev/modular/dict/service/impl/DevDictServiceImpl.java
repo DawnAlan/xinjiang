@@ -12,6 +12,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.cj.common.enums.CommonDeleteFlagEnum;
 import com.cj.dev.modular.dict.service.DevDictService;
 import com.fhs.trans.service.impl.DictionaryTransService;
 import org.springframework.beans.factory.InitializingBean;
@@ -49,17 +50,30 @@ public class DevDictServiceImpl extends ServiceImpl<DevDictMapper, DevDict> impl
         QueryWrapper<DevDict> queryWrapper = new QueryWrapper<>();
         // 查询部分字段
         queryWrapper.lambda().select(DevDict::getId, DevDict::getParentId, DevDict::getCategory, DevDict::getDictLabel,
-                DevDict::getDictValue, DevDict::getSortCode);
-        if (ObjectUtil.isNotEmpty(devDictPageParam.getParentId())) {
-            queryWrapper.lambda().eq(DevDict::getParentId, devDictPageParam.getParentId())
-                    .or().eq(DevDict::getId, devDictPageParam.getParentId());
-        }
+                DevDict::getDictValue, DevDict::getDictGroup, DevDict::getSortCode,DevDict::getCreateTime, DevDict::getEnable);
+
         if (ObjectUtil.isNotEmpty(devDictPageParam.getCategory())) {
             queryWrapper.lambda().eq(DevDict::getCategory, devDictPageParam.getCategory());
+        }
+        //DictGroup/Enable
+        if (ObjectUtil.isNotEmpty(devDictPageParam.getDictGroup())) {
+            queryWrapper.lambda().eq(DevDict::getDictGroup, devDictPageParam.getDictGroup());
+        }
+        if (ObjectUtil.isNotEmpty(devDictPageParam.getEnable())) {
+            queryWrapper.lambda().eq(DevDict::getEnable, devDictPageParam.getEnable());
         }
         if (ObjectUtil.isNotEmpty(devDictPageParam.getSearchKey())) {
             queryWrapper.lambda().like(DevDict::getDictLabel, devDictPageParam.getSearchKey());
         }
+        //
+        if (ObjectUtil.isNotEmpty(devDictPageParam.getParentId())) {
+            queryWrapper.lambda().and(wrapper -> wrapper
+                    .eq(DevDict::getParentId, devDictPageParam.getParentId()).or()
+                    .eq(DevDict::getId, devDictPageParam.getParentId()));
+            // queryWrapper.lambda().eq(DevDict::getParentId, devDictPageParam.getParentId())
+            //         .or().eq(DevDict::getId, devDictPageParam.getParentId());
+        }
+
         if (ObjectUtil.isAllNotEmpty(devDictPageParam.getSortField(), devDictPageParam.getSortOrder())) {
             CommonSortOrderEnum.validate(devDictPageParam.getSortOrder());
             queryWrapper.orderBy(true, devDictPageParam.getSortOrder().equals(CommonSortOrderEnum.ASC.getValue()),
@@ -79,6 +93,20 @@ public class DevDictServiceImpl extends ServiceImpl<DevDictMapper, DevDict> impl
         if (ObjectUtil.isNotEmpty(devDictListParam.getCategory())) {
             lambdaQueryWrapper.eq(DevDict::getCategory, devDictListParam.getCategory());
         }
+        if (ObjectUtil.isNotEmpty(devDictListParam.getDictGroup())) {
+            lambdaQueryWrapper.eq(DevDict::getDictGroup, devDictListParam.getDictGroup());
+        }
+        if (ObjectUtil.isNotEmpty(devDictListParam.getEnable())) {
+            lambdaQueryWrapper.eq(DevDict::getEnable, devDictListParam.getEnable());
+        }
+
+        //Filter Parent
+        if (devDictListParam.getHasParent().equals("0")) {
+            if(ObjectUtil.isEmpty(devDictListParam.getParentId()))
+                lambdaQueryWrapper.ne(DevDict::getParentId, "0");
+            else
+                lambdaQueryWrapper.ne(DevDict::getParentId, devDictListParam.getParentId());
+        }
         return this.list(lambdaQueryWrapper.orderByAsc(DevDict::getSortCode));
     }
 
@@ -88,6 +116,12 @@ public class DevDictServiceImpl extends ServiceImpl<DevDictMapper, DevDict> impl
         lambdaQueryWrapper.orderByAsc(DevDict::getSortCode);
         if (ObjectUtil.isNotEmpty(devDictTreeParam.getCategory())) {
             lambdaQueryWrapper.eq(DevDict::getCategory, devDictTreeParam.getCategory());
+        }
+        if (ObjectUtil.isNotEmpty(devDictTreeParam.getDictGroup())) {
+            lambdaQueryWrapper.eq(DevDict::getDictGroup, devDictTreeParam.getDictGroup());
+        }
+        if (ObjectUtil.isNotEmpty(devDictTreeParam.getEnable())) {
+            lambdaQueryWrapper.eq(DevDict::getEnable, devDictTreeParam.getEnable());
         }
         List<DevDict> devDictList = this.list(lambdaQueryWrapper);
         List<TreeNode<String>> treeNodeList = devDictList.stream().map(devDict ->
@@ -110,14 +144,16 @@ public class DevDictServiceImpl extends ServiceImpl<DevDictMapper, DevDict> impl
         boolean hasSameDictLabel = this.count(new LambdaQueryWrapper<DevDict>()
                 .eq(DevDict::getParentId, devDictAddParam.getParentId())
                 .eq(DevDict::getCategory, devDictAddParam.getCategory())
-                .eq(DevDict::getDictLabel, devDictAddParam.getDictLabel())) > 0;
+                .eq(DevDict::getDictLabel, devDictAddParam.getDictLabel())
+                .eq(DevDict::getDeleteFlag, CommonDeleteFlagEnum.NOT_DELETE)) > 0;
         if (hasSameDictLabel) {
             throw new CommonException("存在重复的字典文字，名称为：{}", devDictAddParam.getDictLabel());
         }
 
         boolean hasSameDictValue = this.count(new LambdaQueryWrapper<DevDict>()
                 .eq(DevDict::getParentId, devDictAddParam.getParentId())
-                .eq(DevDict::getDictValue, devDictAddParam.getDictValue())) > 0;
+                .eq(DevDict::getDictValue, devDictAddParam.getDictValue())
+                .eq(DevDict::getDeleteFlag, CommonDeleteFlagEnum.NOT_DELETE)) > 0;
         if (hasSameDictValue) {
             throw new CommonException("存在重复的字典值，名称为：{}", devDictAddParam.getDictValue());
         }
@@ -153,8 +189,7 @@ public class DevDictServiceImpl extends ServiceImpl<DevDictMapper, DevDict> impl
     }
 
     @Override
-    public void delete(List<DevDictIdParam> devDictIdParamList) {
-        List<String> devDictIdList = CollStreamUtil.toList(devDictIdParamList, DevDictIdParam::getId);
+    public void delete(List<String> devDictIdList) {
         if (ObjectUtil.isNotEmpty(devDictIdList)) {
             boolean systemDict = this.listByIds(devDictIdList).stream().map(DevDict::getCategory)
                     .collect(Collectors.toSet()).contains(DevDictCategoryEnum.FRM.getValue());
@@ -167,8 +202,8 @@ public class DevDictServiceImpl extends ServiceImpl<DevDictMapper, DevDict> impl
     }
 
     @Override
-    public DevDict detail(DevDictIdParam devDictIdParam) {
-        return this.queryEntity(devDictIdParam.getId());
+    public DevDict detail(String id) {
+        return this.queryEntity(id);
     }
 
     @Override
