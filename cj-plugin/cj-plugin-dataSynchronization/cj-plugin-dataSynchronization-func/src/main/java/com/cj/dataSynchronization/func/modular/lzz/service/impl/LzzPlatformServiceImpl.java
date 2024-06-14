@@ -273,12 +273,12 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
         for (ParamDto paramDto :paramDtos){
             LzzRainfallStation station = new LzzRainfallStation();
             station.setTreeId("9210201100100");
-            station.setStationName("库区自动雨量站");
+            station.setStationName("楼庄子库区自动雨量站");
             station.setRainfall(paramDto.getV());
             station.setTime(paramDto.getTime());
             station.setRecordTime(DateUtil.parse(sdf1.format(paramDto.getTime()),"yyyy-MM-dd"));
             station.setYear(String.valueOf(sdf.format(paramDto.getTime()).split("-")[0]));
-            station.setId("库区自动雨量站:"+paramDto.getTime().getTime());
+            station.setId("楼庄子库区自动雨量站:"+paramDto.getTime().getTime());
             rainfallStationList.add(station);
         }
         boolean b = lzzRainfallStationService.saveOrUpdateBatch(rainfallStationList);
