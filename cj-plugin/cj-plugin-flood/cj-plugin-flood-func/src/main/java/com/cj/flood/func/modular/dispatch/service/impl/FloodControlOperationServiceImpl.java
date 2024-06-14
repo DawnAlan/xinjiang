@@ -474,38 +474,44 @@ public class FloodControlOperationServiceImpl extends ServiceImpl<FloodControlOp
         ReqCurve reqCurve = new ReqCurve();
         reqCurve.setCapacityCurves(new HashMap<>());
         reqCurve.setGateCurves(new HashMap<>());
-        List<RRs> rrs = JSONObject.parseArray(JSONObject.parseObject(waterSituationClient.queryRRs("0")).get("data").toString(), RRs.class);
-        List<ExternStations> externStations = JSONObject.parseArray(JSONObject.parseObject(waterSituationClient.queryExternStations()).get("data").toString(), ExternStations.class);
-        basinParam.getReservoirs().forEach(
-                reservoir ->
-                {
-                    Optional<RRs> anyRRs = rrs.stream().filter(r -> r.getName().contains(reservoir.getName())).findAny();
-                    if (!anyRRs.isPresent()) {
-                        return;
-                    }
-                    List<CurveParam> curveParams = getCurves(anyRRs.get().getId());
-                    if (CollectionUtil.isEmpty(curveParams)) {
-                        return;
-                    }
-                    reqCurve.getCapacityCurves().put(reservoir.getName(), curveParams);
+        try {
+            List<RRs> rrs = JSONObject.parseArray(JSONObject.parseObject(waterSituationClient.queryRRs("0")).get("data").toString(), RRs.class);
+            List<ExternStations> externStations = JSONObject.parseArray(JSONObject.parseObject(waterSituationClient.queryExternStations()).get("data").toString(), ExternStations.class);
+            basinParam.getReservoirs().forEach(
+                    reservoir ->
+                    {
+                        Optional<RRs> anyRRs = rrs.stream().filter(r -> r.getName().contains(reservoir.getName())).findAny();
+                        if (!anyRRs.isPresent()) {
+                            return;
+                        }
+                        List<CurveParam> curveParams = getCurves(anyRRs.get().getId());
+                        if (CollectionUtil.isEmpty(curveParams)) {
+                            return;
+                        }
+                        reqCurve.getCapacityCurves().put(reservoir.getName(), curveParams);
 
-                    reservoir.getGates().forEach(gate -> {
-                        Optional<ExternStations> anyGate = externStations.stream().filter(station -> station.getName().equals(gate.getName())).findAny();
-                        if (!anyGate.isPresent()) {
-                            return;
-                        }
-                        List<CurveParam> curveParamsGate = getCurves(anyGate.get().getId());
-                        if (CollectionUtil.isEmpty(curveParamsGate)) {
-                            return;
-                        }
-                        if (!reqCurve.getGateCurves().containsKey(reservoir.getName())) {
-                            reqCurve.getGateCurves().put(reservoir.getName(), new HashMap<String, List<CurveParam>>() {{put(gate.getName(), curveParamsGate);}});
-                        } else {
-                            reqCurve.getGateCurves().get(reservoir.getName()).put(gate.getName(), curveParamsGate);
-                        }
-                    });
-                }
-        );
+                        reservoir.getGates().forEach(gate -> {
+                            Optional<ExternStations> anyGate = externStations.stream().filter(station -> station.getName().equals(gate.getName())).findAny();
+                            if (!anyGate.isPresent()) {
+                                return;
+                            }
+                            List<CurveParam> curveParamsGate = getCurves(anyGate.get().getId());
+                            if (CollectionUtil.isEmpty(curveParamsGate)) {
+                                return;
+                            }
+                            if (!reqCurve.getGateCurves().containsKey(reservoir.getName())) {
+                                reqCurve.getGateCurves().put(reservoir.getName(), new HashMap<String, List<CurveParam>>() {{
+                                    put(gate.getName(), curveParamsGate);
+                                }});
+                            } else {
+                                reqCurve.getGateCurves().get(reservoir.getName()).put(gate.getName(), curveParamsGate);
+                            }
+                        });
+                    }
+            );
+        } catch (Exception e) {
+            log.error("水情服务获取库容闸门曲线异常" + e.getMessage());
+        }
         return reqCurve;
     }
 

@@ -1,6 +1,8 @@
 package com.cj.waterresources.func.modular.waterResourceAllcation.bean.res;
 
+import com.cj.common.serializer.DoubleScale2Serializer;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -20,6 +22,7 @@ public class ViewModelRes implements Serializable {
     @Data
     public static class AreaDTO {
         @JsonProperty("water")
+        @JsonSerialize(using = DoubleScale2Serializer.class)
         private Double water;
         @JsonProperty("data")
         private Map<String, List<UnitsDTO>> data;
@@ -30,6 +33,7 @@ public class ViewModelRes implements Serializable {
             @JsonProperty("unit")
             private String unit;
             @JsonProperty("water")
+            @JsonSerialize(using = DoubleScale2Serializer.class)
             private Double water;
         }
 
