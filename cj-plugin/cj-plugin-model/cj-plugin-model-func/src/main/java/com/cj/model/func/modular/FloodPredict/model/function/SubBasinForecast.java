@@ -279,9 +279,9 @@ public class SubBasinForecast {
         floodLevel = getFloodLevel(shortFlow, param.getLocation());//洪水等级
         //将Object转化为Flood类型
         List<PredictInputData> surface = dataUtils.pointToSurface(Data.get(1), param.getLocation());
-        double[] surfaceRain = new double[l];
+        double[] surfaceRain = new double[l+InputUtils.beforeHours];
         for (int i = 0; i < surfaceRain.length; i++) {
-            surfaceRain[i] = surface.get(i + beforeHours).getRainfall();
+            surfaceRain[i] = surface.get(i).getRainfall();
         }
         return setShortFlood(shortFlow, param, surfaceRain);
     }
@@ -350,6 +350,24 @@ public class SubBasinForecast {
 //            water_outQ[i][2] = (((double) predict[i][1] > 60.0) ? 1 : 0);
 //        }
         //连续列的赋值
+        for (int i = 0; i < InputUtils.beforeHours; i++) {
+            Flood flood = new Flood();
+            flood.setLocation(param.getLocation());//断面位置
+            flood.setScale(String.valueOf(3600 * l));//尺度
+            flood.setPeakIndex(0);//洪号
+            Date date = timeUtils.addCalendar(param.getPreStartTime(),"小时",-InputUtils.beforeHours+i*l);
+            flood.setTime(date);//时间
+            flood.setPeakFlood((Double) floodNature[2][1]);//洪峰
+            flood.setPeakTime((Date) floodNature[3][1]);//峰现时间
+            flood.setPeakDuration((String) floodNature[1][1]);//洪峰持续时间
+            flood.setFloodVolume((Double) floodNature[0][1]);//洪量
+            flood.setQCause(floodSource);//洪水来源
+            flood.setQComposition(floodComposition);//洪水组成
+            flood.setRainProcess(Math.round(rain[i]) * 100 / 100.0);//雨情
+            flood.setWarningTime(0);//是否超过汛限水位
+            flood.setFloodLevel(floodLevel);//洪水等级
+            result.add(flood);
+        }
         for (int i = 0; i < n; i++) {
             Flood flood = new Flood();
             flood.setLocation(param.getLocation());//断面位置
@@ -363,15 +381,13 @@ public class SubBasinForecast {
             flood.setFloodVolume((Double) floodNature[0][1]);//洪量
             flood.setQCause(floodSource);//洪水来源
             flood.setQComposition(floodComposition);//洪水组成
-            flood.setRainProcess(Math.round(rain[i]) * 100 / 100.0);//雨情
+            flood.setRainProcess(Math.round(rain[i+InputUtils.beforeHours]) * 100 / 100.0);//雨情
             flood.setWaterLevel((double) water_outQ[i][0]);//相应水位
             flood.setOutQ((double) water_outQ[i][1]);//出库流量
             flood.setWarningTime((Integer) water_outQ[i][2]);//是否超过汛限水位
             flood.setFloodLevel(floodLevel);//洪水等级
             result.add(flood);
         }
-
-
         return result;
     }
 
@@ -864,8 +880,8 @@ public class SubBasinForecast {
         int l = param.getPeriodStepNumber()* param.getPeriodStepSize();
         Object[][] result = new Object[l][2];
         //减去汇流滞时
-        Date currentDate = param.getPreStartTime();
-        Date[][] dates = timeUtils.getDateList(currentDate, l, 0, 1);
+        Date currentDate = timeUtils.addCalendar(param.getPreStartTime(),"小时",-InputUtils.beforeHours);
+        Date[][] dates = timeUtils.getDateList(param.getPreStartTime(), l, 0, 1);
         //基础流量
         Double baseAve;
         if (preFlow.size() != 0) {

@@ -358,17 +358,17 @@ public class SimulatedRunoff {
         //模型计算过程
         shanBeiModel.InputData(param, preRE, hisRain);
         shanBeiModel.InitialMoistureContentCalculation();
-        shanBeiModel.RunoffYieldCalculation_UnevenInfiltration();
+        shanBeiModel.RunoffYieldCalculation_UnevenInfiltration2();
         shanBeiModel.ConfluenceCalculation2();
-        double[] result = new double[shanBeiModel.Q.length + hours];
-        for (int i = 0; i < result.length; i++) {
-            if (i<hours){
-                result[i] = 0;
-            }else {
-                result[i] = shanBeiModel.Q[i-hours];
-            }
-        }
-        return result;
+//        double[] result = new double[shanBeiModel.Q.length + hours];
+//        for (int i = 0; i < result.length; i++) {
+//            if (i<hours){
+//                result[i] = 0;
+//            }else {
+//                result[i] = shanBeiModel.Q[i-hours];
+//            }
+//        }
+        return shanBeiModel.Q;
     }
 
     public double[] pointToSurface(ForecastInputParam param){

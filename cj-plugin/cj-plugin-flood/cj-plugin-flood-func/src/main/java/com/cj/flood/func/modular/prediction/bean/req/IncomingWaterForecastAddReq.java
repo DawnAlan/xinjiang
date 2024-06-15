@@ -24,6 +24,9 @@ public class IncomingWaterForecastAddReq implements Serializable {
     @ApiModelProperty(value = "是否是模拟降雨")
     private Boolean isSimulation;
 
+    @ApiModelProperty(value = "是否是参考来水")
+    private Boolean isReferenceWater;
+
     @ApiModelProperty(value = "来水预报字段数据")
     private IncomingWaterForecast incomingWaterForecast;
 

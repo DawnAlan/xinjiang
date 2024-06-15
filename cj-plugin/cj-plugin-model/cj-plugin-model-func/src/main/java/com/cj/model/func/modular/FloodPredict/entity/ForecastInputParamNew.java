@@ -39,6 +39,8 @@ public class ForecastInputParamNew {
     private Double preRainFall;
     //是否为模拟降雨
     private Boolean isSimulation;
+    //是否为参考来水
+    private Boolean isReferenceWater;
     //是否为训练模型
     private Boolean isTrain;
     //文件路径
