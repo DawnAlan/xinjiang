@@ -1238,10 +1238,13 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
                 Collectors.summingDouble(Excel2::getWaterLack)))
                 .entrySet().stream().sorted(Map.Entry.comparingByKey())
                 .map(n -> new WaterDistributionOverviewRes.WaterDto(n.getKey(), n.getValue())).collect(Collectors.toList()));
-        res.setIncomingWaterFreq(
-                incomingWater > 22190 ? "丰水年" :
-                incomingWater > 19980 ? "平水年" :
-                incomingWater > 17360 ? "枯水年" : "特枯水年");
+        //年逐月并且配水时间从1月开始,判断来水频率
+        if (allocation.getBucketType() == 1 && DateUtil.month(allocation.getWaterDistributionStartTime()) == 0) {
+            res.setIncomingWaterFreq(
+                    incomingWater > 22190 ? "丰水年" :
+                            incomingWater > 19980 ? "平水年" :
+                                    incomingWater > 17360 ? "枯水年" : "特枯水年");
+        }
         res.setProportionAmount(res.getProportionList().stream().mapToDouble(WaterDistributionOverviewRes.WaterDto::getWaterAmount).sum());
         res.setWaterLackAmount(res.getWaterLackList().stream().mapToDouble(WaterDistributionOverviewRes.WaterDto::getWaterAmount).sum());
         //需水总量改成 供水总量+缺额总量
