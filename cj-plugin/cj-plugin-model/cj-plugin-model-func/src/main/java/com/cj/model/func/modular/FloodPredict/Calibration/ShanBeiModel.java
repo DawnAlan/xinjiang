@@ -148,7 +148,6 @@ public class ShanBeiModel {
         // 计算初始含水量W0
         double Wt_1 = 0; // 前一天的土壤含水量,最开始的时候（20天前）假定其为0；
         double Wt = 0;// 当前天的土壤含水量
-        KC = 1.0;
         for (int j = 0; j < PreImpactdays; j++) {
             Wt = PreImpact_P[j] + KC * Wt_1;
             if (Wt > WM) {
@@ -156,9 +155,7 @@ public class ShanBeiModel {
             }
             Wt_1 = Wt;
         }
-
         W0 = Wt;
-
         return this;
     }
 
@@ -238,8 +235,7 @@ public class ShanBeiModel {
                 W[j + 1] = W[j] + P[j] * PeriodLength - E[j] * PeriodLength - R2[j] * PeriodLength;
                 if (W[j + 1] >= WM)// 蓄水达到上限
                 {
-                    R3[j] = W[j + 1] - WM;
-//                    R2[j] = R2[j] + W[j + 1] - WM;
+                    R2[j] = R2[j] + W[j + 1] - WM;
                     W[j + 1] = WM;
                 }
             } else // 全流域上产流
@@ -252,8 +248,159 @@ public class ShanBeiModel {
                 W[j + 1] = W[j] + P[j] * PeriodLength - E[j] * PeriodLength - R2[j] * PeriodLength;
                 if (W[j + 1] >= WM)// 蓄水达到上限
                 {
+                    R2[j] = R2[j] + W[j + 1] - WM;
+                    W[j + 1] = WM;
+                }
+
+            }
+
+
+
+            while (Math.abs(TempW2 - W[j + 1]) > 0.01) {
+                TempW2 = TempW2 - (TempW2 - W[j + 1]) / 10;
+
+                //再次计算
+//                f[j + 1] = fm - K * (TempW2 - fc * Time[j + 1]);//用这个算f越算越大
+                f[j + 1] = fc + (fm - fc) * Math.exp(-K * Time[j + 1]);
+                if (f[j + 1] > fm) {
+                    f[j + 1] = fm;
+                }
+
+//                Ave_f = (f[j] + f[j + 1]) / 2;// 时段平均下渗量
+                Ave_f = f[0] / (1 + B);// 流域的平均下渗量
+
+                if (P[j] - E[j] < fm)// 部分流域上产流
+                {
+                    if (P[j] - E[j] < 0) {
+                        R2[j] = P[j] - E[j] - Ave_f * (1 - Math.pow(1 - (0) / fm, B + 1));
+                    } else {
+                        R2[j] = P[j] - E[j] - Ave_f * (1 - Math.pow(1 - (P[j] - E[j]) / fm, B + 1));
+                    }
+                    if (R2[j] < 0) {
+                        R2[j] = 0;
+                    }
+                    W[j + 1] = W[j] + P[j] * PeriodLength - E[j] * PeriodLength - R2[j] * PeriodLength;
+                    if (W[j + 1] >= WM)// 蓄水达到上限
+                    {
+                        R2[j] = R2[j] + W[j + 1] - WM;
+                        W[j + 1] = WM;
+                    }
+                } else // 全流域上产流
+                {
+                    R2[j] = P[j] - E[j] - Ave_f;
+                    if (R2[j] < 0) {
+                        R2[j] = 0;
+                    }
+                    W[j + 1] = W[j] + P[j] * PeriodLength - E[j] * PeriodLength - R2[j] * PeriodLength;
+                    if (W[j + 1] >= WM)// 蓄水达到上限
+                    {
+                        R2[j] = R2[j] + W[j + 1] - WM;
+                        W[j + 1] = WM;
+                    }
+
+                }
+            }
+        }
+
+        for (int j = 0; j < NumPeriod; j++) {
+            Time[j] = Time[j] - BeginTime;
+        }
+
+
+        //流域总产流量计算
+
+        for (int j = 0; j < NumPeriod; j++) {
+            R[j] = R1[j] * FB + R2[j] * (1 - FB);// 单位mm/h
+            I[j] = R1[j] / 1000 / 3600 * FB * Area * 1000000 + R2[j] / 1000 / 3600 * (1 - FB) * Area * 1000000;//  Area单位是km2
+        }
+        return this;
+    }
+
+
+    public ShanBeiModel RunoffYieldCalculation_UnevenInfiltration2() {
+        double TempW = 0;
+        double Tempf = 0;
+        double BeginTime = 0;
+        double Tempt = W0 / fm;
+        W[0] = W0;
+
+        TempW = fc * Tempt + (1 - Math.exp(-K * Tempt)) * (fm - fc) / K;
+        if (TempW > WM) {
+            TempW = WM;
+        }
+        if (Math.abs(TempW - W0) <= 0.01){
+            Tempf = fc + (fm - fc) * Math.exp(-K * Tempt);
+        }
+        while (Math.abs(TempW - W0) > 0.01) {
+//            Tempf = fm - K * (TempW - fc * Tempt);// 此处计算f的上下两种方法又没有区别了
+            Tempf = fc + (fm - fc) * Math.exp(-K * Tempt);
+            if (Tempf > fm) {
+                Tempf = fm;
+            }
+            //Tempt = Tempt + Math.Abs(TempW - W0) / Tempf;
+//            Tempt = Tempt + (W0 - TempW) / Tempf;// 假定霍顿曲线规律是时间越长，土壤含水越大、下渗率越小
+            Tempt = Tempt + (W0 - TempW) / Tempf / 10;// 假定霍顿曲线规律是时间越长，土壤含水越大、下渗率越小
+            TempW = fc * Tempt + (1 - Math.exp(-K * Tempt)) * (fm - fc) / K;
+            if (TempW > WM) {
+                TempW = WM;
+            }
+        }
+        f[0] = Tempf;
+        Time[0] = Tempt;
+        BeginTime = Tempt;
+
+        // 所得结果单位是mm,mm/h,h
+        // 产流量计算
+
+        for (int j = 0; j < NumPeriod; j++) {
+            double Ave_f = 0;// 时段平均下渗率
+
+            R1[j] = P[j] - E[j];
+            if (R1[j] < 0) {
+                R1[j] = 0;
+            }
+
+            Time[j + 1] = Time[j] + PeriodLength;
+
+
+            double TempW2 = TempW; // 假定一个时段末的土壤含水量
+
+            //一次计算
+//            f[j + 1] = fm - K * (TempW2 - fc * Time[j + 1]);//用这个算f越算越大
+            f[j + 1] = fc + (fm - fc) * Math.exp(-K * Time[j + 1]);
+
+            if (f[j + 1] > fm) {
+                f[j + 1] = fm;
+            }
+
+//            Ave_f = (f[j] + f[j + 1]) / 2;// 时段平均下渗量
+            Ave_f = f[0] / (1 + B);// 流域的平均下渗量
+            if (P[j] - E[j] < fm)// 部分流域上产流
+            {
+                if (P[j] - E[j] < 0) {
+                    R2[j] = P[j] - E[j] - Ave_f * (1 - Math.pow(1 - (0) / fm, B + 1));
+                } else {
+                    R2[j] = P[j] - E[j] - Ave_f * (1 - Math.pow(1 - (P[j] - E[j]) / fm, B + 1));
+                }
+                if (R2[j] < 0) {
+                    R2[j] = 0;
+                }
+                W[j + 1] = W[j] + P[j] * PeriodLength - E[j] * PeriodLength - R2[j] * PeriodLength;
+                if (W[j + 1] >= WM)// 蓄水达到上限
+                {
+                    R3[j] = W[j + 1] - WM;W[j + 1] = WM;
+                }
+            } else // 全流域上产流
+            {
+                R2[j] = P[j] - E[j] - Ave_f;
+                if (R2[j] < 0) {
+                    R2[j] = 0;
+                }
+
+                W[j + 1] = W[j] + P[j] * PeriodLength - E[j] * PeriodLength - R2[j] * PeriodLength;
+                if (W[j + 1] >= WM)// 蓄水达到上限
+                {
                     R3[j] = W[j + 1] - WM;
-//                    R2[j] = R2[j] + W[j + 1] - WM;
                     W[j + 1] = WM;
                 }
 
@@ -288,7 +435,6 @@ public class ShanBeiModel {
                     if (W[j + 1] >= WM)// 蓄水达到上限
                     {
                         R3[j] = W[j + 1] - WM;
-//                        R2[j] = R2[j] + W[j + 1] - WM;
                         W[j + 1] = WM;
                     }
                 } else // 全流域上产流
@@ -301,21 +447,17 @@ public class ShanBeiModel {
                     if (W[j + 1] >= WM)// 蓄水达到上限
                     {
                         R3[j] = W[j + 1] - WM;
-//                        R2[j] = R2[j] + W[j + 1] - WM;
                         W[j + 1] = WM;
                     }
 
                 }
             }
         }
-
         for (int j = 0; j < NumPeriod; j++) {
             Time[j] = Time[j] - BeginTime;
         }
 
-
         //流域总产流量计算
-
         for (int j = 0; j < NumPeriod; j++) {
             R[j] = R1[j] * FB + R2[j] * (1 - FB);// 单位mm/h
             I[j] = R1[j] / 1000 / 3600 * FB * Area * 1000000 + R2[j] / 1000 / 3600 * (1 - FB) * Area * 1000000;//  Area单位是km2
@@ -323,8 +465,6 @@ public class ShanBeiModel {
         }
         return this;
     }
-
-
     // 汇流计算
     public ShanBeiModel ConfluenceCalculation() {
         int hours = InputUtils.beforeHours;
@@ -333,6 +473,7 @@ public class ShanBeiModel {
                 Q[j+1] = CS * Q[j];
             } else {
                 Q[j+1] = CS * Q[j] + (1 - CS) * I[j - L];
+//                Q[j+1] =  (1 - CS) * I[j - L];
 
             }
         }
@@ -350,7 +491,8 @@ public class ShanBeiModel {
         return this;
     }
     public ShanBeiModel ConfluenceCalculation2() {
-        int hours = InputUtils.beforeHours;
+//        int hours = InputUtils.beforeHours;
+        int hours = 0;
         for (int j = 0; j < NumPeriod-1; j++) {
             if (j < L) {
                 Q[j+1] = CS * Q[j];

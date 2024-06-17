@@ -48,12 +48,8 @@ public class MachineDataUtils {
         else if (forecastParam.getPeriodTimeType() == 4) {
             param.setPeriod("日");
         }
-        if (forecastParam.getIsSimulation() == null) {
-            param.setIsSimulation(false);
-        }
-        else {
-            param.setIsSimulation(forecastParam.getIsSimulation());
-        }
+        param.setIsSimulation(forecastParam.getIsSimulation() != null && forecastParam.getIsSimulation());
+        param.setIsReferenceWater(forecastParam.getIsReferenceWater() != null && forecastParam.getIsReferenceWater());
         //预报长度
         int l = forecastParam.getPeriodTimeStep();
         int n = forecastParam.getPeriodTimeNum();

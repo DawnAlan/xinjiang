@@ -414,7 +414,8 @@ public class DataUtils {
         calendar.add(Calendar.HOUR_OF_DAY, n);
         Date dataEnd = calendar.getTime();//预报结束时间
         String station ;
-        List<RainFallDto> rainPre;
+        List<RainFallDto> rainPre = param.getRainFallDtos();;
+
 
         //找到最贴近的时间
         List<Date> dateList = new ArrayList<>();
@@ -422,12 +423,8 @@ public class DataUtils {
             dateList.add(predictInputData.getDates());
         }
         int d = timeUtils.findNearestTime(dateList, dateStart);
-
-        int end_inputEnd = timeUtils.duration(dataEnd, input.get(input.size() - 1).getDates(), "小时");
-        if (end_inputEnd > 0)//预报结束时间在数据库中有，也就是全部读取历史数据
-        {
-            //此时的dateFind是历史数据中与开始预报时间最接近的
-            for (int i = 0; i < n; i++) {
+        if (param.getIsSimulation()){
+            for (int i = 0; i < InputUtils.beforeHours; i++) {
                 for (int j = 0; d + j < input.size() && j < n; j++) {
                     Boolean dateCompare = timeUtils.DateCompare(dateStart, input.get(d + j).getDates(), "小时");
                     if (dateCompare) {
@@ -442,57 +439,32 @@ public class DataUtils {
                 dateStart = calendar.getTime();
                 result.add(data);
             }
-        } else //预报结束时间在数据库中没有，也就是需要读取预报雨量
-        {
-            int start_inputEnd = timeUtils.duration(dateStart, input.get(input.size() - 1).getDates(), "小时");
-            int length = param.getRainFallDtos().size();
-            rainPre = param.getRainFallDtos();
-            station = input.get(0).getLocation();
-            if (start_inputEnd < 0)//预报开始时间在数据库中没有，也就是全部读取预报值
-            {
-                for (int i = 0; i < n; i++) {
-                    if (length > 0)//有预报值
-                    {
-                        for (int j = 0; j < length; j++) {
-                            Date date = sdf.parse(rainPre.get(j).getDate());
-                            Boolean dateCompare = timeUtils.DateCompare(dateStart, date, "小时");
-                            if (rainPre.get(0).getArea().equals("面雨量")) {
-                                if (dateCompare)//日期相等
-                                {
-                                    data.setLocation(location);
-                                    data.setDates(dateStart);
-                                    data.setTemperature(rainPre.get(j).getTemperature());
-                                    data.setRainfall(rainPre.get(j).getRainFall());
-                                    break;
-                                } else {
-                                    data = assignmentNullRAndT(dateStart, location);
-                                }
-                            } else {
-                                if (dateCompare && station.equals(rainPre.get(j).getArea()))//日期相等并且地点相等才能赋值
-                                {
-                                    data.setLocation(input.get(0).getLocation());
-                                    data.setDates(dateStart);
-                                    data.setTemperature(rainPre.get(j).getTemperature());
-                                    data.setRainfall(rainPre.get(j).getRainFall());
-                                    break;
-                                } else {
-                                    data = assignmentNullRAndT(dateStart, input.get(0).getLocation());
-                                }
-                            }
-                        }
-                    } else //没有预报值，数据库中也没有数据
-                    {
+            for (int i = 0; i < param.getPeriodTimeNum() * param.getPeriodTimeStep(); i++) {
+                for (int j = 0; j<rainPre.size(); j++) {
+                    Boolean dateCompare = timeUtils.DateCompare(dateStart, sdf.parse(rainPre.get(j).getDate()), "小时");
+                    if (dateCompare) {
+                        data.setLocation(location);
+                        data.setDates(dateStart);
+                        data.setTemperature(rainPre.get(j).getTemperature());
+                        data.setRainfall(rainPre.get(j).getRainFall());
+                        break;
+                    } else {
                         data = assignmentNullRAndT(dateStart, input.get(0).getLocation());
                     }
-                    calendar.setTime(dateStart);
-                    calendar.add(Calendar.HOUR_OF_DAY, 1);
-                    dateStart = calendar.getTime();
-                    result.add(data);
                 }
-            } else //预报开始时间在数据库内，预报结束时间不在数据库内
+                calendar.setTime(dateStart);
+                calendar.add(Calendar.HOUR_OF_DAY, 1);
+                dateStart = calendar.getTime();
+                result.add(data);
+            }
+            return result;
+        }
+        else {
+            int end_inputEnd = timeUtils.duration(dataEnd, input.get(input.size() - 1).getDates(), "小时");
+            if (end_inputEnd > 0)//预报结束时间在数据库中有，也就是全部读取历史数据
             {
-                for (int i = 0; i < start_inputEnd; i++) //从落地雨开始给其赋值到数据库末尾
-                {
+                //此时的dateFind是历史数据中与开始预报时间最接近的
+                for (int i = 0; i < n; i++) {
                     for (int j = 0; d + j < input.size() && j < n; j++) {
                         Boolean dateCompare = timeUtils.DateCompare(dateStart, input.get(d + j).getDates(), "小时");
                         if (dateCompare) {
@@ -507,51 +479,117 @@ public class DataUtils {
                     dateStart = calendar.getTime();
                     result.add(data);
                 }
-                //此时的dataStart==数据库末尾的时间
-                int inputEnd_dateEnd = timeUtils.duration(dateStart, dataEnd, "小时");//数据库末尾到预报结束时间的距离
-                for (int i = 0; i < inputEnd_dateEnd; i++) {
-                    if (length > 0) {
-                        for (int j = 0; j < length; j++) {
-                            Date date = sdf.parse(rainPre.get(j).getDate());
-                            Boolean dateCompare = timeUtils.DateCompare(dateStart, date, "小时");
-                            if (rainPre.get(0).getArea().equals("面雨量")) {
-                                if (dateCompare)//日期相等
-                                {
-                                    data.setLocation(station);
-                                    data.setDates(dateStart);
-                                    data.setTemperature(rainPre.get(j).getTemperature());
-                                    data.setRainfall(rainPre.get(j).getRainFall());
-                                    break;
-                                } else {
-                                    data = assignmentNullRAndT(dateStart, station);
-                                }
-                            }
-                            else {
-                                if (dateCompare && station.equals(rainPre.get(j).getArea()))//日期相等并且地点相等才能赋值
-                                {
-                                    data.setLocation(station);
-                                    data.setDates(dateStart);
-                                    data.setTemperature(rainPre.get(j).getTemperature());
-                                    data.setRainfall(rainPre.get(j).getRainFall());
-                                    break;
-                                } else {
-                                    data = assignmentNullRAndT(dateStart, input.get(0).getLocation());
-                                }
-                            }
+            } else //预报结束时间在数据库中没有，也就是需要读取预报雨量
+            {
+                int start_inputEnd = timeUtils.duration(dateStart, input.get(input.size() - 1).getDates(), "小时");
+                int length = param.getRainFallDtos().size();
 
+                station = input.get(0).getLocation();
+                if (start_inputEnd < 0)//预报开始时间在数据库中没有，也就是全部读取预报值
+                {
+                    for (int i = 0; i < n; i++) {
+                        if (length > 0)//有预报值
+                        {
+                            for (int j = 0; j < length; j++) {
+                                Date date = sdf.parse(rainPre.get(j).getDate());
+                                Boolean dateCompare = timeUtils.DateCompare(dateStart, date, "小时");
+                                if (rainPre.get(0).getArea().equals("面雨量")) {
+                                    if (dateCompare)//日期相等
+                                    {
+                                        data.setLocation(location);
+                                        data.setDates(dateStart);
+                                        data.setTemperature(rainPre.get(j).getTemperature());
+                                        data.setRainfall(rainPre.get(j).getRainFall());
+                                        break;
+                                    } else {
+                                        data = assignmentNullRAndT(dateStart, location);
+                                    }
+                                } else {
+                                    if (dateCompare && station.equals(rainPre.get(j).getArea()))//日期相等并且地点相等才能赋值
+                                    {
+                                        data.setLocation(input.get(0).getLocation());
+                                        data.setDates(dateStart);
+                                        data.setTemperature(rainPre.get(j).getTemperature());
+                                        data.setRainfall(rainPre.get(j).getRainFall());
+                                        break;
+                                    } else {
+                                        data = assignmentNullRAndT(dateStart, input.get(0).getLocation());
+                                    }
+                                }
+                            }
+                        } else //没有预报值，数据库中也没有数据
+                        {
+                            data = assignmentNullRAndT(dateStart, input.get(0).getLocation());
                         }
-                    } else {
-                        data = assignmentNullRAndT(dateStart, input.get(0).getLocation());
+                        calendar.setTime(dateStart);
+                        calendar.add(Calendar.HOUR_OF_DAY, 1);
+                        dateStart = calendar.getTime();
+                        result.add(data);
                     }
-                    calendar.setTime(dateStart);
-                    calendar.add(Calendar.HOUR_OF_DAY, 1);
-                    dateStart = calendar.getTime();
-                    result.add(data);
+                } else //预报开始时间在数据库内，预报结束时间不在数据库内
+                {
+                    for (int i = 0; i < start_inputEnd; i++) //从落地雨开始给其赋值到数据库末尾
+                    {
+                        for (int j = 0; d + j < input.size() && j < n; j++) {
+                            Boolean dateCompare = timeUtils.DateCompare(dateStart, input.get(d + j).getDates(), "小时");
+                            if (dateCompare) {
+                                data = input.get(d + j);
+                                break;
+                            } else {
+                                data = assignmentNullRAndT(dateStart, input.get(0).getLocation());
+                            }
+                        }
+                        calendar.setTime(dateStart);
+                        calendar.add(Calendar.HOUR_OF_DAY, 1);
+                        dateStart = calendar.getTime();
+                        result.add(data);
+                    }
+                    //此时的dataStart==数据库末尾的时间
+                    int inputEnd_dateEnd = timeUtils.duration(dateStart, dataEnd, "小时");//数据库末尾到预报结束时间的距离
+                    for (int i = 0; i < inputEnd_dateEnd; i++) {
+                        if (length > 0) {
+                            for (int j = 0; j < length; j++) {
+                                Date date = sdf.parse(rainPre.get(j).getDate());
+                                Boolean dateCompare = timeUtils.DateCompare(dateStart, date, "小时");
+                                if (rainPre.get(0).getArea().equals("面雨量")) {
+                                    if (dateCompare)//日期相等
+                                    {
+                                        data.setLocation(station);
+                                        data.setDates(dateStart);
+                                        data.setTemperature(rainPre.get(j).getTemperature());
+                                        data.setRainfall(rainPre.get(j).getRainFall());
+                                        break;
+                                    } else {
+                                        data = assignmentNullRAndT(dateStart, station);
+                                    }
+                                }
+                                else {
+                                    if (dateCompare && station.equals(rainPre.get(j).getArea()))//日期相等并且地点相等才能赋值
+                                    {
+                                        data.setLocation(station);
+                                        data.setDates(dateStart);
+                                        data.setTemperature(rainPre.get(j).getTemperature());
+                                        data.setRainfall(rainPre.get(j).getRainFall());
+                                        break;
+                                    } else {
+                                        data = assignmentNullRAndT(dateStart, input.get(0).getLocation());
+                                    }
+                                }
+
+                            }
+                        } else {
+                            data = assignmentNullRAndT(dateStart, input.get(0).getLocation());
+                        }
+                        calendar.setTime(dateStart);
+                        calendar.add(Calendar.HOUR_OF_DAY, 1);
+                        dateStart = calendar.getTime();
+                        result.add(data);
+                    }
                 }
             }
+            return result;
         }
 
-        return result;
     }
 
     /**

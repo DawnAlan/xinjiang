@@ -49,6 +49,8 @@ public class ForecastInputParam {
     private Boolean isHistory;
     //是否为模拟降雨
     private Boolean isSimulation;
+    //是否为参考来水
+    private Boolean isReferenceWater;
     //是否为融雪模型
     private Boolean isSnowMeltModel;
     //模型所用数据类型(前期径流，降雨，温度)
