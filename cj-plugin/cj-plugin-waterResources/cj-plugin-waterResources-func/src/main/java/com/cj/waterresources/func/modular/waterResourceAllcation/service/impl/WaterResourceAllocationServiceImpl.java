@@ -885,6 +885,8 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
                 .sorted(Comparator.comparing(WaterSupplyPriority::getPriorityIndex))
                 .map(n -> n.getPriorityValue().toString())
                 .collect(Collectors.joining())));
+        waterTransferReq.setMonthList(req.getRecommendMonth() == null ? new ArrayList<>()
+                : req.getRecommendMonth().stream().map(n -> n - 1).collect(Collectors.toList()));
         List<ResOption> calculator;
         try {
             calculator = OutResult.calculator(waterTransferReq);

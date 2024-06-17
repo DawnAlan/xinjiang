@@ -108,4 +108,7 @@ public class WaterResourceAllocationAddReq implements Serializable {
 
     @ApiModelProperty(value = "供水优先级")
     private List<WaterSupplyPriority> waterSupplyPriorityList;
+
+    @ApiModelProperty(value = "供水缺额集中分布推荐月份")
+    private List<Integer> recommendMonth;
 }

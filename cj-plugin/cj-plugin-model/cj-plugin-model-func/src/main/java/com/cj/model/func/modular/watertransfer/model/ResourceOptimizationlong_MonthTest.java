@@ -32,6 +32,8 @@ public class ResourceOptimizationlong_MonthTest {
     private int num;
     private Reservoir[] reservoirs;
     private int order;
+    //供水缺额集中分布推荐月份
+    private  List<Integer> monthList;
 
     public ArrayList<WaterTransfer> ResourceOptimizationlong_MonthTest(WaterTransferReq req) throws Exception {
         //应用POA  进行水资源优化
@@ -47,6 +49,7 @@ public class ResourceOptimizationlong_MonthTest {
             ecoFlow1[1]=req.getEcologyFlowTth();
         }
         order=req.getOrderNumber();
+        monthList=req.getMonthList();
         int RNum = 2;
         period = 12;
         if (req.getName() == 1) {
@@ -1020,7 +1023,11 @@ public class ResourceOptimizationlong_MonthTest {
                 } else if (m == 1) {
                     if (outflow_term[m][t] > ecoFlow[m][t] && outflow_term[m][t] < ecoFlow[m][t] + watershortage_allQ[t]) {
                         if (id == 1 || id == 3) {
-                            fitness1 += (ecoFlow[m][t] + watershortage_allQ[t] - outflow_term[m][t]) * (delatT * monthday[t]) / 1e4;
+                            if (monthList.indexOf(t + 12 - period) != -1) {
+                                fitness1 += 0.7*(ecoFlow[m][t] + watershortage_allQ[t] - outflow_term[m][t]) * (delatT * monthday[t]) / 1e4;
+                            } else {
+                                fitness1 += (ecoFlow[m][t] + watershortage_allQ[t] - outflow_term[m][t]) * (delatT * monthday[t]) / 1e4;
+                            }
                         }
                         if (id == 2) {
                             fitness1 += (ecoFlow[m][t] + watershortage_allQ[t] - outflow_term[m][t]) * (delatT * monthday[t]) / 1e4*
@@ -1035,7 +1042,11 @@ public class ResourceOptimizationlong_MonthTest {
                     if (outflow_term[m][t] <= ecoFlow[m][t])
                     {
                         if (id == 1 || id == 3) {
-                            fitness1 += (ecoFlow[m][t] + watershortage_allQ[t] - outflow_term[m][t]) * (delatT * monthday[t]) / 1e4;
+                            if (monthList.indexOf(t + 12 - period) != -1) {
+                                fitness1 += 0.7 * (ecoFlow[m][t] + watershortage_allQ[t] - outflow_term[m][t]) * (delatT * monthday[t]) / 1e4;
+                            } else {
+                                fitness1 += (ecoFlow[m][t] + watershortage_allQ[t] - outflow_term[m][t]) * (delatT * monthday[t]) / 1e4;
+                            }
                         }
                         if (id == 2) {
                             fitness1 += (ecoFlow[m][t] + watershortage_allQ[t] - outflow_term[m][t]) * (delatT * monthday[t]) / 1e4*

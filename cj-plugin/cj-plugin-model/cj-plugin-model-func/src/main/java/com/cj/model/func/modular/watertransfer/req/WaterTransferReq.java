@@ -56,4 +56,6 @@ public class WaterTransferReq {
     private String typeName;
     //供水优先级
     private int orderNumber;
+    //供水缺额集中分布推荐月份
+    private  List<Integer> monthList;
 }
