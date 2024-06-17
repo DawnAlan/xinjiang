@@ -18,6 +18,7 @@ public interface SurfaceWaterMapper extends BaseMapper<SurfaceWater> {
 
 
     List<Map<String, Object>> annualList(List<Integer> yearlist);
+    List<Map<String, Object>> annualList1(List<Integer> yearlist);
 }
 
 

@@ -277,7 +277,7 @@ public class YearWaterUsePlanCropServiceImpl extends ServiceImpl<YearWaterUsePla
             PlanComparedToActualByYearRes res = new PlanComparedToActualByYearRes();
             res.setUnitName(unitName);
             if(unitName.contains("八钢工业")){
-                Double planValue = collect.get(unitName).stream().filter(t -> t.getUnit().contains("月水量") && t.getV() != null).map(PlanComparedToActualByYearVo::getV).reduce(Double::sum).orElse(0.00);
+                Double planValue = collect.get(unitName).stream().filter(t -> t.getUnit().contains("八钢流量") && t.getV() != null).map(PlanComparedToActualByYearVo::getV).reduce(Double::sum).orElse(0.00);
                 res.setPlanValue(NumberUtil.holdDecimal(planValue,2));
             }else {
                 Double planValue = collect.get(unitName).stream().filter(t -> t.getV() != null).map(PlanComparedToActualByYearVo::getV).reduce(Double::sum).orElse(0.00);

@@ -450,7 +450,7 @@ public class WaterStorageSchedulingLzzServiceImpl extends ServiceImpl<WaterStora
         int month = now.getMonth().getValue();
         int day = now.getDayOfMonth();
         String startTime = now.getYear()+ "-01-01";
-        List<Map<String, Object>> maps = surfaceWaterService.annualList();
+        List<Map<String, Object>> maps = surfaceWaterService.annualList1();
         TypicalYearVo typicalYearVo = surfaceWaterService.typicalYear(new TypicalYearReq());
         if(month>0 && month<6){
             String endTime = now.getYear() + "-" +month +"-"+day;

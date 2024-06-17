@@ -202,6 +202,19 @@ public class SurfaceWaterService extends ServiceImpl<SurfaceWaterMapper, Surface
 
     }
 
+    public List<Map<String, Object>> annualList1() {
+        List<Integer> yearlist = new ArrayList<>();
+        // 获取当前日期
+        LocalDate currentDate = LocalDate.now();
+        for (int i = 1990; i < currentDate.getYear(); i++) {
+            yearlist.add(i);
+        }
+
+        List<Map<String, Object>> result = surfaceWaterMapper.annualList1(yearlist);
+        return result;
+
+    }
+
 
     public TypicalYearVo typicalYear(TypicalYearReq input) {
         if (input.getYear() == null) {
