@@ -130,4 +130,16 @@ public class PredictionFeignProvider implements PredictionFeign {
     public String getRealTimeRainfallByDate(String date, Integer lzz, Integer tth, List<String> lzzIdList, List<String> tthIdList) {
         return predictionApiProvider.getRealTimeRainfallByDate(date,lzz,tth,lzzIdList,tthIdList);
     }
+
+    @RequestMapping("/feign/provider/flood/autoGenerate")
+    @Override
+    public String autoGenerate(String time) {
+        return predictionApiProvider.autoGenerate(time);
+    }
+
+    @RequestMapping("/feign/provider/flood/selectModelAddressById")
+    @Override
+    public String selectModelAddressById(String id) {
+        return predictionApiProvider.selectModelAddressById(id);
+    }
 }

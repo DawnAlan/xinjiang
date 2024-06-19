@@ -31,8 +31,8 @@ public interface LzzRainfallStationMapper extends BaseMapper<LzzRainfallStation>
     @Select("SELECT * FROM LZZ_RAINFALL_STATION WHERE STATION_NAME = #{name} AND TO_CHAR(TIME,'YYYY-MM-DD') = #{time}")
     List<LzzRainfallStation> selectYesterday(@Param("name")String name, @Param("time")String time);
 
-    @Select("SELECT * FROM LZZ_RAINFALL_STATION WHERE TO_CHAR(TIME,'YYYY-MM-DD') = #{time}")
-    List<LzzRainfallStation> selectYesterday1(@Param("time")String time);
+    @Select("SELECT * FROM LZZ_RAINFALL_STATION WHERE TO_CHAR(TIME,'yyyy-MM-dd hh24:MI') BETWEEN #{startTime} AND #{endTime}")
+    List<LzzRainfallStation> selectYesterday1(@Param("startTime")String startTime, @Param("endTime")String endTime);
 
     List<RealTimeRainfallRes> getRealTimeRainfall(@Param("startTime")String startTime, @Param("endTime")String endTime,@Param("ids")List<String> ids);
 

@@ -15,4 +15,11 @@ public class WaterSupplyPriority {
     private Integer priorityValue;
     @ApiModelProperty(value = "锁定,1不允许修改优先级")
     private Integer isBlock;
+
+    public WaterSupplyPriority(String priorityType, Integer priorityIndex, Integer priorityValue, Integer isBlock) {
+        this.priorityType = priorityType;
+        this.priorityIndex = priorityIndex;
+        this.priorityValue = priorityValue;
+        this.isBlock = isBlock;
+    }
 }

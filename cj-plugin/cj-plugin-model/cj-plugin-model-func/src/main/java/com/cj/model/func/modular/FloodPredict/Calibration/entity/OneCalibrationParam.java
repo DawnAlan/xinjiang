@@ -1,10 +1,12 @@
 package com.cj.model.func.modular.FloodPredict.Calibration.entity;
 
-import com.cj.model.func.modular.FloodPredict.entity.IrrigatedHydrologyParam;
-import com.cj.model.func.modular.FloodPredict.entity.LzzHydrologyParam;
+import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.entity.LzzGaugingStation;
+import com.cj.model.func.modular.FloodPredict.entity.RainFallDto;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 
 @Data
@@ -21,10 +23,10 @@ public class OneCalibrationParam {
     private ShanbeiParam manualParam;
     //选择的站点参数
     private ShanbeiParam historyParam;
-    //楼庄子历史数据
-    private LzzHydrologyParam lzzHydrologyParam;
-    //灌区实时雨量站信息
-    private IrrigatedHydrologyParam irrigatedHydrologyParam;
+    //雨量站信息
+    private Map<String, List<RainFallDto>> rainfall;
+    //水位站信息
+    private Map<String,List<LzzGaugingStation>> waterLevel;
     //文件存储路径
     private String filePath;
 }

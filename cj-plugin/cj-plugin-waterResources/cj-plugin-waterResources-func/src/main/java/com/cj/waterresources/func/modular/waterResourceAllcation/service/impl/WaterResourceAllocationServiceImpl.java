@@ -60,8 +60,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -216,6 +214,37 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
         }).start();
 
         return RestResponse.ok();
+    }
+
+    @Override
+    public String autoGenerate(WaterResourceAllocationAddReq req) {
+        WaterResourceAllocation waterResourceAllocation = new WaterResourceAllocation();
+        BeanUtils.copyProperties(req, waterResourceAllocation);
+        Date now = new Date();
+        waterResourceAllocation.setId(UUIDUtils.getUUID());
+        waterResourceAllocation.setDel(0);
+        waterResourceAllocation.setState(1);
+        waterResourceAllocation.setCreateBy(StpLoginUserUtil.getLoginUser().getName());
+        waterResourceAllocation.setCreateTime(now);
+        List<WaterResourceAllocationControlObject> objectList = getAllocationControlObject(req, waterResourceAllocation.getId());
+        this.save(waterResourceAllocation);
+        waterResourceAllocationControlObjectService.saveBatch(objectList);
+        if (!CollectionUtil.isEmpty(req.getWaterSupplyPriorityList())) {
+            redisUtil.set(WATER_SUPPLY_PRIORITY_REDIS_KEY, JSONObject.toJSONString(req.getWaterSupplyPriorityList()), 0);
+        }
+
+        new Thread(() -> {
+            try {
+                doAllocation(waterResourceAllocation, now, req);
+                waterResourceAllocation.setState(0);
+            } catch (Exception e) {
+                waterResourceAllocation.setState(2);
+                waterResourceAllocation.setExceptionCause(getStringBuilder(e).toString());
+            }
+            this.updateById(waterResourceAllocation);
+        }).start();
+
+        return waterResourceAllocation.getId();
     }
 
     private List<WaterResourceAllocationControlObject> getAllocationControlObject(WaterResourceAllocationAddReq req,  String allocationId) {

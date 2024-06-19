@@ -37,41 +37,40 @@ public class ShanBeiCalibration {
     //是否为人工率定
     Boolean isAutomatic;
     ShanBeiModel shanbeiModel = new ShanBeiModel();
-
     DataUtils dataUtils = new DataUtils();
-
     TimeUtils timeUtils = new TimeUtils();
 
 
 
     public Map<String, CalibrationOutput> calibration(CalibrationParam input) throws ParseException, IOException, InvalidFormatException {
         Map<String, CalibrationOutput> result = new HashMap<>();
-        OneCalibrationParam three = new OneCalibrationParam();
-        isAutomatic = input.getIsAutomatic();
-        LzzHydrologyParam lzzHydrologyParam = dataUtils.lzzNullTemOrFlow(input.getLzzHydrologyParam());
-        three.setLzzHydrologyParam(lzzHydrologyParam);
-        IrrigatedHydrologyParam irrigatedHydrologyParam = dataUtils.irrigateMinuteToHour(input.getIrrigatedHydrologyParam());//区间
-        three.setIrrigatedHydrologyParam(irrigatedHydrologyParam);
-        three.setIsAutomatic(input.getIsAutomatic());
-        three.setStartTime(input.getStartTime());
-        three.setEndTime(input.getEndTime());
-        if (input.getLzzHydrologyParam()==null||input.getLzzHydrologyParam().getThreeGaugingStation().isEmpty()){
-            result.put("3号桥", new CalibrationOutput() {{setError("未获取3号桥入库历史数据");}});
-        }else {
-            result.put("3号桥", threeCalibration("3号桥", input, three));
-        }
-
-        if (input.getLzzHydrologyParam()==null||input.getLzzHydrologyParam().getLzzInput().isEmpty()){
-            result.put("楼庄子", new CalibrationOutput() {{setError("未获取楼庄子入库历史数据");}});
-        }else {
-            result.put("楼庄子", threeCalibration("楼庄子", input, three));
-        }
-        if (input.getIrrigatedHydrologyParam()==null||input.getIrrigatedHydrologyParam().getTthInput().isEmpty()){
-            result.put("头屯河", new CalibrationOutput() {{setError("未获取头屯河入库历史数据");}});
-        }else {
-            result.put("头屯河", threeCalibration("头屯河", input, three));
-        }
-        return result;
+//        OneCalibrationParam three = new OneCalibrationParam();
+//        isAutomatic = input.getIsAutomatic();
+//        LzzHydrologyParam lzzHydrologyParam = dataUtils.lzzNullTemOrFlow(input.getLzzHydrologyParam());
+//        three.setLzzHydrologyParam(lzzHydrologyParam);
+//        IrrigatedHydrologyParam irrigatedHydrologyParam = dataUtils.irrigateMinuteToHour(input.getIrrigatedHydrologyParam());//区间
+//        three.setIrrigatedHydrologyParam(irrigatedHydrologyParam);
+//        three.setIsAutomatic(input.getIsAutomatic());
+//        three.setStartTime(input.getStartTime());
+//        three.setEndTime(input.getEndTime());
+//        if (input.getLzzHydrologyParam()==null||input.getLzzHydrologyParam().getThreeGaugingStation().isEmpty()){
+//            result.put("3号桥", new CalibrationOutput() {{setError("未获取3号桥入库历史数据");}});
+//        }else {
+//            result.put("3号桥", threeCalibration("3号桥", input, three));
+//        }
+//
+//        if (input.getLzzHydrologyParam()==null||input.getLzzHydrologyParam().getLzzInput().isEmpty()){
+//            result.put("楼庄子", new CalibrationOutput() {{setError("未获取楼庄子入库历史数据");}});
+//        }else {
+//            result.put("楼庄子", threeCalibration("楼庄子", input, three));
+//        }
+//        if (input.getIrrigatedHydrologyParam()==null||input.getIrrigatedHydrologyParam().getTthInput().isEmpty()){
+//            result.put("头屯河", new CalibrationOutput() {{setError("未获取头屯河入库历史数据");}});
+//        }else {
+//            result.put("头屯河", threeCalibration("头屯河", input, three));
+//        }
+//        return result;
+        return null;
     }
 
     public CalibrationOutput threeCalibration(String location, CalibrationParam input, OneCalibrationParam param) {
@@ -86,14 +85,8 @@ public class ShanBeiCalibration {
         try {
             threeOutput = oneStationCalibration(param);
         } catch (RuntimeException | IOException | InvalidFormatException | ParseException e) {
-//            e.printStackTrace();
-//            String errorMessage = e.toString();
-//            int index = errorMessage.indexOf(":") + 1;
-//            if (index > 0) {
-//                errorMessage = errorMessage.substring(index).trim();
-//            }
+            e.printStackTrace();
             threeOutput.setError(e.getMessage());
-//            threeOutput.setError(String.valueOf(e));
         }
         return threeOutput;
     }
@@ -123,8 +116,8 @@ public class ShanBeiCalibration {
             durationList.add(duration);
             forecastInputParamNew.setPeriodTimeNum(duration);
             forecastInputParamNew.setPeriodTimeStep(1);
-            forecastInputParamNew.setIrrigatedHydrologyParam(inputData.getIrrigatedHydrologyParam());
-            forecastInputParamNew.setLzzHydrologyParam(inputData.getLzzHydrologyParam());
+//            forecastInputParamNew.setIrrigatedHydrologyParam(inputData.getIrrigatedHydrologyParam());
+//            forecastInputParamNew.setLzzHydrologyParam(inputData.getLzzHydrologyParam());
             forecastInputParamNew.setModelType(3);
             CalibrationData data = calibrationDataInput(location, forecastInputParamNew);
             dataList.add(data);
@@ -169,7 +162,7 @@ public class ShanBeiCalibration {
             List<Map<String,List<PredictInputData>>> lzzIntegration = dataUtils.lzzRainIntegration(paramNew);
             hour = dataUtils.pointToSurface(lzzIntegration.get(0),  "3号桥");//前24小时以及期间的降雨
             day = dataUtils.pointToSurface(lzzIntegration.get(1),  "3号桥");//前20天累积雨量
-            threeFlow = paramNew.getLzzHydrologyParam().getThreeGaugingStation();//3号桥流量
+//            threeFlow = paramNew.getLzzHydrologyParam().getThreeGaugingStation();//3号桥流量
             for (int i = 0; i < threeFlow.size(); i++) {
                 if (threeFlow.get(i).getGatherTime().after(startTimeBefore) && threeFlow.get(i).getGatherTime().before(endTime)) {
                     flow.add(threeFlow.get(i));
@@ -185,7 +178,7 @@ public class ShanBeiCalibration {
             List<Map<String,List<PredictInputData>>> lzzIntegration = dataUtils.lzzRainIntegration(paramNew);
             hour = dataUtils.pointToSurface(lzzIntegration.get(0),  "楼庄子");//前10小时以及期间的降雨
             day = dataUtils.pointToSurface(lzzIntegration.get(1),  "楼庄子");//前20天累积雨量
-            threeFlow = paramNew.getLzzHydrologyParam().getLzzInput();//流量
+//            threeFlow = paramNew.getLzzHydrologyParam().getLzzInput();//流量
             for (int i = 0; i < threeFlow.size(); i++) {
                 if (threeFlow.get(i).getGatherTime().after(startTimeBefore) && threeFlow.get(i).getGatherTime().before(endTime)) {
                     flow.add(threeFlow.get(i));
@@ -197,7 +190,7 @@ public class ShanBeiCalibration {
             List<Map<String,List<PredictInputData>>> qjIntegration = dataUtils.irrigateRainIntegration(paramNew);
             hour = dataUtils.pointToSurface(qjIntegration.get(0),  "头屯河");//前10小时以及期间的降雨
             day = dataUtils.pointToSurface(qjIntegration.get(1),  "头屯河");//前20天累积雨量
-            qjFlow = paramNew.getIrrigatedHydrologyParam().getTthInput();//流量
+//            qjFlow = paramNew.getIrrigatedHydrologyParam().getTthInput();//流量
             for (int i = 0; i < qjFlow.size(); i++) {
                 if (qjFlow.get(i).getMonitorTime().after(startTimeBefore) && qjFlow.get(i).getMonitorTime().before(endTime)) {
                     flowQJ.add(qjFlow.get(i));

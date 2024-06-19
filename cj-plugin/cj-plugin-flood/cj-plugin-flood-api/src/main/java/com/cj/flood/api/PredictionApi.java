@@ -1,6 +1,7 @@
 package com.cj.flood.api;
 
 
+import java.util.Date;
 import java.util.List;
 
 public interface PredictionApi {
@@ -44,6 +45,9 @@ public interface PredictionApi {
     //根据时段类型查询当年、当月、当旬、今日的来水预报列表
     String getPredictionListByTimeType(Integer timeType);
     String getPredictionListByName(String id,String reservoir);
+
+    String autoGenerate(String time);
+    String selectModelAddressById(String id);
 
     default String getWaterStorageOverview(String dateTime) {
         return null;

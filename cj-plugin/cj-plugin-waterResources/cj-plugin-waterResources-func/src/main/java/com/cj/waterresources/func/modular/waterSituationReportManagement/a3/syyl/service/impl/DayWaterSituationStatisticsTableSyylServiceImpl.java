@@ -53,12 +53,10 @@ public class DayWaterSituationStatisticsTableSyylServiceImpl extends ServiceImpl
 
     @Override
     public RestResponse add(List<DayWaterSituationStatisticsTableSyyl> dayWaterSituationStatisticsTableSyylList) {
-        Calendar calendar = new GregorianCalendar();
-        calendar.setTime(new Date());
-        calendar.add(calendar.DATE, -1);
-        String yesterday= sdf.format(calendar.getTime());
-        List<LzzRainfallStation> lzzRainfallStations = lzzRainfallStationService.selectYesterday(yesterday);
-        List<IrrigatedPlatformDataInfo> irrigatedPlatformDataInfo = irrigatedPlatformDataInfoService.selectOneByConditionByTime(yesterday);
+        Date date = new Date();
+        Date yesterday = calculateTime(date, -1);
+        List<LzzRainfallStation> lzzRainfallStations = lzzRainfallStationService.selectYesterday(sdf.format(yesterday)+" 01:00",sdf.format(date)+" 00:00");
+        List<IrrigatedPlatformDataInfo> irrigatedPlatformDataInfo = irrigatedPlatformDataInfoService.selectOneByConditionByTime(sdf.format(yesterday)+" 01:00",sdf.format(date)+" 00:00");
         for(DayWaterSituationStatisticsTableSyyl t:dayWaterSituationStatisticsTableSyylList){
             t.setId(UUIDUtils.getUUID());
             String paramName = trendsTableParamService.getById(t.getTableHeadId()).getParamName();
@@ -227,6 +225,14 @@ public class DayWaterSituationStatisticsTableSyylServiceImpl extends ServiceImpl
         }else {
             return RestResponse.no("error");
         }
+    }
+
+    private Date calculateTime(Date time,int day){
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(time);
+        calendar.add(Calendar.DATE,day);
+        Date date = calendar.getTime();
+        return date;
     }
 }
 

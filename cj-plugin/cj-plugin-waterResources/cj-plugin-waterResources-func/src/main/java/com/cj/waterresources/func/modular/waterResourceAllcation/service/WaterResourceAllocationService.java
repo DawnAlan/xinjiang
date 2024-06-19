@@ -24,6 +24,7 @@ public interface WaterResourceAllocationService extends IService<WaterResourceAl
     RestResponse<List<IncomingWaterForecastDto>> getIncomingWaterForecastListByTime(String startTime, String endTime, Integer bucketType);
 
     RestResponse generativeModel(WaterResourceAllocationAddReq req);
+    String autoGenerate(WaterResourceAllocationAddReq req);
 
 
     RestResponse getAllocationPage(WaterResourceAllocationQueryReq req);

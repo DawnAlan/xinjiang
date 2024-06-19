@@ -10,6 +10,7 @@ import com.cj.flood.func.modular.prediction.entity.BasinParam;
 import com.cj.flood.func.modular.prediction.entity.IncomingWaterForecast;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -37,4 +38,6 @@ public interface IncomingWaterForecastService extends IService<IncomingWaterFore
     RestResponse<List<IncomingWaterForecast>> selectListByTime(WaterResourceAllocationTimeReq req);
 
     RestResponse<BasinParam> getBasinParam();
+
+    String autoGenerate(Date time);
 }

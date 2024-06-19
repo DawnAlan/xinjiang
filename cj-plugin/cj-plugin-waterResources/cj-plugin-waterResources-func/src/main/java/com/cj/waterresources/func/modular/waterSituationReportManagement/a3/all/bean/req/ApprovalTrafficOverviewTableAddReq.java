@@ -21,4 +21,24 @@ public class ApprovalTrafficOverviewTableAddReq implements Serializable {
 
     @ApiModelProperty(value = "模型名称")
     private String modelName;
+
+    @ApiModelProperty(value = "是否一键生成模型")
+    private Boolean isAuto;
+
+    //楼庄子起调水位
+    @ApiModelProperty(value = "楼庄子起调水位")
+    private Double levelBeginLzz;
+
+    //头屯河起调水位
+    @ApiModelProperty(value = "头屯河起调水位")
+    private Double levelBeginTth;
+
+    //楼庄子期末水位
+    @ApiModelProperty(value = "楼庄子期末水位")
+    private Double levelEndLzz;
+
+    //头屯河期末水位
+    @ApiModelProperty(value = "头屯河期末水位")
+    private Double levelEndTth;
+
 }

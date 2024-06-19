@@ -117,4 +117,16 @@ public class PredictionApiContextBean implements PredictionApi {
         String data = predictionFeign.getPredictionListByName(id,reservoir);
         return data;
     }
+
+    @Override
+    public String autoGenerate(String time) {
+        String data = predictionFeign.autoGenerate(time);
+        return data;
+    }
+
+    @Override
+    public String selectModelAddressById(String id) {
+        String data = predictionFeign.autoGenerate(id);
+        return data;
+    }
 }

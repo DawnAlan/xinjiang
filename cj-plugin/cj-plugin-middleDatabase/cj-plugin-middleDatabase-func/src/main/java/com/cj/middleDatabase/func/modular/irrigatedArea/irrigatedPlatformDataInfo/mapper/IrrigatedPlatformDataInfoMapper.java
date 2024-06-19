@@ -43,8 +43,8 @@ public interface IrrigatedPlatformDataInfoMapper extends BaseMapper<IrrigatedPla
     @Select("SELECT * FROM IRRIGATED_PLATFORM_DATA_INFO WHERE MONITOR_NAME = #{name} AND MONITOR_TIME = #{time} order by MONITOR_TIME DESC")
     List<IrrigatedPlatformDataInfo> selectOneByCondition2(@Param("name") String name, @Param("time")String time);
 
-    @Select("SELECT * FROM IRRIGATED_PLATFORM_DATA_INFO WHERE MONITOR_TIME = #{time} order by MONITOR_TIME DESC")
-    List<IrrigatedPlatformDataInfo> selectOneByConditionByTime( @Param("time")String time);
+    @Select("SELECT * FROM IRRIGATED_PLATFORM_DATA_INFO WHERE MONITOR_TIME BETWEEN #{startTime} AND #{endTime} order by MONITOR_TIME DESC")
+    List<IrrigatedPlatformDataInfo> selectOneByConditionByTime(@Param("startTime")String startTime, @Param("endTime")String endTime);
 
     List<IrrigatedPlatformDataInfo> getRealTimeRainfall(@Param("date")String date,@Param("ids")List<String> ids);
 

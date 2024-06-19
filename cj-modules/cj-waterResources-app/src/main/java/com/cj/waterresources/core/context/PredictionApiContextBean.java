@@ -118,6 +118,18 @@ public class PredictionApiContextBean implements PredictionApi {
     }
 
     @Override
+    public String autoGenerate(String time) {
+        String data = predictionFeign.autoGenerate(time);
+        return data;
+    }
+
+    @Override
+    public String selectModelAddressById(String id) {
+        String data = predictionFeign.autoGenerate(id);
+        return data;
+    }
+
+    @Override
     public String getWaterStorageOverview(String dateTime) {
          return predictionFeign.getWaterStorageOverview(dateTime);
     }

@@ -85,4 +85,9 @@ public interface PredictionFeign {
                                      @RequestParam(value = "tth", required =true)Integer tth,
                                      @RequestParam(value = "lzzIdList", required =true)List<String> lzzIdList,
                                      @RequestParam(value = "tthIdList", required =true)List<String> tthIdList);
+    @RequestMapping("/feign/provider/flood/autoGenerate")
+    String autoGenerate(@RequestParam(value = "time", required =true)String time);
+
+    @RequestMapping("/feign/provider/flood/selectModelAddressById")
+    String selectModelAddressById(@RequestParam(value = "id", required =true)String id);
 }

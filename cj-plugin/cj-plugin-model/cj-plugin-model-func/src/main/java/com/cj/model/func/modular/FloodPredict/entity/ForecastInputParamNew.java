@@ -1,5 +1,6 @@
 package com.cj.model.func.modular.FloodPredict.entity;
 
+import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.entity.LzzGaugingStation;
 import com.cj.model.func.modular.FloodPredict.Calibration.entity.ShanbeiParam;
 import lombok.Data;
 
@@ -23,10 +24,10 @@ public class ForecastInputParamNew {
     private Integer periodTimeStep;
     //时间数量
     private Integer periodTimeNum;
-    //楼庄子历史数据
-    private LzzHydrologyParam lzzHydrologyParam;
-    //灌区实时雨量站信息
-    private IrrigatedHydrologyParam irrigatedHydrologyParam;
+    //雨量站信息
+    private Map<String,List<RainFallDto>>rainfall;
+    //水位站信息
+    private Map<String,List<LzzGaugingStation>> waterLevel;
     //预报雨量
     private List<RainFallDto> rainFallDtos;
     //日尺度预报数据

@@ -37,6 +37,7 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.text.DecimalFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -669,6 +670,24 @@ public class PredictionApiProvider implements PredictionApi {
         Map<String, Object> predictionListByName = incomingWaterForecastService.getPredictionListByName(id, reservoir);
         if(null != predictionListByName && predictionListByName.size()>0){
             return JSONObject.toJSONString(predictionListByName);
+        }
+        return null;
+    }
+
+    @Override
+    public String autoGenerate(String time) {
+        try {
+            return incomingWaterForecastService.autoGenerate(sdf.parse(time));
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public String selectModelAddressById(String id) {
+        IncomingWaterForecast byId = incomingWaterForecastService.getById(id);
+        if(null != byId) {
+            return byId.getModelResultAddress()+" "+byId.getProgrammeName();
         }
         return null;
     }

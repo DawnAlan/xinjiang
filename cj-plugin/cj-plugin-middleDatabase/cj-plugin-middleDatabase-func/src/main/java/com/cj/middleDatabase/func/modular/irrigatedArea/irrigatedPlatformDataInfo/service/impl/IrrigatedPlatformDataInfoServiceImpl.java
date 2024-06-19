@@ -93,8 +93,8 @@ public class IrrigatedPlatformDataInfoServiceImpl extends ServiceImpl<IrrigatedP
     }
 
     @Override
-    public List<IrrigatedPlatformDataInfo> selectOneByConditionByTime(String time) {
-        return this.baseMapper.selectOneByConditionByTime(time);
+    public List<IrrigatedPlatformDataInfo> selectOneByConditionByTime(String startTime,String endTime) {
+        return this.baseMapper.selectOneByConditionByTime(startTime,endTime);
     }
 
     @SneakyThrows
