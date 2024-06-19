@@ -183,8 +183,8 @@ public class TouTunHe {
         //判断是否为短期预报，是则使用物理模型
         if (param.getIsShortForecast()) {
             Date time = param.getPreStartTime();
-            int before = (param.getLocation().equals("楼头区间")) ? 3 : 5;
-            int after = (param.getLocation().equals("楼头区间")) ? 3 : 7;
+            int before = (param.getLocation().equals("楼头区间")) ? 3 : 7;
+            int after = (param.getLocation().equals("楼头区间")) ? 3 : 8;
             int month = tu.getSpecificDate(time).get("月");
             int l = param.getPeriodStepNumber() / 24 + 1;
             Object[][] snowFlood = new Object[l][2];

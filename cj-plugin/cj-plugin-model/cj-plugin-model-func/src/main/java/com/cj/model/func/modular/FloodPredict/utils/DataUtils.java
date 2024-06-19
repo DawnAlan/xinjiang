@@ -521,8 +521,9 @@ public class DataUtils {
                     }
                 } else //预报开始时间在数据库内，预报结束时间不在数据库内
                 {
-                    for (int i = 0; i < start_inputEnd; i++) //从落地雨开始给其赋值到数据库末尾
+                    for (int i = 0; i <= start_inputEnd; i++) //从落地雨开始给其赋值到数据库末尾
                     {
+                        data = new PredictInputData();
                         for (int j = 0; d + j < input.size() && j < n; j++) {
                             Boolean dateCompare = timeUtils.DateCompare(dateStart, input.get(d + j).getDates(), "小时");
                             if (dateCompare) {
@@ -540,6 +541,7 @@ public class DataUtils {
                     //此时的dataStart==数据库末尾的时间
                     int inputEnd_dateEnd = timeUtils.duration(dateStart, dataEnd, "小时");//数据库末尾到预报结束时间的距离
                     for (int i = 0; i < inputEnd_dateEnd; i++) {
+                        data = new PredictInputData();
                         if (length > 0) {
                             for (int j = 0; j < length; j++) {
                                 Date date = sdf.parse(rainPre.get(j).getDate());
@@ -568,7 +570,6 @@ public class DataUtils {
                                         data = assignmentNullRAndT(dateStart, input.get(0).getLocation());
                                     }
                                 }
-
                             }
                         } else {
                             data = assignmentNullRAndT(dateStart, input.get(0).getLocation());
