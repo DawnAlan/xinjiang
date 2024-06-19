@@ -253,10 +253,10 @@ public class DayWaterSituationStatisticsTableLzzServiceImpl extends ServiceImpl<
         for(DayWaterSituationStatisticsTableLzz t:dayWaterSituationStatisticsTableLzzList){
             String paramName = trendsTableParamService.getById(t.getTableHeadId()).getParamName();
             if(paramName.equals("楼庄子水厂管道1")){
-                lzzScCount+=t.getV();
+                lzzScCount+=t.getV()==null?0.00:t.getV();
             }
             if(paramName.equals("楼庄子水厂管道2")){
-                lzzScCount+=t.getV();
+                lzzScCount+=t.getV()==null?0.00:t.getV();
             }
         }
         for(DayWaterSituationStatisticsTableLzz t:dayWaterSituationStatisticsTableLzzList){
