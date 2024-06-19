@@ -244,7 +244,7 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
                 waterResourceAllocation.setExceptionCause(getStringBuilder(e).toString());
             }
             boolean b = this.updateById(waterResourceAllocation);
-            if(b){
+            if(b && waterResourceAllocation.getState() == 0)  {
                return waterResourceAllocation.getId();
            }else {
                return null;
