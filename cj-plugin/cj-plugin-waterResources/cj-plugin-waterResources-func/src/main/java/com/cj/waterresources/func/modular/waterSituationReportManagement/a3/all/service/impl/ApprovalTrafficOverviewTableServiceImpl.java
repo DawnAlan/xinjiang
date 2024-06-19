@@ -14,7 +14,6 @@ import com.cj.model.func.core.util.MultipartFileUtil;
 import com.cj.model.func.modular.watertransfer.entity.Excel2;
 import com.cj.waterresources.func.core.utils.WebSocketServer;
 import com.cj.waterresources.func.modular.trendsTable.entity.TrendsTableParam;
-import com.cj.waterresources.func.modular.trendsTable.service.TrendsTableParamService;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.dayWaterUsePlan.entity.DayWaterUsePlan;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.dayWaterUsePlan.service.DayWaterUsePlanService;
 import com.cj.waterresources.func.modular.waterResourceAllcation.bean.req.WaterResourceAllocationAddReq;
@@ -31,23 +30,16 @@ import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.service.ApprovalTrafficOverviewTableService;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hd.entity.DayWaterSituationStatisticsTableHd;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hd.mapper.DayWaterSituationStatisticsTableHdMapper;
-import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hd.service.DayWaterSituationStatisticsTableHdService;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hx.entity.DayWaterSituationStatisticsTableHx;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hx.mapper.DayWaterSituationStatisticsTableHxMapper;
-import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.hx.service.DayWaterSituationStatisticsTableHxService;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.entity.DayWaterSituationStatisticsTableLzz;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.mapper.DayWaterSituationStatisticsTableLzzMapper;
-import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.service.DayWaterSituationStatisticsTableLzzService;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.entity.DayWaterSituationStatisticsTableQs;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.entity.DayWaterSituationStatisticsTableQsLh;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.mapper.DayWaterSituationStatisticsTableQsLhMapper;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.mapper.DayWaterSituationStatisticsTableQsMapper;
-import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.service.DayWaterSituationStatisticsTableQsLhService;
-import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.qs.service.DayWaterSituationStatisticsTableQsService;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tth.entity.DayWaterSituationStatisticsTableTth;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tth.mapper.DayWaterSituationStatisticsTableTthMapper;
-import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.tth.service.DayWaterSituationStatisticsTableTthService;
-import lombok.Data;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,9 +52,6 @@ import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
-
-import static cn.hutool.poi.excel.sax.ElementName.v;
 
 /**
  * 流量概览表(ApprovalTrafficOverviewTable)表服务实现类
@@ -137,7 +126,7 @@ public class ApprovalTrafficOverviewTableServiceImpl extends ServiceImpl<Approva
                     String incomingWaterId = predictionApi.autoGenerate(calculateDay(req.getTime(), +1)+" "+sdf2.format(date).split(" ")[1]);
                     if(StringUtils.isNotEmpty(incomingWaterId)){
                         String incomingWaterAddress = predictionApi.selectModelAddressById(incomingWaterId);
-                        WebSocketServer.sendInfo("来水预报:1",saBaseLoginUser.getId());
+                        WebSocketServer.sendInfo("来水预报:1","trafficOverview",saBaseLoginUser.getId());
                         String[] split = incomingWaterAddress.split(" ");
                         try {
                             WaterResourceAllocationAddReq resourceAllocationAddReq = new WaterResourceAllocationAddReq();
@@ -150,10 +139,11 @@ public class ApprovalTrafficOverviewTableServiceImpl extends ServiceImpl<Approva
                             resourceAllocationAddReq.setLevelEndLzz(req.getLevelEndLzz());
                             resourceAllocationAddReq.setLevelBeginTth(req.getLevelBeginTth());
                             resourceAllocationAddReq.setLevelEndTth(req.getLevelEndTth());
-                            resourceAllocationAddReq.setSchemeName(sdf1.format(sdf.parse(calculateDay(req.getTime(), +1))+" "+sdf2.format(date).split(" ")[1])+"一键[单日配水]");
+                            String temp = calculateDay(req.getTime(), +1)+" "+sdf2.format(date).split(" ")[1];
+                            resourceAllocationAddReq.setSchemeName(sdf1.format(sdf2.parse(temp))+"一键[单日配水]");
                             resourceAllocationAddReq.setWaterDistributionType(1);
-                            resourceAllocationAddReq.setWaterDistributionStartTime(sdf2.parse(req.getTime()+" 00:00:00"));
-                            resourceAllocationAddReq.setWaterDistributionEndTime(sdf2.parse(req.getTime()+" 23:59:59"));
+                            resourceAllocationAddReq.setWaterDistributionStartTime(sdf2.parse(calculateDay(req.getTime(), +1)+" 00:00:00"));
+                            resourceAllocationAddReq.setWaterDistributionEndTime(sdf2.parse(calculateDay(req.getTime(), +1)+" 23:59:59"));
                             resourceAllocationAddReq.setEcologyFlowLzz(Arrays.asList(0.74, 0.74, 0.74, 1.48, 1.48, 1.48, 1.48, 1.48, 1.48, 0.74, 0.74, 0.74));
                             resourceAllocationAddReq.setEcologyFlowTth(Arrays.asList(0.00, 0.00, 0.00, 0.00, 0.74, 0.74, 0.74, 0.74, 0.74, 0.74, 0.74, 0.00));
                             resourceAllocationAddReq.setFloodWaterLevelLzz(Arrays.asList(1394.5, 1394.5, 1394.5, 1394.5, 1394.5, 1394.5, 1394.5, 1394.5, 1394.5, 1394.5, 1394.5, 1394.5));
@@ -167,28 +157,30 @@ public class ApprovalTrafficOverviewTableServiceImpl extends ServiceImpl<Approva
                                     new WaterSupplyPriority("灌溉用水",3,4,1),
                                     new WaterSupplyPriority("绿化用水",4,5,1)
                             ));
+                            resourceAllocationAddReq.setNeedWaterName("");
+                            resourceAllocationAddReq.setNeedWaterDataAddress("");
                             String waterResourceAllocationId = waterResourceAllocationService.autoGenerate(resourceAllocationAddReq);
                             if(StringUtils.isNotEmpty(waterResourceAllocationId)){
-                                WebSocketServer.sendInfo("水资源调配:1",saBaseLoginUser.getId());
+                                WebSocketServer.sendInfo("水资源调配:1","trafficOverview",saBaseLoginUser.getId());
                                 aBoolean = insertApprovalTrafficOverview(req.getModelId(), approvalTrafficOverviewTable.getId(), approvalTrafficOverviewTable.getTime());
                             }else {
                                 TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-                                WebSocketServer.sendInfo("水资源调配:2",saBaseLoginUser.getId());
+                                WebSocketServer.sendInfo("水资源调配:2","trafficOverview",saBaseLoginUser.getId());
                             }
                         }catch (Exception e){
                             log.error("自动生成水资源调配方案异常:"+e.getMessage());
-                            WebSocketServer.sendInfo("水资源调配:2",saBaseLoginUser.getId());
+                            WebSocketServer.sendInfo("水资源调配:2","trafficOverview",saBaseLoginUser.getId());
                             e.printStackTrace();
                             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
                         }
                     }else {
                         TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-                        WebSocketServer.sendInfo("来水预报:2",saBaseLoginUser.getId());
-                        WebSocketServer.sendInfo("水资源调配:2",saBaseLoginUser.getId());
+                        WebSocketServer.sendInfo("来水预报:2","trafficOverview",saBaseLoginUser.getId());
+                        WebSocketServer.sendInfo("水资源调配:2","trafficOverview",saBaseLoginUser.getId());
                     }
                 }catch (Exception e){
                     log.error("自动生成来水预报方案异常:"+e.getMessage());
-                    WebSocketServer.sendInfo("来水预报:2",saBaseLoginUser.getId());
+                    WebSocketServer.sendInfo("来水预报:2","trafficOverview",saBaseLoginUser.getId());
                     e.printStackTrace();
                     TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
                 }
@@ -197,10 +189,10 @@ public class ApprovalTrafficOverviewTableServiceImpl extends ServiceImpl<Approva
                 aBoolean = insertApprovalTrafficOverview(req.getModelId(), approvalTrafficOverviewTable.getId(), approvalTrafficOverviewTable.getTime());
             }
             if (aBoolean) {
-                WebSocketServer.sendInfo("流量概览:1",saBaseLoginUser.getId());
+                WebSocketServer.sendInfo("流量概览:1","trafficOverview",saBaseLoginUser.getId());
                 return RestResponse.ok();
             }else {
-                WebSocketServer.sendInfo("流量概览:2",saBaseLoginUser.getId());
+                WebSocketServer.sendInfo("流量概览:2","trafficOverview",saBaseLoginUser.getId());
                 return RestResponse.no("添加流量概览表失败");
             }
         } else {

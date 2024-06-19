@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateField;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.extra.spring.SpringUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -62,6 +63,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -71,6 +73,7 @@ import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 /**
@@ -218,22 +221,21 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
 
     @Override
     public String autoGenerate(WaterResourceAllocationAddReq req) {
-        WaterResourceAllocation waterResourceAllocation = new WaterResourceAllocation();
-        BeanUtils.copyProperties(req, waterResourceAllocation);
-        Date now = new Date();
-        waterResourceAllocation.setId(UUIDUtils.getUUID());
-        waterResourceAllocation.setDel(0);
-        waterResourceAllocation.setState(1);
-        waterResourceAllocation.setCreateBy(StpLoginUserUtil.getLoginUser().getName());
-        waterResourceAllocation.setCreateTime(now);
-        List<WaterResourceAllocationControlObject> objectList = getAllocationControlObject(req, waterResourceAllocation.getId());
-        this.save(waterResourceAllocation);
-        waterResourceAllocationControlObjectService.saveBatch(objectList);
-        if (!CollectionUtil.isEmpty(req.getWaterSupplyPriorityList())) {
-            redisUtil.set(WATER_SUPPLY_PRIORITY_REDIS_KEY, JSONObject.toJSONString(req.getWaterSupplyPriorityList()), 0);
-        }
-
-        new Thread(() -> {
+        try {
+            WaterResourceAllocation waterResourceAllocation = new WaterResourceAllocation();
+            BeanUtils.copyProperties(req, waterResourceAllocation);
+            Date now = new Date();
+            waterResourceAllocation.setId(UUIDUtils.getUUID());
+            waterResourceAllocation.setDel(0);
+            waterResourceAllocation.setState(1);
+            waterResourceAllocation.setCreateBy(StpLoginUserUtil.getLoginUser().getName());
+            waterResourceAllocation.setCreateTime(now);
+            List<WaterResourceAllocationControlObject> objectList = getAllocationControlObject(req, waterResourceAllocation.getId());
+            this.save(waterResourceAllocation);
+            waterResourceAllocationControlObjectService.saveBatch(objectList);
+            if (!CollectionUtil.isEmpty(req.getWaterSupplyPriorityList())) {
+                redisUtil.set(WATER_SUPPLY_PRIORITY_REDIS_KEY, JSONObject.toJSONString(req.getWaterSupplyPriorityList()), 0);
+            }
             try {
                 doAllocation(waterResourceAllocation, now, req);
                 waterResourceAllocation.setState(0);
@@ -241,10 +243,16 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
                 waterResourceAllocation.setState(2);
                 waterResourceAllocation.setExceptionCause(getStringBuilder(e).toString());
             }
-            this.updateById(waterResourceAllocation);
-        }).start();
-
-        return waterResourceAllocation.getId();
+            boolean b = this.updateById(waterResourceAllocation);
+            if(b){
+               return waterResourceAllocation.getId();
+           }else {
+               return null;
+           }
+       }catch (Exception e){
+           e.printStackTrace();
+           return null;
+       }
     }
 
     private List<WaterResourceAllocationControlObject> getAllocationControlObject(WaterResourceAllocationAddReq req,  String allocationId) {

@@ -65,7 +65,7 @@ public class DayWaterUsePlanServiceImpl extends ServiceImpl<DayWaterUsePlanMappe
             List<String> userIdListByOrgIdList = sysUserApi.getUserIdListByOrgIdList(Arrays.asList(gskOrg));
             if(flag){
                 for(String s :userIdListByOrgIdList){
-                    WebSocketServer.sendInfo(dayWaterUsePlan.getArea()+"已填报日用水计划，请查收",s);
+                    WebSocketServer.sendInfo(dayWaterUsePlan.getArea()+"已填报日用水计划，请查收","dayWaterUsePlan",s);
                 }
             }
             return RestResponse.ok("更新成功");

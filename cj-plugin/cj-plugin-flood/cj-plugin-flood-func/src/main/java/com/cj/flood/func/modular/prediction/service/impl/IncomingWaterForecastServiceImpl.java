@@ -182,7 +182,8 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                         forcastInputParamNew.setPeriodTimeType(incomingWaterForecast.getPeriodTimeType());
                         forcastInputParamNew.setIsSimulation(false);
                         forcastInputParamNew.setIsReferenceWater(false);
-
+                        forcastInputParamNew.setPreFlow(0.0);
+                        forcastInputParamNew.setPreRainFall(0.0);
                         List<Date> dates = InputUtils.judgeDate(incomingWaterForecast.getPredictionTime(),incomingWaterForecast.getPeriodTimeNum());
                         String overall = (String) redisUtil.get("overallSituationUnitMgr:list");
                         List<OverallSituationUnitMgrDto> overallSituationUnitMgrDtoList = JSONObject.parseArray(overall, OverallSituationUnitMgrDto.class);
@@ -313,6 +314,7 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                                     }});
                                 });
                         forcastInputParamNew.setParamMap(paramMap);
+                        forcastInputParamNew.setBasinStr(JSONObject.toJSONString(loadBasinParam()));
                         TemporaryXlsx floodList = new TouTunHe().getFloodList(forcastInputParamNew);
                         //生成模型结果文件
                         String fileAddress = floodList.getPath();
@@ -340,7 +342,7 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                                 eq(IncomingWaterForecast::getId,incomingWaterForecast.getId()).update();
                         return false;
                     }
-                };
+                }
             });
             // 获取结果
             Boolean res = future.get();

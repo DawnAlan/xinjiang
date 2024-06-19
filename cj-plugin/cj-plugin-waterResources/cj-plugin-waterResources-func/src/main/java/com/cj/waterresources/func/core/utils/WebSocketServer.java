@@ -1,5 +1,6 @@
 package com.cj.waterresources.func.core.utils;
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -12,7 +13,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 /**
  * WebSocket的操作类
  */
-@ServerEndpoint(value = "/msg/{sid}")
+@ServerEndpoint(value = "/msg/{topic}/{sid}")
 @Component
 @Slf4j
 public class WebSocketServer {
@@ -26,15 +27,17 @@ public class WebSocketServer {
 
     //接收sid
     private String sid="";
+    private String topic="";
 
     /**
      * 连接建立成功调用的方法*/
     @OnOpen
-    public void onOpen(Session session, @PathParam("sid") String sid) {
+    public void onOpen(Session session, @PathParam("topic") String topic,@PathParam("sid") String sid) {
         this.session = session;
         webSocketSet.add(this);     //加入set中
         addOnlineCount();           //在线数加1
-        log.info("有新窗口开始监听:"+sid+",当前在线人数为" + getOnlineCount());
+        log.info("有新窗口开始监听主题:"+topic+"，监听人员"+sid+",当前在线人数为" + getOnlineCount());
+        this.topic=topic;
         this.sid=sid;
         try {
             sendMessage("连接成功");
@@ -59,7 +62,7 @@ public class WebSocketServer {
      * @param message 客户端发送过来的消息*/
     @OnMessage
     public void onMessage(String message, Session session) {
-        log.info("收到来自窗口"+sid+"的信息:"+message);
+        log.info("收到来自窗口主题为:"+topic+",监听人员:"+sid+"的信息:"+message);
         //群发消息
         for (WebSocketServer item : webSocketSet) {
             try {
@@ -91,14 +94,15 @@ public class WebSocketServer {
     /**
      * 群发自定义消息
      * */
-    public static void sendInfo(String message,@PathParam("sid") String sid) throws IOException {
-        log.info("推送消息到窗口"+sid+"，推送内容:"+message);
+    public static void sendInfo(String message,@PathParam("topic") String topic,@PathParam("sid") String sid) throws IOException {
+        log.info("推送消息到窗口主题:"+topic+",监听人员:"+sid+"，推送内容:"+message);
+        CopyOnWriteArraySet<WebSocketServer> webSocketSet1 = getWebSocketSet();
         for (WebSocketServer item : webSocketSet) {
             try {
                 //这里可以设定只推送给这个sid的，为null则全部推送
-                if(sid==null) {
+                if(sid==null && topic ==null) {
                     item.sendMessage(message);
-                }else if(item.sid.equals(sid)){
+                }else if(item.sid.equals(sid) && item.topic.equals(topic)){
                     item.sendMessage(message);
                 }
             } catch (IOException e) {
@@ -121,5 +125,10 @@ public class WebSocketServer {
 
     public static CopyOnWriteArraySet<WebSocketServer> getWebSocketSet() {
         return webSocketSet;
+    }
+
+    @SneakyThrows
+    public static void main(String[] args) {
+        WebSocketServer.sendInfo("测试消息","build","1");
     }
 }

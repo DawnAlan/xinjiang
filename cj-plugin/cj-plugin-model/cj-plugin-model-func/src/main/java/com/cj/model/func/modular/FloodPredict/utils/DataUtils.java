@@ -45,7 +45,7 @@ public class DataUtils {
                 RainFallDto rainFallDto = new RainFallDto();
                 rainFallDto.setDate(sdf.format(timeUtils.addCalendar(startDate,"小时",i)));
                 rainFallDto.setRainFall(0.0);
-                rainFallDto.setTemperature(0.0);
+                rainFallDto.setTemperature(setNullTempRain("楼庄子",nowDate)[0]);
                 rainFallDto.setArea("面雨量");
                 rainFallDtos.add(rainFallDto);
             }
@@ -632,6 +632,17 @@ public class DataUtils {
         } else //预报开始时间在数据库外，又可以分为前二十天都不在数据库或者不都在数据库
         {
             List<RainFallDto> rainFallDtoList = param.getRainFallDtos();
+            if (rainFallDtoList==null){
+                rainFallDtoList = new ArrayList<>();
+                for (int i = 0; i < param.getPeriodTimeNum()*24; i++) {
+                    RainFallDto rainFallDto = new RainFallDto();
+                    rainFallDto.setDate(sdf.format(timeUtils.addCalendar(dateStart,"小时",i)));
+                    rainFallDto.setRainFall(0.0);
+                    rainFallDto.setTemperature(setNullTempRain("楼庄子",dateStart)[0]);
+                    rainFallDto.setArea("面雨量");
+                    rainFallDtoList.add(rainFallDto);
+                }
+            }
             List<PredictInputData> preRainDay = preRainHourToDay(rainFallDtoList);
             int start_20_End = timeUtils.duration(dateStart_20, inputDateEnd, "日");
             if (start_20_End < 0)//全部为预报值
@@ -1505,7 +1516,7 @@ public class DataUtils {
     /**
      * 区间数据站点名为空的处理
      */
-  /*  public IrrigatedHydrologyParam irrigateStationProcessing(IrrigatedHydrologyParam inputData) {
+    /*public IrrigatedHydrologyParam irrigateStationProcessing(IrrigatedHydrologyParam inputData) {
         IrrigatedHydrologyParam result = new IrrigatedHydrologyParam();
         List<IrrigatedPlatformDataInfo> XQZ = inputData.getXqzGaugingStation();
         List<IrrigatedPlatformDataInfo> XQZresult = new ArrayList<>();
@@ -1560,8 +1571,8 @@ public class DataUtils {
         }
         result.setTthInput(TTHIresult);
         return result;
-    }
-*/
+    }*/
+
     /**
      * 区间数据尺度转化
      */
