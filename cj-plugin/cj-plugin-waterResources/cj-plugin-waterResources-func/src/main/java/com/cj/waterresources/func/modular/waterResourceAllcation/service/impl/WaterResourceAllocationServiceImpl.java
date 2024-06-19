@@ -1276,7 +1276,7 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
                 .entrySet().stream().sorted(Map.Entry.comparingByKey())
                 .map(n -> new WaterDistributionOverviewRes.WaterDto(n.getKey(), n.getValue())).collect(Collectors.toList()));
         //年逐月并且配水时间从1月开始,判断来水频率
-        if (allocation.getBucketType() == 1 && DateUtil.month(allocation.getWaterDistributionStartTime()) == 1) {
+        if (allocation.getBucketType() == 1 && DateUtil.month(allocation.getWaterDistributionStartTime()) == 0) {
             res.setIncomingWaterFreq(
                     incomingWater > 22190 ? "丰水年" :
                             incomingWater > 19980 ? "平水年" :
