@@ -17,13 +17,9 @@ import java.util.*;
 
 public class SubBasinForecast {
     String floodLevel = "一年一遇";//洪水等级
-
     String floodSource;//洪水来源
-
     String floodComposition;//洪水组成
-
     DataUtils dataUtils = new DataUtils();
-
     TimeUtils timeUtils = new TimeUtils();
     int beforeHours = InputUtils.beforeHours;//前期落地雨时间
 
@@ -47,6 +43,7 @@ public class SubBasinForecast {
         areaMap.put("小渠子雨量站", 85.0);
         areaMap.put("团结一队雨量站", 85.0);
         areaMap.put("头屯河水库雨量站", 85.0);
+        areaMap.put("甘沟雨量站", 85.0);
         Map<String, Integer> lMap = new HashMap<>();
         lMap.put("八一林场自动雨量站", 18);
         lMap.put("东南沟自动雨量站", 16);
@@ -60,6 +57,7 @@ public class SubBasinForecast {
         lMap.put("制材厂自动雨量站", 0);
         lMap.put("小渠子雨量站", 2);
         lMap.put("团结一队雨量站", 1);
+        lMap.put("甘沟雨量站", 1);
         lMap.put("头屯河水库雨量站", 0);
         Map<String, Integer> lMap1 = new HashMap<>();
         lMap1.put("八一林场自动雨量站", 20);
@@ -74,7 +72,8 @@ public class SubBasinForecast {
         lMap1.put("制材厂自动雨量站", 2);
         lMap1.put("小渠子雨量站", 4);
         lMap1.put("团结一队雨量站", 2);
-        lMap1.put("头屯河水库雨量站", 2);
+        lMap1.put("甘沟雨量站", 2);
+        lMap1.put("头屯河水库雨量站", 1);
         Map<String, Double> wmMap = new HashMap<>();
         wmMap.put("八一林场自动雨量站", 120.0);
         wmMap.put("东南沟自动雨量站", 100.0);
@@ -88,6 +87,7 @@ public class SubBasinForecast {
         wmMap.put("制材厂自动雨量站", 100.0);
         wmMap.put("小渠子雨量站", 100.0);
         wmMap.put("团结一队雨量站", 100.0);
+        wmMap.put("甘沟雨量站", 100.0);
         wmMap.put("头屯河水库雨量站", 100.0);
         Map<String, Double> bMap = new HashMap<>();
         bMap.put("八一林场自动雨量站", 0.2);
@@ -102,6 +102,7 @@ public class SubBasinForecast {
         bMap.put("制材厂自动雨量站", 0.2);
         bMap.put("小渠子雨量站", 0.2);
         bMap.put("团结一队雨量站", 0.2);
+        bMap.put("甘沟雨量站", 0.2);
         bMap.put("头屯河水库雨量站", 0.2);
         Map<String, Double> csMap = new HashMap<>();
         csMap.put("八一林场自动雨量站", 0.96);
@@ -116,6 +117,7 @@ public class SubBasinForecast {
         csMap.put("制材厂自动雨量站", 0.7);
         csMap.put("小渠子雨量站", 0.7);
         csMap.put("团结一队雨量站", 0.7);
+        csMap.put("甘沟雨量站", 0.7);
         csMap.put("头屯河水库雨量站", 0.7);
         Map<String, Double> csMap1 = new HashMap<>();
         csMap1.put("八一林场自动雨量站", 0.97);
@@ -130,6 +132,7 @@ public class SubBasinForecast {
         csMap1.put("制材厂自动雨量站", 0.9);
         csMap1.put("小渠子雨量站", 0.8);
         csMap1.put("团结一队雨量站", 0.8);
+        csMap1.put("甘沟雨量站", 0.8);
         csMap1.put("头屯河水库雨量站", 0.8);
 
         //陕北模型输入、蒸散发和前期雨量
@@ -160,6 +163,8 @@ public class SubBasinForecast {
         List<PredictInputData> tjydd = Data.get(2).get("团结一队雨量站");//前期雨量
         List<PredictInputData> tthh = Data.get(1).get("头屯河水库雨量站");//蒸散发和降雨
         List<PredictInputData> tthd = Data.get(2).get("头屯河水库雨量站");//前期雨量
+        List<PredictInputData> ggh = Data.get(1).get("甘沟雨量站");//蒸散发和降雨
+        List<PredictInputData> ggd = Data.get(2).get("甘沟雨量站");//前期雨量
         Map<String, double[]> flow = new HashMap<>();
         int l = param.getPeriodStepNumber() * param.getPeriodStepSize();
         double[] rainQ = new double[l];
@@ -574,7 +579,7 @@ public class SubBasinForecast {
                 shanbeiparam.setFM(60.0);
                 shanbeiparam.setK(0.2);
                 shanbeiparam.setB(0.2);
-                shanbeiparam.setCS(0.8);
+                shanbeiparam.setCS(0.7);
                 shanbeiparam.setArea(areaMap.get("小渠子雨量站"));
                 shanbeiparam.setL(lMap.get("小渠子雨量站"));
                 double[] xqzq = getSubBasinQ(shanbeiparam, xqzh, xqzd);
@@ -595,6 +600,13 @@ public class SubBasinForecast {
                 flow.put("头屯河水库雨量站", tthq);
                 for (int i = 0; i < rainQ.length; i++) {
                     rainQ[i] += tthq[i];
+                }
+                shanbeiparam.setArea(areaMap.get("甘沟雨量站"));
+                shanbeiparam.setL(lMap.get("甘沟雨量站"));
+                double[] ggq = getSubBasinQ(shanbeiparam, ggh, ggd);
+                flow.put("甘沟雨量站", ggq);
+                for (int i = 0; i < rainQ.length; i++) {
+                    rainQ[i] += ggq[i];
                 }
                 break;
         }
@@ -1060,81 +1072,68 @@ public class SubBasinForecast {
      * 求洪水组成，各个雨量站代表的汇流面贡献多少水量
      */
     public String getFloodSources(Map<String, double[]> pointData, ForecastInputParam param) {
-        String result = "";
-        int l = param.getPeriodStepNumber() * param.getPeriodStepSize();
-        //三号桥断面返回三个地区的雨量比值
-        switch (param.getLocation()) {
-            case "3号桥": {
-                double Sum;
-                double qiaoSum = 0.0;
-                double dongSum = 0.0;
-                double sanSum = 0.0;
-                for (int i = 0; i < l; i++) {
-                    qiaoSum += pointData.get("八一林场自动雨量站")[i];
-                    dongSum += (pointData.get("加普沙自动雨量站")[i] + pointData.get("东南沟自动雨量站")[i] +
-                            pointData.get("宰尔德自动雨量站")[i] + pointData.get("无名沟自动雨量站")[i]);
-                    sanSum += (pointData.get("萨尔达万自动雨量站")[i] + pointData.get("煤矿沟自动雨量站")[i]);
-                }
-                Sum = qiaoSum + dongSum + sanSum;
-                if (Sum != 0.0) {
-                    double qiao = Math.round((float) qiaoSum / Sum * 100) / 100.0;
-                    double dong = Math.round((float) dongSum / Sum * 100) / 100.0;
-                    double san = Math.round((1.00 - qiao - dong) * 100) / 100.0;
-                    result = "乔楞格尔地区:" + qiao + "," + "东南沟地区:" + dong + "," + "3号桥地区:" + san;
-                } else {
-                    result = "乔楞格尔地区:0.34," + "东南沟地区:0.33," + "3号桥地区:0.33";
-                }
+        StringBuilder result = new StringBuilder();
+        double Sum = 0.0;
+        double sub;
+        Map<String,Double> subSquare = new HashMap<>();
+        switch (param.getLocation()){
+            case "3号桥":{
+                subSquare.put("宰尔德",0.06);
+                subSquare.put("东南沟",0.21);
+                subSquare.put("萨尔达万",0.02);
+                subSquare.put("煤矿沟",0.04);
+                subSquare.put("无名沟",0.03);
+                subSquare.put("八一林场",0.45);
+                subSquare.put("加普沙",0.19);
                 break;
             }
-            case "楼庄子": {
-                double Sum;
-                double qiaoSum = 0.0;
-                double dongSum = 0.0;
-                double sanSum = 0.0;
-                double zhiSum = 0.0;
-                for (int i = 0; i < l; i++) {
-                    qiaoSum += pointData.get("八一林场自动雨量站")[i];
-                    dongSum += (pointData.get("加普沙自动雨量站")[i] + pointData.get("东南沟自动雨量站")[i] +
-                            pointData.get("宰尔德自动雨量站")[i] + pointData.get("无名沟自动雨量站")[i]);
-                    sanSum += (pointData.get("萨尔达万自动雨量站")[i] + pointData.get("煤矿沟自动雨量站")[i]);
-                    zhiSum += (pointData.get("黑沟自动雨量站")[i] + pointData.get("喀什沟自动雨量站")[i] + pointData.get("制材厂自动雨量站")[i]);
-                }
-                Sum = qiaoSum + dongSum + sanSum + zhiSum;
-                if (Sum != 0) {
-                    double qiao = Math.round((float) qiaoSum / Sum * 100) / 100.0;
-                    double dong = Math.round((float) dongSum / Sum * 100) / 100.0;
-                    double san = Math.round((float) sanSum / Sum * 100) / 100.0;
-                    double zhi = Math.round((1.00 - qiao - dong - san) * 100) / 100.0;
-                    result = "乔楞格尔地区:" + qiao + "," + "东南沟地区:" + dong + "," + "3号桥地区:" + san + "," + "制材厂地区:" + zhi;
-                } else {
-                    result = "乔楞格尔地区:0.25," + "东南沟地区:0.25," + "3号桥地区:0.25," + "制材厂地区:0.25";
-                }
-
+            case "楼庄子":{
+                subSquare.put("宰尔德",0.03);
+                subSquare.put("东南沟",0.16);
+                subSquare.put("萨尔达万",0.02);
+                subSquare.put("煤矿沟",0.03);
+                subSquare.put("无名沟",0.02);
+                subSquare.put("八一林场",0.33);
+                subSquare.put("加普沙",0.18);
+                subSquare.put("喀什沟",0.08);
+                subSquare.put("制材厂",0.12);
+                subSquare.put("黑沟",0.03);
                 break;
             }
-            case "楼头区间": {
-                double Sum;
-                double xiaoSum = 0.0;
-                double tuanSum = 0.0;
-                double toSum = 0.0;
-                for (int i = 0; i < l; i++) {
-                    xiaoSum += pointData.get("小渠子雨量站")[i];
-                    tuanSum += pointData.get("团结一队雨量站")[i];
-                    toSum += pointData.get("头屯河水库雨量站")[i];
-                }
-                Sum = xiaoSum + tuanSum + toSum;
-                if (Sum != 0) {
-                    double xiao = Math.round((float) xiaoSum / Sum * 100) / 100.0;
-                    double tuan = Math.round((float) tuanSum / Sum * 100) / 100.0;
-                    double to = Math.round((1.00 - xiao - tuan) * 100) / 100.0;
-                    result = "小渠子沟:" + xiao + "," + "团结一队:" + tuan + "," + "头屯河坝前:" + to;
-                } else {
-                    result = "小渠子沟:0.34," + "团结一队:0.33," + "头屯河坝前:0.33";
-                }
-                break;
+            case "楼头区间":
+                subSquare.put("团结一队",0.17);
+                subSquare.put("小渠子",0.32);
+                subSquare.put("头屯河水库",0.29);
+                subSquare.put("甘沟",0.22);
+                subSquare.put("楼庄子库区",0.22);
+        }
+        for (Map.Entry<String, double[]> entry : pointData.entrySet()) {
+            double[] value = entry.getValue();
+            for (double v : value) {
+                Sum += v;
             }
         }
-        return result;
+        for (Map.Entry<String, double[]> entry : pointData.entrySet()) {
+            double subSum = 0.0;
+            String key = entry.getKey();
+            String location;
+            if (key.contains("自动雨量站")){
+                location = key.replaceAll("自动雨量站", "");
+            }else {
+                location = key.replaceAll("雨量站", "");
+            }
+            double[] value = entry.getValue();
+            for (double v : value) {
+                subSum += v;
+            }
+            if (Sum != 0.0) {
+                sub = Math.round((float) subSum / Sum * 100) / 100.0;
+            }else {
+                sub = subSquare.get(location);
+            }
+            result.append(location).append(":").append(sub).append(",");
+        }
+        return result.toString();
     }
 
     /**
@@ -1148,10 +1147,10 @@ public class SubBasinForecast {
         String result = "";
         double snowFlow = 0.0;
         double preFlowSum = 0.0;
-        double preFlow = 0.0;
+        double preFlow;
         double shanbeiFlow = 0.0;
         int number = Q_shanbei.length;
-        double base = (param.getLocation().equals("楼头区间") ? 0.16 : 1.28) * number;
+        double base = (param.getLocation().equals("楼头区间") ? 0.0 : 1.28) * number;
         if (param.getIsSnowMeltModel()) {
             for (Object[] snowDatum : snowData) {
                 snowFlow += (double) snowDatum[1];
@@ -1181,9 +1180,10 @@ public class SubBasinForecast {
             }
             int n = PreFlow.size() == 0 ? 1 : PreFlow.size();
             preFlow = preFlowSum / n * Q_shanbei.length;
+            double rongDate = (preFlow-base)>0?(preFlow-base):0.0;
             double Sum = preFlow + shanbeiFlow;
             double shanbei = Math.round((float) shanbeiFlow / Sum * 100) / 100.0;
-            double rong = Math.round((float) (preFlow-base) / Sum * 100) / 100.0;
+            double rong = Math.round((float) rongDate / Sum * 100) / 100.0;
             double di = Math.round((float) base / Sum * 100) / 100.0;
             if (Sum == 0.0) {
                 result += "地下水:1.00";
