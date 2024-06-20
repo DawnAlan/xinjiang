@@ -213,7 +213,8 @@ public class DayWaterSituationStatisticsTableQsServiceImpl extends ServiceImpl<D
                         dayWaterSituationStatisticsTableQsList.stream().filter(a->a.getTableHeadId().equals(dlqCount.getId()) && a.getV()!=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00)+
                         dayWaterSituationStatisticsTableQsList.stream().filter(a->a.getTableHeadId().equals(stCount.getId()) && a.getV()!=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00)+
                         dayWaterSituationStatisticsTableQsList.stream().filter(a->a.getTableHeadId().equals(hybx.getId()) && a.getV()!=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00)+
-                        dayWaterSituationStatisticsTableQsList.stream().filter(a->a.getTableHeadId().equals(xh.getId()) && a.getV()!=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00)
+                        dayWaterSituationStatisticsTableQsList.stream().filter(a->a.getTableHeadId().equals(xh.getId()) && a.getV()!=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00)-
+                        dayWaterSituationStatisticsTableQsList.stream().filter(a->a.getTableHeadId().equals(ld.getId()) && a.getV()!=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00)
                 );
             }
         });

@@ -193,7 +193,8 @@ public class ApprovalTrafficOverviewTableServiceImpl extends ServiceImpl<Approva
                 return RestResponse.ok();
             }else {
                 WebSocketServer.sendInfo("流量概览:2","trafficOverview",saBaseLoginUser.getId());
-                return RestResponse.no("添加流量概览表失败");
+                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                return RestResponse.no("添加流量概览表失败，请检查是否创建今日A3表18点的数据和日用水计划表");
             }
         } else {
             return RestResponse.no("添加失败");

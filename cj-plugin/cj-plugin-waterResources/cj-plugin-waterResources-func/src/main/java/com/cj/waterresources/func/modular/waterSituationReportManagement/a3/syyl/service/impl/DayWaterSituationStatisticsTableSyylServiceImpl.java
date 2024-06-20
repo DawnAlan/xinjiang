@@ -55,8 +55,8 @@ public class DayWaterSituationStatisticsTableSyylServiceImpl extends ServiceImpl
     public RestResponse add(List<DayWaterSituationStatisticsTableSyyl> dayWaterSituationStatisticsTableSyylList) {
         Date date = new Date();
         Date yesterday = calculateTime(date, -1);
-        List<LzzRainfallStation> lzzRainfallStations = lzzRainfallStationService.selectYesterday(sdf.format(yesterday)+" 01:00",sdf.format(date)+" 00:00");
-        List<IrrigatedPlatformDataInfo> irrigatedPlatformDataInfo = irrigatedPlatformDataInfoService.selectOneByConditionByTime(sdf.format(yesterday)+" 01:00",sdf.format(date)+" 00:00");
+        List<LzzRainfallStation> lzzRainfallStations = lzzRainfallStationService.selectYesterday(sdf.format(yesterday)+" 01:00",sdf.format(date)+" 01:00");
+        List<IrrigatedPlatformDataInfo> irrigatedPlatformDataInfo = irrigatedPlatformDataInfoService.selectOneByConditionByTime(sdf.format(yesterday)+" 01:00",sdf.format(date)+" 00:05");
         for(DayWaterSituationStatisticsTableSyyl t:dayWaterSituationStatisticsTableSyylList){
             t.setId(UUIDUtils.getUUID());
             String paramName = trendsTableParamService.getById(t.getTableHeadId()).getParamName();
