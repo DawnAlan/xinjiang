@@ -162,7 +162,7 @@ public class ApprovalTrafficOverviewTableServiceImpl extends ServiceImpl<Approva
                             String waterResourceAllocationId = waterResourceAllocationService.autoGenerate(resourceAllocationAddReq);
                             if(StringUtils.isNotEmpty(waterResourceAllocationId)){
                                 WebSocketServer.sendInfo("水资源调配:1","trafficOverview",saBaseLoginUser.getId());
-                                aBoolean = insertApprovalTrafficOverview(req.getModelId(), approvalTrafficOverviewTable.getId(), approvalTrafficOverviewTable.getTime());
+                                aBoolean = insertApprovalTrafficOverview(waterResourceAllocationId, approvalTrafficOverviewTable.getId(), approvalTrafficOverviewTable.getTime());
                             }else {
                                 TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
                                 WebSocketServer.sendInfo("水资源调配:2","trafficOverview",saBaseLoginUser.getId());
