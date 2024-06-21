@@ -201,7 +201,7 @@ public class ApprovalTrafficOverviewTableServiceImpl extends ServiceImpl<Approva
             }else {
                 aBoolean = insertApprovalTrafficOverview(req.getModelId(), approvalTrafficOverviewTable.getId(), approvalTrafficOverviewTable.getTime());
             }
-            if (false) {
+            if (aBoolean) {
                 WebSocketServer.sendInfo("流量概览:1","trafficOverview",saBaseLoginUser.getId());
                 return RestResponse.ok();
             }else {
