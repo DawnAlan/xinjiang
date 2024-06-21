@@ -1,4 +1,4 @@
-package com.cj.flood.func.core.common.feign;
+package com.cj.common.feign;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
