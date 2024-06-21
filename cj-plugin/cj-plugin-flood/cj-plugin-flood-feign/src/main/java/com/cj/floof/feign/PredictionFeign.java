@@ -90,4 +90,7 @@ public interface PredictionFeign {
 
     @RequestMapping("/feign/provider/flood/selectModelAddressById")
     String selectModelAddressById(@RequestParam(value = "id", required =true)String id);
+
+    @RequestMapping("/feign/provider/flood/deleteAutoGenerate")
+    Boolean deleteAutoGenerate(@RequestParam(value = "id", required =true)String id);
 }

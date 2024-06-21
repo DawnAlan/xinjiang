@@ -142,4 +142,10 @@ public class PredictionFeignProvider implements PredictionFeign {
     public String selectModelAddressById(String id) {
         return predictionApiProvider.selectModelAddressById(id);
     }
+
+    @RequestMapping("/feign/provider/flood/deleteAutoGenerate")
+    @Override
+    public Boolean deleteAutoGenerate(String id) {
+        return predictionApiProvider.deleteAutoGenerate(id);
+    }
 }

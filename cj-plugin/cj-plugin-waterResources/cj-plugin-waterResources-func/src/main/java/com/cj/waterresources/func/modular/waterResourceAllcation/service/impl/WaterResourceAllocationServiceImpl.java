@@ -221,36 +221,32 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
 
     @Override
     public String autoGenerate(WaterResourceAllocationAddReq req) {
+        WaterResourceAllocation waterResourceAllocation = new WaterResourceAllocation();
+        BeanUtils.copyProperties(req, waterResourceAllocation);
+        Date now = new Date();
+        waterResourceAllocation.setId(UUIDUtils.getUUID());
+        waterResourceAllocation.setDel(0);
+        waterResourceAllocation.setState(1);
+        waterResourceAllocation.setCreateBy(StpLoginUserUtil.getLoginUser().getName());
+        waterResourceAllocation.setCreateTime(now);
+        List<WaterResourceAllocationControlObject> objectList = getAllocationControlObject(req, waterResourceAllocation.getId());
+        this.save(waterResourceAllocation);
+        waterResourceAllocationControlObjectService.saveBatch(objectList);
+        if (!CollectionUtil.isEmpty(req.getWaterSupplyPriorityList())) {
+            redisUtil.set(WATER_SUPPLY_PRIORITY_REDIS_KEY, JSONObject.toJSONString(req.getWaterSupplyPriorityList()), 0);
+        }
         try {
-            WaterResourceAllocation waterResourceAllocation = new WaterResourceAllocation();
-            BeanUtils.copyProperties(req, waterResourceAllocation);
-            Date now = new Date();
-            waterResourceAllocation.setId(UUIDUtils.getUUID());
-            waterResourceAllocation.setDel(0);
-            waterResourceAllocation.setState(1);
-            waterResourceAllocation.setCreateBy(StpLoginUserUtil.getLoginUser().getName());
-            waterResourceAllocation.setCreateTime(now);
-            List<WaterResourceAllocationControlObject> objectList = getAllocationControlObject(req, waterResourceAllocation.getId());
-            this.save(waterResourceAllocation);
-            waterResourceAllocationControlObjectService.saveBatch(objectList);
-            if (!CollectionUtil.isEmpty(req.getWaterSupplyPriorityList())) {
-                redisUtil.set(WATER_SUPPLY_PRIORITY_REDIS_KEY, JSONObject.toJSONString(req.getWaterSupplyPriorityList()), 0);
-            }
-            try {
-                doAllocation(waterResourceAllocation, now, req);
-                waterResourceAllocation.setState(0);
-            } catch (Exception e) {
-                waterResourceAllocation.setState(2);
-                waterResourceAllocation.setExceptionCause(getStringBuilder(e).toString());
-            }
-            boolean b = this.updateById(waterResourceAllocation);
-            if(b && waterResourceAllocation.getState() == 0)  {
-               return waterResourceAllocation.getId();
-           }else {
-               return null;
-           }
-       }catch (Exception e){
-           e.printStackTrace();
+            doAllocation(waterResourceAllocation, now, req);
+            waterResourceAllocation.setState(0);
+        } catch (Exception e) {
+            waterResourceAllocation.setState(2);
+            waterResourceAllocation.setExceptionCause(getStringBuilder(e).toString());
+            throw new RuntimeException(e.getMessage());
+        }
+        boolean b = this.updateById(waterResourceAllocation);
+        if(b && waterResourceAllocation.getState() == 0)  {
+           return waterResourceAllocation.getId();
+       }else {
            return null;
        }
     }

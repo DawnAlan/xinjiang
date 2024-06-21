@@ -684,6 +684,15 @@ public class PredictionApiProvider implements PredictionApi {
     }
 
     @Override
+    public Boolean deleteAutoGenerate(String id) {
+        try {
+            return incomingWaterForecastService.removeById(id);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
     public String selectModelAddressById(String id) {
         IncomingWaterForecast byId = incomingWaterForecastService.getById(id);
         if(null != byId) {

@@ -124,6 +124,11 @@ public class PredictionApiContextBean implements PredictionApi {
     }
 
     @Override
+    public Boolean deleteAutoGenerate(String id) {
+        return predictionFeign.deleteAutoGenerate(id);
+    }
+
+    @Override
     public String selectModelAddressById(String id) {
         String data = predictionFeign.selectModelAddressById(id);
         return data;

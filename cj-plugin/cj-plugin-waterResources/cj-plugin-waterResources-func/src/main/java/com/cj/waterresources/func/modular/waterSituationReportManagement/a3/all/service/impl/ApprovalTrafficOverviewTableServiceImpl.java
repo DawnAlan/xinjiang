@@ -119,11 +119,13 @@ public class ApprovalTrafficOverviewTableServiceImpl extends ServiceImpl<Approva
         approvalTrafficOverviewTable.setModelName(req.getModelName());
         boolean save = this.save(approvalTrafficOverviewTable);
         Date date = new Date();
+        String incomingWaterId = "";
+        String waterResourceAllocationId = "";
         if (save) {
             Boolean aBoolean = false;
             if (req.getIsAuto()){
                 try {
-                    String incomingWaterId = predictionApi.autoGenerate(calculateDay(req.getTime(), +1)+" "+sdf2.format(date).split(" ")[1]);
+                    incomingWaterId = predictionApi.autoGenerate(calculateDay(req.getTime(), +1)+" "+sdf2.format(date).split(" ")[1]);
                     if(StringUtils.isNotEmpty(incomingWaterId)){
                         String incomingWaterAddress = predictionApi.selectModelAddressById(incomingWaterId);
                         WebSocketServer.sendInfo("来水预报:1","trafficOverview",saBaseLoginUser.getId());
@@ -159,39 +161,52 @@ public class ApprovalTrafficOverviewTableServiceImpl extends ServiceImpl<Approva
                             ));
                             resourceAllocationAddReq.setNeedWaterName("");
                             resourceAllocationAddReq.setNeedWaterDataAddress("");
-                            String waterResourceAllocationId = waterResourceAllocationService.autoGenerate(resourceAllocationAddReq);
+                            waterResourceAllocationId = waterResourceAllocationService.autoGenerate(resourceAllocationAddReq);
                             if(StringUtils.isNotEmpty(waterResourceAllocationId)){
                                 WebSocketServer.sendInfo("水资源调配:1","trafficOverview",saBaseLoginUser.getId());
                                 aBoolean = insertApprovalTrafficOverview(waterResourceAllocationId, approvalTrafficOverviewTable.getId(), approvalTrafficOverviewTable.getTime());
                             }else {
+                                predictionApi.deleteAutoGenerate(incomingWaterId);
                                 TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
                                 WebSocketServer.sendInfo("水资源调配:2","trafficOverview",saBaseLoginUser.getId());
+                                WebSocketServer.sendInfo("流量概览:2","trafficOverview",saBaseLoginUser.getId());
+                                return RestResponse.no("添加流量概览表失败，自动生成水资源调配方案异常");
                             }
                         }catch (Exception e){
                             log.error("自动生成水资源调配方案异常:"+e.getMessage());
+                            predictionApi.deleteAutoGenerate(incomingWaterId);
                             WebSocketServer.sendInfo("水资源调配:2","trafficOverview",saBaseLoginUser.getId());
+                            WebSocketServer.sendInfo("流量概览:2","trafficOverview",saBaseLoginUser.getId());
                             e.printStackTrace();
                             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                            return RestResponse.no("添加流量概览表失败，自动生成水资源调配方案异常");
                         }
                     }else {
                         TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
                         WebSocketServer.sendInfo("来水预报:2","trafficOverview",saBaseLoginUser.getId());
                         WebSocketServer.sendInfo("水资源调配:2","trafficOverview",saBaseLoginUser.getId());
+                        WebSocketServer.sendInfo("流量概览:2","trafficOverview",saBaseLoginUser.getId());
+                        return RestResponse.no("添加流量概览表失败，自动生成来水预报方案异常");
                     }
                 }catch (Exception e){
                     log.error("自动生成来水预报方案异常:"+e.getMessage());
                     WebSocketServer.sendInfo("来水预报:2","trafficOverview",saBaseLoginUser.getId());
+                    WebSocketServer.sendInfo("水资源调配:2","trafficOverview",saBaseLoginUser.getId());
+                    WebSocketServer.sendInfo("流量概览:2","trafficOverview",saBaseLoginUser.getId());
                     e.printStackTrace();
                     TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                    return RestResponse.no("添加流量概览表失败，自动生成来水预报方案异常");
                 }
 
             }else {
                 aBoolean = insertApprovalTrafficOverview(req.getModelId(), approvalTrafficOverviewTable.getId(), approvalTrafficOverviewTable.getTime());
             }
-            if (aBoolean) {
+            if (false) {
                 WebSocketServer.sendInfo("流量概览:1","trafficOverview",saBaseLoginUser.getId());
                 return RestResponse.ok();
             }else {
+                predictionApi.deleteAutoGenerate(incomingWaterId);
+                waterResourceAllocationService.removeById(waterResourceAllocationId);
                 WebSocketServer.sendInfo("流量概览:2","trafficOverview",saBaseLoginUser.getId());
                 TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
                 return RestResponse.no("添加流量概览表失败，请检查是否创建今日A3表18点的数据和日用水计划表");

@@ -47,6 +47,7 @@ public interface PredictionApi {
     String getPredictionListByName(String id,String reservoir);
 
     String autoGenerate(String time);
+    Boolean deleteAutoGenerate(String id);
     String selectModelAddressById(String id);
 
     default String getWaterStorageOverview(String dateTime) {
