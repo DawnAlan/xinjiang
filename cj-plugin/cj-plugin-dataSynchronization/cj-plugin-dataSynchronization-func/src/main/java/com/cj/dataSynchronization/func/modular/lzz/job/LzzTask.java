@@ -30,7 +30,7 @@ public class LzzTask {
             Date time = new Date();
             Date startTime = calculateTime(time,-1);
             Date endTime = calculateTime(time,1);
-            lzzPlatformService.insertRainfallStationInfoBetweenTime(startTime,endTime);
+            lzzPlatformService.insertRainfallStationInfoBetweenTime(startTime,endTime,"");
             lzzPlatformService.insertReservoirLevelBetweenTime(startTime,endTime);
             lzzPlatformService.insertGaugingStationBetweenTime(startTime,endTime);
             lzzPlatformService.insertLzzBetweenTime(startTime,endTime);

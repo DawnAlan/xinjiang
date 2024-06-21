@@ -20,4 +20,6 @@ public class ReqParam implements Serializable {
     @DateTimeFormat("yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "结束sss时间")
     private String endDate;
+
+    private String name;
 }

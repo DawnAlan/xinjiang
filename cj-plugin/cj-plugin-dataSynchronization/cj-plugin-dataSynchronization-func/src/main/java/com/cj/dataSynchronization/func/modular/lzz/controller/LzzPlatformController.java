@@ -64,7 +64,7 @@ public class LzzPlatformController {
     @PostMapping("/insertRainfallStationInfo")
     public RestResponse insertRainfallStationInfo(@RequestBody ReqParam reqParam) {
         try {
-            RestResponse restResponse = lzzPlatformService.insertRainfallStationInfoBetweenTime(sdf.parse(reqParam.getStartDate()),sdf.parse(reqParam.getEndDate()));
+            RestResponse restResponse = lzzPlatformService.insertRainfallStationInfoBetweenTime(sdf.parse(reqParam.getStartDate()),sdf.parse(reqParam.getEndDate()),reqParam.getName());
             if(restResponse.getCode()==200){
                 return RestResponse.ok("ok");
             }else {

@@ -18,6 +18,7 @@ import com.cj.middleDatabase.func.modular.lzz.lzzRainfallStation.entity.LzzRainf
 import com.cj.middleDatabase.func.modular.lzz.lzzRainfallStation.service.LzzRainfallStationService;
 import com.cj.middleDatabase.func.modular.lzz.storageCapacityCurve.entity.StorageCapacityCurve;
 import com.cj.middleDatabase.func.modular.lzz.storageCapacityCurve.service.StorageCapacityCurveService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +31,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class LzzPlatformServiceImpl implements LzzPlatformService {
 
 
@@ -290,8 +292,8 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
     }
 
     @Override
-    public RestResponse insertRainfallStationRainfallBetweenTime(Date startTime, Date endTime) {
-        List<UserIdParam> rainfallStationPidList = pubUserService.selectPidList("雨量站");
+    public RestResponse insertRainfallStationRainfallBetweenTime(Date startTime, Date endTime,String name) {
+        List<UserIdParam> rainfallStationPidList = pubUserService.selectPidList(name+"雨量站");
         List<LzzRainfallStation> result = new ArrayList<>();
         for(UserIdParam userPidParam :rainfallStationPidList){
             List<LzzRainfallStation> rainfallStationList = new ArrayList<>();
@@ -299,15 +301,17 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
             for(UserIdParam userIdParam :userIdParams){
                 if(userIdParam.getName().substring(userIdParam.getName().length()-2).contains("雨量")){
                     List<ParamDto> paramDtos = lzzPlatformMapper.selectInfoBetweenTime(userIdParam.getId(), sdf.format(startTime), sdf.format(endTime));
-                    for (ParamDto paramDto :paramDtos){
+                    for(int i=1;i<paramDtos.size();i++){
+                        ParamDto paramDto1 = paramDtos.get(i);
+                        ParamDto paramDto0 = paramDtos.get(i-1);
                         LzzRainfallStation station = new LzzRainfallStation();
                         station.setTreeId(userPidParam.getId());
                         station.setStationName(userPidParam.getName());
-                        station.setRainfall(paramDto.getV());
-                        station.setTime(paramDto.getTime());
-                        station.setRecordTime(DateUtil.parse(sdf1.format(paramDto.getTime()),"yyyy-MM-dd"));
-                        station.setYear(String.valueOf(sdf.format(paramDto.getTime()).split("-")[0]));
-                        station.setId(userPidParam.getName()+":"+paramDto.getTime().getTime());
+                        station.setRainfall(paramDto1.getV().subtract(paramDto0.getV()));
+                        station.setTime(paramDto1.getTime());
+                        station.setRecordTime(DateUtil.parse(sdf1.format(paramDto1.getTime()),"yyyy-MM-dd"));
+                        station.setYear(String.valueOf(sdf.format(paramDto1.getTime()).split("-")[0]));
+                        station.setId(userPidParam.getName()+":"+paramDto1.getTime().getTime());
                         rainfallStationList.add(station);
                     }
                 }
@@ -327,8 +331,8 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
     }
 
     @Override
-    public RestResponse insertRainfallStationTemperatureBetweenTime(Date startTime, Date endTime) {
-        List<UserIdParam> rainfallStationPidList = pubUserService.selectPidList("雨量站");
+    public RestResponse insertRainfallStationTemperatureBetweenTime(Date startTime, Date endTime,String name) {
+        List<UserIdParam> rainfallStationPidList = pubUserService.selectPidList(name+"雨量站");
         List<LzzRainfallStation> result = new ArrayList<>();
         for(UserIdParam userPidParam :rainfallStationPidList){
             List<LzzRainfallStation> rainfallStationList = new ArrayList<>();
@@ -359,9 +363,9 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
     }
 
     @Override
-    public RestResponse insertRainfallStationInfoBetweenTime(Date startTime, Date endTime) {
-        RestResponse rainfall = this.insertRainfallStationRainfallBetweenTime(startTime, endTime);
-        RestResponse temperature = this.insertRainfallStationTemperatureBetweenTime(startTime, endTime);
+    public RestResponse insertRainfallStationInfoBetweenTime(Date startTime, Date endTime,String name) {
+        RestResponse rainfall = this.insertRainfallStationRainfallBetweenTime(startTime, endTime,name);
+        RestResponse temperature = this.insertRainfallStationTemperatureBetweenTime(startTime, endTime,name);
         if(rainfall.getCode()==200 && temperature.getCode()==200) {
             return RestResponse.ok("导入成功");
         }else {

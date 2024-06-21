@@ -56,7 +56,7 @@ public class DayWaterSituationStatisticsTableSyylServiceImpl extends ServiceImpl
         Date date = new Date();
         Date yesterday = calculateTime(date, -1);
         List<LzzRainfallStation> lzzRainfallStations = lzzRainfallStationService.selectYesterday(sdf.format(yesterday)+" 01:00",sdf.format(date)+" 01:00");
-        List<IrrigatedPlatformDataInfo> irrigatedPlatformDataInfo = irrigatedPlatformDataInfoService.selectOneByConditionByTime(sdf.format(yesterday)+" 01:00",sdf.format(date)+" 00:05");
+        List<IrrigatedPlatformDataInfo> irrigatedPlatformDataInfo = irrigatedPlatformDataInfoService.selectOneByConditionByTime(sdf.format(date)+" 00:00");
         for(DayWaterSituationStatisticsTableSyyl t:dayWaterSituationStatisticsTableSyylList){
             t.setId(UUIDUtils.getUUID());
             String paramName = trendsTableParamService.getById(t.getTableHeadId()).getParamName();
@@ -107,16 +107,14 @@ public class DayWaterSituationStatisticsTableSyylServiceImpl extends ServiceImpl
             if(paramName.equals("团结一队")){
                 List<IrrigatedPlatformDataInfo> platformDataInfoList = irrigatedPlatformDataInfo.stream().filter(s -> s.getMonitorName().equals("团结一队雨量站")).collect(Collectors.toList());
                 if(null!= platformDataInfoList && platformDataInfoList.size()>0){
-                    List<Double> collect = platformDataInfoList.stream().filter(r -> r.getYqRainFallOne() != null).map(IrrigatedPlatformDataInfo::getYqRainFallOne).collect(Collectors.toList());
-                    Double aDouble = collect.stream().reduce(Double::sum).orElse(0.00);
+                    Double aDouble = platformDataInfoList.stream().filter(r -> r.getYqRainFallOne() != null).map(IrrigatedPlatformDataInfo::getYqRainFallTwentyFour).findFirst().get();
                     t.setV(aDouble==null?null:aDouble);
                 }
             }
             if(paramName.equals("头屯河进库")){
                 List<IrrigatedPlatformDataInfo> platformDataInfoList = irrigatedPlatformDataInfo.stream().filter(s -> s.getMonitorName().equals("头屯河水库雨量站")).collect(Collectors.toList());
                 if(null!= platformDataInfoList && platformDataInfoList.size()>0){
-                    List<Double> collect = platformDataInfoList.stream().filter(r -> r.getYqRainFallOne() != null).map(IrrigatedPlatformDataInfo::getYqRainFallOne).collect(Collectors.toList());
-                    Double aDouble = collect.stream().reduce(Double::sum).orElse(0.00);
+                    Double aDouble = platformDataInfoList.stream().filter(r -> r.getYqRainFallOne() != null).map(IrrigatedPlatformDataInfo::getYqRainFallTwentyFour).findFirst().get();
                     t.setV(aDouble==null?null:aDouble);
                 }
             }
@@ -124,8 +122,21 @@ public class DayWaterSituationStatisticsTableSyylServiceImpl extends ServiceImpl
             if(paramName.equals("小渠子")){
                 List<IrrigatedPlatformDataInfo> platformDataInfoList = irrigatedPlatformDataInfo.stream().filter(s -> s.getMonitorName().equals("小渠子雨量站")).collect(Collectors.toList());
                 if(null!= platformDataInfoList && platformDataInfoList.size()>0){
-                    List<Double> collect = platformDataInfoList.stream().filter(r -> r.getYqRainFallOne() != null).map(IrrigatedPlatformDataInfo::getYqRainFallOne).collect(Collectors.toList());
-                    Double aDouble = collect.stream().reduce(Double::sum).orElse(0.00);
+                    Double aDouble = platformDataInfoList.stream().filter(r -> r.getYqRainFallOne() != null).map(IrrigatedPlatformDataInfo::getYqRainFallTwentyFour).findFirst().get();
+                    t.setV(aDouble==null?null:aDouble);
+                }
+            }
+            if(paramName.equals("甘沟")){
+                List<IrrigatedPlatformDataInfo> platformDataInfoList = irrigatedPlatformDataInfo.stream().filter(s -> s.getMonitorName().equals("小渠子雨量站")).collect(Collectors.toList());
+                if(null!= platformDataInfoList && platformDataInfoList.size()>0){
+                    Double aDouble = platformDataInfoList.stream().filter(r -> r.getYqRainFallOne() != null).map(IrrigatedPlatformDataInfo::getYqRainFallTwentyFour).findFirst().get();
+                    t.setV(aDouble==null?null:aDouble);
+                }
+            }
+            if(paramName.equals("三工滩")){
+                List<IrrigatedPlatformDataInfo> platformDataInfoList = irrigatedPlatformDataInfo.stream().filter(s -> s.getMonitorName().equals("小渠子雨量站")).collect(Collectors.toList());
+                if(null!= platformDataInfoList && platformDataInfoList.size()>0){
+                    Double aDouble = platformDataInfoList.stream().filter(r -> r.getYqRainFallOne() != null).map(IrrigatedPlatformDataInfo::getYqRainFallTwentyFour).findFirst().get();
                     t.setV(aDouble==null?null:aDouble);
                 }
             }

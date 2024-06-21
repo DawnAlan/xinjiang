@@ -203,7 +203,7 @@ public class DayWaterSituationStatisticsTableQsServiceImpl extends ServiceImpl<D
         TrendsTableParam qh= trendsTableParamList.stream().filter(t -> t.getParamName().equals("全河") && t.getPId().equals("0")).collect(Collectors.toList()).get(0);
         TrendsTableParam dlq= trendsTableParamList.stream().filter(t -> t.getParamName().equals("灯笼渠流量") && t.getPId().equals(da.getId())).collect(Collectors.toList()).get(0);
         TrendsTableParam dlqCount= trendsTableParamList.stream().filter(t -> t.getParamName().equals("合计") && t.getPId().equals(dlq.getId())).collect(Collectors.toList()).get(0);
-        TrendsTableParam stCount= trendsTableParamList.stream().filter(t -> t.getParamName().equals("合计") && t.getPId().equals(st.getId())).collect(Collectors.toList()).get(0);
+        TrendsTableParam csz= trendsTableParamList.stream().filter(t -> t.getParamName().equals("冲砂闸") && t.getPId().equals(st.getId())).collect(Collectors.toList()).get(0);
         TrendsTableParam hybx= trendsTableParamList.stream().filter(t -> t.getParamName().equals("鸿远博兴") && t.getPId().equals(sc.getId())).collect(Collectors.toList()).get(0);
         TrendsTableParam xh= trendsTableParamList.stream().filter(t -> t.getParamName().equals("兴虎") && t.getPId().equals(sc.getId())).collect(Collectors.toList()).get(0);
         dayWaterSituationStatisticsTableQsList.forEach(t->{
@@ -211,10 +211,9 @@ public class DayWaterSituationStatisticsTableQsServiceImpl extends ServiceImpl<D
                 t.setV(
                         dayWaterSituationStatisticsTableQsList.stream().filter(a->a.getTableHeadId().equals(zgll.getId()) && a.getV()!=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00)+
                         dayWaterSituationStatisticsTableQsList.stream().filter(a->a.getTableHeadId().equals(dlqCount.getId()) && a.getV()!=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00)+
-                        dayWaterSituationStatisticsTableQsList.stream().filter(a->a.getTableHeadId().equals(stCount.getId()) && a.getV()!=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00)+
+                        dayWaterSituationStatisticsTableQsList.stream().filter(a->a.getTableHeadId().equals(csz.getId()) && a.getV()!=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00)+
                         dayWaterSituationStatisticsTableQsList.stream().filter(a->a.getTableHeadId().equals(hybx.getId()) && a.getV()!=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00)+
-                        dayWaterSituationStatisticsTableQsList.stream().filter(a->a.getTableHeadId().equals(xh.getId()) && a.getV()!=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00)-
-                        dayWaterSituationStatisticsTableQsList.stream().filter(a->a.getTableHeadId().equals(ld.getId()) && a.getV()!=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00)
+                        dayWaterSituationStatisticsTableQsList.stream().filter(a->a.getTableHeadId().equals(xh.getId()) && a.getV()!=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00)
                 );
             }
         });
@@ -347,7 +346,7 @@ public class DayWaterSituationStatisticsTableQsServiceImpl extends ServiceImpl<D
         TrendsTableParam qh= trendsTableParamList.stream().filter(t -> t.getParamName().equals("全河") && t.getPId().equals("0")).collect(Collectors.toList()).get(0);
         TrendsTableParam dlq= trendsTableParamList.stream().filter(t -> t.getParamName().equals("灯笼渠流量") && t.getPId().equals(da.getId())).collect(Collectors.toList()).get(0);
         TrendsTableParam dlqCount= trendsTableParamList.stream().filter(t -> t.getParamName().equals("合计") && t.getPId().equals(dlq.getId())).collect(Collectors.toList()).get(0);
-        TrendsTableParam stCount= trendsTableParamList.stream().filter(t -> t.getParamName().equals("合计") && t.getPId().equals(st.getId())).collect(Collectors.toList()).get(0);
+        TrendsTableParam csz= trendsTableParamList.stream().filter(t -> t.getParamName().equals("冲砂闸") && t.getPId().equals(st.getId())).collect(Collectors.toList()).get(0);
         TrendsTableParam hybx= trendsTableParamList.stream().filter(t -> t.getParamName().equals("鸿远博兴") && t.getPId().equals(sc.getId())).collect(Collectors.toList()).get(0);
         TrendsTableParam xh= trendsTableParamList.stream().filter(t -> t.getParamName().equals("兴虎") && t.getPId().equals(sc.getId())).collect(Collectors.toList()).get(0);
         dayWaterSituationStatisticsTableQsList.forEach(t->{
@@ -355,7 +354,7 @@ public class DayWaterSituationStatisticsTableQsServiceImpl extends ServiceImpl<D
                 t.setV(
                         dayWaterSituationStatisticsTableQsList.stream().filter(a->a.getTableHeadId().equals(zgll.getId()) && a.getV()!=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00)+
                         dayWaterSituationStatisticsTableQsList.stream().filter(a->a.getTableHeadId().equals(dlqCount.getId()) && a.getV()!=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00)+
-                        dayWaterSituationStatisticsTableQsList.stream().filter(a->a.getTableHeadId().equals(stCount.getId()) && a.getV()!=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00)+
+                        dayWaterSituationStatisticsTableQsList.stream().filter(a->a.getTableHeadId().equals(csz.getId()) && a.getV()!=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00)+
                         dayWaterSituationStatisticsTableQsList.stream().filter(a->a.getTableHeadId().equals(hybx.getId()) && a.getV()!=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00)+
                         dayWaterSituationStatisticsTableQsList.stream().filter(a->a.getTableHeadId().equals(xh.getId()) && a.getV()!=null).map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00)
                 );
