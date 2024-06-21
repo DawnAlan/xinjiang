@@ -354,12 +354,13 @@ public class TouTunHe {
             //连续列的赋值
             for (int i = 0; i < Lzz.size(); i++) {
                 Flood tth = new Flood();
+                int days = mdu.getDays(param.getPeriod(),Lzz.get(i).getTime());
                 tth.setLocation("头屯河");//断面位置
                 tth.setScale(String.valueOf(timeLength));//尺度
                 tth.setPeakIndex(0);//洪号
                 tth.setTime(Lzz.get(i).getTime());//时间
                 tth.setPreQ(Math.round((Lzz.get(i).getPreQ()+qj.get(i).getPreQ()) * 100.0) / 100.0);//预报流量
-                tth.setFloodVolume((double) Math.round(tth.getPreQ() * timeLength / 10000));//洪量
+                tth.setFloodVolume((double) Math.round(tth.getPreQ() * 3600*24*days / 10000));//洪量
                 tth.setQCause("");//洪水来源
                 tth.setQComposition("");//洪水组成
                 tth.setPeakDuration("");//洪峰持续时间

@@ -451,7 +451,7 @@ public class SimulatedRunoff {
             }
             int timeLength = 3600 * l;
             ReqCurve reqCurve  = new ReqCurve();
-            List<Option> lzzOutList = LZZ.Calculate(param.getBasinStr(),input, timeLength,reqCurve);
+            List<Option> lzzOutList = LZZ.Calculate(param.getBasinStr(),input, timeLength,reqCurve,param.getIsReferenceWater());
             for (int i = 0; i < n; i++) {
                 water_outQ[i][0] = lzzOutList.get(i).getH1();
                 water_outQ[i][1] = lzzOutList.get(i).getQOut();

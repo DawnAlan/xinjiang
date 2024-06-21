@@ -1468,25 +1468,22 @@ public class MachineDataUtils {
                 t = i;
             }
         }
-        int days = 0;
         int timeLength = 0;
-        switch (param.getPeriod()) {
+        switch (param.getPeriod()){
             case "月":
-                days = 30;
-                timeLength = 30 * 24 * 3600;
+                timeLength = 30*24*3600;
                 break;
             case "旬":
-                days = 10;
-                timeLength = 10 * 24 * 3600;
+                timeLength = 10*24*3600;
                 break;
             case "日":
-                days = 1;
-                timeLength = param.getPeriodStepSize() * 24 * 3600;
-                break;
+                timeLength = 24*3600;
         }
         //连续列的赋值
         for (int i = 0; i < l; i++) {
             Flood flood = new Flood();
+            Date date = (Date) predict[i * param.getPeriodStepSize()][0];
+            int days = getDays(param.getPeriod(),date);
             flood.setLocation(param.getLocation());
             flood.setScale(String.valueOf(timeLength));
             flood.setPeakIndex(0);
@@ -1502,6 +1499,34 @@ public class MachineDataUtils {
             result.add(flood);
         }
         return result;
+    }
+    /**
+     * 获取各个尺度的日期
+     * @param period
+     * @param date
+     * @return
+     */
+    public Integer getDays (String period,Date date){
+        Integer[] days_Month = new Integer[]{31,28,31,30,31,30,31,31,30,31,30,31};
+        Integer days = 1;
+        switch (period){
+            case "月":
+                days = days_Month[tu.getSpecificDate(date).get("月")-1];
+                break;
+            case "旬":
+                Integer month = tu.getSpecificDate(date).get("月")-1;
+                Integer day = tu.getSpecificDate(date).get("日");
+                if (day<=20){
+                    days = 10;
+                }else {
+                    days = days_Month[month]-20;
+                }
+                break;
+            case "日":
+                days = 1;
+                break;
+        }
+        return days;
     }
     /**
      * 判断来水年的类别，丰平枯是根据历史来水量作为评判标准的

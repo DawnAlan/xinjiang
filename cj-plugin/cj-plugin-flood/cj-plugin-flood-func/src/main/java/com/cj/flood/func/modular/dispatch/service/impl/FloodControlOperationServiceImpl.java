@@ -157,7 +157,7 @@ public class FloodControlOperationServiceImpl extends ServiceImpl<FloodControlOp
             FloodControlOperation maximumPeakShaving =  new FloodControlOperation();
             maximumPeakShaving.setId(UUIDUtils.getUUID());
             maximumPeakShaving.setCreateTime(new Date());
-            maximumPeakShaving.setSchemeName(incomingWaterForecast.getProgrammeName()+"-优化调度");
+            maximumPeakShaving.setSchemeName(incomingWaterForecast.getProgrammeName()+"-预泄调度");
             maximumPeakShaving.setForecastingSchemeId(incomingWaterForecastId);
             maximumPeakShaving.setStatus(1);
             maximumPeakShaving.setCreateBy(saBaseLoginUser.getName());
@@ -458,11 +458,13 @@ public class FloodControlOperationServiceImpl extends ServiceImpl<FloodControlOp
         if(null != floodList && floodList.size() > 0) {
             List<DataFloodPrevent> dataFloodPreventList = new ArrayList<>();
             for (Flood flood : floodList) {
-                DataFloodPrevent dataFloodPrevent = new DataFloodPrevent();
-                dataFloodPrevent.setPre(flood.getPreQ());
-                dataFloodPrevent.setTime(flood.getTime());
-                dataFloodPrevent.setScale(Integer.parseInt(flood.getScale()));
-                dataFloodPreventList.add(dataFloodPrevent);
+                if (flood.getPreQ() != null) {
+                    DataFloodPrevent dataFloodPrevent = new DataFloodPrevent();
+                    dataFloodPrevent.setPre(flood.getPreQ());
+                    dataFloodPrevent.setTime(flood.getTime());
+                    dataFloodPrevent.setScale(Integer.parseInt(flood.getScale()));
+                    dataFloodPreventList.add(dataFloodPrevent);
+                }
             }
             return dataFloodPreventList;
         }else {

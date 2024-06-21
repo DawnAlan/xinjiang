@@ -114,7 +114,7 @@ public class SubBasinForecast {
         csMap.put("萨尔达万自动雨量站", 0.7);
         csMap.put("无名沟自动雨量站", 0.7);
         csMap.put("宰尔德自动雨量站", 0.7);
-        csMap.put("制材厂自动雨量站", 0.7);
+        csMap.put("制材厂自动雨量站", 0.6);
         csMap.put("小渠子雨量站", 0.7);
         csMap.put("团结一队雨量站", 0.7);
         csMap.put("甘沟雨量站", 0.7);
@@ -670,7 +670,7 @@ public class SubBasinForecast {
             }
             int timeLength = 3600 * l;
             ReqCurve reqCurve = new ReqCurve();
-            List<Option> lzzOutList = LZZ.Calculate(param.getBasinStr(), input, timeLength, reqCurve);
+            List<Option> lzzOutList = LZZ.Calculate(param.getBasinStr(), input, timeLength, reqCurve,param.getIsReferenceWater());
             for (int i = 0; i < n; i++) {
                 water_outQ[i][0] = lzzOutList.get(i).getH1();
                 water_outQ[i][1] = lzzOutList.get(i).getQOut();

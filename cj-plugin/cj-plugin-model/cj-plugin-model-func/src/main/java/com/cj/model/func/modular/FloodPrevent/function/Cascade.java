@@ -220,7 +220,7 @@ public class Cascade{
 
         ResOption resOption3 = new ResOption();
         resOption3.setPath(path3);
-        resOption3.setName(reqFloodPrevent.getProgrammeName()+"-优化调度");
+        resOption3.setName(reqFloodPrevent.getProgrammeName()+"-预泄调度");
         resOption3.setInform(inform);
         result.add(resOption3);
 

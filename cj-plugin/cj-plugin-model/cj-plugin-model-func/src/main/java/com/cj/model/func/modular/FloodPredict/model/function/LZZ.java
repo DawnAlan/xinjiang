@@ -12,7 +12,7 @@ import static com.cj.model.func.modular.FloodPrevent.function.Cascade.Update;
 
 public class LZZ {
 
-    public static List<Option> Calculate(String basinStr, Object[][] pre, int delta, ReqCurve reqCurve)  {
+    public static List<Option> Calculate(String basinStr, Object[][] pre, int delta, ReqCurve reqCurve,Boolean isReference)  {
         List<Option> result ;
 
         Basin basin = new Basin();
@@ -40,7 +40,12 @@ public class LZZ {
         reservoir.setQ_Interval(Q_interval);
         reservoir.setT_Delta(delta);
         //起调水位
-        reservoir.setH_begin(1394.5);
+        if (isReference){
+            reservoir.setH_begin(1394.5);
+        }else {
+            reservoir.setH_begin(1357.9);
+        }
+
         //库容曲线数组
         List<CurveParam> curve1 = reservoir.getCapacityCurve();
         double[][] curve2 = new double[2][curve1.size()];

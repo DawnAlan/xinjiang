@@ -145,7 +145,7 @@ public class MachineModel {
             }
         }
         //训练结果与指标的储存
-        trainResult(de_result, inputTemp,preResult, param);
+        //trainResult(de_result, inputTemp,preResult, param);
         return results;
     }
 

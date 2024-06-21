@@ -96,7 +96,7 @@ public class SnowMeltModel {
         //模型参数的存储
 //        results = mdu.setModelParams(results,param,0,paramResult,maxmin);
         //模型合格率
-        trainResult(results,param);
+        //trainResult(results,param);
     }
 
     /**

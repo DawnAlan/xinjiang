@@ -3,6 +3,7 @@ package com.cj.model.func.modular.FloodPrevent.model;
 
 
 
+import com.alibaba.fastjson.JSONObject;
 import com.cj.model.func.modular.FloodPrevent.entity.*;
 
 import java.math.BigDecimal;
@@ -93,7 +94,7 @@ public class Model {
             option.setLimitString(reservoir.getLimits().toString());
             result.add(option);
         }
-        return result;
+        return Smooth(reservoir,result,8);
     }
     /**
      * 灵活调度
@@ -174,316 +175,729 @@ public class Model {
             option.setLimitString(reservoir.getLimits().toString());
             result.add(option);
         }
-        return result;
+        return Smooth(reservoir,result,8);
     }
     /**
      * 预泄调度
      */
     public static List<Option> Calculate_S3(Reservoir reservoir){
+        List<Option> finalResult;
+        List<Option> result ;
+
         Date time;
-        double H1;
         double Q_in;
         double Q_interval;
         double Q_eco;
-
         double Q_out;
+        double H1;
         double H2;
         double V;
         double Retain;
         double p1;
         double p2;
-        double decline=reservoir.getH_begin();
-
         double stepH = 0.2;
-        int stepT = 6;
+        int stepT = 1;
+
+        //梯级联调初始解
+        result=Calculate_S2(reservoir);
+
+        //判断泄流时机
+        int tBegin = beginT(reservoir);
+        int tEnd = endT(reservoir);
+
+        //需要预泄调度
         List<List<Option>> all = new ArrayList<>();
-        while (decline>=reservoir.getDeadLevel()){
-            //泄流时机
-            int t = 0;
-            while (t<=reservoir.getTime().size()){
-                List<Option> options = new ArrayList<>();
-                //最低泄流水位
-                boolean judge=false;
-                for (int i = 0; i < reservoir.getTime().size(); i++) {
-                    List<Double> qSingle = new ArrayList<>();
-                    //获取当前时段时间、入库、生态流量、初水位等参数
-                    time=reservoir.getTime().get(i);
-                    UpdateLimitLevel(reservoir,time);
-                    Q_in=reservoir.getQ_Input().get(i);
-                    Q_interval = reservoir.getQ_Interval().get(i);
-                    Q_eco=reservoir.getMinQ().get(i);
-                    double nextInput;
-                    double nextInterval;
-                    double lastH;
-                    double lastOut;
-                    //下时段入库、区间流量
-                    if(i==reservoir.getQ_Input().size()-1){
-                        nextInput=0;
-                        nextInterval=0;
-                    }
-                    else{
-                        nextInput=reservoir.getQ_Input().get(i+1);
-                        nextInterval=reservoir.getQ_Interval().get(i+1);
-                    }
-                    //上时段出库
-                    if(i==0){
-                        lastOut=999999;
-                    }
-                    else{
-                        lastOut=options.get(i-1).getQOut();
-                    }
-                    //本时段初水位
-                    if(i==0){
-                        H1=reservoir.getH_begin();
-                    }
-                    else{
-                        H1=options.get(i-1).getH2();
-                    }
-                    //上时段初水位
-                    if(i==0||i==1){
-                        lastH=reservoir.getH_begin();
-                    }
-                    else{
-                        lastH=options.get(i-2).getH2();
-                    }
+        if(tBegin>=0&&tBegin<=tEnd){
 
-                    Option option = new Option();
-                    option.setQIn(Q_in);
-                    option.setH1(H1);
-                    option.setTime(reservoir.getTime().get(i));
-
-                    //泄流能力限制
-                    double maxRe = GetMaxQ3(reservoir,H1,Q_in,Q_interval);
-
-                    //泄流时机之前，正常调度
-                    if(i<t){
-                        Q_out=FlexibleCalculate(reservoir,H1,Q_in,Q_interval,nextInput,nextInterval,lastOut,lastH,Q_eco)[0];
-                    }
-                    //泄流时机之后，优化调度
-                    else{
-                        //达到最低水位之前，尽力泄流
-                        if(!judge){
-                            H2=OnceBalance1(reservoir,H1,Q_in,maxRe);
-                            if(H2>=decline){
-                                Q_out=maxRe;
+            //预泄方案1，平均流量预泄
+            int t1 = tBegin;
+            while (t1<=tEnd){
+                int t2=t1;
+                while (t2<=tEnd){
+                    double minH=reservoir.getLimitLevel()-15;
+                    double maxH=result.get(t2).getH2();
+                    while (minH<maxH){
+                        //逐个时段演算
+                        List<Option> options = new ArrayList<>();
+                        //预泄前
+                        for (int i = 0; i < t1; i++) {
+                            //获取当前时段时间、入库、生态流量、初水位等参数
+                            time=reservoir.getTime().get(i);
+                            UpdateLimitLevel(reservoir,time);
+                            Q_in=reservoir.getQ_Input().get(i);
+                            Q_interval = reservoir.getQ_Interval().get(i);
+                            Q_eco=reservoir.getMinQ().get(i);
+                            double nextInput;
+                            double nextInterval;
+                            double lastH;
+                            double lastOut;
+                            //下时段入库、区间流量
+                            if(i==reservoir.getQ_Input().size()-1){
+                                nextInput=0;
+                                nextInterval=0;
                             }
                             else{
-                                H2=decline;
-                                Q_out=OnceBalance2(reservoir,H1,Q_in,H2);
+                                nextInput=reservoir.getQ_Input().get(i+1);
+                                nextInterval=reservoir.getQ_Interval().get(i+1);
                             }
-                            //达到最低水位或者水位开始攀升，预泄结束
-                            if(H2<=decline||H2>=H1){
-                                judge=true;
+                            //上时段出库
+                            if(i==0){
+                                lastOut=999999;
                             }
+                            else{
+                                lastOut=options.get(i-1).getQOut();
+                            }
+                            //本时段初水位
+                            if(i==0){
+                                H1=reservoir.getH_begin();
+                            }
+                            else{
+                                H1=options.get(i-1).getH2();
+                            }
+                            //上时段初水位
+                            if(i==0||i==1){
+                                lastH=reservoir.getH_begin();
+                            }
+                            else{
+                                lastH=options.get(i-2).getH2();
+                            }
+
+                            //出库流量
+                            Q_out=FlexibleCalculate(reservoir,H1,Q_in,Q_interval,nextInput,nextInterval,lastOut,lastH,Q_eco)[0];
+                            //时段末水位
+                            H2=OnceBalance1(reservoir,H1,Q_in,Q_out);
+                            //可用闸门
+                            List<Gate> gates = GetFlexibleGates(reservoir,H1,Q_in);
+                            //各个可用闸门流量
+                            double sum=0;
+                            double[] Q = new double[reservoir.getGates().size()];
+                            for (int j = 0; j < reservoir.getGates().size(); j++) {
+                                Gate gate = reservoir.getGates().get(j);
+                                if(gates.contains(gate)){
+                                    //可用溢洪闸门
+                                    if(gate.getName().contains("溢洪")){
+                                        //溢洪闸门，且水位超过底坎高程，分配强制流量
+                                        if(H1>gate.getMinLevel()&&H2> gate.getMinLevel()){
+                                            Q[j]=Math.min(GetSingleQ(reservoir,(H1+H2)/2,gate.getName()),Q_out-sum);
+                                            sum=sum+Q[j];
+                                        }
+                                        else if(H1>gate.getMinLevel()&&H2<= gate.getMinLevel()){
+                                            Q[j]=Math.min(GetSingleQ(reservoir,(H1+gate.getMinLevel())/2,gate.getName()),Q_out-sum);
+                                            sum=sum+Q[j];
+                                        }
+                                        else if(H1<=gate.getMinLevel()&&H2> gate.getMinLevel()){
+                                            Q[j]=Math.min(GetSingleQ(reservoir,(gate.getMinLevel()+H2)/2,gate.getName()),Q_out-sum);
+                                            sum=sum+Q[j];
+                                        }
+
+                                        //未达到底坎高程
+                                        double ma = GetSingleQ(reservoir,H1,gate.getName());
+                                        if(ma>Q[j]){
+                                            double increase = ma-Q[j];
+                                            double de = Q_out-sum;
+                                            Q[j]+=Math.min(increase,de);
+                                            sum=sum+Math.min(increase,de);
+                                        }
+                                    }
+                                }
+                            }
+                            for (int j = 0; j < reservoir.getGates().size(); j++) {
+                                Gate gate = reservoir.getGates().get(j);
+                                if(gates.contains(gate)){
+                                    //可用非溢洪闸门
+                                    if(!gate.getName().contains("溢洪")){
+                                        Q[j]=Math.min(GetSingleQ(reservoir,H1,gate.getName()),Q_out-sum);
+                                        sum=sum+Q[j];
+                                    }
+                                }
+                            }
+                            for (int j = 0; j < reservoir.getGates().size(); j++) {
+                                Gate gate = reservoir.getGates().get(j);
+                                if(!gates.contains(gate)){
+                                    //不可用闸门流量
+                                    Q[j]=0;
+                                }
+                            }
+                            //写入qSingle
+                            List<Double> qSingle = new ArrayList<>();
+                            for (double v : Q) {
+                                qSingle.add(BigDecimal.valueOf(v).setScale(2,RoundingMode.HALF_UP).doubleValue());
+                            }
+
+                            //记录方案
+                            Option option = new Option();
+                            option.setH1(H1);
+                            option.setH2(H2);
+                            option.setQIn(Q_in);
+                            option.setQOut(Q_out);
+                            option.setTime(reservoir.getTime().get(i));
+                            option.setQSingleString(qSingle.toString());
+                            options.add(option);
                         }
-                        //泄水结束之后
+
+                        //预泄过程
+                        boolean judge = true;
+                        //累计入库流量
+                        double sumIn = 0;
+                        for (int i = t1; i <=t2 ; i++) {
+                            sumIn+=reservoir.getQ_Input().get(i);
+                        }
+                        //累计出库流量、平均出库流量
+                        double begin=result.get(t1).getH1();
+                        double V_delta = GetV(reservoir,minH)-GetV(reservoir,begin);
+                        double T_delta = reservoir.getT_Delta();
+                        double sumOut=sumIn-(V_delta*reservoir.getCoefficient())/T_delta;
+                        double averageOut = sumOut/(t2-t1+1);
+                        //下一时段出库流量
+                        double oneIn=reservoir.getQ_Input().get(t2+1);
+                        double oneInterval=reservoir.getQ_Interval().get(t2+1);
+                        double oneMinQ=reservoir.getMinQ().get(t2+1);
+                        double nextQ;
+                        if(minH<=reservoir.getLimitLevel()){
+                            nextQ=SteadyCalculate(reservoir,minH,oneIn,oneInterval,oneMinQ);
+                        }
                         else{
-                            //水位未达到汛限水位，维持低水位
-                            if(H1<reservoir.getLimitLevel()){
+                            nextQ=PreviewCalculate(reservoir,minH,oneIn,oneInterval,oneMinQ);
+                        }
+                        //流量平滑
+                        if(averageOut-nextQ>=-20||averageOut-nextQ>=20){
+                            //逐个时段计算
+                            for (int i = t1; i <= t2; i++) {
+                                //获取当前时段时间、入库、生态流量、初水位等参数
+                                time=reservoir.getTime().get(i);
+                                UpdateLimitLevel(reservoir,time);
+                                Q_in=reservoir.getQ_Input().get(i);
+                                Q_interval = reservoir.getQ_Interval().get(i);
+                                //本时段初水位
+                                if(i==0){
+                                    H1=reservoir.getH_begin();
+                                }
+                                else{
+                                    H1=options.get(i-1).getH2();
+                                }
+
+                                //泄流能力限制
+                                double maxRe = GetMaxQ3(reservoir,H1,Q_in,Q_interval);
+                                //出库流量
+                                if(maxRe>=averageOut){
+                                    Q_out=averageOut;
+                                }
+                                else{
+                                    judge=false;
+                                    break;
+                                }
+
+                                //时段末水位
+                                H2=OnceBalance1(reservoir,H1,Q_in,Q_out);
+                                //可用闸门
                                 List<Gate> gates = GetFlexibleGates(reservoir,H1,Q_in);
-                                double Q_max=Model.GetMaxRelease(reservoir,gates,H1);
-                                Q_out=Math.min(Q_in,Q_max);
-                            }
-                            //水位超过汛限水位，按灵活调度进行
-                            else {
-                                Q_out=FlexibleCalculate(reservoir,H1,Q_in,Q_interval,nextInput,nextInterval,lastOut,lastH,Q_eco)[0];
-                            }
-                        }
-                    }
-                    H2=OnceBalance1(reservoir,H1,Q_in,Q_out);
+                                //各个可用闸门流量
+                                double sum=0;
+                                double[] Q = new double[reservoir.getGates().size()];
+                                for (int j = 0; j < reservoir.getGates().size(); j++) {
+                                    Gate gate = reservoir.getGates().get(j);
+                                    if(gates.contains(gate)){
+                                        //可用溢洪闸门
+                                        if(gate.getName().contains("溢洪")){
+                                            //溢洪闸门，且水位超过底坎高程，分配强制流量
+                                            if(H1>gate.getMinLevel()&&H2> gate.getMinLevel()){
+                                                Q[j]=Math.min(GetSingleQ(reservoir,(H1+H2)/2,gate.getName()),Q_out-sum);
+                                                sum=sum+Q[j];
+                                            }
+                                            else if(H1>gate.getMinLevel()&&H2<= gate.getMinLevel()){
+                                                Q[j]=Math.min(GetSingleQ(reservoir,(H1+gate.getMinLevel())/2,gate.getName()),Q_out-sum);
+                                                sum=sum+Q[j];
+                                            }
+                                            else if(H1<=gate.getMinLevel()&&H2> gate.getMinLevel()){
+                                                Q[j]=Math.min(GetSingleQ(reservoir,(gate.getMinLevel()+H2)/2,gate.getName()),Q_out-sum);
+                                                sum=sum+Q[j];
+                                            }
+
+                                            //未达到底坎高程
+                                            double ma = GetSingleQ(reservoir,H1,gate.getName());
+                                            if(ma>Q[j]){
+                                                double increase = ma-Q[j];
+                                                double de = Q_out-sum;
+                                                Q[j]+=Math.min(increase,de);
+                                                sum=sum+Math.min(increase,de);
+                                            }
+                                        }
+                                    }
+                                }
+                                for (int j = 0; j < reservoir.getGates().size(); j++) {
+                                    Gate gate = reservoir.getGates().get(j);
+                                    if(gates.contains(gate)){
+                                        //可用非溢洪闸门
+                                        if(!gate.getName().contains("溢洪")){
+                                            Q[j]=Math.min(GetSingleQ(reservoir,H1,gate.getName()),Q_out-sum);
+                                            sum=sum+Q[j];
+                                        }
+                                    }
+                                }
+                                for (int j = 0; j < reservoir.getGates().size(); j++) {
+                                    Gate gate = reservoir.getGates().get(j);
+                                    if(!gates.contains(gate)){
+                                        //不可用闸门流量
+                                        Q[j]=0;
+                                    }
+                                }
+                                //写入qSingle
+                                List<Double> qSingle = new ArrayList<>();
+                                for (double v : Q) {
+                                    qSingle.add(BigDecimal.valueOf(v).setScale(2,RoundingMode.HALF_UP).doubleValue());
+                                }
+
+                                //记录方案
+                                Option option = new Option();
+                                option.setH1(H1);
+                                option.setH2(H2);
+                                option.setQIn(Q_in);
+                                option.setQOut(Q_out);
+                                option.setTime(reservoir.getTime().get(i));
+                                option.setQSingleString(qSingle.toString());
+                                options.add(option);
 
 
-                    //可用闸门
-                    List<Gate> gates = GetFlexibleGates(reservoir,H1,Q_in);
-                    //各个可用闸门流量
-                    double sum=0;
-                    double[] Q = new double[reservoir.getGates().size()];
-                    for (int j = 0; j < reservoir.getGates().size(); j++) {
-                        Gate gate = reservoir.getGates().get(j);
-                        if(gates.contains(gate)){
-                            //可用溢洪闸门
-                            if(gate.getName().contains("溢洪")){
-                                //溢洪闸门，且水位超过底坎高程，分配强制流量
-                                if(H1>gate.getMinLevel()&&H2> gate.getMinLevel()){
-                                    Q[j]=Math.min(GetSingleQ(reservoir,(H1+H2)/2,gate.getName()),Q_out-sum);
-                                    sum=sum+Q[j];
-                                }
-                                else if(H1>gate.getMinLevel()&&H2<= gate.getMinLevel()){
-                                    Q[j]=Math.min(GetSingleQ(reservoir,(H1+gate.getMinLevel())/2,gate.getName()),Q_out-sum);
-                                    sum=sum+Q[j];
-                                }
-                                else if(H1<=gate.getMinLevel()&&H2> gate.getMinLevel()){
-                                    Q[j]=Math.min(GetSingleQ(reservoir,(gate.getMinLevel()+H2)/2,gate.getName()),Q_out-sum);
-                                    sum=sum+Q[j];
-                                }
+                            }
+                            //预泄后，保存结果
+                            if(judge){
+                                //预泄后
+                                if(t2<reservoir.getTime().size()-1){
+                                    for (int i = t2+1; i < reservoir.getTime().size(); i++) {
+                                        //获取当前时段时间、入库、生态流量、初水位等参数
+                                        time=reservoir.getTime().get(i);
+                                        UpdateLimitLevel(reservoir,time);
+                                        Q_in=reservoir.getQ_Input().get(i);
+                                        Q_interval = reservoir.getQ_Interval().get(i);
+                                        Q_eco=reservoir.getMinQ().get(i);
+                                        double nextInput;
+                                        double nextInterval;
+                                        double lastH;
+                                        double lastOut;
+                                        //下时段入库、区间流量
+                                        if(i==reservoir.getQ_Input().size()-1){
+                                            nextInput=0;
+                                            nextInterval=0;
+                                        }
+                                        else{
+                                            nextInput=reservoir.getQ_Input().get(i+1);
+                                            nextInterval=reservoir.getQ_Interval().get(i+1);
+                                        }
+                                        //上时段出库
+                                        if(i==0){
+                                            lastOut=999999;
+                                        }
+                                        else{
+                                            lastOut=options.get(i-1).getQOut();
+                                        }
+                                        //本时段初水位
+                                        if(i==0){
+                                            H1=reservoir.getH_begin();
+                                        }
+                                        else{
+                                            H1=options.get(i-1).getH2();
+                                        }
+                                        //上时段初水位
+                                        if(i==0||i==1){
+                                            lastH=reservoir.getH_begin();
+                                        }
+                                        else{
+                                            lastH=options.get(i-2).getH2();
+                                        }
 
-                                //未达到底坎高程
-                                double ma = GetSingleQ(reservoir,H1,gate.getName());
-                                if(ma>Q[j]){
-                                    double increase = ma-Q[j];
-                                    double de = Q_out-sum;
-                                    Q[j]+=Math.min(increase,de);
-                                    sum=sum+Math.min(increase,de);
+                                        //出库流量
+                                        if(H1<reservoir.getLimitLevel()){
+                                            Q_out=SteadyCalculate(reservoir,H1,Q_in,Q_interval,Q_eco);
+                                        }
+                                        else{
+                                            Q_out=FlexibleCalculate(reservoir,H1,Q_in,Q_interval,nextInput,nextInterval,lastOut,lastH,Q_eco)[0];
+                                        }
+
+                                        //时段末水位
+                                        H2=OnceBalance1(reservoir,H1,Q_in,Q_out);
+                                        //可用闸门
+                                        List<Gate> gates = GetFlexibleGates(reservoir,H1,Q_in);
+                                        //各个可用闸门流量
+                                        double sum=0;
+                                        double[] Q = new double[reservoir.getGates().size()];
+                                        for (int j = 0; j < reservoir.getGates().size(); j++) {
+                                            Gate gate = reservoir.getGates().get(j);
+                                            if(gates.contains(gate)){
+                                                //可用溢洪闸门
+                                                if(gate.getName().contains("溢洪")){
+                                                    //溢洪闸门，且水位超过底坎高程，分配强制流量
+                                                    if(H1>gate.getMinLevel()&&H2> gate.getMinLevel()){
+                                                        Q[j]=Math.min(GetSingleQ(reservoir,(H1+H2)/2,gate.getName()),Q_out-sum);
+                                                        sum=sum+Q[j];
+                                                    }
+                                                    else if(H1>gate.getMinLevel()&&H2<= gate.getMinLevel()){
+                                                        Q[j]=Math.min(GetSingleQ(reservoir,(H1+gate.getMinLevel())/2,gate.getName()),Q_out-sum);
+                                                        sum=sum+Q[j];
+                                                    }
+                                                    else if(H1<=gate.getMinLevel()&&H2> gate.getMinLevel()){
+                                                        Q[j]=Math.min(GetSingleQ(reservoir,(gate.getMinLevel()+H2)/2,gate.getName()),Q_out-sum);
+                                                        sum=sum+Q[j];
+                                                    }
+
+                                                    //未达到底坎高程
+                                                    double ma = GetSingleQ(reservoir,H1,gate.getName());
+                                                    if(ma>Q[j]){
+                                                        double increase = ma-Q[j];
+                                                        double de = Q_out-sum;
+                                                        Q[j]+=Math.min(increase,de);
+                                                        sum=sum+Math.min(increase,de);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        for (int j = 0; j < reservoir.getGates().size(); j++) {
+                                            Gate gate = reservoir.getGates().get(j);
+                                            if(gates.contains(gate)){
+                                                //可用非溢洪闸门
+                                                if(!gate.getName().contains("溢洪")){
+                                                    Q[j]=Math.min(GetSingleQ(reservoir,H1,gate.getName()),Q_out-sum);
+                                                    sum=sum+Q[j];
+                                                }
+                                            }
+                                        }
+                                        for (int j = 0; j < reservoir.getGates().size(); j++) {
+                                            Gate gate = reservoir.getGates().get(j);
+                                            if(!gates.contains(gate)){
+                                                //不可用闸门流量
+                                                Q[j]=0;
+                                            }
+                                        }
+                                        //写入qSingle
+                                        List<Double> qSingle = new ArrayList<>();
+                                        for (double v : Q) {
+                                            qSingle.add(BigDecimal.valueOf(v).setScale(2,RoundingMode.HALF_UP).doubleValue());
+                                        }
+
+                                        //记录方案
+                                        Option option = new Option();
+                                        option.setH1(H1);
+                                        option.setH2(H2);
+                                        option.setQIn(Q_in);
+                                        option.setQOut(Q_out);
+                                        option.setTime(reservoir.getTime().get(i));
+                                        option.setQSingleString(qSingle.toString());
+                                        options.add(option);
+                                    }
                                 }
+                                all.add(options);
                             }
                         }
+                        minH+=stepH;
                     }
-                    for (int j = 0; j < reservoir.getGates().size(); j++) {
-                        Gate gate = reservoir.getGates().get(j);
-                        if(gates.contains(gate)){
-                            //可用非溢洪闸门
-                            if(!gate.getName().contains("溢洪")){
-                                Q[j]=Math.min(GetSingleQ(reservoir,H1,gate.getName()),Q_out-sum);
-                                sum=sum+Q[j];
-                            }
-                        }
-                    }
-                    for (int j = 0; j < reservoir.getGates().size(); j++) {
-                        Gate gate = reservoir.getGates().get(j);
-                        if(!gates.contains(gate)){
-                            //不可用闸门流量
-                            Q[j]=0;
-                        }
-                    }
-                    //写入qSingle
-                    for (double v : Q) {
-                        qSingle.add(BigDecimal.valueOf(v).setScale(2,RoundingMode.HALF_UP).doubleValue());
-                    }
-
-                    option.setQSingleString(qSingle.toString());
-                    option.setH2(H2);
-                    option.setQOut(Q_out);
-                    options.add(option);
+                    t2+=stepT;
                 }
-                all.add(options);
-                t=t+stepT;
+                t1+=stepT;
             }
-            decline=decline-stepH;
-        }
-        //选出最优解
-        int num = 0;
-        double best = Value(reservoir,all.get(0));
-        for (int i = 0; i < all.size(); i++) {
-            double value = Value(reservoir,all.get(i));
-            if(value<best){
-                best=value;
-                num=i;
+
+
+
+            //预泄方案2，最大流量预泄
+            boolean judge=false;
+            //预泄最低水位
+            double decline=reservoir.getDeadLevel();
+            //搜索最优泄水情形
+            while (decline<reservoir.getLimitLevel()){
+                int t =tBegin;
+                while (t<=tEnd){
+                    List<Option> options = new ArrayList<>();
+                    for (int i = 0; i < reservoir.getTime().size(); i++) {
+                        List<Double> qSingle = new ArrayList<>();
+                        //获取当前时段时间、入库、生态流量、初水位等参数
+                        time=reservoir.getTime().get(i);
+                        UpdateLimitLevel(reservoir,time);
+                        Q_in=reservoir.getQ_Input().get(i);
+                        Q_interval = reservoir.getQ_Interval().get(i);
+                        Q_eco=reservoir.getMinQ().get(i);
+                        double nextInput;
+                        double nextInterval;
+                        double lastH;
+                        double lastOut;
+                        //下时段入库、区间流量
+                        if(i==reservoir.getQ_Input().size()-1){
+                            nextInput=0;
+                            nextInterval=0;
+                        }
+                        else{
+                            nextInput=reservoir.getQ_Input().get(i+1);
+                            nextInterval=reservoir.getQ_Interval().get(i+1);
+                        }
+                        //上时段出库
+                        if(i==0){
+                            lastOut=999999;
+                        }
+                        else{
+                            lastOut=options.get(i-1).getQOut();
+                        }
+                        //本时段初水位
+                        if(i==0){
+                            H1=reservoir.getH_begin();
+                        }
+                        else{
+                            H1=options.get(i-1).getH2();
+                        }
+                        //上时段初水位
+                        if(i==0||i==1){
+                            lastH=reservoir.getH_begin();
+                        }
+                        else{
+                            lastH=options.get(i-2).getH2();
+                        }
+
+                        Option option = new Option();
+                        option.setQIn(Q_in);
+                        option.setH1(H1);
+                        option.setTime(reservoir.getTime().get(i));
+
+
+
+                        //泄流时机之前以及完成预泄之后，正常调度
+                        if(i<t||t>tEnd){
+                            Q_out=FlexibleCalculate(reservoir,H1,Q_in,Q_interval,nextInput,nextInterval,lastOut,lastH,Q_eco)[0];
+                        }
+                        //泄流过程中，优化调度
+                        else{
+                            //达到最低水位之前，尽力泄流
+                            if(!judge){
+                                //泄流能力限制
+                                double maxRe = GetMaxQ3(reservoir,H1,Q_in,Q_interval);
+
+                                H2=OnceBalance1(reservoir,H1,Q_in,maxRe);
+                                if(H2>=decline){
+                                    Q_out=maxRe;
+                                }
+                                else{
+                                    H2=decline;
+                                    Q_out=OnceBalance2(reservoir,H1,Q_in,H2);
+                                }
+                                //达到最低水位或者水位开始攀升，预泄结束
+                                if(H2<=decline||H2>=H1){
+                                    judge=true;
+                                }
+                            }
+                            //达到最低水位之后
+                            else{
+                                //水位未达到汛限水位，维持低水位
+                                if(H1<reservoir.getLimitLevel()){
+                                    List<Gate> gates = GetFlexibleGates(reservoir,H1,Q_in);
+                                    double Q_max=Model.GetMaxRelease(reservoir,gates,H1);
+                                    Q_out=Math.min(Q_in,Q_max);
+                                }
+                                //水位超过汛限水位，按灵活调度进行
+                                else {
+                                    Q_out=FlexibleCalculate(reservoir,H1,Q_in,Q_interval,nextInput,nextInterval,lastOut,lastH,Q_eco)[0];
+                                }
+                            }
+                        }
+                        H2=OnceBalance1(reservoir,H1,Q_in,Q_out);
+
+
+                        //可用闸门
+                        List<Gate> gates = GetFlexibleGates(reservoir,H1,Q_in);
+                        //各个可用闸门流量
+                        double sum=0;
+                        double[] Q = new double[reservoir.getGates().size()];
+                        for (int j = 0; j < reservoir.getGates().size(); j++) {
+                            Gate gate = reservoir.getGates().get(j);
+                            if(gates.contains(gate)){
+                                //可用溢洪闸门
+                                if(gate.getName().contains("溢洪")){
+                                    //溢洪闸门，且水位超过底坎高程，分配强制流量
+                                    if(H1>gate.getMinLevel()&&H2> gate.getMinLevel()){
+                                        Q[j]=Math.min(GetSingleQ(reservoir,(H1+H2)/2,gate.getName()),Q_out-sum);
+                                        sum=sum+Q[j];
+                                    }
+                                    else if(H1>gate.getMinLevel()&&H2<= gate.getMinLevel()){
+                                        Q[j]=Math.min(GetSingleQ(reservoir,(H1+gate.getMinLevel())/2,gate.getName()),Q_out-sum);
+                                        sum=sum+Q[j];
+                                    }
+                                    else if(H1<=gate.getMinLevel()&&H2> gate.getMinLevel()){
+                                        Q[j]=Math.min(GetSingleQ(reservoir,(gate.getMinLevel()+H2)/2,gate.getName()),Q_out-sum);
+                                        sum=sum+Q[j];
+                                    }
+
+                                    //未达到底坎高程
+                                    double ma = GetSingleQ(reservoir,H1,gate.getName());
+                                    if(ma>Q[j]){
+                                        double increase = ma-Q[j];
+                                        double de = Q_out-sum;
+                                        Q[j]+=Math.min(increase,de);
+                                        sum=sum+Math.min(increase,de);
+                                    }
+                                }
+                            }
+                        }
+                        for (int j = 0; j < reservoir.getGates().size(); j++) {
+                            Gate gate = reservoir.getGates().get(j);
+                            if(gates.contains(gate)){
+                                //可用非溢洪闸门
+                                if(!gate.getName().contains("溢洪")){
+                                    Q[j]=Math.min(GetSingleQ(reservoir,H1,gate.getName()),Q_out-sum);
+                                    sum=sum+Q[j];
+                                }
+                            }
+                        }
+                        for (int j = 0; j < reservoir.getGates().size(); j++) {
+                            Gate gate = reservoir.getGates().get(j);
+                            if(!gates.contains(gate)){
+                                //不可用闸门流量
+                                Q[j]=0;
+                            }
+                        }
+                        //写入qSingle
+                        for (double v : Q) {
+                            qSingle.add(BigDecimal.valueOf(v).setScale(2,RoundingMode.HALF_UP).doubleValue());
+                        }
+
+                        option.setQSingleString(qSingle.toString());
+                        option.setH2(H2);
+                        option.setQOut(Q_out);
+                        options.add(option);
+                    }
+                    all.add(options);
+                    t=t+stepT;
+                }
+                decline=decline+stepH;
             }
-        }
-        //补全其他数据
-        for (int i = 0; i < all.get(num).size(); i++) {
-            Option option = all.get(num).get(i);
-            H2=option.getH2();
-            V=GetV(reservoir,H2);
-            Retain=Math.max(0,V-GetV(reservoir,reservoir.getH_begin()));
-            p1=getPercentage(reservoir,V)[0];
-            p2=getPercentage(reservoir,V)[1];
 
-            option.setName(reservoir.getName());
-            option.setType("优化调度");
-            option.setTime(reservoir.getTime().get(i));
-            option.setV(V);
-            option.setRetain(Retain);
-            option.setPercentage1(p1);
-            option.setPercentage2(p2);
-            option.setLimitString(reservoir.getLimits().toString());
-        }
 
-        return all.get(num);
+
+            //选出最优解
+            all.add(result);
+            int num = 0;
+            double best = Value(reservoir,all.get(0));
+            for (int i = 0; i < all.size(); i++) {
+                double value = Value(reservoir,all.get(i));
+                if(value<best){
+                    best=value;
+                    num=i;
+                }
+            }
+            //补全其他数据
+            for (int i = 0; i < all.get(num).size(); i++) {
+                Option option = all.get(num).get(i);
+                H2=option.getH2();
+                V=GetV(reservoir,H2);
+                Retain=Math.max(0,V-GetV(reservoir,reservoir.getH_begin()));
+                p1=getPercentage(reservoir,V)[0];
+                p2=getPercentage(reservoir,V)[1];
+
+                option.setName(reservoir.getName());
+                option.setType("预泄调度");
+                option.setTime(reservoir.getTime().get(i));
+                option.setV(V);
+                option.setRetain(Retain);
+                option.setPercentage1(p1);
+                option.setPercentage2(p2);
+                option.setLimitString(reservoir.getLimits().toString());
+            }
+            finalResult = all.get(num);
+        }
+        else{
+            finalResult = result;
+        }
+        return Smooth(reservoir,finalResult,8);
     }
 
 
-    public static double[] ConventionalCalculate(Reservoir reservoir,double level,double input,double interval,double nextInput,double nextInterval,double lastOut,double lastH,double minQ){
+    public static double[] ConventionalCalculate(Reservoir reservoir,double H1,double input,double interval,double nextInput,double nextInterval,double lastOut,double lastH,double minQ){
         //流量数组
         double[] Q = new double[reservoir.getGates().size()+1];
-        double out= GetMaxQ1(reservoir,level,input,interval);
+        double out= GetMaxQ1(reservoir,H1,input,interval);
         //避免跨越特征水位时的水位流量波动
-        double tryLevel = OnceBalance1(reservoir,level,input,out);
-        if(level>=reservoir.getProofLevel()&&tryLevel<reservoir.getProofLevel()){
+        double tryLevel = OnceBalance1(reservoir,H1,input,out);
+        if(H1>=reservoir.getProofLevel()&&tryLevel<reservoir.getProofLevel()){
             //保证下一时段水位不会回升
             double nextQ = GetMaxQ1(reservoir, tryLevel,nextInput,nextInterval);
             while (nextQ<nextInput&&tryLevel<reservoir.getProofLevel()){
                 out-=3;
-                tryLevel = OnceBalance1(reservoir,level,input,out);
+                tryLevel = OnceBalance1(reservoir,H1,input,out);
                 nextQ = GetMaxQ1(reservoir, tryLevel,nextInput,nextInterval);
             }
             //保证本时段水位缓慢下降
-            if(level>=reservoir.getProofLevel()&&tryLevel<reservoir.getProofLevel()){
-                out=OnceBalance2(reservoir,level,input,(level+tryLevel)/2);
-                double h=OnceBalance1(reservoir,level,input,lastOut);
-                if(out>lastOut&&h<=level){
+            if(H1>=reservoir.getProofLevel()&&tryLevel<reservoir.getProofLevel()){
+                out=OnceBalance2(reservoir,H1,input,(H1+tryLevel)/2);
+                double h=OnceBalance1(reservoir,H1,input,lastOut);
+                if(out>lastOut&&h<=H1){
                     out=lastOut;
-                    tryLevel = OnceBalance1(reservoir,level,input,out);
+                    tryLevel = OnceBalance1(reservoir,H1,input,out);
                 }
             }
 
         }
-        else if(level>=reservoir.getDesignLevel()&&tryLevel<reservoir.getDesignLevel()){
+        else if(H1>=reservoir.getDesignLevel()&&tryLevel<reservoir.getDesignLevel()){
             //保证下一时段水位不会回升
             double nextQ = GetMaxQ1(reservoir, tryLevel,nextInput,nextInterval);
             while (nextQ<nextInput&&tryLevel<reservoir.getDesignLevel()){
                 out-=3;
-                tryLevel = OnceBalance1(reservoir,level,input,out);
+                tryLevel = OnceBalance1(reservoir,H1,input,out);
                 nextQ = GetMaxQ1(reservoir, tryLevel,nextInput,nextInterval);
             }
             //保证本时段水位缓慢下降
-            if(level>=reservoir.getDesignLevel()&&tryLevel<reservoir.getDesignLevel()){
-                out=OnceBalance2(reservoir,level,input,(level+tryLevel)/2);
-                double h=OnceBalance1(reservoir,level,input,lastOut);
-                if(out>lastOut&&h<=level){
+            if(H1>=reservoir.getDesignLevel()&&tryLevel<reservoir.getDesignLevel()){
+                out=OnceBalance2(reservoir,H1,input,(H1+tryLevel)/2);
+                double h=OnceBalance1(reservoir,H1,input,lastOut);
+                if(out>lastOut&&h<=H1){
                     out=lastOut;
-                    tryLevel = OnceBalance1(reservoir,level,input,out);
+                    tryLevel = OnceBalance1(reservoir,H1,input,out);
                 }
             }
         }
-        else if(level>=reservoir.getHeightLevel()&&tryLevel<reservoir.getHeightLevel()){
+        else if(H1>=reservoir.getHeightLevel()&&tryLevel<reservoir.getHeightLevel()){
             //保证下一时段水位不会回升
             double nextQ = GetMaxQ1(reservoir, tryLevel,nextInput,nextInterval);
             while (nextQ<nextInput&&tryLevel<reservoir.getHeightLevel()){
                 out-=3;
-                tryLevel = OnceBalance1(reservoir,level,input,out);
+                tryLevel = OnceBalance1(reservoir,H1,input,out);
                 nextQ = GetMaxQ1(reservoir, tryLevel,nextInput,nextInterval);
             }
             //保证本时段水位缓慢下降
-            if(level>=reservoir.getHeightLevel()&&tryLevel<reservoir.getHeightLevel()){
-                out=OnceBalance2(reservoir,level,input,(level+tryLevel)/2);
-                double h=OnceBalance1(reservoir,level,input,lastOut);
-                if(out>lastOut&&h<=level){
+            if(H1>=reservoir.getHeightLevel()&&tryLevel<reservoir.getHeightLevel()){
+                out=OnceBalance2(reservoir,H1,input,(H1+tryLevel)/2);
+                double h=OnceBalance1(reservoir,H1,input,lastOut);
+                if(out>lastOut&&h<=H1){
                     out=lastOut;
-                    tryLevel = OnceBalance1(reservoir,level,input,out);
+                    tryLevel = OnceBalance1(reservoir,H1,input,out);
                 }
             }
         }
         //避免平常时段的水位波折
-        if(level>lastH){
+        if(H1>lastH){
             //上时段水位提升
-            if(tryLevel<level){
-                tryLevel=level;
-                out=OnceBalance2(reservoir,level,input,tryLevel);
+            if(tryLevel<H1){
+                tryLevel=H1;
+                out=OnceBalance2(reservoir,H1,input,tryLevel);
             }
         }
-        else if(level<lastH){
+        else if(H1<lastH){
             //上时段水位下降
-            if(tryLevel>level){
-                double tryQ = OnceBalance2(reservoir,level,input,level);
-                List<Gate> gates = GetConventionalGates(reservoir,level,input);
-                double maxQ = GetMaxRelease(reservoir,gates,level);
+            if(tryLevel>H1){
+                double tryQ = OnceBalance2(reservoir,H1,input,H1);
+                List<Gate> gates = GetConventionalGates(reservoir,H1,input);
+                double maxQ = GetMaxRelease(reservoir,gates,H1);
                 if(tryQ<maxQ){
                     out=tryQ;
                 }
             }
         }
+
+
         //溢洪道自动泄流
-        double min = GetMinQ1(reservoir,level,input);
+        double min = GetMinQ1(reservoir,H1,input);
         if (out<min) out=min;
         //保证出库大于生态流量
         if(out<minQ) out=minQ;
         //总出库流量
         Q[0]=out;
+        //末水位
+        double H2 = OnceBalance1(reservoir,H1,input,out);
         //可用闸门
-        List<Gate> gates = GetConventionalGates(reservoir,level,input);
+        List<Gate> gates = GetConventionalGates(reservoir,Math.max(H1,H2),input);
         //可用闸门流量
-        double H2 = OnceBalance1(reservoir,level,input,out);
         double sum=0;
         for (int i = 0; i < reservoir.getGates().size(); i++) {
             Gate gate = reservoir.getGates().get(i);
@@ -491,21 +905,21 @@ public class Model {
                 //可用溢洪闸门
                 if(gate.getName().contains("溢洪")){
                     //溢洪闸门，且水位超过底坎高程，分配强制流量
-                    if(level>gate.getMinLevel()&&H2> gate.getMinLevel()){
-                        Q[i+1]=Math.min(GetSingleQ(reservoir,(level+H2)/2,gate.getName()),Q[0]-sum);
+                    if(H1>gate.getMinLevel()&&H2> gate.getMinLevel()){
+                        Q[i+1]=Math.min(GetSingleQ(reservoir,(H1+H2)/2,gate.getName()),Q[0]-sum);
                         sum=sum+Q[i+1];
                     }
-                    else if(level>gate.getMinLevel()&&H2<= gate.getMinLevel()){
-                        Q[i+1]=Math.min(GetSingleQ(reservoir,(level+gate.getMinLevel())/2,gate.getName()),Q[0]-sum);
+                    else if(H1>gate.getMinLevel()&&H2<= gate.getMinLevel()){
+                        Q[i+1]=Math.min(GetSingleQ(reservoir,(H1+gate.getMinLevel())/2,gate.getName()),Q[0]-sum);
                         sum=sum+Q[i+1];
                     }
-                    else if(level<=gate.getMinLevel()&&H2> gate.getMinLevel()){
+                    else if(H1<=gate.getMinLevel()&&H2> gate.getMinLevel()){
                         Q[i+1]=Math.min(GetSingleQ(reservoir,(gate.getMinLevel()+H2)/2,gate.getName()),Q[0]-sum);
                         sum=sum+Q[i+1];
                     }
 
                     //未达到底坎高程
-                    double ma = GetSingleQ(reservoir,level,gate.getName());
+                    double ma = GetSingleQ(reservoir,H1,gate.getName());
                     if(ma>Q[i+1]){
                         double increase = ma-Q[i+1];
                         double de = Q[0]-sum;
@@ -520,7 +934,7 @@ public class Model {
             if(gates.contains(gate)){
                 //可用非溢洪闸门
                 if(!gate.getName().contains("溢洪")){
-                    Q[i+1]=Math.min(GetSingleQ(reservoir,level,gate.getName()),Q[0]-sum);
+                    Q[i+1]=Math.min(GetSingleQ(reservoir,H1,gate.getName()),Q[0]-sum);
                     sum=sum+Q[i+1];
                 }
             }
@@ -677,6 +1091,36 @@ public class Model {
         }
         return Q;
     }
+    public static double PreviewCalculate(Reservoir reservoir,double level,double input,double interval,double minQ){
+        //流量数组
+        double Q;
+        //闸门最大泄流能力
+        double out= GetMaxQ2(reservoir,level,input,interval);
+        //溢洪道自动泄流
+        double min = GetMinQ2(reservoir,level,input);
+        if (out<min) out=min;
+        //保证出库大于生态流量
+        if(out<minQ) out=minQ;
+        //总出库流量
+        Q=out;
+        return Q;
+    }
+    public static double SteadyCalculate(Reservoir reservoir,double level,double input,double interval,double minQ){
+        //流量数组
+        double Q;
+        //闸门最大泄流能力
+        double out= GetMaxQ3(reservoir,level,input,interval);
+        //溢洪道自动泄流
+        double min = GetMinQ2(reservoir,level,input);
+        if (out<min) out=min;
+        //保证出库大于生态流量
+        if(out<minQ) out=minQ;
+        //总出库流量
+        Q=Math.min(Math.min(out,reservoir.getDownStream()-interval),input);
+
+
+        return Q;
+    }
     public static List<Gate> GetConventionalGates(Reservoir reservoir,double level,double q){
         List<String> names = new ArrayList<>();
         List<Gate> gates = new ArrayList<>();
@@ -727,29 +1171,6 @@ public class Model {
         return gates;
     }
     /**
-     *水库水位限制，从前往后推
-     */
-    public static double[] H_LimitFront(Reservoir reservoir,double level,double Q_Input,double MinQ){
-        //闸门最大下泄能力
-        List<Gate> gates = GetFlexibleGates(reservoir,level,Q_Input);
-        double QQ0 = GetMaxRelease(reservoir,gates,level);
-
-        double H_eco = OnceBalance1(reservoir,level,Q_Input,MinQ);
-        double H_min =OnceBalance1(reservoir,level,Q_Input,QQ0);
-
-        double[] H_Limit= new double[2];
-        H_Limit[0]=Math.max(H_min,reservoir.getDeadLevel());
-        H_Limit[1]=H_eco;
-
-        if(reservoir.getProofLevel()>=H_Limit[0]&&reservoir.getProofLevel()<=H_Limit[1]) {
-            H_Limit[1]=reservoir.getProofLevel();
-        }
-        else if(reservoir.getDesignLevel()>=H_Limit[0]&&reservoir.getDesignLevel()<=H_Limit[1]){
-            H_Limit[1]=reservoir.getDesignLevel();
-        }
-        return H_Limit;
-    }
-    /**
      *最大泄流能力
      */
     public static double GetMaxRelease(Reservoir reservoir, List<Gate> gates, double level){
@@ -761,7 +1182,6 @@ public class Model {
         Q=Math.min(Q,reservoir.getMaxQ());
         return Q;
     }
-
 
     public static double OnceBalance1(Reservoir reservoir,double H_begin, double Q_in, double Q_out){
         double V_end=GetV(reservoir,H_begin)*reservoir.getCoefficient()+(Q_in-Q_out)*reservoir.getT_Delta();
@@ -906,15 +1326,7 @@ public class Model {
         double maxLevel=options.get(max).getH2();
         double endLevel=options.get(options.size()-1).getH2();
 
-        //最大水位超过校核水位的惩罚
-        if(maxLevel>=reservoir.getProofLevel()){
-            value=value+1000000*(maxLevel-reservoir.getProofLevel());
-        }
-        //最大水位超过设计水位的惩罚
-        else if(maxLevel>=reservoir.getDesignLevel()){
-            value=value+10000*(maxLevel-reservoir.getDesignLevel());
-        }
-        //最小水位低于汛限水位的惩罚
+        //水位低于汛限水位的惩罚
         double delta=0;
         int num=0;
         for(Option option:options){
@@ -928,10 +1340,33 @@ public class Model {
         //最大水位超过汛限水位的惩罚
         double over=Math.max(0,maxLevel-reservoir.getLimitLevel());
         value+=rate*delta+over;
+
+        //流量稳定性
+        double sigma;
+        double maxIN = options.get(0).getQIn();
+        double maxOut = options.get(0).getQOut();
+        for (Option option : options) {
+            double in = option.getQIn();
+            double out = option.getQOut();
+            if (in >= maxIN) maxIN = in;
+            if (out >= maxOut) maxOut = out;
+        }
+        sigma=maxOut/maxIN;
+        value=value*sigma;
+
         //末水位低于汛限水位的惩罚
         if(endLevel<reservoir.getLimitLevel()){
             value=value+100*(reservoir.getLimitLevel()-endLevel);
         }
+        //最大水位超过校核水位的惩罚
+        if(maxLevel>=reservoir.getProofLevel()){
+            value=value+1000000*(maxLevel-reservoir.getProofLevel());
+        }
+        //最大水位超过设计水位的惩罚
+        else if(maxLevel>=reservoir.getDesignLevel()){
+            value=value+10000*(maxLevel-reservoir.getDesignLevel());
+        }
+
         return value;
     }
 
@@ -955,43 +1390,35 @@ public class Model {
         //可用闸门
         List<Gate> gates = GetConventionalGates(reservoir,H1,input);
         //最大下泄能力
-        double maxQ = GetMaxRelease(reservoir,gates,H1);
-        //抑制水位下降的流量限制
-        double decline = reservoir.getDecline()*reservoir.getT_Delta()/(24*3600);
-        double maxQ1=OnceBalance2(reservoir,H1,input,(H1-decline));
-        //控制下游入库导致的流量限制
-        double tryQ = maxQ;
-        double tryH = OnceBalance1(reservoir,H1,input,tryQ);
-        double limit;
-        double limitOut;
-        while (true){
-            if((H1+tryH)/2<=reservoir.getHeightLevel()){
-                //水位小于汛限水位，控制下游入库小于安全下泄流量
-                limit=reservoir.getDownStream();
+        double maxQ1;
+        double tryQ = GetMaxRelease(reservoir,gates,H1);
+        double tryLevel = OnceBalance1(reservoir,H1,input,tryQ);
+        //水位增长，跨越防洪高水位
+        if(H1<=reservoir.getHeightLevel()&&tryLevel>= reservoir.getHeightLevel()){
+            double h2 = reservoir.getHeightLevel();
+            List<Gate> g2 = GetConventionalGates(reservoir,h2,input);
+            double qMax  = GetMaxRelease(reservoir,g2,(H1+h2)/2);
+            double qNeed = OnceBalance2(reservoir,H1,input,h2);
+            if(qMax>=qNeed){
+                maxQ1=qNeed;
             }
             else{
-                //水位大于汛限水位，控制下游入库介于安全下泄流量和下游超标准洪水之间
-                limit =  (GetV(reservoir,(H1+tryH)/2)- reservoir.getHeightVolume())
-                        *(reservoir.getDownInput()-reservoir.getDownStream())
-                        /(reservoir.getProofVolume()-reservoir.getHeightVolume())
-                        +reservoir.getDownStream();
-            }
-            limitOut=Math.max(0,limit-interval);
-            if(tryQ<=limitOut){
-                break;
-            }else if(tryQ<=0){
-                tryQ=0;
-                break;
-            }
-            else{
-                tryQ-=2;
-                tryH = OnceBalance1(reservoir,H1,input,tryQ);
+                maxQ1 = GetMaxRelease(reservoir,g2,(H1+h2)/2);
             }
         }
-        double maxQ2=tryQ;
+        else{
+            maxQ1=OnceBalance2(reservoir,H1,input,tryLevel);
+        }
+
+
+
+
+        //抑制水位下降的流量限制
+        double decline = reservoir.getDecline()*reservoir.getT_Delta()/(24*3600);
+        double maxQ2=OnceBalance2(reservoir,H1,input,(H1-decline));
         //恢复至汛限水位所需下泄流量
         double maxQ3=(GetV(reservoir,H1)-reservoir.getLimitVolume())*reservoir.getCoefficient()/reservoir.getT_Delta()+input;
-        Q=Math.min(Math.min(maxQ,maxQ1),maxQ3);
+        Q=Math.min(Math.min(maxQ1,maxQ2),maxQ3);
 
         //洪峰流量
         double peak =GetPeak(reservoir.getQ_Input());
@@ -1040,43 +1467,65 @@ public class Model {
         //可用闸门
         List<Gate> gates = GetFlexibleGates(reservoir,H1,input);
         //最大下泄能力
-        double maxQ = GetMaxRelease(reservoir,gates,H1);
+        double maxQ1;
+        double tryQ = GetMaxRelease(reservoir,gates,H1);
+        double tryLevel = OnceBalance1(reservoir,H1,input,tryQ);
+        //水位增长，跨越防洪高水位
+        if(H1<=reservoir.getHeightLevel()&&tryLevel>= reservoir.getHeightLevel()){
+            double h2 = reservoir.getHeightLevel();
+            List<Gate> g2 = GetFlexibleGates(reservoir,h2,input);
+            double qMax  = GetMaxRelease(reservoir,g2,(H1+h2)/2);
+            double qNeed = OnceBalance2(reservoir,H1,input,h2);
+            if(qMax>=qNeed){
+                maxQ1=qNeed;
+            }
+            else{
+                maxQ1 = GetMaxRelease(reservoir,g2,(H1+h2)/2);
+            }
+        }
+        else{
+            maxQ1=OnceBalance2(reservoir,H1,input,tryLevel);
+        }
+
         //抑制水位下降的流量限制
         double decline = reservoir.getDecline()*reservoir.getT_Delta()/(24*3600);
-        double maxQ1=OnceBalance2(reservoir,H1,input,(H1-decline));
-        //控制下游入库导致的流量限制
-        double tryQ = maxQ;
-        double tryH = OnceBalance1(reservoir,H1,input,tryQ);
+        double maxQ2=OnceBalance2(reservoir,H1,input,(H1-decline));
+
+        //恢复至汛限水位所需下泄流量
+        double maxQ3=(GetV(reservoir,H1)-reservoir.getLimitVolume())*reservoir.getCoefficient()/reservoir.getT_Delta()+input;
+        //梯级联调导致的流量限制
+        double tryQ2 = BigDecimal.valueOf(maxQ1).setScale(2,RoundingMode.HALF_UP).doubleValue();
+        double tryLevel2 = OnceBalance1(reservoir,H1,input,tryQ2);
         double limit;
         double limitOut;
         while (true){
-            if((H1+tryH)/2<=reservoir.getHeightLevel()){
-                //水位小于汛限水位，控制下游入库小于安全下泄流量
+            if((H1+tryLevel2)/2<=reservoir.getHeightLevel()){
+                //水位小于防洪高水位，控制下游入库小于安全下泄流量
                 limit=reservoir.getDownStream();
             }
             else{
                 //水位大于汛限水位，控制下游入库介于安全下泄流量和下游超标准洪水之间
-                limit =  (GetV(reservoir,(H1+tryH)/2)- reservoir.getHeightVolume())
+                limit =  (GetV(reservoir,(H1+tryLevel2)/2)- reservoir.getHeightVolume())
                         *(reservoir.getDownInput()-reservoir.getDownStream())
                         /(reservoir.getProofVolume()-reservoir.getHeightVolume())
                         +reservoir.getDownStream();
             }
             limitOut=Math.max(0,limit-interval);
-            if(tryQ<=limitOut){
+
+            if(tryQ2<=limitOut){
                 break;
-            }else if(tryQ<=0){
-                tryQ=0;
+            }else if(tryQ2<=0){
+                tryQ2=0;
                 break;
             }
             else{
-                tryQ-=2;
-                tryH = OnceBalance1(reservoir,H1,input,tryQ);
+                tryQ2=BigDecimal.valueOf(tryQ2-2).setScale(2,RoundingMode.HALF_UP).doubleValue();
+                tryLevel2 = OnceBalance1(reservoir,H1,input,tryQ2);
             }
         }
-        double maxQ2=tryQ;
-        //恢复至汛限水位所需下泄流量
-        double maxQ3=(GetV(reservoir,H1)-reservoir.getLimitVolume())*reservoir.getCoefficient()/reservoir.getT_Delta()+input;
-        Q=Math.min(Math.min(maxQ,maxQ1),Math.min(maxQ2,maxQ3));
+        double maxQ4=tryQ2;
+
+        Q=Math.min(Math.min(maxQ1,maxQ2),Math.min(maxQ3,maxQ4));
 
         //洪峰流量
         double peak =GetPeak(reservoir.getQ_Input());
@@ -1189,6 +1638,121 @@ public class Model {
             for (Double q :Q_input){
                 if(q>result) result=q;
             }
+        }
+        return result;
+    }
+
+
+    /**
+     * 泄水时机
+     */
+    public static int beginT(Reservoir reservoir){
+        int T;
+        int t1 = -1;
+        List<Double> input = reservoir.getQ_Input();
+        List<Double> interval = reservoir.getQ_Interval();
+        for (int i = 0; i <input.size() ; i++) {
+            double q = input.get(i)+interval.get(i);
+            if (q>reservoir.getDownStream()){
+                t1 = i;
+                break;
+            }
+        }
+        //无标准外洪水，无需预泄
+        if(t1<0){
+            T=-1;
+        }
+        //需要预泄，从某一个时段开始
+        else if(t1<=18){
+            T=0;
+        }
+        //需要预泄，从某一个时段开始
+        else{
+            T=t1-18;
+        }
+        return T;
+    }
+    public static int endT(Reservoir reservoir){
+
+        List<Double> input = reservoir.getQ_Input();
+        int t=0;
+        double max = input.get(0);
+        for (int i = 0; i <input.size() ; i++) {
+            double Q = input.get(i);
+            if (Q>=max){
+                t = i;
+                max=Q;
+            }
+        }
+        return t;
+    }
+
+    public static List<Option> Smooth(Reservoir reservoir,List<Option> options,int num){
+        List<Option> result = new ArrayList<>();
+        String name = options.get(0).getName();
+        String type = options.get(0).getType();
+        int n=0;
+        while (n< options.size()){
+            //闸门数量
+            int gateNum = reservoir.getGates().size();
+            //总出库、平均出库
+            double sumOut = 0;
+            for (int i =n; i <n+num&&i<options.size(); i++) {
+                sumOut+=options.get(i).getQOut();
+            }
+            double averageOut = sumOut/num;
+            //单个闸门总流量
+            List<Double> sumSingle = new ArrayList<>();
+            for (int i = 0; i < gateNum; i++) {
+                sumSingle.add(0.0);
+            }
+            for (int i =n; i <n+num&&i<options.size(); i++) {
+                List<Double> singleList = JSONObject.parseArray(options.get(i).getQSingleString(), Double.class);
+                for (int j = 0; j < gateNum; j++) {
+                    double q = sumSingle.get(j)+singleList.get(j);
+                    sumSingle.set(j,q);
+                }
+            }
+            //逐个时段水位、流量、库容
+            for (int i =n; i <n+num&&i<options.size(); i++) {
+                //不发生改变的量，从旧方案中获取
+                Option old = options.get(i);
+                Date   time = old.getTime();
+                double qIn = old.getQIn();
+                String limitString = old.getLimitString();
+
+                //发生改变的量，重新计算
+                double H1 = (i==0)?reservoir.getH_begin():result.get(i-1).getH2();
+                double H2 = OnceBalance1(reservoir,H1,qIn,averageOut);
+                double v = GetV(reservoir,H2);
+                double retain = Math.max(0,v-GetV(reservoir,reservoir.getH_begin()));
+                double percentage1 = getPercentage(reservoir,v)[0];
+                double percentage2 = getPercentage(reservoir,v)[1];
+                List<Double> qSingle = new ArrayList<>();
+                for (int j = 0; j < gateNum; j++) {
+                    double q = sumSingle.get(j)/num;
+                    qSingle.add(q);
+                }
+                String qSingleString = qSingle.toString();
+
+                Option option = new Option();
+                option.setName(name);
+                option.setType(type);
+                option.setTime(time);
+                option.setQIn(qIn);
+                option.setQOut(averageOut);
+                option.setH1(H1);
+                option.setH2(H2);
+                option.setV(v);
+                option.setRetain(retain);
+                option.setPercentage1(percentage1);
+                option.setPercentage2(percentage2);
+                option.setQSingleString(qSingleString);
+                option.setLimitString(limitString);
+
+                result.add(option);
+            }
+            n+=num;
         }
         return result;
     }

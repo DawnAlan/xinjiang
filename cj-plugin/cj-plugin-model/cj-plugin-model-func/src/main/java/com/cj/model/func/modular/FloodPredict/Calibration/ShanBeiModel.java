@@ -472,7 +472,7 @@ public class ShanBeiModel {
             if (j < L) {
                 Q[j+1] = CS * Q[j];
             } else {
-                Q[j+1] = CS * Q[j] + (1 - CS) * I[j - L];
+                Q[j+1] = CS * Q[j] + (1 - CS) * I[j + 1 - L];
 //                Q[j+1] =  (1 - CS) * I[j - L];
 
             }
