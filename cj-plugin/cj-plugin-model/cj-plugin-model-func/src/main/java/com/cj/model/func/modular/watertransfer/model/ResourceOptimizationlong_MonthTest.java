@@ -1023,8 +1023,8 @@ public class ResourceOptimizationlong_MonthTest {
                 } else if (m == 1) {
                     if (outflow_term[m][t] > ecoFlow[m][t] && outflow_term[m][t] < ecoFlow[m][t] + watershortage_allQ[t]) {
                         if (id == 1 || id == 3) {
-                            if (monthList.indexOf(t + 12 - period) != -1) {
-                                fitness1 += 0.7*(ecoFlow[m][t] + watershortage_allQ[t] - outflow_term[m][t]) * (delatT * monthday[t]) / 1e4;
+                            if (monthList.contains(t + 12 - period)) {
+                                fitness1 += 0.1 * (ecoFlow[m][t] + watershortage_allQ[t] - outflow_term[m][t]) * (delatT * monthday[t]) / 1e4;
                             } else {
                                 fitness1 += (ecoFlow[m][t] + watershortage_allQ[t] - outflow_term[m][t]) * (delatT * monthday[t]) / 1e4;
                             }
@@ -1042,8 +1042,8 @@ public class ResourceOptimizationlong_MonthTest {
                     if (outflow_term[m][t] <= ecoFlow[m][t])
                     {
                         if (id == 1 || id == 3) {
-                            if (monthList.indexOf(t + 12 - period) != -1) {
-                                fitness1 += 0.7 * (ecoFlow[m][t] + watershortage_allQ[t] - outflow_term[m][t]) * (delatT * monthday[t]) / 1e4;
+                            if (monthList.contains(t + 12 - period)) {
+                                fitness1 += 0.1 * (ecoFlow[m][t] + watershortage_allQ[t] - outflow_term[m][t]) * (delatT * monthday[t]) / 1e4;
                             } else {
                                 fitness1 += (ecoFlow[m][t] + watershortage_allQ[t] - outflow_term[m][t]) * (delatT * monthday[t]) / 1e4;
                             }

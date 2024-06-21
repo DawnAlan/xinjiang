@@ -373,7 +373,7 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
             incomingWaterAmountTotal.add(waterAllocationComparisonSelectionRes.getWaterAmount().stream().map(n -> n.getIncomingWaterAmount().get(finalI)).mapToDouble(n -> n).sum());
             proportionWaterAmountTotal.add(waterAllocationComparisonSelectionRes.getWaterAmount().stream().map(n -> n.getProportionWaterAmount().get(finalI)).mapToDouble(n -> n).sum());
             waterLackAmountTotal.add(waterAllocationComparisonSelectionRes.getWaterAmount().stream().map(n -> n.getWaterLackAmount().get(finalI)).mapToDouble(n -> n).sum());
-            wasteWaterAmountTotal.add(waterAllocationComparisonSelectionRes.getWaterAmount().stream().map(n -> n.getWasteWaterAmount().get(finalI)).mapToDouble(n -> n).sum());
+            wasteWaterAmountTotal.add(waterAllocationComparisonSelectionRes.getWaterAmount().get(0).getWasteWaterAmount().get(finalI));
         }
         waterAllocationComparisonSelectionRes.setIncomingWaterAmountTotal(incomingWaterAmountTotal);
         waterAllocationComparisonSelectionRes.setProportionWaterAmountTotal(proportionWaterAmountTotal);
@@ -399,9 +399,16 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
             dateList.forEach(date -> {
                 WaterAllocationComparisonSelectionRes.WaterAmountDTO waterAmountDTO = waterAmountDTOList.stream().filter(dto -> dto.getDate().equals(date)).findFirst().get();
                 waterAmountDTO.getIncomingWaterAmount().add(displayDataList.stream().filter(data -> data.getTime().equals(date)).mapToDouble(AllocationDisplayData::getInflowWater).sum());
-                waterAmountDTO.getProportionWaterAmount().add(excel2List.stream().filter(excel2 -> excel2.getTime().equals(date)).mapToDouble(Excel2::getWater).sum());
-                waterAmountDTO.getWaterLackAmount().add(excel2List.stream().filter(excel2 -> excel2.getTime().equals(date)).mapToDouble(Excel2::getWaterLack).sum());
-                waterAmountDTO.getWasteWaterAmount().add(displayDataList.stream().filter(data -> data.getTime().equals(date)).mapToDouble(AllocationDisplayData::getWasteWater).sum());
+                waterAmountDTO.getProportionWaterAmount().add(excel2List.stream().filter(excel2 -> excel2.getTime().equals(date)
+                                && excel2.getStationType().equals("总用水")
+                                && excel2.getStationName().equals("总用水"))
+                        .mapToDouble(Excel2::getWater).sum());
+                waterAmountDTO.getWaterLackAmount().add(excel2List.stream().filter(excel2 -> excel2.getTime().equals(date)
+                                && excel2.getStationType().equals("总用水")
+                                && excel2.getStationName().equals("总用水"))
+                        .mapToDouble(Excel2::getWaterLack).sum());
+                waterAmountDTO.getWasteWaterAmount().add(displayDataList.stream().filter(data -> data.getTime().equals(date)).mapToDouble(AllocationDisplayData::getWasteWater).findFirst().getAsDouble());
+                //waterAmountDTO.getWasteWaterAmount().add(displayDataList.get(0).getWasteWater());
             });
         }
         return waterAmountDTOList;
@@ -954,6 +961,9 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
         }
         List<WaterAllocationComparisonSelectionRes.WaterRatioDTO> waterRatioDTOS = new ArrayList<>();
         for (String station : allStations) {
+            if (station.equals("总用水:总用水")) {
+                continue;
+            }
             WaterAllocationComparisonSelectionRes.WaterRatioDTO waterRatioDTO = new WaterAllocationComparisonSelectionRes.WaterRatioDTO();
             waterRatioDTO.setArea(station.split(":")[0]);
             waterRatioDTO.setUnit(station.split(":")[1]);

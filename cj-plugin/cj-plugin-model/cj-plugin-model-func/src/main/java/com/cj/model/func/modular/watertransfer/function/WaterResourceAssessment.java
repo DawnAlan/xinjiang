@@ -67,13 +67,18 @@ public class WaterResourceAssessment {
             if (reqList.get(i).getName().contains("单库调度"))
             {
                 x=i;
+                if (dischargeTth[i] >=0){
+
+                }
+                dischargeTth[i] =0;
+                storgeAll[i]=dischargeLzz[i];
                 double utilizationRate=1;
                 if (inflowWater[i] - storgeAll[i] > 0) {
                     utilizationRate = (inflowWater[i] - storgeAll[i] - wasteWater[i]) / (inflowWater[i] - storgeAll[i]);
                 } else {
                     utilizationRate = 1;
                 }
-                waterRate[i] = Double.parseDouble(da.format(utilizationRate));
+                waterRate[i] = Double.parseDouble(da.format(100*utilizationRate));
             }
         }
         double n=0;
@@ -87,7 +92,7 @@ public class WaterResourceAssessment {
                 } else {
                     utilizationRate = 1;
                 }
-                waterRate[i] = Double.parseDouble(da.format(utilizationRate));
+                waterRate[i] = Double.parseDouble(da.format(100*utilizationRate));
                 if (utilizationRate > bestUtilizationRate) {
                     bestUtilizationRate = utilizationRate;
                     n = i;
@@ -113,9 +118,15 @@ public class WaterResourceAssessment {
 
         for (int i=0;i<reqList.size();i++){
             double ecoWater=Double.parseDouble(da.format(ecologyWater[i]+wasteWater[i]));
+            if(i==x){
+                appraise+= schemeName[i]+"：在调度区间内来水预报总水量为"+inflowWater[i]+"万m³,"+"生态水量为"+ecoWater+"万m³,"+"各单位需水总量为"+
+                        waterDemand[i]+"万m³,"+"各单位供水缺额总量为"+ waterLack[i]+"万m³,"+"在楼庄子的蓄水量为"+dischargeLzz[i]+"万m³,头屯河蓄水量为"+dischargeTth[i]+"万m³,总蓄水量为"+storgeAll[i]+
+                        "万m³,头屯河水库水位不变，并不能完成蓄泄水目标,可供水量利用率为"+waterRate[i]+"%;";
+            }  else {
              appraise+= schemeName[i]+"：在调度区间内来水预报总水量为"+inflowWater[i]+"万m³,"+"生态水量为"+ecoWater+"万m³,"+"各单位需水总量为"+
             waterDemand[i]+"万m³,"+"各单位供水缺额总量为"+ waterLack[i]+"万m³,"+"在楼庄子的蓄水量为"+dischargeLzz[i]+"万m³,头屯河蓄水量为"+dischargeTth[i]+"万m³,总蓄水量为"+storgeAll[i]+
-                     "万m³,可供水量利用率为"+waterRate[i]+";";
+                     "万m³,可供水量利用率为"+waterRate[i]+"%;";
+            }
         }
         schemeOptimization="推荐方案："+schemeName[(int)n]+",可供水量利用率较高;";
         appraise=appraise+schemeOptimization;
@@ -176,7 +187,7 @@ public class WaterResourceAssessment {
         double[]storage=new double[3];
         storage[0]=dischargeLzz;
         storage[1]=dischargeTth;
-        storage[2]=dischargeLzz+dischargeTth;
+        storage[2]=Double.parseDouble(da1.format(dischargeLzz+dischargeTth));
         return storage;
     }
 
@@ -443,32 +454,7 @@ public class WaterResourceAssessment {
         double[]sum=new double[2];
         for (int i = 0; i < data1.size(); i++)
         {
-            if (data1.get(i).getStationType().equals("楼庄子生活"))
-            {
-                water+= data1.get(i).getWater();
-                waterLack+= data1.get(i).getWaterLack();
-            }
-            if (data1.get(i).getStationType().equals("红岩生活"))
-            {
-                water+= data1.get(i).getWater();
-                waterLack+= data1.get(i).getWaterLack();
-            }
-            if (data1.get(i).getStationType().equals("八钢工业"))
-            {
-                water+= data1.get(i).getWater();
-                waterLack+= data1.get(i).getWaterLack();
-            }
-            if (data1.get(i).getStationType().equals("渠首工业"))
-            {
-                water+= data1.get(i).getWater();
-                waterLack+= data1.get(i).getWaterLack();
-            }
-            if (data1.get(i).getStationType().equals("总西干渠"))
-            {
-                water+= data1.get(i).getWater();
-                waterLack+= data1.get(i).getWaterLack();
-            }
-            if (data1.get(i).getStationType().equals("总东干渠"))
+            if (data1.get(i).getStationType().equals("总用水"))
             {
                 water+= data1.get(i).getWater();
                 waterLack+= data1.get(i).getWaterLack();
