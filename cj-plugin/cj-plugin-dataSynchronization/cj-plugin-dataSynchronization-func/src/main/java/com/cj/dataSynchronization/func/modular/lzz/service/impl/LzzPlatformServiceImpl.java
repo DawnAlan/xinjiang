@@ -348,11 +348,6 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
                     }
                 }
             }
-            for(LzzRainfallStation station :rainfallStationList){
-                if(StringUtils.isNotEmpty(station.getTreeId())){
-                    result.add(station);
-                }
-            }
         }
         boolean b = lzzRainfallStationService.saveOrUpdateBatch(result);
         if(b){
