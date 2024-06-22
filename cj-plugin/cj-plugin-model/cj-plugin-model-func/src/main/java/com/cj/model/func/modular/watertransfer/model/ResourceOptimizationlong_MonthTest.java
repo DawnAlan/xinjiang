@@ -42,6 +42,7 @@ public class ResourceOptimizationlong_MonthTest {
         ecoFlow=new double[2][12];
         ecoFlow1=new double[2][12];
         setReservoir(req.getCurve(), reservoirs);
+        updateReservoir(req.getCapacityCurves(),reservoirs);
         if (req.getEcologyFlowLzz().length==12){
             ecoFlow[0]=req.getEcologyFlowLzz();
             ecoFlow[1]=req.getEcologyFlowTth();
@@ -1023,10 +1024,10 @@ public class ResourceOptimizationlong_MonthTest {
                 } else if (m == 1) {
                     if (outflow_term[m][t] > ecoFlow[m][t] && outflow_term[m][t] < ecoFlow[m][t] + watershortage_allQ[t]) {
                         if (id == 1 || id == 3) {
-                            if (monthList.contains(t + 12 - period)) {
-                                fitness1 += 0.1 * (ecoFlow[m][t] + watershortage_allQ[t] - outflow_term[m][t]) * (delatT * monthday[t]) / 1e4;
-                            } else {
+                            if (monthList.indexOf(t + 12 - period) != -1) {
                                 fitness1 += (ecoFlow[m][t] + watershortage_allQ[t] - outflow_term[m][t]) * (delatT * monthday[t]) / 1e4;
+                            } else {
+                                fitness1 += 0.1*(ecoFlow[m][t] + watershortage_allQ[t] - outflow_term[m][t]) * (delatT * monthday[t]) / 1e4;
                             }
                         }
                         if (id == 2) {
@@ -1042,10 +1043,10 @@ public class ResourceOptimizationlong_MonthTest {
                     if (outflow_term[m][t] <= ecoFlow[m][t])
                     {
                         if (id == 1 || id == 3) {
-                            if (monthList.contains(t + 12 - period)) {
-                                fitness1 += 0.1 * (ecoFlow[m][t] + watershortage_allQ[t] - outflow_term[m][t]) * (delatT * monthday[t]) / 1e4;
+                            if (monthList.indexOf(t + 12 - period) != -1) {
+                                fitness1 +=  (ecoFlow[m][t] + watershortage_allQ[t] - outflow_term[m][t]) * (delatT * monthday[t]) / 1e4;
                             } else {
-                                fitness1 += (ecoFlow[m][t] + watershortage_allQ[t] - outflow_term[m][t]) * (delatT * monthday[t]) / 1e4;
+                                fitness1 += 0.1*(ecoFlow[m][t] + watershortage_allQ[t] - outflow_term[m][t]) * (delatT * monthday[t]) / 1e4;
                             }
                         }
                         if (id == 2) {
@@ -1540,6 +1541,50 @@ public class ResourceOptimizationlong_MonthTest {
         this.reservoirs[1].outflowMin = 1.48;
         this.reservoirs[1].levelFloodDesign = 991.2;
         this.reservoirs[1].levelFloodCheck = 992.54;
+    }
+    public void updateReservoir(Map<String,List<CurveParam>> dataAll, Reservoir[] reservoir) {
+
+
+        if(dataAll==null){
+
+        }
+        else{
+
+            for(Reservoir reServoirs:reservoir){
+                List<Double> capacity = new ArrayList<>();
+                List<Double> level = new ArrayList<>();
+                String reservoirName = reServoirs.getName();
+                //库容曲线
+                for(String string:dataAll.keySet()){
+
+                    if(string.equals(reservoirName)&&dataAll.get(string).size()!=0){
+                        //找到曲线
+
+                        //检查曲线长度
+                        if(dataAll.get(string).size()<5){
+
+                        }
+                        //检查曲线单调性
+                        else{
+                            List<CurveParam> data = dataAll.get(string);
+                            for (int i = 0; i < data.size(); i++) {
+                                capacity.add(data.get(i).getValue());
+                                level.add(data.get(i).getLevel());
+                            }
+                        }
+                    }
+                }
+                double[] wlc_wl = new double[level.size()];
+                double[] wlc_c = new double[capacity.size()];
+                for (int i = 0; i < wlc_wl.length; i++) {
+                    wlc_wl[i] = level.get(i);
+                    wlc_c[i] = capacity.get(i);
+                }
+              reServoirs.wlc_c = wlc_c;
+              reServoirs.wlc_wl = wlc_wl;
+            }
+        }
+
     }
 
     public Map<String, Object> SetInflow(WaterTransferReq req, Map<String, List<DataInflowPrevent>> dataInflowPreventx, int t) {
