@@ -14,109 +14,114 @@ public class Containment {
     public static Map<String,Object> ContainmentCalculator(Map<String, List<Option>> options){
         Map<String,Object> FinalResult = new LinkedHashMap<>();
 
+        List<String> reservoirNames=getReservoirNames(options);
+        Set<String> optionNames = options.keySet();
+
+        //计算各库各方案拦蓄洪量、剩余库容、削减洪峰
         Map<String,Map<String,Map<String,Double>>> View = new LinkedHashMap<>();
-        Map<String,String> Opinion = new LinkedHashMap<>();
+        for (String reservoirName:reservoirNames){
+            Map<String,Map<String,Double>> oneReservoir = new LinkedHashMap<>();
 
-        Map<String,Map<String,Double>> lzz = new LinkedHashMap<>();
-        Map<String,Map<String,Double>> tth = new LinkedHashMap<>();
+            Map<String,Double> retain_oneReservoir = new LinkedHashMap<>();
+            Map<String,Double> remain_oneReservoir = new LinkedHashMap<>();
+            Map<String,Double> peakShave_oneReservoir = new LinkedHashMap<>();
 
-        Map<String,Double> retain_lzz = new LinkedHashMap<>();
-        Map<String,Double> remain_lzz = new LinkedHashMap<>();
-        Map<String,Double> peakShave_lzz = new LinkedHashMap<>();
-        Map<String,Double> retain_tth = new LinkedHashMap<>();
-        Map<String,Double> remain_tth = new LinkedHashMap<>();
-        Map<String,Double> peakShave_tth = new LinkedHashMap<>();
+            for (String optionName : optionNames) {
 
-        List<String> Key_num= new ArrayList<>();
-        List<Double[]> HAQ = new ArrayList<>();
+                List<Double> Qin_oneReservoir = new ArrayList<>();
+                List<Double> Qout_oneReservoir = new ArrayList<>();
+                List<Double> V_oneReservoir = new ArrayList<>();
+                List<Double> Retain_oneReservoir = new ArrayList<>();
+                double retain = 0;
+                double remain = 0;
+                double peakShave = 0;
 
-        Set<String> keySet = options.keySet();
-        for (String key : keySet) {
-            List<Option> option = options.get(key);
-
-            List<Double> Qin_lzz = new ArrayList<>();
-            List<Double> Qin_tth = new ArrayList<>();
-            List<Double> Qout_lzz = new ArrayList<>();
-            List<Double> Qout_tth = new ArrayList<>();
-            List<Double> H_lzz = new ArrayList<>();
-            List<Double> H_tth = new ArrayList<>();
-            List<Double> V_lzz = new ArrayList<>();
-            List<Double> V_tth = new ArrayList<>();
-            List<Double> Retain_lzz = new ArrayList<>();
-            List<Double> Retain_tth = new ArrayList<>();
-
-
-            for (Option value : option) {
-                String name = value.getName();
-                if (name.equals("楼庄子")) {
-                    Qin_lzz.add(value.getQIn());
-                    Qout_lzz.add(value.getQOut());
-                    V_lzz.add(value.getV());
-                    H_lzz.add(value.getH2());
-                    Retain_lzz.add(value.getRetain());
-                } else if (name.equals("头屯河")) {
-                    Qin_tth.add(value.getQIn());
-                    Qout_tth.add(value.getQOut());
-                    V_tth.add(value.getV());
-                    H_tth.add(value.getH2());
-                    Retain_tth.add(value.getRetain());
-                } else {
-                    throw new RuntimeException("方案有误");
+                List<Option> option = options.get(optionName);
+                for (Option value : option) {
+                    String name = value.getName();
+                    if (name.equals(reservoirName)) {
+                        Qin_oneReservoir.add(value.getQIn());
+                        Qout_oneReservoir.add(value.getQOut());
+                        V_oneReservoir.add(value.getV());
+                        Retain_oneReservoir.add(value.getRetain());
+                    }
                 }
+
+                if(reservoirName.equals("楼庄子")){
+                    retain = BigDecimal.valueOf(FindMax(Retain_oneReservoir)).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                    remain = BigDecimal.valueOf(7259.33 - FindMax(V_oneReservoir)).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                    peakShave = BigDecimal.valueOf(FindMax(Qin_oneReservoir) - FindMax(Qout_oneReservoir)).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                }
+                else if(reservoirName.equals("头屯河")){
+                    retain = BigDecimal.valueOf(FindMax(Retain_oneReservoir)).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                    remain = BigDecimal.valueOf(1520.85 - FindMax(V_oneReservoir)).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                    peakShave = BigDecimal.valueOf(FindMax(Qin_oneReservoir) - FindMax(Qout_oneReservoir)).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                }
+
+                retain_oneReservoir.put(optionName,retain);
+                remain_oneReservoir.put(optionName,remain);
+                peakShave_oneReservoir.put(optionName,peakShave);
+            }
+            oneReservoir.put("拦蓄洪量",retain_oneReservoir);
+            oneReservoir.put("剩余库容",remain_oneReservoir);
+            oneReservoir.put("削减洪峰",peakShave_oneReservoir);
+
+            View.put(reservoirName,oneReservoir);
+        }
+
+        //生成评价
+        Map<String,String> Opinion = new LinkedHashMap<>();
+        Map<String,Double> Values = new LinkedHashMap<>();
+        for (String optionName:optionNames){
+            List<Option> options1 = options.get(optionName);
+            Map<String,Map<String,Double>> HAQs = new LinkedHashMap<>();
+            StringBuilder str = new StringBuilder();
+
+            for (String reservoirName:reservoirNames){
+                List<Double> in = new ArrayList<>();
+                List<Double> out = new ArrayList<>();
+                List<Double> level = new ArrayList<>();
+                Map<String,Double> HAQ = new LinkedHashMap<>();
+
+                for (Option option : options1) {
+                    if (Objects.equals(option.getName(), reservoirName)) {
+                        in.add(option.getQIn());
+                        out.add(option.getQOut());
+                        level.add(option.getH2());
+                    }
+                }
+
+                double maxIn = FindMax(in);
+                double maxH = FindMax(level);
+                double maxOut = FindMax(out);
+                str.append(reservoirName).append("最大入库流量为").append(maxIn).append("立方米/秒,最大出库流量为").append(maxOut).append("立方米/秒,最大坝前水位为").append(maxH).append("米；");
+
+                HAQ.put("最高水位",maxH);
+                HAQ.put("最大流量",maxOut);
+                HAQs.put(reservoirName,HAQ);
+
             }
 
-            double a_lzz = BigDecimal.valueOf(FindMax(Retain_lzz)).setScale(2, RoundingMode.HALF_UP).doubleValue();
-            double b_lzz = BigDecimal.valueOf(7259.33 - FindMax(V_lzz)).setScale(2, RoundingMode.HALF_UP).doubleValue();
-            double c_lzz = BigDecimal.valueOf(FindMax(Qin_lzz) - FindMax(Qout_lzz)).setScale(2, RoundingMode.HALF_UP).doubleValue();
-
-            double a_tth = BigDecimal.valueOf(FindMax(Retain_tth)).setScale(2, RoundingMode.HALF_UP).doubleValue();
-            double b_tth = BigDecimal.valueOf(1520.85 - FindMax(V_tth)).setScale(2, RoundingMode.HALF_UP).doubleValue();
-            double c_tth = BigDecimal.valueOf(FindMax(Qin_tth) - FindMax(Qout_tth)).setScale(2, RoundingMode.HALF_UP).doubleValue();
-
-            retain_lzz.put(key, Math.max(a_lzz, 0));
-            remain_lzz.put(key, Math.max(b_lzz, 0));
-            peakShave_lzz.put(key, Math.max(0, c_lzz));
-
-            retain_tth.put(key, Math.max(0, a_tth));
-            remain_tth.put(key, Math.max(0, b_tth));
-            peakShave_tth.put(key, Math.max(0, c_tth));
-
-            //计算方案评价
-            double maxH_lzz = FindMax(H_lzz);
-            double maxQ_lzz = FindMax(Qout_lzz);
-
-            double maxQin = FindMax(Qin_tth);
-            double maxH_tth = FindMax(H_tth);
-            double maxQ_tth = FindMax(Qout_tth);
-            String str = "楼庄子最大出库流量为" + maxQ_lzz + "立方米/秒,最大坝前水位为" + maxH_lzz + "米；" +
-                    "头屯河最大入库流量为" + maxQin + "立方米/秒，最大出库流量为" + maxQ_tth + "立方米/秒,最大坝前水位为" + maxH_tth + "米。";
-            Opinion.put(key, str);
-
-            Key_num.add(key);
-            HAQ.add(new Double[]{maxH_lzz, maxQ_lzz, maxH_tth, maxQ_tth});
+            Opinion.put(optionName, str.toString());
+            Values.put(optionName,GetValue(HAQs));
         }
-        lzz.put("削减洪峰",peakShave_lzz);
-        lzz.put("剩余库容",remain_lzz);
-        lzz.put("拦蓄洪量",retain_lzz);
 
-        tth.put("削减洪峰",peakShave_tth);
-        tth.put("剩余库容",remain_tth);
-        tth.put("拦蓄洪量",retain_tth);
+        //生成推荐方案
+        Set<String> choices = Values.keySet();
+        String decision="";
+        double best = 0;
+        for (String choice:choices){
+            if(decision.equals("")){
+                decision=choice;
+                best=Values.get(decision);
+            }
 
-        View.put("楼庄子",lzz);
-        View.put("头屯河",tth);
-
-        double best=GetValue(HAQ.get(0));
-        int num =0;
-        for (int i = 0; i < Key_num.size(); i++) {
-            double va=GetValue(HAQ.get(i));
-            if(va<=best){
-                best=va;
-                num=i;
+            double value = Values.get(choice);
+            if(value<best){
+                decision=choice;
+                best=value;
             }
         }
-        String decision = Key_num.get(num);
-
         Opinion.put("推荐方案",decision);
 
         FinalResult.put("总览",View);
@@ -136,35 +141,74 @@ public class Containment {
         return max;
     }
 
-    public static double GetValue(Double[] HAQ){
+    public static double GetValue(Map<String,Map<String,Double>> HAQs ){
+        double value=0;
+        Set<String> reservoirNames =HAQs.keySet();
+        for (String reservoirName :reservoirNames){
+            if(reservoirName.equals("楼庄子")){
+                Map<String,Double> HAQ = HAQs.get("楼庄子");
+                double maxH = HAQ.get("最高水位");
+                double maxQ = HAQ.get("最大流量");
 
-        double maxH_lzz = HAQ[0];
+                //超过特征水位的惩罚
+                if(maxH>=1397.63){
+                    value=value+100000*(maxH-1397.63);
+                }
+                else if(maxH>=1397.41){
+                    value=value+1000*(maxH-1397.41);
+                }
+                else if(maxH>=1397.21){
+                    value=value+10*(maxH-1397.21);
+                }
 
-        double maxH_tth = HAQ[2];
+                //超过预警流量惩罚
+                if(maxQ>=125){
+                    value+=maxQ-125;
+                }
 
-        double value=maxH_lzz+maxH_tth;
+            }
+            else if(reservoirName.equals("头屯河")){
+                Map<String,Double> HAQ = HAQs.get("头屯河");
+                double maxH = HAQ.get("最高水位");
+                double maxQ = HAQ.get("最大流量");
 
-        if(maxH_lzz>=1397.63){
-            value=value+100000*(maxH_lzz-1397.63);
-        }
-        else if(maxH_lzz>=1397.41){
-            value=value+1000*(maxH_lzz-1397.41);
-        }
-        else if(maxH_lzz>=1397.21){
-            value=value+10*(maxH_lzz-1397.21);
-        }
+                //超过特征水位的惩罚
+                if(maxH>=992.54){
+                    value=value+100000*(maxH-992.54);
+                }
+                else if(maxH>=991.2){
+                    value=value+1000*(maxH-991.2);
+                }
+                else if(maxH>=989.6){
+                    value=value+10*(maxH-989.6);
+                }
 
-        if(maxH_tth>=992.54){
-            value=value+100000*(maxH_tth-992.54);
-        }
-        else if(maxH_tth>=991.2){
-            value=value+1000*(maxH_tth-991.2);
-        }
-        else if(maxH_tth>=989.6){
-            value=value+10*(maxH_tth-989.6);
-        }
+                //超过预警流量惩罚
+                if(maxQ>=120){
+                    value+=maxQ-120;
+                }
 
+
+            }
+        }
         return value;
+    }
+
+    public static List<String> getReservoirNames(Map<String, List<Option>> options){
+        List<String> result = new ArrayList<>();
+
+        Set<String> optionNames = options.keySet();
+        for (String optionName:optionNames){
+            List<Option> option1 = options.get(optionName);
+            for (Option option : option1) {
+                String reservoirName = option.getName();
+                if (!result.contains(reservoirName)) {
+                    result.add(reservoirName);
+                }
+            }
+        }
+
+        return result;
     }
 
 }

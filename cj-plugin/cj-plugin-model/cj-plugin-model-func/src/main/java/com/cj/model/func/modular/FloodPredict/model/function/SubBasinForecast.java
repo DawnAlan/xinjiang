@@ -765,7 +765,7 @@ public class SubBasinForecast {
             }
         }
         double dt = max - min;//差值
-        double line = (dt <= min * 0.6 ? 1000 : min + dt * 0.6);//洪水标准线
+        double line = Math.min(min + dt * 0.6,40.0);//洪水标准线
         for (int i = 0; i < predict.length; i++)//找到所有大于标准线的来水
         {
             if ((double) predict[i][1] > line) {

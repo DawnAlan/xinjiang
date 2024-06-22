@@ -1297,8 +1297,8 @@ public class Model {
         result[0]=100*Math.max(0,(V-reservoir.getLimitVolume()))/(reservoir.getHeightVolume()-reservoir.getLimitVolume());
         result[1]=100*Math.max(0,(V-reservoir.getLimitVolume()))/(reservoir.getProofVolume()-reservoir.getLimitVolume());
 
-        result[0]= BigDecimal.valueOf(result[0]).setScale(2, RoundingMode.HALF_UP).doubleValue();
-        result[1]=BigDecimal.valueOf(result[1]).setScale(2, RoundingMode.HALF_UP).doubleValue();
+        result[0]= BigDecimal.valueOf(Math.min(result[0],100)).setScale(2, RoundingMode.HALF_UP).doubleValue();
+        result[1]= BigDecimal.valueOf(Math.min(result[1],100)).setScale(2, RoundingMode.HALF_UP).doubleValue();
         return result;
     }
     /**
