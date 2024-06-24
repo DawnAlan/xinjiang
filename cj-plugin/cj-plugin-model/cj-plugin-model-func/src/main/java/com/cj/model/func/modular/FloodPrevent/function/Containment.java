@@ -48,14 +48,14 @@ public class Containment {
                 }
 
                 if(reservoirName.equals("楼庄子")){
-                    retain = BigDecimal.valueOf(FindMax(Retain_oneReservoir)).setScale(2, RoundingMode.HALF_UP).doubleValue();
-                    remain = BigDecimal.valueOf(7259.33 - FindMax(V_oneReservoir)).setScale(2, RoundingMode.HALF_UP).doubleValue();
-                    peakShave = BigDecimal.valueOf(FindMax(Qin_oneReservoir) - FindMax(Qout_oneReservoir)).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                    retain = BigDecimal.valueOf(Math.max(0,FindMax(Retain_oneReservoir))).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                    remain = BigDecimal.valueOf(Math.max(0,7259.33 - FindMax(V_oneReservoir))).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                    peakShave = BigDecimal.valueOf(Math.max(0,FindMax(Qin_oneReservoir) - FindMax(Qout_oneReservoir))).setScale(2, RoundingMode.HALF_UP).doubleValue();
                 }
                 else if(reservoirName.equals("头屯河")){
-                    retain = BigDecimal.valueOf(FindMax(Retain_oneReservoir)).setScale(2, RoundingMode.HALF_UP).doubleValue();
-                    remain = BigDecimal.valueOf(1520.85 - FindMax(V_oneReservoir)).setScale(2, RoundingMode.HALF_UP).doubleValue();
-                    peakShave = BigDecimal.valueOf(FindMax(Qin_oneReservoir) - FindMax(Qout_oneReservoir)).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                    retain = BigDecimal.valueOf(Math.max(0,FindMax(Retain_oneReservoir))).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                    remain = BigDecimal.valueOf(Math.max(0,1520.85 - FindMax(V_oneReservoir))).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                    peakShave = BigDecimal.valueOf(Math.max(0,FindMax(Qin_oneReservoir) - FindMax(Qout_oneReservoir))).setScale(2, RoundingMode.HALF_UP).doubleValue();
                 }
 
                 retain_oneReservoir.put(optionName,retain);
