@@ -140,11 +140,23 @@ public class TouTunHe {
         //返回所需数据类型数据
         List<Map<String,List<PredictInputData>>> QJResult = new ArrayList<>();
         List<Map<String,List<PredictInputData>>> LZZResult = new ArrayList<>();
-        List<PredictInputData> RAT = du.getRAndT(paramNew);//获得相应的温度和降水
-        LZZ = du.addRAndT(LZZ, RAT);
         Map<String,List<PredictInputData>> LZZFlow = new HashMap<>();
-        LZZFlow.put("流量",LZZ);
-        LZZResult.add(LZZFlow);
+        Map<String,List<PredictInputData>> QJFlow = new HashMap<>();
+        if (paramNew.getModelType()==1){
+            LZZFlow.put("流量",LZZ);
+            LZZResult.add(LZZFlow);
+            QJFlow.put("流量",QJ);
+            QJResult.add(QJFlow);
+        }else {
+            List<PredictInputData> RAT = du.getRAndT(paramNew);//获得相应的温度和降水
+            LZZ = du.addRAndT(LZZ, RAT);
+            LZZFlow.put("流量",LZZ);
+            LZZResult.add(LZZFlow);
+            QJ = du.addRAndT(QJ, RAT);
+            QJFlow.put("流量",QJ);
+            QJResult.add(QJFlow);
+        }
+
         if (paramNew.getModelType() == 3) {
             List<Map<String,List<PredictInputData>>> integration = du.lzzRainIntegration(paramNew);//整合雨量站数据转为模型所需类型
             LZZResult.add(integration.get(0));//前期雨量
@@ -153,10 +165,7 @@ public class TouTunHe {
         threeResults.put("楼庄子", LZZResult);
         threeResults.put("3号桥", LZZResult);
         //区间-数据
-        QJ = du.addRAndT(QJ, RAT);
-        Map<String,List<PredictInputData>> QJFlow = new HashMap<>();
-        QJFlow.put("流量",QJ);
-        QJResult.add(QJFlow);
+
         if (paramNew.getModelType() == 3) {
             List<Map<String,List<PredictInputData>>> QJRain = du.irrigateRainIntegration(paramNew);
             QJResult.add(QJRain.get(0));
