@@ -6,6 +6,7 @@ import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePla
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.req.YearCropSelectListReq;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.res.PlanComparedToActualByYearRes;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.res.SelectYearWaterUsePlanCropForSum;
+import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.vo.NeedWaterVo;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.entity.YearWaterUsePlanCrop;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,6 +29,8 @@ public interface YearWaterUsePlanCropService extends IService<YearWaterUsePlanCr
     SelectYearWaterUsePlanCropForSum selectListForSum(Integer year, String area);
 
     RestResponse<List<PlanComparedToActualByYearRes>> planComparedToActual(Integer planYear, Integer actualYear, Integer month);
+
+    RestResponse<NeedWaterVo> needWaterByPlan(Integer planYear);
 
 }
 

@@ -2,6 +2,7 @@ package com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePl
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.res.SelectYearWaterUsePlanCropForSum;
+import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.vo.NeedWaterVo;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.vo.PlanComparedToActualByYearVo;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.entity.YearWaterUsePlanCrop;
 import org.apache.ibatis.annotations.Param;
@@ -19,6 +20,7 @@ public interface YearWaterUsePlanCropMapper extends BaseMapper<YearWaterUsePlanC
     SelectYearWaterUsePlanCropForSum selectListForSum(@Param("year") Integer year, @Param("area") String area);
 
     List<PlanComparedToActualByYearVo> planComparedToActual(@Param("year") Integer year, @Param("month") String month);
+    NeedWaterVo needWaterByPlan(@Param("year") Integer year);
 
 }
 

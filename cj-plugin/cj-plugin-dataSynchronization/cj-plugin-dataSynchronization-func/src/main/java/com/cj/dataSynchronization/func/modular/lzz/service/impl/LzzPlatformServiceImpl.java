@@ -333,9 +333,8 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
     @Override
     public RestResponse insertRainfallStationTemperatureBetweenTime(Date startTime, Date endTime,String name) {
         List<UserIdParam> rainfallStationPidList = pubUserService.selectPidList(name+"雨量站");
-        List<LzzRainfallStation> result = new ArrayList<>();
+        List<LzzRainfallStation> rainfallStationList = new ArrayList<>();
         for(UserIdParam userPidParam :rainfallStationPidList){
-            List<LzzRainfallStation> rainfallStationList = new ArrayList<>();
             List<UserIdParam> userIdParams = pubUserService.selectRainfallStationIdList(userPidParam.getId());
             for(UserIdParam userIdParam :userIdParams){
                 if(userIdParam.getName().substring(userIdParam.getName().length()-2).contains("温度")){
@@ -349,7 +348,7 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
                 }
             }
         }
-        boolean b = lzzRainfallStationService.saveOrUpdateBatch(result);
+        boolean b = lzzRainfallStationService.saveOrUpdateBatch(rainfallStationList);
         if(b){
             return RestResponse.ok("ok");
         }else {

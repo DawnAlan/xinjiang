@@ -38,4 +38,21 @@
     <select id="planComparedToActual" resultType="com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.vo.PlanComparedToActualByYearVo">
         select YEAR, AREA,UNIT,${month} as v,UNIT_ID,BIND_ID from tth.YEAR_WATER_USE_PLAN_TRUNK_CANAL where year = #{year}
     </select>
+
+    <select id="needWaterByPlan" resultType="com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.vo.NeedWaterVo">
+        select
+            sum(JANUARY) as JANUARY,
+            sum(FEBRUARY) as FEBRUARY,
+            sum(MARCH) as MARCH,
+            sum(APRIL) as APRIL,
+            sum(MAY) as MAY,
+            sum(JUNE) as JUNE,
+            sum(JULY) as JULY,
+            sum(AUGUST) as AUGUST,
+            sum(SEPTEMBER) as SEPTEMBER,
+            sum(OCTOBER) as OCTOBER,
+            sum(NOVEMBER) as NOVEMBER,
+            sum(DECEMBER) as DECEMBER
+        from tth.YEAR_WATER_USE_PLAN_TRUNK_CANAL where year = #{year}
+    </select>
 </mapper>

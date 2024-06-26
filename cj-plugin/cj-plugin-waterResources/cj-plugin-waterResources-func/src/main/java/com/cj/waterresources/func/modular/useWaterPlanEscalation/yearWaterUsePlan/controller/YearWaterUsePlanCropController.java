@@ -5,6 +5,7 @@ import com.cj.common.model.RestResponse;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.req.YearCropImportParamReq;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.req.YearCropSelectListReq;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.res.PlanComparedToActualByYearRes;
+import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.vo.NeedWaterVo;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.entity.YearWaterUsePlanCrop;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.service.YearWaterUsePlanCropService;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
@@ -82,5 +83,12 @@ public class YearWaterUsePlanCropController {
         return yearWaterUsePlanCropService.planComparedToActual(planYear, actualYear, month);
     }
 
+    @ApiOperationSupport(order = 5)
+    @ApiOperation("年用水计划模块-头屯河整年需水")
+    @CommonLog(value = "年用水计划模块-头屯河整年需水")
+    @PostMapping("/needWaterByPlan")
+    public RestResponse<NeedWaterVo> needWaterByPlan(@RequestParam(value = "planYear",required = true) Integer planYear) {
+        return yearWaterUsePlanCropService.needWaterByPlan(planYear);
+    }
 }
 

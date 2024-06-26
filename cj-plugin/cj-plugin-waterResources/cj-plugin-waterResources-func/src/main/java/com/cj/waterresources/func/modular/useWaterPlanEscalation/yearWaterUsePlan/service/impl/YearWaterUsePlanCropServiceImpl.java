@@ -10,6 +10,7 @@ import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePla
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.req.YearCropSelectListReq;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.res.PlanComparedToActualByYearRes;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.res.SelectYearWaterUsePlanCropForSum;
+import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.vo.NeedWaterVo;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.vo.PlanComparedToActualByYearVo;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.entity.YearWaterUsePlanCrop;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.entity.YearWaterUsePlanCropOwner;
@@ -293,6 +294,11 @@ public class YearWaterUsePlanCropServiceImpl extends ServiceImpl<YearWaterUsePla
             resultList.add(res);
         }
         return RestResponse.ok(resultList);
+    }
+
+    @Override
+    public RestResponse<NeedWaterVo> needWaterByPlan(Integer planYear) {
+        return RestResponse.ok(this.baseMapper.needWaterByPlan(planYear));
     }
 
     private Double formatDouble(Double value) {
