@@ -469,13 +469,19 @@ public class ShanBeiModel {
     public ShanBeiModel ConfluenceCalculation() {
         int hours = InputUtils.beforeHours;
         for (int j = 0; j < NumPeriod-1; j++) {
-            if (j < L) {
-                Q[j+1] = CS * Q[j];
-            } else {
+            if (L==0){
+                Q[0] =  (1 - CS) * I[0];
                 Q[j+1] = CS * Q[j] + (1 - CS) * I[j + 1 - L];
+            }else {
+                if (j < L) {
+                    Q[j+1] = CS * Q[j];
+                } else {
+                    Q[j+1] = CS * Q[j] + (1 - CS) * I[j + 1 - L];
 //                Q[j+1] =  (1 - CS) * I[j - L];
 
+                }
             }
+
         }
 //        for (int j = 0; j < NumPeriod-1; j++) {
 //            if (j < L) {

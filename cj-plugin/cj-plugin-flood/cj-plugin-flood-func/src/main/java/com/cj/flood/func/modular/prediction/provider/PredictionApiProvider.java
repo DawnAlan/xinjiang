@@ -3,6 +3,7 @@ package com.cj.flood.func.modular.prediction.provider;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.NumberUtil;
 import com.cj.common.util.RedisUtil;
@@ -94,7 +95,7 @@ public class PredictionApiProvider implements PredictionApi {
     public String getProgrammeDetails(String id) {
         RestResponse<IncomingWaterForecastDetailsRes> incomingWaterForecastDetailsResRestResponse = incomingWaterForecastService.selectDetails(id);
         if (incomingWaterForecastDetailsResRestResponse.getCode()==200){
-            return JSONObject.toJSONString(incomingWaterForecastDetailsResRestResponse.getData());
+            return JSONObject.toJSONString(incomingWaterForecastDetailsResRestResponse.getData(), SerializerFeature.WriteMapNullValue);
         }
         return null;
     }

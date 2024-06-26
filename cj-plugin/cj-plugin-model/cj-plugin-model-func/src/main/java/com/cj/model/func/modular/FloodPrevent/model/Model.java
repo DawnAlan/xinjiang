@@ -1297,8 +1297,8 @@ public class Model {
         result[0]=100*Math.max(0,(V-reservoir.getLimitVolume()))/(reservoir.getHeightVolume()-reservoir.getLimitVolume());
         result[1]=100*Math.max(0,(V-reservoir.getLimitVolume()))/(reservoir.getProofVolume()-reservoir.getLimitVolume());
 
-        result[0]= BigDecimal.valueOf(result[0]).setScale(2, RoundingMode.HALF_UP).doubleValue();
-        result[1]=BigDecimal.valueOf(result[1]).setScale(2, RoundingMode.HALF_UP).doubleValue();
+        result[0]= BigDecimal.valueOf(Math.min(result[0],100)).setScale(2, RoundingMode.HALF_UP).doubleValue();
+        result[1]= BigDecimal.valueOf(Math.min(result[1],100)).setScale(2, RoundingMode.HALF_UP).doubleValue();
         return result;
     }
     /**
@@ -1417,8 +1417,15 @@ public class Model {
         double decline = reservoir.getDecline()*reservoir.getT_Delta()/(24*3600);
         double maxQ2=OnceBalance2(reservoir,H1,input,(H1-decline));
         //恢复至汛限水位所需下泄流量
-        double maxQ3=(GetV(reservoir,H1)-reservoir.getLimitVolume())*reservoir.getCoefficient()/reservoir.getT_Delta()+input;
+        double maxQ3;
+        if(H1>=reservoir.getLimitLevel()){
+            maxQ3=(GetV(reservoir,H1)-reservoir.getLimitVolume())*reservoir.getCoefficient()/reservoir.getT_Delta()+input;
+        }
+        else{
+            maxQ3=RiseQ(reservoir,H1,input);
+        }
         Q=Math.min(Math.min(maxQ1,maxQ2),maxQ3);
+
 
         //洪峰流量
         double peak =GetPeak(reservoir.getQ_Input());
@@ -1492,7 +1499,13 @@ public class Model {
         double maxQ2=OnceBalance2(reservoir,H1,input,(H1-decline));
 
         //恢复至汛限水位所需下泄流量
-        double maxQ3=(GetV(reservoir,H1)-reservoir.getLimitVolume())*reservoir.getCoefficient()/reservoir.getT_Delta()+input;
+        double maxQ3;
+        if(H1>=reservoir.getLimitLevel()){
+            maxQ3=(GetV(reservoir,H1)-reservoir.getLimitVolume())*reservoir.getCoefficient()/reservoir.getT_Delta()+input;
+        }
+        else{
+            maxQ3=RiseQ(reservoir,H1,input);
+        }
         //梯级联调导致的流量限制
         double tryQ2 = BigDecimal.valueOf(maxQ1).setScale(2,RoundingMode.HALF_UP).doubleValue();
         double tryLevel2 = OnceBalance1(reservoir,H1,input,tryQ2);
@@ -1625,6 +1638,12 @@ public class Model {
             }
         }
 
+        return Q;
+    }
+
+    public static double RiseQ(Reservoir reservoir,double H1,double input){
+        double rise = reservoir.getDecline()*reservoir.getT_Delta()/(24*3600);
+        double Q=OnceBalance2(reservoir,H1,input,(H1+rise));
         return Q;
     }
 

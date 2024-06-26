@@ -132,6 +132,7 @@ public class FloodControlOperationServiceImpl extends ServiceImpl<FloodControlOp
             SaBaseLoginUser saBaseLoginUser = StpLoginUserUtil.getLoginUser();
             String incomingWaterForecastId = req.getIncomingWaterForecastId();
             IncomingWaterForecast incomingWaterForecast = incomingWaterForecastService.getById(incomingWaterForecastId);
+            String originProgramName = incomingWaterForecast.getProgrammeName();
             incomingWaterForecast.setProgrammeName(sdf.format(new Date())+incomingWaterForecast.getProgrammeName());
             //结果列表
             List<FloodControlOperation> result = new ArrayList<>();
@@ -144,7 +145,7 @@ public class FloodControlOperationServiceImpl extends ServiceImpl<FloodControlOp
             regularScheduling.setStatus(1);
             regularScheduling.setCreateBy(saBaseLoginUser.getName());
             regularScheduling.setForecastingTime(incomingWaterForecast.getPredictionTime());
-            regularScheduling.setForecastingSchemeName(incomingWaterForecast.getProgrammeName());
+            regularScheduling.setForecastingSchemeName(originProgramName);
             //灵活调度
             FloodControlOperation minimumContainment =  new FloodControlOperation();
             minimumContainment.setId(UUIDUtils.getUUID());
@@ -153,6 +154,8 @@ public class FloodControlOperationServiceImpl extends ServiceImpl<FloodControlOp
             minimumContainment.setForecastingSchemeId(incomingWaterForecastId);
             minimumContainment.setStatus(1);
             minimumContainment.setCreateBy(saBaseLoginUser.getName());
+            minimumContainment.setForecastingTime(incomingWaterForecast.getPredictionTime());
+            minimumContainment.setForecastingSchemeName(originProgramName);
             //预泄调度
             FloodControlOperation maximumPeakShaving =  new FloodControlOperation();
             maximumPeakShaving.setId(UUIDUtils.getUUID());
@@ -161,93 +164,82 @@ public class FloodControlOperationServiceImpl extends ServiceImpl<FloodControlOp
             maximumPeakShaving.setForecastingSchemeId(incomingWaterForecastId);
             maximumPeakShaving.setStatus(1);
             maximumPeakShaving.setCreateBy(saBaseLoginUser.getName());
+            maximumPeakShaving.setForecastingTime(incomingWaterForecast.getPredictionTime());
+            maximumPeakShaving.setForecastingSchemeName(originProgramName);
             //加入结果列表
             result.add(regularScheduling);
             result.add(minimumContainment);
             result.add(maximumPeakShaving);
             ExecutorService pool = Executors.newSingleThreadExecutor();
-             pool.submit(new Runnable() {
-                private FloodControlOperationServiceImpl floodControlOperationService = SpringUtil.getBean(FloodControlOperationServiceImpl.class);
-
-                @Override
-                public void run() {
-                    try {
-                        //模型参数
-                        ReqFloodPrevent paramReq = new ReqFloodPrevent();
-                        paramReq.setProgrammeName(incomingWaterForecast.getProgrammeName());
-                        //水库数据
-                        Map<String, List<DataFloodPrevent>> data = new HashMap<>();
-                        //文件路径
-                        String modelResultAddress = incomingWaterForecast.getModelResultAddress();
-                        InputStream tth = minioUtils.getObject("tth", modelResultAddress);
-                        String[] split = modelResultAddress.split("\\\\");
-                        String[] split1 = split[split.length - 1].split("\\.");
-                        MultipartFile multipartFile = MultipartFileUtil.inputStreamToMultipartFile(tth, split1[0]);
-                        List<Flood> floods = ExcelUtils.importExcel(multipartFile, Flood.class);
-                        List<DataFloodPrevent> interval = getDataFloodPrevent(floods, "楼头区间");
-                        if (null != interval) {
-                            data.put("头屯河", interval);
-                        } else {
-                            data.put("头屯河", null);
-                        }
-                        List<DataFloodPrevent> lzzEntryStation = getDataFloodPrevent(floods, "楼庄子");
-                        if (null != lzzEntryStation) {
-                            data.put("楼庄子", lzzEntryStation);
-                        } else {
-                            data.put("楼庄子", null);
-                        }
-
-                        paramReq.setIntervals(data);
-                        paramReq.setBeginLevels(new HashMap<String, Double>()
-                        {{
-                            put("楼庄子", req.getH1_begin());
-                            put("头屯河", req.getH2_begin());
-                        }});
-                        paramReq.setWeights(new HashMap<String, Double>()
-                        {{
-                            put("楼庄子", req.getStep1());
-                            put("头屯河", req.getStep2());
-                        }});
-                        paramReq.setLimitLevels(new HashMap<String, double[]>()
-                        {{
-                            put("楼庄子", req.getLimitLevelsLzz());
-                            put("头屯河", req.getLimitLevelsTth());
-                        }});
-
-//                        Map<String,double[]> eco = new HashMap<>();
-//                        eco.put("楼庄子", new double[]{0.74,0.74,0.74,1.48,1.48,1.48,1.48,1.48,1.48,0.74,0.74,0.74});
-//                        eco.put("头屯河", new double[]{0.74,0.74,0.74,1.48,1.48,1.48,1.48,1.48,1.48,0.74,0.74,0.74});
-//                        paramReq.setEco(eco);
-                        paramReq.setEco(new HashMap<String, double[]>()
-                        {{
-                            put("楼庄子", req.getEcosLzz());
-                            put("头屯河", req.getEcosTth());
-                        }});
-
-                        BasinParam basinParam = loadBasinParam();
-                        List<ResOption> calculator = Cascade.calculator(JSONObject.toJSONString(basinParam), paramReq, getReqCurves(basinParam));
-                        for (ResOption resOption : calculator) {
-                            String path = resOption.getPath();
-                            String[] pathSplit = path.split("\\\\");
-                            Date date = new Date();
-                            String yyyyMMdd = DateUtil.format(date, "yyyyMMdd");
-                            String hh = DateUtil.format(date, "HH");
-                            String mm = DateUtil.format(date, "mm");
-                            String ss = DateUtil.format(date, "ss");
-                            ObjectWriteResponse objectWriteResponse = minioUtils.putObject("tth", yyyyMMdd + "/" + hh + "/" + mm + "/" + ss + "/" + UUID.fastUUID().toString(true) + "/" + pathSplit[pathSplit.length - 1], path);
-                            FileUtil.del(path);
-                            String object = objectWriteResponse.object();
-                            floodControlOperationService.lambdaUpdate()
-                                    .set(FloodControlOperation::getStatus, 2)
-                                    .set(FloodControlOperation::getModelResultAddress, object)
-                                    .set(StringUtils.hasText(resOption.getInform()), FloodControlOperation::getRemark, resOption.getInform())
-                                    .eq(FloodControlOperation::getSchemeName, resOption.getName()).update();
-                        }
-                        tth.close();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        floodControlOperationService.lambdaUpdate().set(FloodControlOperation::getStatus, 3).set(FloodControlOperation::getRemark, e.getMessage() + ";请检查后重新生成").eq(FloodControlOperation::getForecastingSchemeId, req.getIncomingWaterForecastId()).update();
+            pool.submit(() -> {
+                try {
+                    //模型参数
+                    ReqFloodPrevent paramReq = new ReqFloodPrevent();
+                    paramReq.setProgrammeName(incomingWaterForecast.getProgrammeName());
+                    //水库数据
+                    Map<String, List<DataFloodPrevent>> data = new HashMap<>();
+                    //文件路径
+                    String modelResultAddress = incomingWaterForecast.getModelResultAddress();
+                    InputStream tth = minioUtils.getObject("tth", modelResultAddress);
+                    String[] split = modelResultAddress.split("\\\\");
+                    String[] split1 = split[split.length - 1].split("\\.");
+                    MultipartFile multipartFile = MultipartFileUtil.inputStreamToMultipartFile(tth, split1[0]);
+                    List<Flood> floods = ExcelUtils.importExcel(multipartFile, Flood.class);
+                    List<DataFloodPrevent> interval = getDataFloodPrevent(floods, "楼头区间");
+                    if (null != interval) {
+                        data.put("头屯河", interval);
+                    } else {
+                        data.put("头屯河", null);
                     }
+                    List<DataFloodPrevent> lzzEntryStation = getDataFloodPrevent(floods, "楼庄子");
+                    if (null != lzzEntryStation) {
+                        data.put("楼庄子", lzzEntryStation);
+                    } else {
+                        data.put("楼庄子", null);
+                    }
+
+                    paramReq.setIntervals(data);
+                    paramReq.setBeginLevels(new HashMap<String, Double>() {{
+                        put("楼庄子", req.getH1_begin());
+                        put("头屯河", req.getH2_begin());
+                    }});
+                    paramReq.setWeights(new HashMap<String, Double>() {{
+                        put("楼庄子", req.getStep1());
+                        put("头屯河", req.getStep2());
+                    }});
+                    paramReq.setLimitLevels(new HashMap<String, double[]>() {{
+                        put("楼庄子", req.getLimitLevelsLzz());
+                        put("头屯河", req.getLimitLevelsTth());
+                    }});
+
+                    paramReq.setEco(new HashMap<String, double[]>() {{
+                        put("楼庄子", req.getEcosLzz());
+                        put("头屯河", req.getEcosTth());
+                    }});
+
+                    BasinParam basinParam = loadBasinParam();
+                    List<ResOption> calculator = Cascade.calculator(JSONObject.toJSONString(basinParam), paramReq, getReqCurves(basinParam));
+                    for (ResOption resOption : calculator) {
+                        String path = resOption.getPath();
+                        String[] pathSplit = path.split("\\\\");
+                        Date date = new Date();
+                        String yyyyMMdd = DateUtil.format(date, "yyyyMMdd");
+                        String hh = DateUtil.format(date, "HH");
+                        String mm = DateUtil.format(date, "mm");
+                        String ss = DateUtil.format(date, "ss");
+                        ObjectWriteResponse objectWriteResponse = minioUtils.putObject("tth", yyyyMMdd + "/" + hh + "/" + mm + "/" + ss + "/" + UUID.fastUUID().toString(true) + "/" + pathSplit[pathSplit.length - 1], path);
+                        FileUtil.del(path);
+                        String object = objectWriteResponse.object();
+                        this.lambdaUpdate()
+                                .set(FloodControlOperation::getStatus, 2)
+                                .set(FloodControlOperation::getModelResultAddress, object)
+                                .set(StringUtils.hasText(resOption.getInform()), FloodControlOperation::getRemark, resOption.getInform())
+                                .eq(FloodControlOperation::getSchemeName, resOption.getName()).update();
+                    }
+                    tth.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    this.lambdaUpdate().set(FloodControlOperation::getStatus, 3).set(FloodControlOperation::getRemark, e.getMessage() + ";请检查后重新生成").eq(FloodControlOperation::getForecastingSchemeId, req.getIncomingWaterForecastId()).update();
                 }
             });
             boolean b = this.saveBatch(result);
