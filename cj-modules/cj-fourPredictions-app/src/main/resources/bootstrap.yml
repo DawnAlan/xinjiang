@@ -18,3 +18,15 @@ artemisConfig:
     host: 10.65.73.68
     appKey: 28444121
     appSecret: 2EbGI1Pwbz04E5DKdre9
+  hx:
+    host: 10.65.73.168
+    appKey: 26805156
+    appSecret: dPKNIMJfrClEk7F9EJvE
+  hd:
+    host: 10.65.73.188
+    appKey: 20061082
+    appSecret: 86Kb6KNRNnVeoLtSAhrV
+  qs:
+    host: 10.65.73.178
+    appKey: 28415919
+    appSecret: u0ZWDvgLgHkGUCATTolU

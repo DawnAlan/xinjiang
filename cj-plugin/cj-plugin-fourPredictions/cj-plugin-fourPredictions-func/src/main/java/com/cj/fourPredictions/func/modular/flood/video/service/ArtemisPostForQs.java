@@ -2,7 +2,6 @@ package com.cj.fourPredictions.func.modular.flood.video.service;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.cj.common.util.RestTemplateUtil;
 import com.cj.fourPredictions.func.modular.flood.video.bean.dto.GetRegionsDto;
 import com.cj.fourPredictions.func.modular.flood.video.bean.dto.RegionIndexCodeDto;
 import com.cj.fourPredictions.func.modular.flood.video.bean.vo.PtzVo;
@@ -20,15 +19,15 @@ import java.util.Map;
  * 视频接入接口
  */
 @Component
-public class ArtemisPost {
+public class ArtemisPostForQs {
 
-    @Value("${artemisConfig.tth.host}")
+    @Value("${artemisConfig.qs.host}")
     private  String host;
 
-    @Value("${artemisConfig.tth.appKey}")
+    @Value("${artemisConfig.qs.appKey}")
     private  String appKey;
 
-    @Value("${artemisConfig.tth.appSecret}")
+    @Value("${artemisConfig.qs.appSecret}")
     private  String appSecret;
 
 

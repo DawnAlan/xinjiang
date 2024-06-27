@@ -32,5 +32,10 @@
             <groupId>com.cj</groupId>
             <artifactId>cj-plugin-dev-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.belerweb</groupId>
+            <artifactId>pinyin4j</artifactId>
+            <version>2.5.1</version>
+        </dependency>
     </dependencies>
 </project>

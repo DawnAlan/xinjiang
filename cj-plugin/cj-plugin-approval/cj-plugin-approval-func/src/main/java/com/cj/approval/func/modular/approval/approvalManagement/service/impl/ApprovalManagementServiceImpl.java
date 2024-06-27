@@ -409,6 +409,9 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
                             for(int a=0;a<split.length;a++) {
                                 JSONObject userByIdWithoutException = sysUserApi.getUserByIdWithoutException(split[a]);
                                 String digitalSignature = (String) userByIdWithoutException.get("digitalSignature");
+                                if(StringUtils.isEmpty(digitalSignature)){
+                                    throw new RuntimeException("审批用户暂无电子签名，请到用户管理上传电子签名");
+                                }
                                 String filePath = url+"/tth/"+digitalSignature;
                                 String fileResultPath = System.getProperty("java.io.tmpdir")+File.separator+UUIDUtils.getUUID()+".png";
                                 downloadAndSaveFile(filePath,fileResultPath);
@@ -439,10 +442,6 @@ public class ApprovalManagementServiceImpl extends ServiceImpl<ApprovalManagemen
                 boolean update = this.lambdaUpdate().set(ApprovalManagement::getFileAddress, object).eq(ApprovalManagement::getId, id).update();
                 if (update) {
                     minioUtils.download(defaultBucket, namePath,response);
-                    /*Path path = Paths.get(filePath + ".docx");
-                    response.setContentType("application/octet-stream");
-                    response.setHeader("Content-Disposition", "attachment;filename=" + path.getFileName());
-                    Files.copy(path, response.getOutputStream());*/
                 }
             } catch (IOException e) {
                 e.printStackTrace();

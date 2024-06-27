@@ -1541,13 +1541,13 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     @Override
     public RestResponse uploadDigitalSignature(MultipartFile file,String id) {
         SysUser byId = this.getById(id);
-        String s = ImageHandleUtil.transferAlpha(file, byId.getName());
+        String s = ImageHandleUtil.transferAlpha(file,ChineseToPinyin.toPinyin(byId.getName()));
         Date date = new Date();
         String yyyyMMdd = DateUtil.format(date, "yyyyMMdd");
         String hh = DateUtil.format(date, "HH");
         String mm = DateUtil.format(date, "mm");
         String ss = DateUtil.format(date, "ss");
-        ObjectWriteResponse objectWriteResponse = minioUtils.putObject("tth", yyyyMMdd + "/" + hh + "/" + mm + "/" + ss + "/" + UUID.fastUUID().toString(true) + "/" + byId.getName()+".png", s);
+        ObjectWriteResponse objectWriteResponse = minioUtils.putObject("tth", yyyyMMdd + "/" + hh + "/" + mm + "/" + ss + "/" + UUID.fastUUID().toString(true) + "/" +ChineseToPinyin.toPinyin(byId.getName())+".png", s);
         String object = objectWriteResponse.object();
         boolean update = this.lambdaUpdate().set(SysUser::getDigitalSignature, object).eq(SysUser::getId, id).update();
         if(update){
