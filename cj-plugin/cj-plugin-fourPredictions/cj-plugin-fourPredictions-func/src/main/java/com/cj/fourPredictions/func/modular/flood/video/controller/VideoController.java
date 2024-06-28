@@ -144,12 +144,16 @@ public class VideoController {
             switch (type) {
                 case "1":
                     regions = artemisPostForReservoir.ptz(vo);
+                    break;
                 case "2":
                     regions = artemisPostForHd.ptz(vo);
+                    break;
                 case "3":
                     regions = artemisPostForHx.ptz(vo);
+                    break;
                 case "4":
                     regions = artemisPostForQs.ptz(vo);
+                    break;
                 default:
                     regions =  "";
             }
@@ -174,12 +178,16 @@ public class VideoController {
             switch (type) {
                 case "1":
                     regions = artemisPostForReservoir.selZoom(vo);
+                    break;
                 case "2":
                     regions = artemisPostForHd.selZoom(vo);
+                    break;
                 case "3":
                     regions = artemisPostForHx.selZoom(vo);
+                    break;
                 case "4":
                     regions = artemisPostForQs.selZoom(vo);
+                    break;
                 default:
                     regions =  "";
             }
