@@ -107,12 +107,16 @@ public class VideoController {
             switch (type) {
                 case "1":
                     regions = artemisPostForReservoir.get_preview_url(cameraIndexCode);
+                    break;
                 case "2":
                     regions = artemisPostForHd.get_preview_url(cameraIndexCode);
+                    break;
                 case "3":
                     regions = artemisPostForHx.get_preview_url(cameraIndexCode);
+                    break;
                 case "4":
                     regions = artemisPostForQs.get_preview_url(cameraIndexCode);
+                    break;
                 default:
                     regions =  "";
             }
