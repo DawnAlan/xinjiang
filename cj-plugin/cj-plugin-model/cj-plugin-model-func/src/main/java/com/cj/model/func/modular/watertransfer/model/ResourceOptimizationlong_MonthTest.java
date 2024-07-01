@@ -1542,7 +1542,7 @@ public class ResourceOptimizationlong_MonthTest {
         this.reservoirs[1].levelFloodDesign = 991.2;
         this.reservoirs[1].levelFloodCheck = 992.54;
     }
-    public void updateReservoir(Map<String,List<CurveParam>> dataAll, Reservoir[] reservoir) {
+    public static void updateReservoir(Map<String,List<CurveParam>> dataAll, Reservoir[] reservoir) {
 
 
         if(dataAll==null){
@@ -1553,7 +1553,7 @@ public class ResourceOptimizationlong_MonthTest {
             for(Reservoir reServoirs:reservoir){
                 List<Double> capacity = new ArrayList<>();
                 List<Double> level = new ArrayList<>();
-                String reservoirName = reServoirs.getName();
+                String reservoirName = reServoirs.getName()+"水库";
                 //库容曲线
                 for(String string:dataAll.keySet()){
 
@@ -1568,8 +1568,18 @@ public class ResourceOptimizationlong_MonthTest {
                         else{
                             List<CurveParam> data = dataAll.get(string);
                             for (int i = 0; i < data.size(); i++) {
-                                capacity.add(data.get(i).getValue());
-                                level.add(data.get(i).getLevel());
+                                if (i==0){
+                                    capacity.add(data.get(i).getValue());
+                                    level.add(data.get(i).getLevel());
+                                }
+                                else{
+                                    if (data.get(i).getValue()>capacity.get(capacity.size() - 1)&&
+                                            data.get(i).getLevel()>=level.get(level.size() - 1) + 0.1){
+                                        capacity.add(data.get(i).getValue());
+                                        level.add(data.get(i).getLevel());
+                                    }
+                                }
+
                             }
                         }
                     }

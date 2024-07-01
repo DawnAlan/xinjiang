@@ -1065,6 +1065,7 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
             excel1.setWaterDemand(data.getWaterDemand());
             excel1.setInflowWater(data.getInflowWater());
             excel1.setWasteWater(data.getWasteWater());
+            excel1.setDeltawater(data.getDeltaWater());
             return excel1;
         }).collect(Collectors.toList());
         appraiseReq.setLevelBeginLzz(waterResourceAllocation.getLevelBeginLzz());

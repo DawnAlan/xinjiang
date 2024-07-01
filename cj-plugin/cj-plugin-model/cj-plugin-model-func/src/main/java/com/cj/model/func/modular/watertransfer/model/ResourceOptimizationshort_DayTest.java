@@ -39,6 +39,7 @@ public class ResourceOptimizationshort_DayTest
 
 
         setReservoir(waterTransferReq.getCurve(),reservoirs);
+        ResourceOptimizationlong_MonthTest.updateReservoir(waterTransferReq.getCapacityCurves(),reservoirs);
         minOutflow=new double[2];
         order=waterTransferReq.getOrderNumber();
 

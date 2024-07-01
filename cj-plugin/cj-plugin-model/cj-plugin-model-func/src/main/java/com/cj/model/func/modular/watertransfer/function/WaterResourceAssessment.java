@@ -180,13 +180,22 @@ public class WaterResourceAssessment {
     public  double[] storageAndDischarge(AppraiseReq req) {
 
         DecimalFormat da1 = new DecimalFormat("#.00");
-        double dischargeLzz = Double.parseDouble(da1.format(FindValue.FindV2ByV1(reservoirs[0].wlc_wl, reservoirs[0].wlc_c, req.getLevelEndLzz())-
-                FindValue.FindV2ByV1(reservoirs[0].wlc_wl, reservoirs[0].wlc_c, req.getLevelBeginLzz())));
-        double dischargeTth = Double.parseDouble(da1.format(FindValue.FindV2ByV1(reservoirs[1].wlc_wl, reservoirs[1].wlc_c, req.getLevelEndTth())-
-                FindValue.FindV2ByV1(reservoirs[1].wlc_wl, reservoirs[1].wlc_c, req.getLevelBeginTth())));
+        double dischargeLzz=0;
+        double dischargeTth=0;
+        for (int i = 0; i <req.getExcel1Data().size(); i++)
+        {
+            if (req.getExcel1Data().get(i).getStationName().equals("楼庄子"))
+            {
+                dischargeLzz+=req.getExcel1Data().get(i).getDeltawater();
+            }
+            if (req.getExcel1Data().get(i).getStationName().equals("头屯河"))
+            {
+                dischargeTth+=req.getExcel1Data().get(i).getDeltawater();
+            }
+        }
         double[]storage=new double[3];
-        storage[0]=dischargeLzz;
-        storage[1]=dischargeTth;
+        storage[0]=Double.parseDouble(da1.format(dischargeLzz));
+        storage[1]=Double.parseDouble(da1.format(dischargeTth));
         storage[2]=Double.parseDouble(da1.format(dischargeLzz+dischargeTth));
         return storage;
     }

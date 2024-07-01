@@ -44,6 +44,7 @@ public class ResourceOptimizationlong_TendaysTest
         //配置水库
         daynum= new int[]{10,10,10};
         setReservoir(waterTransferReq.getCurve(),reservoirs);
+        ResourceOptimizationlong_MonthTest.updateReservoir(waterTransferReq.getCapacityCurves(),reservoirs);
         minOutflow=new double[2];
         order=waterTransferReq.getOrderNumber();
         if (waterTransferReq.getName()==1){
