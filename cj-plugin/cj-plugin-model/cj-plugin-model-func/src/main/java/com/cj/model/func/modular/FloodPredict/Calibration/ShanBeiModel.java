@@ -93,7 +93,7 @@ public class ShanBeiModel {
 
     public ShanBeiModel InputData(ShanbeiParam shanbeiParam, Object[][] input, Object[][] predata)  {
         Area = shanbeiParam.getArea();
-        L = shanbeiParam.getL();
+        L = Math.max(0,shanbeiParam.getL());
         FB = shanbeiParam.getFB(); //不透水面积的比例，透水面积比例为1-FB
         WM = shanbeiParam.getWM(); //张力水蓄水容量，或最大蓄水量 60-80mm
         KC = shanbeiParam.getKC(); //蒸散发折减系数 KC
@@ -470,26 +470,16 @@ public class ShanBeiModel {
         int hours = InputUtils.beforeHours;
         for (int j = 0; j < NumPeriod-1; j++) {
             if (L==0){
-                Q[0] =  (1 - CS) * I[0];
+                Q[0]=(1-CS)*I[0];
                 Q[j+1] = CS * Q[j] + (1 - CS) * I[j + 1 - L];
             }else {
                 if (j < L) {
                     Q[j+1] = CS * Q[j];
                 } else {
                     Q[j+1] = CS * Q[j] + (1 - CS) * I[j + 1 - L];
-//                Q[j+1] =  (1 - CS) * I[j - L];
-
                 }
             }
-
         }
-//        for (int j = 0; j < NumPeriod-1; j++) {
-//            if (j < L) {
-//                Q[j+1] = Q[j];
-//            } else {
-//                Q[j+1] += (1 - CS) * I2[j - L];
-//            }
-//        }
         double[] qResult = new double[NumPeriod + zero];
         System.arraycopy(Q,0,qResult,zero,NumPeriod);
         Q = new double[zero + NumPeriod - hours];
@@ -497,7 +487,6 @@ public class ShanBeiModel {
         return this;
     }
     public ShanBeiModel ConfluenceCalculation2() {
-//        int hours = InputUtils.beforeHours;
         int hours = 0;
         for (int j = 0; j < NumPeriod-1; j++) {
             if (j < L) {

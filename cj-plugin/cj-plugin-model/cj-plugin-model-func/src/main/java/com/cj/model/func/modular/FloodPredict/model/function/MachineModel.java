@@ -173,8 +173,10 @@ public class MachineModel {
             }
         }
         int p = 0;//输出时序的长度，预报截止时间到率定时间的长度
+        Date start = param.getPreStartTime();
         if (param.getPreStartTime().after(param.getCalibrationTime())){
-            p = timeUtils.duration(param.getCalibrationTime(), param.getPreStartTime(), param.getPeriod())-1;
+            p = timeUtils.duration(param.getCalibrationTime(), param.getPreStartTime(), param.getPeriod());
+            param.setPreStartTime(param.getCalibrationTime());
             p = Math.max(p, 0);
         }
         int n = param.getPeriodStepNumber();//前段输入的预报时段
@@ -186,8 +188,6 @@ public class MachineModel {
         int l = param.getPeriodStepNumber() * param.getPeriodStepSize();
         double[][] vmdOutput = vmdOutput(inputTemp,K);//分解
 
-//        InputUtils.getData(param.getFilePath());
-//        InputUtils.getData2(param.getFilePath());
         //输入赋值
         Object[][] de_result = new Object[l + 1][K + 1];
         Object[][] preResult = new Object[l][2];//分解后的预测值
@@ -274,6 +274,7 @@ public class MachineModel {
         for (int i = 0; i < preResult.length; i++) {
             System.out.println(preResult[i][1]);
         }
+        param.setPreStartTime(start);
         param.setPeriodStepNumber(n);
         Object[][] preResult_1 = new Object[n][2];//分解后的预测值
         for (int i = 0; i < n; i++) {
