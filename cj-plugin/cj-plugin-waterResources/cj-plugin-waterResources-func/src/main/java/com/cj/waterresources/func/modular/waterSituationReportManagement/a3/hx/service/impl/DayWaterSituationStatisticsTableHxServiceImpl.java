@@ -75,7 +75,12 @@ public class DayWaterSituationStatisticsTableHxServiceImpl extends ServiceImpl<D
             t.setId(UUIDUtils.getUUID());
             String tableParamString = (String)redisUtil.get("trendsTableParam:object:"+t.getTableHeadId());
             TrendsTableParam tableParam = JSONObject.parseObject(tableParamString, TrendsTableParam.class);
-            Double flow = (Double) redisUtil.get("irrigatedPlatform:sq:date:id:"+sdf.format(t.getRecordTime())+" "+t.getTime()+":"+tableParam.getUnitId());
+            Double flow = 0.00;
+            if(t.getTime().equals("今日均")){
+                flow = (Double) redisUtil.get("irrigatedPlatform:today:"+tableParam.getUnitId());
+            }else {
+                flow = (Double) redisUtil.get("irrigatedPlatform:sq:date:id:"+sdf.format(t.getRecordTime())+" "+t.getTime()+":"+tableParam.getUnitId());
+            }
             t.setV(flow==null?null:flow);
         });
         List<DayWaterSituationStatisticsTableHx> result = new ArrayList<>();

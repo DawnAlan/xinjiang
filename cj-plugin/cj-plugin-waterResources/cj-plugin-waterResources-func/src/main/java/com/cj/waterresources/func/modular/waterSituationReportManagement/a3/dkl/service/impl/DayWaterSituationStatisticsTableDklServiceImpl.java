@@ -406,7 +406,8 @@ public class DayWaterSituationStatisticsTableDklServiceImpl extends ServiceImpl<
                     List<DayWaterSituationStatisticsTableTth> tthToday = tthService.selectList(sdf.format(dkl.getRecordTime())).getData().get(time);
                     Double tth = (tthToday.size()<0 || tthToday.size()==0)?0.00:tthToday.stream().filter(t -> t.getTableHeadId().equals(tthParam.getId())).filter(t->t.getV()!=null).
                             map(DayWaterSituationStatisticsTableTth::getV).reduce(Double::sum).orElse(0.00);
-                    dkl.setV((lzz==null || lzz==0)?0.00:(tth/lzz)*100);
+                    Double v = (lzz==null || lzz==0)?0.00:(tth/lzz)*100;
+                    dkl.setV(v==null?0.00:v);
                 }catch (Exception e){
                     e.printStackTrace();
                     log.error("头屯河水库对口率生成参数缺失，请检查参数后再生成！");
@@ -425,7 +426,8 @@ public class DayWaterSituationStatisticsTableDklServiceImpl extends ServiceImpl<
                     TrendsTableParam qhParam = qsParamList.stream().filter(t -> t.getParamName().equals("全河")).filter(t -> t.getPId().equals("0")).collect(Collectors.toList()).get(0);
                     Double qh = (qsToday.size()<0 || qsToday.size()==0)?0.00:qsToday.stream().filter(t -> t.getTableHeadId().equals(qhParam.getId())).filter(t->t.getV()!=null).
                             map(DayWaterSituationStatisticsTableQs::getV).reduce(Double::sum).orElse(0.00);
-                    dkl.setV((qh==null || qh==0.00)?0.00:(qh/tth)*100);
+                    Double v = (qh==null || tth==null || qh==0.00 || tth==0.00)?0.00:(qh/tth)*100;
+                    dkl.setV(v==null?0.00:v);
                 }catch (Exception e){
                     e.printStackTrace();
                     log.error("渠首管理站对口率生成参数缺失，请检查参数后再生成！");
@@ -445,7 +447,8 @@ public class DayWaterSituationStatisticsTableDklServiceImpl extends ServiceImpl<
                     List<DayWaterSituationStatisticsTableHd> hdToday = hdService.selectList(sdf.format(dkl.getRecordTime())).getData().get(time);
                     Double hd =(hdToday.size()<0 || hdToday.size()==0)?0.00:hdToday.stream().filter(t -> t.getTableHeadId().equals(hdParam.getId())).filter(t->t.getV()!=null).
                             map(DayWaterSituationStatisticsTableHd::getV).reduce(Double::sum).orElse(0.00);
-                    dkl.setV((dgq==null || dgq ==0.00)?0.00:(hd/dgq)*100);
+                    Double v = (dgq==null || dgq ==0.00)?0.00:(hd/dgq)*100;
+                    dkl.setV(v==null?0.00:v);
                 }catch (Exception e){
                     e.printStackTrace();
                     log.error("河东管理站对口率生成参数缺失，请检查参数后再生成！");
@@ -464,7 +467,8 @@ public class DayWaterSituationStatisticsTableDklServiceImpl extends ServiceImpl<
                     List<DayWaterSituationStatisticsTableHx> hxToday = hxService.selectList(sdf.format(dkl.getRecordTime())).getData().get(time);
                     Double hx =(hxToday.size()<0 || hxToday.size()==0)?0.00:hxToday.stream().filter(t -> t.getTableHeadId().equals(hxParam.getId())).filter(t->t.getV()!=null).
                             map(DayWaterSituationStatisticsTableHx::getV).reduce(Double::sum).orElse(0.00);
-                    dkl.setV((xgq==null || xgq ==0.00)?0.00:(hx/xgq)*100);
+                    Double v = (xgq==null || xgq ==0.00)?0.00:(hx/xgq)*100;
+                    dkl.setV(v==null?0.00:v);
                 }catch (Exception e){
                     e.printStackTrace();
                     log.error("河西管理站对口率生成参数缺失，请检查参数后再生成！");

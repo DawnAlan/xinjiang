@@ -76,11 +76,12 @@ public class WaterSituationStatisticsTableTodayServiceImpl extends ServiceImpl<W
 
     @Override
     public RestResponse add(WaterSituationStatisticsTableToday waterSituationStatisticsTableToday) {
+        Date recordTime = waterSituationStatisticsTableToday.getRecordTime();
         Calendar calendar = new GregorianCalendar();
-        calendar.setTime(new Date());
+        calendar.setTime(recordTime);
         calendar.add(calendar.DATE, -1);
         String yesterday= sdf.format(calendar.getTime());
-        String today= sdf.format(new Date());
+        String today= sdf.format(recordTime);
         waterSituationStatisticsTableToday.setId(UUIDUtils.getUUID());
         String mk = (String) redisUtil.get("trendsTableParam:list");
         if(StringUtils.isEmpty(mk)){
