@@ -4,7 +4,6 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateField;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
-import cn.hutool.extra.spring.SpringUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -14,6 +13,11 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cj.auth.core.util.StpLoginUserUtil;
 import com.cj.common.exception.CommonException;
+import com.cj.common.feign.WaterSituationClient;
+import com.cj.common.feign.entity.DropDown;
+import com.cj.common.feign.entity.ExternStations;
+import com.cj.common.feign.entity.QuXT;
+import com.cj.common.feign.entity.RRs;
 import com.cj.common.model.RestResponse;
 import com.cj.common.pojo.CommonResult;
 import com.cj.common.util.ExcelUtils;
@@ -26,6 +30,7 @@ import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.entity.LzzGaugin
 import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.service.LzzGaugingStationService;
 import com.cj.model.func.core.util.MinioUtils;
 import com.cj.model.func.core.util.MultipartFileUtil;
+import com.cj.model.func.modular.FloodPrevent.entity.CurveParam;
 import com.cj.model.func.modular.curve.service.CurveService;
 import com.cj.model.func.modular.entity.Flood;
 import com.cj.model.func.modular.watertransfer.entity.*;
@@ -63,7 +68,6 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -73,7 +77,6 @@ import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 /**
@@ -99,6 +102,7 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
     private final UseWaterManagementService useWaterManagementService;
     private final WaterStorageSchedulingLzzService waterStorageSchedulingLzzService;
     private final RedisUtil redisUtil;
+    private final WaterSituationClient waterSituationClient;
 
     private final static String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
     private final static String WATER_SUPPLY_PRIORITY_REDIS_KEY = "WATER_SUPPLY_PRIORITY_REDIS_KEY";
@@ -927,6 +931,7 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
                 .collect(Collectors.joining())));
         waterTransferReq.setMonthList(req.getRecommendMonth() == null ? new ArrayList<>()
                 : req.getRecommendMonth().stream().map(n -> n - 1).collect(Collectors.toList()));
+        waterTransferReq.setCapacityCurves(getCapacityCurves());
         List<ResOption> calculator;
         try {
             calculator = OutResult.calculator(waterTransferReq);
@@ -944,6 +949,42 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
         allocation.setAllocationDataDisplayAddress(displayDataPathMinio);
         allocation.setAllocationDataCustomAddress(customDataPathMinio);
         return allocation;
+    }
+
+    private Map<String, List<CurveParam>> getCapacityCurves() {
+        Map<String, List<CurveParam>> capacityCurvesMap = new HashMap<>();
+        List<RRs> rrs = JSONObject.parseArray(JSONObject.parseObject(waterSituationClient.queryRRs("0")).get("data").toString(), RRs.class);
+        Arrays.asList("楼庄子水库", "头屯河水库").forEach(
+                storage ->
+                {
+                    Optional<RRs> anyRRs = rrs.stream().filter(r -> r.getName().contains(storage)).findAny();
+                    if (!anyRRs.isPresent()) {
+                        return;
+                    }
+                    List<CurveParam> curveParams = getCurves(anyRRs.get().getId());
+                    if (CollectionUtil.isEmpty(curveParams)) {
+                        return;
+                    }
+                    capacityCurvesMap.put(storage, curveParams);
+                }
+        );
+        return capacityCurvesMap;
+    }
+
+    private List<CurveParam> getCurves(String ndcdId) {
+        List<DropDown> dropDowns = JSONObject.parseArray(JSONObject.parseObject(waterSituationClient.dropDown(ndcdId)).get("data").toString(), DropDown.class);
+        Optional<DropDown> dropDownsTrue = dropDowns.stream().filter(d -> d.getEnable().equals("true")).findAny();
+        if (!dropDownsTrue.isPresent()) {
+            return null;
+        }
+        QuXT quXT = JSONObject.parseObject(JSONObject.parseObject(waterSituationClient.queryQuXT(dropDownsTrue.get().getId())).get("data").toString(), QuXT.class);
+        List<CurveParam> curveParams = new ArrayList<>();
+        quXT.getTab().forEach(tab ->
+                curveParams.add(new CurveParam(){{
+                    setLevel(tab.getV0());
+                    setValue(tab.getV1());
+                }}));
+        return curveParams;
     }
 
     private double[] toDoubleArray(List<Double> doubles) {
@@ -1024,6 +1065,7 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
             excel1.setWaterDemand(data.getWaterDemand());
             excel1.setInflowWater(data.getInflowWater());
             excel1.setWasteWater(data.getWasteWater());
+            excel1.setDeltawater(data.getDeltaWater());
             return excel1;
         }).collect(Collectors.toList());
         appraiseReq.setLevelBeginLzz(waterResourceAllocation.getLevelBeginLzz());

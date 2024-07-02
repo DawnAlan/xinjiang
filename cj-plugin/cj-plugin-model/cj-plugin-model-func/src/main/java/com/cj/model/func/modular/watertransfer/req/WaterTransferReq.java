@@ -48,6 +48,8 @@ public class WaterTransferReq {
     private int timeCalStep;
     //曲线
     private List<CurveParam> curve;
+
+    private Map<String,List<CurveParam>> capacityCurves;
     //来水预报
     private Map<String, List<DataInflowPrevent>> data;
     //需水计划

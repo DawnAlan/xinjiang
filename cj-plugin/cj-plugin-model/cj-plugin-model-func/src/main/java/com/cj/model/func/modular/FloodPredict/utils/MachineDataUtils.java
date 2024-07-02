@@ -1235,11 +1235,11 @@ public class MachineDataUtils {
         calendar.add(Calendar.DAY_OF_MONTH, -InputUtils.beforeDays);
         predictTime = calendar.getTime();
         String savePath = System.getProperty("java.io.tmpdir");
+        TouTunHe touTunHe = new TouTunHe();
+        Map<String, List<Map<String,List<PredictInputData>>>> stationsData = touTunHe.getOneStationDataList(paramForecastInputParamNew);
         //预报时间超过储存时间
-        if (predictTime.after(historyTime)) {
+        if (predictTime.after(historyTime) && ! stationsData.get("楼庄子").get(0).get("流量").isEmpty()) {
             //数据不足，补充新时段数据
-            TouTunHe touTunHe = new TouTunHe();
-            Map<String, List<Map<String,List<PredictInputData>>>> stationsData = touTunHe.getOneStationDataList(paramForecastInputParamNew);
             List<PredictInputData> Three = stationsData.get("3号桥").get(0).get("流量");
             List<PredictInputData> Lou = stationsData.get("楼庄子").get(0).get("流量");
             List<PredictInputData> Qu = stationsData.get("楼头区间").get(0).get("流量");

@@ -1,4 +1,4 @@
-package com.cj.flood.func.core.common.feign.entity;
+package com.cj.common.feign.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;

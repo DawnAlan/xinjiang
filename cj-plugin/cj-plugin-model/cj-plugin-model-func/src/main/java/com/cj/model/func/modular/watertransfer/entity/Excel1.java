@@ -19,6 +19,8 @@ public class Excel1 {
     private double waterDemand;
     //来水数据
     private double inflowWater;
+    //蓄水数据
+    private double deltawater;
     //弃水数据
     private double wasteWater;
 

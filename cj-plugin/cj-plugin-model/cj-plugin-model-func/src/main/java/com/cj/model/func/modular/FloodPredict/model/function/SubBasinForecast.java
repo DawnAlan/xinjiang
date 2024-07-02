@@ -40,36 +40,36 @@ public class SubBasinForecast {
         areaMap.put("无名沟自动雨量站", 22.98);
         areaMap.put("宰尔德自动雨量站", 50.67);
         areaMap.put("制材厂自动雨量站", 137.44);
-        areaMap.put("小渠子雨量站", 85.0);
-        areaMap.put("团结一队雨量站", 85.0);
-        areaMap.put("头屯河水库雨量站", 85.0);
-        areaMap.put("甘沟雨量站", 85.0);
+        areaMap.put("小渠子雨量站", 64.8);
+        areaMap.put("团结一队雨量站", 64.8);
+        areaMap.put("头屯河水库雨量站", 64.8);
+        areaMap.put("甘沟雨量站", 64.8);
         Map<String, Integer> lMap = new HashMap<>();
-        lMap.put("八一林场自动雨量站", 18);
-        lMap.put("东南沟自动雨量站", 16);
-        lMap.put("黑沟自动雨量站", 5);
-        lMap.put("加普沙自动雨量站", 14);
-        lMap.put("喀什沟自动雨量站", 7);
-        lMap.put("煤矿沟自动雨量站", 5);
-        lMap.put("萨尔达万自动雨量站", 5);
-        lMap.put("无名沟自动雨量站", 10);
-        lMap.put("宰尔德自动雨量站", 10);
+        lMap.put("八一林场自动雨量站", 12);
+        lMap.put("东南沟自动雨量站", 10);
+        lMap.put("黑沟自动雨量站", 0);
+        lMap.put("加普沙自动雨量站", 12);
+        lMap.put("喀什沟自动雨量站", 0);
+        lMap.put("煤矿沟自动雨量站", 3);
+        lMap.put("萨尔达万自动雨量站", 3);
+        lMap.put("无名沟自动雨量站", 6);
+        lMap.put("宰尔德自动雨量站", 6);
         lMap.put("制材厂自动雨量站", 0);
         lMap.put("小渠子雨量站", 2);
         lMap.put("团结一队雨量站", 1);
         lMap.put("甘沟雨量站", 1);
         lMap.put("头屯河水库雨量站", 0);
         Map<String, Integer> lMap1 = new HashMap<>();
-        lMap1.put("八一林场自动雨量站", 20);
-        lMap1.put("东南沟自动雨量站", 20);
-        lMap1.put("黑沟自动雨量站", 5);
-        lMap1.put("加普沙自动雨量站", 20);
-        lMap1.put("喀什沟自动雨量站", 7);
-        lMap1.put("煤矿沟自动雨量站", 6);
-        lMap1.put("萨尔达万自动雨量站", 6);
-        lMap1.put("无名沟自动雨量站", 10);
-        lMap1.put("宰尔德自动雨量站", 10);
-        lMap1.put("制材厂自动雨量站", 2);
+        lMap1.put("八一林场自动雨量站", 14);
+        lMap1.put("东南沟自动雨量站", 12);
+        lMap1.put("黑沟自动雨量站", 1);
+        lMap1.put("加普沙自动雨量站", 14);
+        lMap1.put("喀什沟自动雨量站", 1);
+        lMap1.put("煤矿沟自动雨量站", 3);
+        lMap1.put("萨尔达万自动雨量站", 3);
+        lMap1.put("无名沟自动雨量站", 8);
+        lMap1.put("宰尔德自动雨量站", 8);
+        lMap1.put("制材厂自动雨量站", 1);
         lMap1.put("小渠子雨量站", 4);
         lMap1.put("团结一队雨量站", 2);
         lMap1.put("甘沟雨量站", 2);
@@ -100,15 +100,15 @@ public class SubBasinForecast {
         bMap.put("无名沟自动雨量站", 0.1);
         bMap.put("宰尔德自动雨量站", 0.1);
         bMap.put("制材厂自动雨量站", 0.2);
-        bMap.put("小渠子雨量站", 0.2);
-        bMap.put("团结一队雨量站", 0.2);
-        bMap.put("甘沟雨量站", 0.2);
-        bMap.put("头屯河水库雨量站", 0.2);
+        bMap.put("小渠子雨量站", 0.1);
+        bMap.put("团结一队雨量站", 0.1);
+        bMap.put("甘沟雨量站", 0.1);
+        bMap.put("头屯河水库雨量站", 0.1);
         Map<String, Double> csMap = new HashMap<>();
-        csMap.put("八一林场自动雨量站", 0.96);
-        csMap.put("东南沟自动雨量站", 0.96);
+        csMap.put("八一林场自动雨量站", 0.94);
+        csMap.put("东南沟自动雨量站", 0.94);
         csMap.put("黑沟自动雨量站", 0.7);
-        csMap.put("加普沙自动雨量站", 0.96);
+        csMap.put("加普沙自动雨量站", 0.94);
         csMap.put("喀什沟自动雨量站", 0.7);
         csMap.put("煤矿沟自动雨量站", 0.7);
         csMap.put("萨尔达万自动雨量站", 0.7);
@@ -120,16 +120,16 @@ public class SubBasinForecast {
         csMap.put("甘沟雨量站", 0.7);
         csMap.put("头屯河水库雨量站", 0.7);
         Map<String, Double> csMap1 = new HashMap<>();
-        csMap1.put("八一林场自动雨量站", 0.97);
-        csMap1.put("东南沟自动雨量站", 0.97);
-        csMap1.put("黑沟自动雨量站", 0.9);
-        csMap1.put("加普沙自动雨量站", 0.97);
-        csMap1.put("喀什沟自动雨量站", 0.9);
-        csMap1.put("煤矿沟自动雨量站", 0.9);
-        csMap1.put("萨尔达万自动雨量站", 0.9);
-        csMap1.put("无名沟自动雨量站", 0.9);
-        csMap1.put("宰尔德自动雨量站", 0.9);
-        csMap1.put("制材厂自动雨量站", 0.9);
+        csMap1.put("八一林场自动雨量站", 0.96);
+        csMap1.put("东南沟自动雨量站", 0.96);
+        csMap1.put("黑沟自动雨量站", 0.8);
+        csMap1.put("加普沙自动雨量站", 0.96);
+        csMap1.put("喀什沟自动雨量站", 0.8);
+        csMap1.put("煤矿沟自动雨量站", 0.8);
+        csMap1.put("萨尔达万自动雨量站", 0.8);
+        csMap1.put("无名沟自动雨量站", 0.8);
+        csMap1.put("宰尔德自动雨量站", 0.8);
+        csMap1.put("制材厂自动雨量站", 0.7);
         csMap1.put("小渠子雨量站", 0.8);
         csMap1.put("团结一队雨量站", 0.8);
         csMap1.put("甘沟雨量站", 0.8);
@@ -186,7 +186,7 @@ public class SubBasinForecast {
                 shanbeiparam.setWM(wmMap.get("八一林场自动雨量站"));
                 shanbeiparam.setB(bMap.get("八一林场自动雨量站"));
                 shanbeiparam.setArea(areaMap.get("八一林场自动雨量站"));
-                if (max > 10) {
+                if (max >= 10) {
                     shanbeiparam.setL(lMap.get("八一林场自动雨量站")-1);
                     shanbeiparam.setCS(csMap.get("八一林场自动雨量站"));
                 } else {
@@ -208,7 +208,7 @@ public class SubBasinForecast {
                 shanbeiparam.setWM(wmMap.get("东南沟自动雨量站"));
                 shanbeiparam.setB(bMap.get("东南沟自动雨量站"));
                 shanbeiparam.setArea(areaMap.get("东南沟自动雨量站"));
-                if (max > 10) {
+                if (max >= 10) {
                     shanbeiparam.setL(lMap.get("东南沟自动雨量站")-1);
                     shanbeiparam.setCS(csMap.get("东南沟自动雨量站"));
                 } else {
@@ -230,7 +230,7 @@ public class SubBasinForecast {
                 shanbeiparam.setWM(wmMap.get("加普沙自动雨量站"));
                 shanbeiparam.setB(bMap.get("加普沙自动雨量站"));
                 shanbeiparam.setArea(areaMap.get("加普沙自动雨量站"));
-                if (max > 10) {
+                if (max >= 10) {
                     shanbeiparam.setL(lMap.get("加普沙自动雨量站")-1);
                     shanbeiparam.setCS(csMap.get("加普沙自动雨量站"));
                 } else {
@@ -252,7 +252,7 @@ public class SubBasinForecast {
                 shanbeiparam.setWM(wmMap.get("煤矿沟自动雨量站"));
                 shanbeiparam.setB(bMap.get("煤矿沟自动雨量站"));
                 shanbeiparam.setArea(areaMap.get("煤矿沟自动雨量站"));
-                if (max > 10) {
+                if (max >= 10) {
                     shanbeiparam.setL(lMap.get("煤矿沟自动雨量站")-1);
                     shanbeiparam.setCS(csMap.get("煤矿沟自动雨量站"));
                 } else {
@@ -274,7 +274,7 @@ public class SubBasinForecast {
                 shanbeiparam.setWM(wmMap.get("萨尔达万自动雨量站"));
                 shanbeiparam.setB(bMap.get("萨尔达万自动雨量站"));
                 shanbeiparam.setArea(areaMap.get("萨尔达万自动雨量站"));
-                if (max > 10) {
+                if (max >= 10) {
                     shanbeiparam.setL(lMap.get("萨尔达万自动雨量站")-1);
                     shanbeiparam.setCS(csMap.get("萨尔达万自动雨量站"));
                 } else {
@@ -296,7 +296,7 @@ public class SubBasinForecast {
                 shanbeiparam.setWM(wmMap.get("无名沟自动雨量站"));
                 shanbeiparam.setB(bMap.get("无名沟自动雨量站"));
                 shanbeiparam.setArea(areaMap.get("无名沟自动雨量站"));
-                if (max > 10) {
+                if (max >= 10) {
                     shanbeiparam.setL(lMap.get("无名沟自动雨量站")-1);
                     shanbeiparam.setCS(csMap.get("无名沟自动雨量站"));
                 } else {
@@ -318,7 +318,7 @@ public class SubBasinForecast {
                 shanbeiparam.setWM(wmMap.get("宰尔德自动雨量站"));
                 shanbeiparam.setB(bMap.get("宰尔德自动雨量站"));
                 shanbeiparam.setArea(areaMap.get("宰尔德自动雨量站"));
-                if (max > 10) {
+                if (max >= 10) {
                     shanbeiparam.setL(lMap.get("宰尔德自动雨量站")-1);
                     shanbeiparam.setCS(csMap.get("宰尔德自动雨量站"));
                 } else {
@@ -349,7 +349,7 @@ public class SubBasinForecast {
                 shanbeiparam.setWM(wmMap.get("八一林场自动雨量站"));
                 shanbeiparam.setB(bMap.get("八一林场自动雨量站"));
                 shanbeiparam.setArea(areaMap.get("八一林场自动雨量站"));
-                if (max > 10) {
+                if (max >= 10) {
                     shanbeiparam.setL(lMap.get("八一林场自动雨量站"));
                     shanbeiparam.setCS(csMap.get("八一林场自动雨量站"));
                 } else {
@@ -372,7 +372,7 @@ public class SubBasinForecast {
                 shanbeiparam.setB(bMap.get("东南沟自动雨量站"));
                 shanbeiparam.setArea(areaMap.get("东南沟自动雨量站"));
                 shanbeiparam.setL(lMap.get("东南沟自动雨量站"));
-                if (max > 10) {
+                if (max >= 10) {
                     shanbeiparam.setL(lMap.get("东南沟自动雨量站"));
                     shanbeiparam.setCS(csMap.get("东南沟自动雨量站"));
                 } else {
@@ -395,7 +395,7 @@ public class SubBasinForecast {
                 shanbeiparam.setB(bMap.get("黑沟自动雨量站"));
                 shanbeiparam.setArea(areaMap.get("黑沟自动雨量站"));
                 shanbeiparam.setL(lMap.get("黑沟自动雨量站"));
-                if (max > 10) {
+                if (max >= 10) {
                     shanbeiparam.setL(lMap.get("黑沟自动雨量站"));
                     shanbeiparam.setCS(csMap.get("黑沟自动雨量站"));
                 } else {
@@ -418,7 +418,7 @@ public class SubBasinForecast {
                 shanbeiparam.setB(bMap.get("加普沙自动雨量站"));
                 shanbeiparam.setArea(areaMap.get("加普沙自动雨量站"));
                 shanbeiparam.setL(lMap.get("加普沙自动雨量站"));
-                if (max > 10) {
+                if (max >= 10) {
                     shanbeiparam.setL(lMap.get("加普沙自动雨量站"));
                     shanbeiparam.setCS(csMap.get("加普沙自动雨量站"));
                 } else {
@@ -441,7 +441,7 @@ public class SubBasinForecast {
                 shanbeiparam.setB(bMap.get("喀什沟自动雨量站"));
                 shanbeiparam.setArea(areaMap.get("喀什沟自动雨量站"));
                 shanbeiparam.setL(lMap.get("喀什沟自动雨量站"));
-                if (max > 10) {
+                if (max >= 10) {
                     shanbeiparam.setL(lMap.get("喀什沟自动雨量站"));
                     shanbeiparam.setCS(csMap.get("喀什沟自动雨量站"));
                 } else {
@@ -464,7 +464,7 @@ public class SubBasinForecast {
                 shanbeiparam.setB(bMap.get("煤矿沟自动雨量站"));
                 shanbeiparam.setArea(areaMap.get("煤矿沟自动雨量站"));
                 shanbeiparam.setL(lMap.get("煤矿沟自动雨量站"));
-                if (max > 10) {
+                if (max >= 10) {
                     shanbeiparam.setL(lMap.get("煤矿沟自动雨量站"));
                     shanbeiparam.setCS(csMap.get("煤矿沟自动雨量站"));
                 } else {
@@ -487,7 +487,7 @@ public class SubBasinForecast {
                 shanbeiparam.setB(bMap.get("萨尔达万自动雨量站"));
                 shanbeiparam.setArea(areaMap.get("萨尔达万自动雨量站"));
                 shanbeiparam.setL(lMap.get("萨尔达万自动雨量站"));
-                if (max > 10) {
+                if (max >= 10) {
                     shanbeiparam.setL(lMap.get("萨尔达万自动雨量站"));
                     shanbeiparam.setCS(csMap.get("萨尔达万自动雨量站"));
                 } else {
@@ -510,7 +510,7 @@ public class SubBasinForecast {
                 shanbeiparam.setB(bMap.get("无名沟自动雨量站"));
                 shanbeiparam.setArea(areaMap.get("无名沟自动雨量站"));
                 shanbeiparam.setL(lMap.get("无名沟自动雨量站"));
-                if (max > 10) {
+                if (max >= 10) {
                     shanbeiparam.setL(lMap.get("无名沟自动雨量站"));
                     shanbeiparam.setCS(csMap.get("无名沟自动雨量站"));
                 } else {
@@ -533,7 +533,7 @@ public class SubBasinForecast {
                 shanbeiparam.setB(bMap.get("宰尔德自动雨量站"));
                 shanbeiparam.setArea(areaMap.get("宰尔德自动雨量站"));
                 shanbeiparam.setL(lMap.get("宰尔德自动雨量站"));
-                if (max > 10) {
+                if (max >= 10) {
                     shanbeiparam.setL(lMap.get("宰尔德自动雨量站"));
                     shanbeiparam.setCS(csMap.get("宰尔德自动雨量站"));
                 } else {
@@ -556,7 +556,7 @@ public class SubBasinForecast {
                 shanbeiparam.setB(bMap.get("制材厂自动雨量站"));
                 shanbeiparam.setArea(areaMap.get("制材厂自动雨量站"));
                 shanbeiparam.setL(lMap.get("制材厂自动雨量站"));
-                if (max > 10) {
+                if (max >= 10) {
                     shanbeiparam.setL(lMap.get("制材厂自动雨量站"));
                     shanbeiparam.setCS(csMap.get("制材厂自动雨量站"));
                 } else {
