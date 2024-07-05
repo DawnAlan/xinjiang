@@ -496,16 +496,19 @@ public class TimeUtils {
 		int month;
 		int day;
 		int hour;
+		int minute;
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(date);
 		year = cal.get(Calendar.YEAR);
 		month = cal.get(Calendar.MONTH) + 1;
 		day = cal.get(Calendar.DAY_OF_MONTH);
 		hour = cal.get(Calendar.HOUR_OF_DAY);
+		minute = cal.get(Calendar.MINUTE);
 		result.put("年",year);
 		result.put("月",month);
 		result.put("日",day);
 		result.put("小时",hour);
+		result.put("分钟",minute);
 		return result;
 	}
 

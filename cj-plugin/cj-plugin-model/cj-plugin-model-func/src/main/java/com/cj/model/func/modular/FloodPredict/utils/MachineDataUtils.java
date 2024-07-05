@@ -56,8 +56,8 @@ public class MachineDataUtils {
         param.setPeriodStepSize(l);
         param.setPeriodStepNumber(n);
         param.setPredict_day(1);
-        param.setPreFlow(forecastParam.getPreFlow());
-        param.setPreRainFall(forecastParam.getPreRainFall());
+        param.setPreFlow((Double) forecastParam.getPreFlow());
+        param.setPreRainFall((Double) forecastParam.getPreRainFall());
         param.setRainFallDtos(forecastParam.getRainFallDtos());
         param.setParamMap(forecastParam.getParamMap());
         param.setBasinStr(forecastParam.getBasinStr());

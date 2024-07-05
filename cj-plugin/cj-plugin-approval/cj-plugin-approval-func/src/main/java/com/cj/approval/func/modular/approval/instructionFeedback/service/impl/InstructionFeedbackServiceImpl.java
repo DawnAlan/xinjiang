@@ -105,8 +105,9 @@ public class InstructionFeedbackServiceImpl extends ServiceImpl<InstructionFeedb
                             dutyRecordsTemp.setId(UUIDUtils.getUUID());
                             dutyRecordsTemp.setCreateTime(new Date());
                             try {
-                                dutyRecordsTemp.setRecordTime(sdf.parse(DateUtil.format(new Date(), "yyyy-MM-dd")));
+                                dutyRecordsTemp.setRecordTime(sdf.parse(sdf.format(new Date())));
                             } catch (ParseException e) {
+                                e.printStackTrace();
                                 throw new RuntimeException(e);
                             }
                             dutyRecordsTemp.setCreateBy(saBaseLoginUser.getName());

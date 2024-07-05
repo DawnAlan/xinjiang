@@ -81,5 +81,13 @@ public class FloodControlOperationController {
         }
     }
 
+    @ApiOperationSupport(order = 6)
+    @ApiOperation("防洪调度模块预报断面(96或16对比)")
+    @CommonLog(value = "防洪调度模块预报断面(96或16对比)")
+    @GetMapping("/selectDetailsForView")
+    public RestResponse selectDetailsForView(@RequestParam(value = "year") Integer year) {
+        return floodControlOperationService.selectDetailsForView(year);
+    }
+
 }
 

@@ -196,8 +196,8 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                             List<PredictInputData> resultListTemp = new ArrayList<>();
                             LocalDateTime now = LocalDateTime.now();
                             int year = now.getYear();
-                            String startTime = year+"-01-01";
-                            String endTime = sdf1.format(sdf1.parse(now.toString()));
+                            String startTime = year+"-01-01 00:00";
+                            String endTime = sdf3.format(sdf3.parse(now.toString()));
                             List<PredictInputData> lzz = incomingWaterForecastMapper.selectResultLzzByPrediction(startTime, endTime);
                             lzz.forEach(t->t.setLocation("楼庄子"));
                             List<PredictInputData> tth = incomingWaterForecastMapper.selectResultTthByPrediction(startTime, endTime);
@@ -247,14 +247,14 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                             List<PredictInputData> resultListTemp = new ArrayList<>();
                             Date startTime = dates.get(0);
                             Date endTime = dates.get(1);
-                            List<PredictInputData> lzz = incomingWaterForecastMapper.selectResultLzzByPrediction(sdf1.format(startTime), sdf1.format(endTime));
+                            List<PredictInputData> lzz = incomingWaterForecastMapper.selectResultLzzByPrediction(sdf3.format(startTime), sdf3.format(endTime));
                             lzz.forEach(t->t.setLocation("楼庄子"));
-                            List<PredictInputData> tth = incomingWaterForecastMapper.selectResultTthByPrediction(sdf1.format(startTime), sdf1.format(endTime));
+                            List<PredictInputData> tth = incomingWaterForecastMapper.selectResultTthByPrediction(sdf3.format(startTime), sdf3.format(endTime));
                             tth.forEach(t->t.setLocation("头屯河"));
                             resultListTemp.addAll(lzz);
                             resultListTemp.addAll(tth);
                             for(String id:lzzIds){
-                                List<LzzRainfallStation> lzzRainfallStations = lzzRainfallStationService.selectInfoByCondition(id, null, sdf.format(startTime), sdf1.format(endTime));
+                                List<LzzRainfallStation> lzzRainfallStations = lzzRainfallStationService.selectInfoByCondition(id, null, sdf3.format(startTime), sdf3.format(endTime));
                                 if (!lzzRainfallStations.isEmpty()) {
                                     List<RainFallDto> rainfallDtos = new ArrayList<>();
                                     for(LzzRainfallStation lzzRainfallStation:lzzRainfallStations){
@@ -272,7 +272,7 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                                 }
                             }
                             for(String id:tthIds){
-                                List<IrrigatedPlatformDataInfo> irrigatedPlatformDataInfos = irrigatedPlatformDataInfoService.selectInfoByCondition(id, null, sdf.format(startTime), sdf1.format(endTime));
+                                List<IrrigatedPlatformDataInfo> irrigatedPlatformDataInfos = irrigatedPlatformDataInfoService.selectInfoByCondition(id, null, sdf3.format(startTime), sdf3.format(endTime));
                                 if (!irrigatedPlatformDataInfos.isEmpty()) {
                                     List<RainFallDto> rainfallDtos = new ArrayList<>();
                                     for(IrrigatedPlatformDataInfo irrigatedPlatformDataInfo:irrigatedPlatformDataInfos){
@@ -590,8 +590,8 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                         e.printStackTrace();
                         log.error("-------------------------------------------error-------------------------------------------");
                         log.error("报错信息："+getStringBuilder(e).toString());
-                        incomingWaterForecastService.lambdaUpdate().set(IncomingWaterForecast::getStatus,3).
-                                eq(IncomingWaterForecast::getId,incomingWaterForecast.getId()).update();
+                        incomingWaterForecastService.lambdaUpdate().eq(IncomingWaterForecast::getId,incomingWaterForecast.getId()).remove();
+                        //incomingWaterForecastService.lambdaUpdate().set(IncomingWaterForecast::getStatus,3).eq(IncomingWaterForecast::getId,incomingWaterForecast.getId()).update();
                     }
                 }
             });

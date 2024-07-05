@@ -126,6 +126,62 @@ public class FloodControlOperationServiceImpl extends ServiceImpl<FloodControlOp
     }
 
     @Override
+    public RestResponse<Map<String, Object>> selectDetailsForView(Integer year) {
+        Map<String, Object> results = new HashMap<>();
+        if(null ==year){
+            return RestResponse.no("请传1996或2016");
+        }
+        if(year==1996){
+            String normal = "history/1996_normal.xlsx";
+            String noLzz = "history/1996_noLzz.xlsx";
+            Map<String, List<PredictionProcessDto>> normalModel = selectDetailsForViewTest(normal);
+            Map<String, List<PredictionProcessDto>> noLzzModel = selectDetailsForViewTest(noLzz);
+            results.put("normal", normalModel);
+            results.put("noLzz", noLzzModel);
+            return RestResponse.ok(results);
+        }
+        if(year==2016){
+            String normal = "history/2016_normal.xlsx";
+            String noLzz = "history/2016_noLzz.xlsx";
+            Map<String, List<PredictionProcessDto>> normalModel = selectDetailsForViewTest(normal);
+            Map<String, List<PredictionProcessDto>> noLzzModel = selectDetailsForViewTest(noLzz);
+            results.put("normal", normalModel);
+            results.put("noLzz", noLzzModel);
+            return RestResponse.ok(results);
+        }
+        return RestResponse.no("请传1996或2016");
+    }
+
+    public Map<String,List<PredictionProcessDto>> selectDetailsForViewTest(String modelResultAddress) {
+        try {
+            Map<String,List<PredictionProcessDto>> results = new LinkedHashMap<>();
+            InputStream tth = minioUtils.getObject("tth", modelResultAddress);
+            String[] split = modelResultAddress.split("\\\\");
+            String[] split1 = split[split.length - 1].split("\\.");
+            MultipartFile multipartFile = MultipartFileUtil.inputStreamToMultipartFile(tth, split1[0]);
+            List<Option> floods = ExcelUtils.importExcel(multipartFile, Option.class);
+            List<PredictionProcessDto> interval = getPredictions(floods,"头屯河");
+            if(null != interval){
+                results.put("头屯河",interval);
+            }else {
+                results.put("头屯河",null);
+            }
+            List<PredictionProcessDto> lzzEntryStation  = getPredictions(floods,"楼庄子");
+            if(null != lzzEntryStation){
+                results.put("楼庄子",lzzEntryStation);
+            }else {
+                results.put("楼庄子",null);
+            }
+            tth.close();
+            return results;
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public RestResponse add(FloodControlOperationAddReq req) {
         try {

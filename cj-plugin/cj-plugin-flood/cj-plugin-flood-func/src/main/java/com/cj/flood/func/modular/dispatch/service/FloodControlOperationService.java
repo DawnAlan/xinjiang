@@ -23,6 +23,7 @@ import java.util.Map;
 public interface FloodControlOperationService extends IService<FloodControlOperation> {
 
     RestResponse<Map<String, List<PredictionProcessDto>>> selectDetails(String id);
+    RestResponse<Map<String, Object>> selectDetailsForView(Integer year);
 
     RestResponse add(FloodControlOperationAddReq req);
 

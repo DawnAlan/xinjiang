@@ -414,6 +414,7 @@ public class DataUtils {
         int n = InputUtils.beforeHours + param.getPeriodTimeNum() * param.getPeriodTimeStep();//需要预报的时间长度
         calendar.add(Calendar.HOUR_OF_DAY, n);
         Date dataEnd = calendar.getTime();//预报结束时间
+        Date inputEndTime = input.get(input.size()-1).getDates();
         List<RainFallDto> rainPre = param.getRainFallDtos();;
         //找到最贴近的时间
         List<Date> dateList = new ArrayList<>();
@@ -438,7 +439,12 @@ public class DataUtils {
                 dateStart = calendar.getTime();
                 result.add(data);
             }
-            for (int i = 0; i < param.getPeriodTimeNum() * param.getPeriodTimeStep(); i++) {
+            int duration = timeUtils.duration(param.getPredictionTime(),inputEndTime,"小时");
+            duration = Math.max(duration,0);
+            if (duration>0){
+                dateStart = getDate(input, location, result, dateStart, calendar, n, d, duration);
+            }
+            for (int i = duration; i < param.getPeriodTimeNum() * param.getPeriodTimeStep(); i++) {
                 data = new PredictInputData();
                 for (int j = 0; j<rainPre.size(); j++) {
                     Boolean dateCompare = timeUtils.DateCompare(dateStart, sdf.parse(rainPre.get(j).getDate()), "小时");
@@ -460,28 +466,15 @@ public class DataUtils {
         }
         else {
             int end_inputEnd = timeUtils.duration(dataEnd, input.get(input.size() - 1).getDates(), "小时");
-            if (end_inputEnd > 0)//预报结束时间在数据库中有，也就是全部读取历史数据
+            if (end_inputEnd >= 0)//预报结束时间在数据库中有，也就是全部读取历史数据
             {
                 //此时的dateFind是历史数据中与开始预报时间最接近的
-                for (int i = 0; i < n; i++) {
-                    data = new PredictInputData();
-                    for (int j = 0; d + j < input.size() && j < n; j++) {
-                        Boolean dateCompare = timeUtils.DateCompare(dateStart, input.get(d + j).getDates(), "小时");
-                        if (dateCompare) {
-                            data = input.get(d + j);
-                            break;
-                        } else {
-                            data = assignmentNullRAndT(dateStart, input.get(0).getLocation());
-                        }
-                    }
-                    calendar.setTime(dateStart);
-                    calendar.add(Calendar.HOUR_OF_DAY, 1);
-                    dateStart = calendar.getTime();
-                    result.add(data);
-                }
+                dateStart = getDate(input, location, result, dateStart, calendar, n, d, n);
             } else //预报结束时间在数据库中没有，也就是需要读取预报雨量
             {
-                int start_inputEnd = timeUtils.duration(dateStart, input.get(input.size() - 1).getDates(), "小时");
+                int start_inputEnd = timeUtils.duration(dateStart, input.get(input.size()-1).getDates(), "小时");
+                int l = timeUtils.duration(dateStart,dataEnd,"小时");
+                start_inputEnd = Math.min(start_inputEnd,l);
                 int length = param.getRainFallDtos().size();
                 if (start_inputEnd < 0)//预报开始时间在数据库中没有，也就是全部读取预报值
                 {
@@ -527,23 +520,7 @@ public class DataUtils {
                     }
                 } else //预报开始时间在数据库内，预报结束时间不在数据库内
                 {
-                    for (int i = 0; i <= start_inputEnd; i++) //从落地雨开始给其赋值到数据库末尾
-                    {
-                        data = new PredictInputData();
-                        for (int j = 0; d + j < input.size() && j < n; j++) {
-                            Boolean dateCompare = timeUtils.DateCompare(dateStart, input.get(d + j).getDates(), "小时");
-                            if (dateCompare) {
-                                data = input.get(d + j);
-                                break;
-                            } else {
-                                data = assignmentNullRAndT(dateStart, location);
-                            }
-                        }
-                        calendar.setTime(dateStart);
-                        calendar.add(Calendar.HOUR_OF_DAY, 1);
-                        dateStart = calendar.getTime();
-                        result.add(data);
-                    }
+                    getDate(input,location,result,dateStart,calendar,n,d,start_inputEnd);//从落地雨开始给其赋值到数据库末尾
                     //此时的dataStart==数据库末尾的时间
                     int inputEnd_dateEnd = timeUtils.duration(dateStart, dataEnd, "小时");//数据库末尾到预报结束时间的距离
                     for (int i = 0; i < inputEnd_dateEnd; i++) {
@@ -590,6 +567,54 @@ public class DataUtils {
         }
         return result;
 
+    }
+
+    private Date getDate(List<PredictInputData> input, String location, List<PredictInputData> result, Date dateStart, Calendar calendar, int n, int d, int duration) {
+        PredictInputData data;
+        for (int i = 0; i <= duration; i++) {
+            data = getNewHours(input,location,dateStart,d,n);//从数据库中获取该小时降雨
+            calendar.setTime(dateStart);
+            calendar.add(Calendar.HOUR_OF_DAY, 1);
+            dateStart = calendar.getTime();
+            result.add(data);
+        }
+        return dateStart;
+    }
+
+    private PredictInputData getNewHours(List<PredictInputData> input,String location,Date dateStart,int d,int n){
+        PredictInputData data = new PredictInputData();
+        Boolean dateCompare = false;
+        for (int j = 0; d + j < input.size() && j < n; j++) {
+            dateCompare = timeUtils.DateCompare(dateStart, input.get(d + j).getDates(), "小时");
+            if (dateCompare) {
+                break;
+            }
+        }
+        if (dateCompare) {
+            Double rainSum = 0.0;
+            for (int j = 0; d + j < input.size() && j < n; j++){
+                Date date0 = timeUtils.addCalendar(input.get(d + j).getDates(),"小时",-1);
+                Date date = input.get(d + j).getDates();
+                int minute0 = timeUtils.getSpecificDate(date0).get("分钟");
+                int minute = timeUtils.getSpecificDate(date).get("分钟");
+                dateCompare = timeUtils.DateCompare(dateStart, date0, "小时");
+                if (dateCompare && minute0>=30){
+                    rainSum += input.get(d + j).getRainfall();
+                }
+                dateCompare = timeUtils.DateCompare(dateStart, date, "小时");
+                if (dateCompare){
+                    data = input.get(d + j);
+                }
+                if (dateCompare && minute<=30){
+                    rainSum += input.get(d + j).getRainfall();
+                }
+            }
+            data.setRainfall(rainSum);
+        }
+        else {
+            data = assignmentNullRAndT(dateStart, location);
+        }
+        return data;
     }
 
     /**

@@ -89,11 +89,12 @@ public class WaterSituationStatisticsTableYesterdayServiceImpl extends ServiceIm
         }
         List<TrendsTableParam> trendsTableParamList = JSONObject.parseArray(mk, TrendsTableParam.class);
         waterSituationStatisticsTableYesterday.setId(UUIDUtils.getUUID());
+        Date recordTime = waterSituationStatisticsTableYesterday.getRecordTime();
         Calendar calendar = new GregorianCalendar();
-        calendar.setTime(new Date());
+        calendar.setTime(recordTime);
         calendar.add(calendar.DATE, -1);
         String yesterday= sdf.format(calendar.getTime());
-        String today= sdf.format(new Date());
+        String today= sdf.format(recordTime);
         List<DayWaterSituationStatisticsTableZcc> dayWaterSituationStatisticsTableZccs = dayWaterSituationStatisticsTableZccMapper.selectList(today);
         if(null != dayWaterSituationStatisticsTableZccs && dayWaterSituationStatisticsTableZccs.size()>0){
             List<TrendsTableParam> zccList = trendsTableParamList.stream().filter(t->t.getUseType()==1).
