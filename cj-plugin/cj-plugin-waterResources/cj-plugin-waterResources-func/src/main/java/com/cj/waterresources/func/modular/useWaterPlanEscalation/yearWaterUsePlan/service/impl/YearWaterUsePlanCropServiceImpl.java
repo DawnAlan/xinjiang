@@ -1,5 +1,6 @@
 package com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.service.impl;
 
+import cn.hutool.extra.spring.SpringUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.ExcelUtils;
@@ -19,6 +20,7 @@ import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePla
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.service.YearWaterUsePlanCropOwnerService;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.service.YearWaterUsePlanCropService;
 import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.service.YearWaterUsePlanTrunkCanalService;
+import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.unit.NeedWaterByActualUtils;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.service.AllService;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
@@ -31,6 +33,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.text.DecimalFormat;
 import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 /**
@@ -299,6 +305,30 @@ public class YearWaterUsePlanCropServiceImpl extends ServiceImpl<YearWaterUsePla
     @Override
     public RestResponse<NeedWaterVo> needWaterByPlan(Integer planYear) {
         return RestResponse.ok(this.baseMapper.needWaterByPlan(planYear));
+    }
+
+    @SneakyThrows
+    @Override
+    public RestResponse<Map<Integer,Double>> needWaterByActual(Integer planYear) {
+        Map<Integer,Double> result = new HashMap<>();
+        ExecutorService executor = Executors.newFixedThreadPool(4); // 创建一个固定大小为5的线程池
+
+        for(int i=1 ;i<=12;i++) {
+            Future<Double> future = executor.submit(new NeedWaterByActualUtils.SelectNeedWaterByActual(this.baseMapper,allService,i,planYear));
+            result.put(i,NumberUtil.holdDecimal(future.get(),3));
+        }
+        // 关闭线程池
+        executor.shutdown();
+       /* for(int i =1; i <= 12; i++){
+            List<PlanComparedToActualByYearVo> planYearList = this.baseMapper.planComparedToActual(planYear, getMonthName(i));
+            Map<String, List<PlanComparedToActualByYearVo>> collect = planYearList.stream().collect(Collectors.groupingBy(PlanComparedToActualByYearVo::getArea));
+            Set<String> unitNameList = collect.keySet();
+            for(String unitName : unitNameList){
+                Double value = allService.planComparedToActualForYearTotal(planYear, i, collect.get(unitName).stream().map(PlanComparedToActualByYearVo::getBindId).collect(Collectors.toList()),unitName);
+                result.put(i,value);
+            }
+        }*/
+        return RestResponse.ok(result);
     }
 
     private Double formatDouble(Double value) {

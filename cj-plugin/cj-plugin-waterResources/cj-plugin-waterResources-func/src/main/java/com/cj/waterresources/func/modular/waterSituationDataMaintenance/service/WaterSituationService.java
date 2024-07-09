@@ -1,6 +1,7 @@
 package com.cj.waterresources.func.modular.waterSituationDataMaintenance.service;
 
 import com.cj.common.model.RestResponse;
+import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.req.SelectInfoListByIdsReq;
 import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.req.SelectInfoListNewReq;
 import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.req.SelectInfoListReq;
 import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.req.UpdateInfoReq;
@@ -19,6 +20,7 @@ public interface WaterSituationService {
 
     RestResponse selectInfoListAll(SelectInfoListReq req);
     RestResponse selectInfoListAllNew(SelectInfoListNewReq req);
+    RestResponse selectInfoListByIdsNew(SelectInfoListByIdsReq req);
 
     RestResponse selectTodayWaterSituation(String date);
 }

@@ -11,6 +11,7 @@ import com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePla
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 作物年用水计划(YearWaterUsePlanCrop)表服务接口
@@ -31,6 +32,7 @@ public interface YearWaterUsePlanCropService extends IService<YearWaterUsePlanCr
     RestResponse<List<PlanComparedToActualByYearRes>> planComparedToActual(Integer planYear, Integer actualYear, Integer month);
 
     RestResponse<NeedWaterVo> needWaterByPlan(Integer planYear);
+    RestResponse<Map<Integer,Double>> needWaterByActual(Integer planYear);
 
 }
 

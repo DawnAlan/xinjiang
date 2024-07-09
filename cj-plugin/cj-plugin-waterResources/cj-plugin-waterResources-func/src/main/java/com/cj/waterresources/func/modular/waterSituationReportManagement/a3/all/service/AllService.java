@@ -51,5 +51,6 @@ public interface AllService {
     RestResponse<List<DayWaterBalance>> selectTodayDayWaterBalance(List<WaterFeeStatisticsDetails> waterFeeStatisticsDetails);
 
     Map<String, Double> planComparedToActualForYear(Integer year, Integer month,List<String> ids,String unit);
+    Double planComparedToActualForYearTotal(Integer year, Integer month,List<String> ids,String unit);
     Map<String, Double> planComparedToActualForMonth(Integer year, Integer month,String tenDays,List<String> ids,String unit);
 }

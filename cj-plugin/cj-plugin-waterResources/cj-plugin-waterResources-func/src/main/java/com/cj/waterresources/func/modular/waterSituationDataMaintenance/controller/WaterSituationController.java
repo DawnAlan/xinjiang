@@ -2,6 +2,7 @@ package com.cj.waterresources.func.modular.waterSituationDataMaintenance.control
 
 import com.cj.business.log.modular.log.annotation.CommonLog;
 import com.cj.common.model.RestResponse;
+import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.req.SelectInfoListByIdsReq;
 import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.req.SelectInfoListNewReq;
 import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.req.SelectInfoListReq;
 import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.req.UpdateInfoReq;
@@ -64,6 +65,14 @@ public class WaterSituationController {
     @PostMapping("/selectInfoListAllNew")
     public RestResponse selectInfoListAllNew(@RequestBody SelectInfoListNewReq req) {
         return waterSituationService.selectInfoListAllNew(req);
+    }
+
+    @ApiOperationSupport(order = 7)
+    @ApiOperation("防洪四预查询实际水库流量")
+    @CommonLog(value = "防洪四预查询实际水库流量")
+    @PostMapping("/selectInfoListByIdsNew")
+    public RestResponse selectInfoListByIdsNew(@RequestBody SelectInfoListByIdsReq req) {
+        return waterSituationService.selectInfoListByIdsNew(req);
     }
     @ApiOperationSupport(order = 6)
     @ApiOperation("水情数据维护模块查询水资源首页今日水情")

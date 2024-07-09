@@ -39,6 +39,10 @@
         select YEAR, AREA,UNIT,${month} as v,UNIT_ID,BIND_ID from tth.YEAR_WATER_USE_PLAN_TRUNK_CANAL where year = #{year}
     </select>
 
+    <select id="planComparedToActual1" resultType="com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.vo.PlanComparedToActualByYearVo">
+        select YEAR, AREA,UNIT,UNIT_ID,BIND_ID from tth.YEAR_WATER_USE_PLAN_TRUNK_CANAL where year = #{year}
+    </select>
+
     <select id="needWaterByPlan" resultType="com.cj.waterresources.func.modular.useWaterPlanEscalation.yearWaterUsePlan.bean.vo.NeedWaterVo">
         select
             sum(JANUARY) as JANUARY,

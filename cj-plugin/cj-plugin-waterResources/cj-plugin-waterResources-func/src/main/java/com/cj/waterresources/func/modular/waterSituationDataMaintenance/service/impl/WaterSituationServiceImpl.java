@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.cj.auth.core.pojo.SaBaseLoginUser;
 import com.cj.auth.core.util.StpLoginUserUtil;
 import com.cj.common.model.RestResponse;
+import com.cj.common.util.NumberUtil;
 import com.cj.common.util.RedisUtil;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.bean.res.SelectTodayWaterSituationRes;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.entity.IrrigatedPlatformDataInfo;
@@ -23,9 +24,11 @@ import com.cj.waterresources.func.modular.trendsTable.service.TrendsTableParamSe
 import com.cj.waterresources.func.modular.waterPrice.industrialWaterFee.service.IndustrialWaterFeeService;
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.bean.res.UseWaterTypeStatisticsRes;
 import com.cj.waterresources.func.modular.waterPrice.waterPriceManagement.bean.res.WaterPriceSelectListRes;
+import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.req.SelectInfoListByIdsReq;
 import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.req.SelectInfoListNewReq;
 import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.req.SelectInfoListReq;
 import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.req.UpdateInfoReq;
+import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.res.FlowRes;
 import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.res.HydrographRes;
 import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.res.IrrigatedPlatformTreeRes;
 import com.cj.waterresources.func.modular.waterSituationDataMaintenance.bean.res.LzzPlatformTreeRes;
@@ -270,6 +273,79 @@ public class WaterSituationServiceImpl implements WaterSituationService {
             return RestResponse.no("暂无数据");
         }else {
             return RestResponse.ok(resList);
+        }
+    }
+
+    @Override
+    public RestResponse selectInfoListByIdsNew(SelectInfoListByIdsReq req) {
+        List<FlowRes> result = new ArrayList<>();
+        List<HydrographRes> resList = new ArrayList<>();
+        String[] split = req.getIds().split(",");
+        for (String id : split){
+            OverallSituationUnitMgr byId = overallSituationUnitMgrService.getById(id);
+            if(null == byId){
+                continue;
+            }
+            if(StringUtils.isNotEmpty(byId.getMonitorId())){
+                List<IrrigatedPlatformDataInfo> listTth = irrigatedPlatformDataInfoService.selectInfoByCondition(byId.getMonitorId(),null,req.getStartTime(),req.getEndTime());
+                if(null != listTth && listTth.size()>0) {
+                    listTth.stream().collect(Collectors.toList()).forEach(t->{
+                        HydrographRes res = new HydrographRes();
+                        res.setName(t.getMonitorName());
+                        res.setTime(sdf.format(t.getMonitorTime()));
+                        res.setFlow(t.getSqMonitorFlow()==null?(t.getGdMonitorFlow()==null?null:t.getGdMonitorFlow()):t.getSqMonitorFlow());
+                        res.setRainfall(t.getYqRainFallOne()==null?BigDecimal.ZERO:new BigDecimal(t.getYqRainFallOne()));
+                        res.setWaterLevel(t.getSqWaterLevel());
+                        resList.add(res);
+                    });
+                }
+                List<LzzRainfallStation> listLzzRain = lzzRainfallStationService.selectInfoByCondition(byId.getMonitorId(),null,req.getStartTime(),req.getEndTime());
+                if(null != listLzzRain && listLzzRain.size()>0){
+                    listLzzRain.stream().collect(Collectors.toList()).forEach(t->{
+                        HydrographRes res = new HydrographRes();
+                        res.setName(t.getStationName());
+                        res.setTime(sdf.format(t.getTime()));
+                        res.setRainfall(t.getRainfall());
+                        res.setTemperature(t.getTemperature());
+                        resList.add(res);
+                    });
+                }
+                List<LzzGaugingStation> listLzzGaugingStation = lzzGaugingStationService.selectInfoByCondition(byId.getMonitorId(),null,req.getStartTime(),req.getEndTime());
+                if(null != listLzzGaugingStation && listLzzGaugingStation.size()>0){
+                    listLzzGaugingStation.stream().collect(Collectors.toList()).forEach(t->{
+                        HydrographRes res = new HydrographRes();
+                        res.setName(t.getStationName());
+                        res.setTime(sdf.format(t.getGatherTime()));
+                        res.setFlow(t.getFlow());
+                        res.setWaterLevel(t.getRelativeWaterLevel());
+                        resList.add(res);
+                    });
+                }
+            }else {
+                SelectInfoListNewReq selectInfoListNewReq = new SelectInfoListNewReq();
+                selectInfoListNewReq.setStartTime(req.getStartTime());
+                selectInfoListNewReq.setEndTime(req.getEndTime());
+                selectInfoListNewReq.setId(id);
+                List<HydrographRes> hydrographResList = allService.selectInfoListAllNew(selectInfoListNewReq);
+                if(null!=hydrographResList){
+                    resList.addAll(hydrographResList);
+                }
+            }
+        }
+        Map<String, List<HydrographRes>> collect = resList.stream().collect(Collectors.groupingBy(HydrographRes::getTime));
+        Set<String> strings = collect.keySet();
+        for(String date :strings){
+            FlowRes flowRes = new FlowRes();
+            flowRes.setTime(date);
+            Double aDouble = collect.get(date).stream().map(HydrographRes::getFlow).reduce(Double::sum).orElse(0.00);
+            flowRes.setFlow(NumberUtil.holdDecimal(aDouble,3));
+            result.add(flowRes);
+
+        }
+        if(result.isEmpty()){
+            return RestResponse.no("暂无数据");
+        }else {
+            return RestResponse.ok(result);
         }
     }
 

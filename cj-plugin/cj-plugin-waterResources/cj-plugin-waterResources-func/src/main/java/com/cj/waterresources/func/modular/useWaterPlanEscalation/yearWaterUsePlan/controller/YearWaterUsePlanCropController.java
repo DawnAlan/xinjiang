@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 作物年用水计划(YearWaterUsePlanCrop)表控制层
@@ -89,6 +90,13 @@ public class YearWaterUsePlanCropController {
     @PostMapping("/needWaterByPlan")
     public RestResponse<NeedWaterVo> needWaterByPlan(@RequestParam(value = "planYear",required = true) Integer planYear) {
         return yearWaterUsePlanCropService.needWaterByPlan(planYear);
+    }
+    @ApiOperationSupport(order = 6)
+    @ApiOperation("年用水计划模块-实际用水量")
+    @CommonLog(value = "年用水计划模块-实际用水量")
+    @PostMapping("/needWaterByActual")
+    public RestResponse<Map<Integer,Double>> needWaterByActual(@RequestParam(value = "planYear",required = true) Integer planYear) {
+        return yearWaterUsePlanCropService.needWaterByActual(planYear);
     }
 }
 
