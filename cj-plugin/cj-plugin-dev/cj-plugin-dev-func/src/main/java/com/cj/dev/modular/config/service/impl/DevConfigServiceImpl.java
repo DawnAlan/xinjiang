@@ -48,10 +48,10 @@ public class DevConfigServiceImpl extends ServiceImpl<DevConfigMapper, DevConfig
     @Override
     public String getValueByKey(String key) {
         // 从缓存中取
-        Object cacheValue = commonCacheOperator.get(CONFIG_CACHE_KEY + key);
-        if(ObjectUtil.isNotEmpty(cacheValue)) {
-            return Convert.toStr(cacheValue);
-        }
+//        Object cacheValue = commonCacheOperator.get(CONFIG_CACHE_KEY + key);
+//        if(ObjectUtil.isNotEmpty(cacheValue)) {
+//            return Convert.toStr(cacheValue);
+//        }
         DevConfig devConfig = this.getOne(new LambdaQueryWrapper<DevConfig>().eq(DevConfig::getConfigKey, key));
         if(ObjectUtil.isNotEmpty(devConfig)) {
             // 更新到缓存

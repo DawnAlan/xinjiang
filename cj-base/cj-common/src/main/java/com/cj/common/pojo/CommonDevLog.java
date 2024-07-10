@@ -1,9 +1,8 @@
-
-package com.cj.dev.modular.log.entity;
+package com.cj.common.pojo;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.TableId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,19 +10,13 @@ import lombok.ToString;
 
 import java.util.Date;
 
-/**
- * 日志实体
- *
- * @author xuyuxiang
- * @date 2022/9/2 15:02
- */
 @Getter
 @Setter
 @ToString
-@TableName("DEV_LOG")
-public class DevLog {
+public class CommonDevLog {
 
     /** id */
+    @TableId
     @ApiModelProperty(value = "主键", position = 1)
     private String id;
 

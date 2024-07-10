@@ -19,7 +19,7 @@ public enum SystemTypeEnum {
     /**
      * Date
      */
-    DATE("Date"),
+    DATETIME("DateTime"),
 
 
     /**

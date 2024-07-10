@@ -3,6 +3,7 @@ package com.cj.dev.modular.log.provider;
 
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.springframework.stereotype.Service;
 import com.cj.auth.core.util.StpLoginUserUtil;
@@ -55,5 +56,9 @@ public class DevLogApiProvider implements DevLogApi {
                 .in(DevLog::getCategory, DevLogCategoryEnum.OPERATE.getValue(), DevLogCategoryEnum.EXCEPTION.getValue())
                 .orderByDesc(DevLog::getCreateTime))
                 .getRecords().stream().map(JSONUtil::parseObj).collect(Collectors.toList());
+    }
+
+    public void saveLog(DevLog devLog) {
+        devLogService.save(devLog);
     }
 }
