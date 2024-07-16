@@ -4,7 +4,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.cj.flood.func.modular.dispatch.mapper.FloodControlOperationMapper">
     <select id="selectFloodControlOperationList" parameterType="com.cj.flood.func.modular.dispatch.bean.req.FloodControlOperationListReq" resultType="com.cj.flood.func.modular.dispatch.bean.res.FloodControlOperationListRes">
-        select fco.ID,fco.SCHEME_NAME,iwf.PROGRAMME_NAME,fco.CREATE_BY,fco.CREATE_TIME,IFNULL(fco.FORECASTING_TIME, iwf.PREDICTION_TIME) PREDICTION_TIME,fco.STATUS,fco.REMARK
+        select fco.ID,fco.SCHEME_NAME,iwf.PROGRAMME_NAME,fco.CREATE_BY,fco.CREATE_TIME,IFNULL(fco.FORECASTING_TIME, iwf.PREDICTION_TIME) PREDICTION_TIME,iwf.END_TIME,fco.STATUS,fco.REMARK
         from FLOOD_CONTROL_OPERATION fco
         left join INCOMING_WATER_FORECAST iwf on iwf.ID = fco.FORECASTING_SCHEME_ID
         <where>

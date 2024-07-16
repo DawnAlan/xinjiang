@@ -27,6 +27,9 @@ public class FloodControlOperationListRes implements Serializable {
     @ApiModelProperty(value = "预报时间")
     private Date predictionTime;
 
+    @ApiModelProperty(value = "预报结束时间")
+    private Date endTime;
+
     @ApiModelProperty(value = "状态")
     private Integer status;
 
