@@ -133,8 +133,8 @@ public class ResourceOptimizationlong_MonthTest {
 
         inflow[0] = (double[]) data1.get("楼庄子流量");
         inflow[1] = (double[]) data1.get("头屯河流量");
-        if (isAllElementsNonNegative(inflow)==false){
-            throw new CommonException("请检查预报流量是否合理，存在小于0的流量");
+        if (isAllElementsNonNegative(inflow)==false||inflow[0].length!=period||inflow[1].length!=period){
+            throw new CommonException("请检查预报流量是否合理：可能存在流量小于0的情况或是预报时段与调度方案制作时段不匹配");
         }
 
         Map<String, Object> dataDemand = new HashMap<>();

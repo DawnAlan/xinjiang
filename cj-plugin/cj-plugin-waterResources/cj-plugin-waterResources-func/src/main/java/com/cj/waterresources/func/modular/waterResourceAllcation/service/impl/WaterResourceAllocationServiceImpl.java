@@ -213,6 +213,9 @@ public class WaterResourceAllocationServiceImpl extends ServiceImpl<WaterResourc
             try {
                 doAllocation(waterResourceAllocation, now, req);
                 waterResourceAllocation.setState(0);
+            } catch (CommonException e) {
+                waterResourceAllocation.setState(0);
+                waterResourceAllocation.setRemark(e.getMessage());
             } catch (Exception e) {
                 waterResourceAllocation.setState(2);
                 waterResourceAllocation.setExceptionCause(getStringBuilder(e).toString());
