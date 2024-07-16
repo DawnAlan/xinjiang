@@ -107,7 +107,7 @@ public class RestTemplateUtil {
      */
     public static String post(String url, String data,String token) {
         HttpHeaders headers = new HttpHeaders();
-        headers.add("registerCode","Mi0zMTAtMDE3");
+        headers.add("registerCode","Mi0zMTAtMDE3");//Mi0zMTAtMDE3  registerCode
         if(StringUtils.isNotEmpty(token)){
             headers.add("token",token);
         }

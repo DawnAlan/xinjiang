@@ -43,13 +43,47 @@ public interface IncomingWaterForecastMapper extends BaseMapper<IncomingWaterFor
     @Select("select CASE SUBSTR(time, 0, 2)\n" +
             "WHEN 24 THEN to_date(to_char(ADD_DAYS(RECORD_TIME, 1), 'yyyy-mm-dd'), 'yyyy-mm-dd')\n" +
             "ELSE to_date(TO_CHAR(RECORD_TIME, 'yyyy-mm-dd') || ' ' || SUBSTR(time, 0, 2), 'yyyy-mm-dd hh24:mi')\n" +
-            "end as dates,v as flow from DAY_WATER_SITUATION_STATISTICS_TABLE_TTH where TIME not like '%日均' and (RECORD_TIME between #{startTime} and #{endTime}) and TABLE_HEAD_ID = '2ac7d9b44ab5497092e77d0dccf5e116' ")
+            "end as dates,v as flow,\n" +
+            "CASE TABLE_HEAD_ID\n" +
+            "WHEN '2ac7d9b44ab5497092e77d0dccf5e116' THEN 'flow'\n" +
+            "ELSE 'level'\n" +
+            "END as dataType\n" +
+            "from tth.DAY_WATER_SITUATION_STATISTICS_TABLE_TTH \n" +
+            "where TIME not like '%日均' and (RECORD_TIME between #{startTime} and #{endTime}) and TABLE_HEAD_ID = '2ac7d9b44ab5497092e77d0dccf5e116' \n" +
+            "UNION ALL\n" +
+            "select CASE SUBSTR(time, 0, 2)\n" +
+            "WHEN 24 THEN to_date(to_char(ADD_DAYS(RECORD_TIME, 1), 'yyyy-mm-dd'), 'yyyy-mm-dd')\n" +
+            "ELSE to_date(TO_CHAR(RECORD_TIME, 'yyyy-mm-dd') || ' ' || SUBSTR(time, 0, 2), 'yyyy-mm-dd hh24:mi')\n" +
+            "end as dates,v as flow,\n" +
+            "CASE TABLE_HEAD_ID\n" +
+            "WHEN '2ac7d9b44ab5497092e77d0dccf5e116' THEN 'flow'\n" +
+            "ELSE 'level'\n" +
+            "END as dataType\n" +
+            "from tth.DAY_WATER_SITUATION_STATISTICS_TABLE_TTH \n" +
+            "where TIME not like '%日均' and (RECORD_TIME between #{startTime} and #{endTime}) and TABLE_HEAD_ID = '6d939b2a589940f08dcbf2f1f6b5807a' ")
     List<PredictInputData> selectResultTthByPrediction(@Param("startTime") String startTime, @Param("endTime") String endTime);
 
     @Select("select CASE SUBSTR(time, 0, 2)\n" +
             "WHEN 24 THEN to_date(to_char(ADD_DAYS(RECORD_TIME, 1), 'yyyy-mm-dd'), 'yyyy-mm-dd')\n" +
             "ELSE to_date(TO_CHAR(RECORD_TIME, 'yyyy-mm-dd') || ' ' || SUBSTR(time, 0, 2), 'yyyy-mm-dd hh24:mi')\n" +
-            "end as dates,v as flow from DAY_WATER_SITUATION_STATISTICS_TABLE_LZZ where TIME not like '%日均' and (RECORD_TIME between #{startTime} and #{endTime}) and TABLE_HEAD_ID = '73f33822cf2c48caa4302dabf769b29b' ")
+            "end as dates,v as flow,\n" +
+            "CASE TABLE_HEAD_ID\n" +
+            "WHEN '73f33822cf2c48caa4302dabf769b29b' THEN 'flow'\n" +
+            "ELSE 'level'\n" +
+            "END as dataType\n" +
+            "from tth.DAY_WATER_SITUATION_STATISTICS_TABLE_LZZ\n" +
+            "where TIME not like '%日均' and (RECORD_TIME between #{startTime} and #{endTime}) and TABLE_HEAD_ID = '73f33822cf2c48caa4302dabf769b29b' \n" +
+            "UNION ALL\n" +
+            "select CASE SUBSTR(time, 0, 2)\n" +
+            "WHEN 24 THEN to_date(to_char(ADD_DAYS(RECORD_TIME, 1), 'yyyy-mm-dd'), 'yyyy-mm-dd')\n" +
+            "ELSE to_date(TO_CHAR(RECORD_TIME, 'yyyy-mm-dd') || ' ' || SUBSTR(time, 0, 2), 'yyyy-mm-dd hh24:mi')\n" +
+            "end as dates,v as flow,\n" +
+            "CASE TABLE_HEAD_ID\n" +
+            "WHEN '73f33822cf2c48caa4302dabf769b29b' THEN 'flow'\n" +
+            "ELSE 'level'\n" +
+            "END as dataType\n" +
+            "from tth.DAY_WATER_SITUATION_STATISTICS_TABLE_LZZ \n" +
+            "where TIME not like '%日均' and (RECORD_TIME between #{startTime} and #{endTime}) and TABLE_HEAD_ID = 'eeb9ee530bb1465094facd31a8d9d154'  ")
     List<PredictInputData> selectResultLzzByPrediction(@Param("startTime") String startTime, @Param("endTime") String endTime);
 }
 

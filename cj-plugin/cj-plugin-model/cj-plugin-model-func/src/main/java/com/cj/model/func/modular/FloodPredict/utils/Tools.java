@@ -24,7 +24,7 @@ public class Tools {
     public static TemporaryXlsx resultToXlsx(List<Flood> Flood){
         File tempFile = File.createTempFile("PRE_RESULT", ".xlsx");
         String path = tempFile.getAbsolutePath();
-        Object[][] floodObject = new Object[Flood.size()][16];
+        Object[][] floodObject = new Object[Flood.size()][17];
         for (int i = 0; i < Flood.size(); i++) {
             floodObject[i][0] = Flood.get(i).getLocation();
             floodObject[i][1] = Flood.get(i).getScale();
@@ -42,12 +42,38 @@ public class Tools {
             floodObject[i][13] = Flood.get(i).getOutQ();
             floodObject[i][14] = Flood.get(i).getWarningTime();
             floodObject[i][15] = Flood.get(i).getRainProcess();
+            floodObject[i][16] = Flood.get(i).getConfluenceTime();
         }
         ExcelTool.writeFloodExcel(path, "预报结果", floodObject);
         TemporaryXlsx result = new TemporaryXlsx();
         result.setPath(path);
         result.setSheetName("预报结果");
         return result;
+    }
+    @SneakyThrows
+    public static void testXlsx(List<Flood> Flood){
+        String path = "D:\\204\\2.头屯河\\径流预报数据文件\\模拟洪水.xlsx";
+        Object[][] floodObject = new Object[Flood.size()][17];
+        for (int i = 0; i < Flood.size(); i++) {
+            floodObject[i][0] = Flood.get(i).getLocation();
+            floodObject[i][1] = Flood.get(i).getScale();
+            floodObject[i][2] = Flood.get(i).getPeakIndex();
+            floodObject[i][3] = Flood.get(i).getTime();
+            floodObject[i][4] = Flood.get(i).getPreQ();
+            floodObject[i][5] = Flood.get(i).getWaterLevel();
+            floodObject[i][6] = Flood.get(i).getPeakFlood();
+            floodObject[i][7] = Flood.get(i).getPeakTime();
+            floodObject[i][8] = Flood.get(i).getPeakDuration();
+            floodObject[i][9] = Flood.get(i).getFloodVolume();
+            floodObject[i][10] = Flood.get(i).getQComposition();
+            floodObject[i][11] = Flood.get(i).getQCause();
+            floodObject[i][12] = Flood.get(i).getFloodLevel();
+            floodObject[i][13] = Flood.get(i).getOutQ();
+            floodObject[i][14] = Flood.get(i).getWarningTime();
+            floodObject[i][15] = Flood.get(i).getRainProcess();
+            floodObject[i][16] = Flood.get(i).getConfluenceTime();
+        }
+        ExcelTool.writeFloodExcel(path, "预报结果", floodObject);
     }
 
     /**

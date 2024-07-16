@@ -360,7 +360,7 @@ public class FiducialServiceImpl implements FiducialService {
                     if(newBaseMap.get(j) != null){
                         String field = newBaseMap.get(j).toString();
                         //String value = row.getCell(j).toString();
-                        if(paraFormatMap.get(newBaseMap.get(j).toString()).equals(SystemTypeEnum.DATE.getValue())){
+                        if(paraFormatMap.get(newBaseMap.get(j).toString()).equals(SystemTypeEnum.DATETIME.getValue())){
                             try {
                                 baseValueMap.put(field , dateFormat.format(row.getCell(j).getDateCellValue()));
                             }catch (Exception e){
@@ -381,7 +381,7 @@ public class FiducialServiceImpl implements FiducialService {
                         FiducialPara fiducialPara = new FiducialPara();
                         fiducialPara.setFieldKey(newParaMap.get(j).toString());
 
-                        if(paraFormatMap.get(newParaMap.get(j).toString()).equals(SystemTypeEnum.DATE.getValue())){
+                        if(paraFormatMap.get(newParaMap.get(j).toString()).equals(SystemTypeEnum.DATETIME.getValue())){
                             try {
                                 fiducialPara.setFieldValue(dateFormat.format(row.getCell(j).getDateCellValue()));
                             }catch (Exception e){

@@ -465,16 +465,15 @@ public class DataUtils {
             }
         }
         else {
-            int end_inputEnd = timeUtils.duration(dataEnd, input.get(input.size() - 1).getDates(), "小时");
+            int end_inputEnd = timeUtils.duration(dataEnd, inputEndTime, "小时");
             if (end_inputEnd >= 0)//预报结束时间在数据库中有，也就是全部读取历史数据
             {
                 //此时的dateFind是历史数据中与开始预报时间最接近的
-                dateStart = getDate(input, location, result, dateStart, calendar, n, d, n);
+                getDate(input, location, result, dateStart, calendar, n, d, n);
             } else //预报结束时间在数据库中没有，也就是需要读取预报雨量
             {
-                int start_inputEnd = timeUtils.duration(dateStart, input.get(input.size()-1).getDates(), "小时");
-                int l = timeUtils.duration(dateStart,dataEnd,"小时");
-                start_inputEnd = Math.min(start_inputEnd,l);
+                int start_inputEnd = timeUtils.duration(dateStart, inputEndTime, "小时")+1;
+                start_inputEnd = Math.min(start_inputEnd,n);
                 int length = param.getRainFallDtos().size();
                 if (start_inputEnd < 0)//预报开始时间在数据库中没有，也就是全部读取预报值
                 {
@@ -520,7 +519,7 @@ public class DataUtils {
                     }
                 } else //预报开始时间在数据库内，预报结束时间不在数据库内
                 {
-                    getDate(input,location,result,dateStart,calendar,n,d,start_inputEnd);//从落地雨开始给其赋值到数据库末尾
+                    dateStart = getDate(input,location,result,dateStart,calendar,n,d,start_inputEnd);//从落地雨开始给其赋值到数据库末尾
                     //此时的dataStart==数据库末尾的时间
                     int inputEnd_dateEnd = timeUtils.duration(dateStart, dataEnd, "小时");//数据库末尾到预报结束时间的距离
                     for (int i = 0; i < inputEnd_dateEnd; i++) {
@@ -571,7 +570,7 @@ public class DataUtils {
 
     private Date getDate(List<PredictInputData> input, String location, List<PredictInputData> result, Date dateStart, Calendar calendar, int n, int d, int duration) {
         PredictInputData data;
-        for (int i = 0; i <= duration; i++) {
+        for (int i = 0; i < duration; i++) {
             data = getNewHours(input,location,dateStart,d,n);//从数据库中获取该小时降雨
             calendar.setTime(dateStart);
             calendar.add(Calendar.HOUR_OF_DAY, 1);
@@ -752,9 +751,12 @@ public class DataUtils {
      */
     public List<PredictInputData> pointToSurface(Map<String,List<PredictInputData>> pointData,  String location) {
         List<PredictInputData> result = new ArrayList<>();
+        int l = 1000000;
+        for (Map.Entry<String,List<PredictInputData>> entry:pointData.entrySet()){
+            l = Math.min(l, entry.getValue().size());
+        }
         switch (location) {
             case "3号桥": {
-                int l = pointData.get("八一林场自动雨量站").size();
                 for (int i = 0; i < l; i++) {
                     double rainFall = 0.0;
                     double temperature;
@@ -776,7 +778,6 @@ public class DataUtils {
                 break;
             }
             case "楼庄子": {
-                int l = pointData.get("八一林场自动雨量站").size();
                 for (int i = 0; i < l; i++) {
                     double rainFall = 0.0;
                     double temperature;
@@ -802,7 +803,6 @@ public class DataUtils {
             }
             case "楼头区间":
             case "头屯河": {
-                int l = pointData.get("小渠子雨量站").size();
                 for (int i = 0; i < l; i++) {
                     double rainFall = 0.0;
                     PredictInputData hourResult = new PredictInputData();

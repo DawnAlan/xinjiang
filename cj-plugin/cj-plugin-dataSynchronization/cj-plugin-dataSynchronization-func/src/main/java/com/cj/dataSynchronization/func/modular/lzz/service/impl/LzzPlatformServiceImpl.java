@@ -8,6 +8,7 @@ import com.cj.common.util.RedisUtil;
 import com.cj.dataSynchronization.func.modular.lzz.bean.ParamDto;
 import com.cj.dataSynchronization.func.modular.lzz.bean.UserIdParam;
 import com.cj.dataSynchronization.func.modular.lzz.mapper.LzzPlatformMapper;
+import com.cj.dataSynchronization.func.modular.lzz.mapper.LzzRainFailMapper;
 import com.cj.dataSynchronization.func.modular.lzz.service.LzzPlatformService;
 import com.cj.dataSynchronization.func.modular.lzz.service.PubUserService;
 import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.entity.LzzGaugingStation;
@@ -43,6 +44,9 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
 
     @Autowired
     private LzzPlatformMapper lzzPlatformMapper;
+
+    @Autowired
+    private LzzRainFailMapper lzzRainFailMapper;
 
     @Autowired
     private StorageCapacityCurveService storageCapacityCurveService;
@@ -271,17 +275,51 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
     @Override
     public RestResponse insertLzzKqRailBetweenTime(Date startTime, Date endTime) {
         List<LzzRainfallStation> rainfallStationList = new ArrayList<>();
-        List<ParamDto> paramDtos = lzzPlatformMapper.selectInfoBetweenTime("9210201100100 ", sdf.format(startTime), sdf.format(endTime));
-        for (ParamDto paramDto :paramDtos){
-            LzzRainfallStation station = new LzzRainfallStation();
-            station.setTreeId("9210201100100");
-            station.setStationName("楼庄子库区自动雨量站");
-            station.setRainfall(paramDto.getV());
-            station.setTime(paramDto.getTime());
-            station.setRecordTime(DateUtil.parse(sdf1.format(paramDto.getTime()),"yyyy-MM-dd"));
-            station.setYear(String.valueOf(sdf.format(paramDto.getTime()).split("-")[0]));
-            station.setId("楼庄子库区自动雨量站:"+paramDto.getTime().getTime());
-            rainfallStationList.add(station);
+        Date date = lzzRainFailMapper.selectNewTimeForKqRainFail();
+        List<ParamDto> paramDtos = lzzPlatformMapper.selectInfoBetweenTimeForKq("9210201100100 ", sdf.format(date), sdf.format(endTime));
+        if(paramDtos.size()>1){
+            Comparator<ParamDto> comparing = Comparator.comparing(ParamDto::getTime);
+            paramDtos.sort(comparing);
+            for(int i= paramDtos.size();i>1;i--){
+                ParamDto paramDto = paramDtos.get(i-1);
+                LzzRainfallStation station = new LzzRainfallStation();
+                station.setTreeId("9210201100100");
+                station.setStationName("楼庄子库区自动雨量站");
+                station.setRainfall(paramDto.getV().subtract(paramDtos.get(i-2).getV()));
+                station.setTime(paramDto.getTime());
+                station.setRecordTime(DateUtil.parse(sdf1.format(paramDto.getTime()),"yyyy-MM-dd"));
+                station.setYear(String.valueOf(sdf.format(paramDto.getTime()).split("-")[0]));
+                station.setId("楼庄子库区自动雨量站:"+paramDto.getTime().getTime());
+                rainfallStationList.add(station);
+            }
+        }
+        boolean b = lzzRainfallStationService.saveOrUpdateBatch(rainfallStationList);
+        if(b){
+            return RestResponse.ok("ok");
+        }else {
+            return RestResponse.no("error");
+        }
+    }
+
+    @Override
+    public RestResponse insertLzzKqRailBetweenTimeByMyself(Date startTime, Date endTime) {
+        List<LzzRainfallStation> rainfallStationList = new ArrayList<>();
+        List<ParamDto> paramDtos = lzzPlatformMapper.selectInfoBetweenTimeForKq("9210201100100 ", sdf.format(startTime), sdf.format(endTime));
+        if(paramDtos.size()>1){
+            Comparator<ParamDto> comparing = Comparator.comparing(ParamDto::getTime);
+            paramDtos.sort(comparing);
+            for(int i= 1;i<paramDtos.size();i++){
+                ParamDto paramDto = paramDtos.get(i);
+                LzzRainfallStation station = new LzzRainfallStation();
+                station.setTreeId("9210201100100");
+                station.setStationName("楼庄子库区自动雨量站");
+                station.setRainfall(paramDto.getV().subtract(paramDtos.get(i-1).getV()));
+                station.setTime(paramDto.getTime());
+                station.setRecordTime(DateUtil.parse(sdf1.format(paramDto.getTime()),"yyyy-MM-dd"));
+                station.setYear(String.valueOf(sdf.format(paramDto.getTime()).split("-")[0]));
+                station.setId("楼庄子库区自动雨量站:"+paramDto.getTime().getTime());
+                rainfallStationList.add(station);
+            }
         }
         boolean b = lzzRainfallStationService.saveOrUpdateBatch(rainfallStationList);
         if(b){
@@ -717,6 +755,12 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
             return RestResponse.ok("ok");
         }else {
             return RestResponse.no("error");
+        }
+    }
+
+    public static void main(String[] args) {
+        for(int i =3;i>1;i--){
+            System.out.println(i-1);
         }
     }
 

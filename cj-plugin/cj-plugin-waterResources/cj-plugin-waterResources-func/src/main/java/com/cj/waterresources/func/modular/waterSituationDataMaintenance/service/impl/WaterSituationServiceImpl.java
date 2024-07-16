@@ -42,6 +42,8 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -77,6 +79,8 @@ public class WaterSituationServiceImpl implements WaterSituationService {
 
 
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+    private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     @Override
     public RestResponse<Map<String, Object>> selectTree() {
@@ -279,6 +283,7 @@ public class WaterSituationServiceImpl implements WaterSituationService {
     @Override
     public RestResponse selectInfoListByIdsNew(SelectInfoListByIdsReq req) {
         List<FlowRes> result = new ArrayList<>();
+        List<FlowRes> flowResList = new ArrayList<>();
         List<HydrographRes> resList = new ArrayList<>();
         String[] split = req.getIds().split(",");
         for (String id : split){
@@ -292,7 +297,7 @@ public class WaterSituationServiceImpl implements WaterSituationService {
                     listTth.stream().collect(Collectors.toList()).forEach(t->{
                         HydrographRes res = new HydrographRes();
                         res.setName(t.getMonitorName());
-                        res.setTime(sdf.format(t.getMonitorTime()));
+                        res.setTime(sdf1.format(t.getMonitorTime()));
                         res.setFlow(t.getSqMonitorFlow()==null?(t.getGdMonitorFlow()==null?null:t.getGdMonitorFlow()):t.getSqMonitorFlow());
                         res.setRainfall(t.getYqRainFallOne()==null?BigDecimal.ZERO:new BigDecimal(t.getYqRainFallOne()));
                         res.setWaterLevel(t.getSqWaterLevel());
@@ -304,7 +309,7 @@ public class WaterSituationServiceImpl implements WaterSituationService {
                     listLzzRain.stream().collect(Collectors.toList()).forEach(t->{
                         HydrographRes res = new HydrographRes();
                         res.setName(t.getStationName());
-                        res.setTime(sdf.format(t.getTime()));
+                        res.setTime(sdf1.format(t.getTime()));
                         res.setRainfall(t.getRainfall());
                         res.setTemperature(t.getTemperature());
                         resList.add(res);
@@ -315,7 +320,7 @@ public class WaterSituationServiceImpl implements WaterSituationService {
                     listLzzGaugingStation.stream().collect(Collectors.toList()).forEach(t->{
                         HydrographRes res = new HydrographRes();
                         res.setName(t.getStationName());
-                        res.setTime(sdf.format(t.getGatherTime()));
+                        res.setTime(sdf1.format(t.getGatherTime()));
                         res.setFlow(t.getFlow());
                         res.setWaterLevel(t.getRelativeWaterLevel());
                         resList.add(res);
@@ -326,7 +331,7 @@ public class WaterSituationServiceImpl implements WaterSituationService {
                 selectInfoListNewReq.setStartTime(req.getStartTime());
                 selectInfoListNewReq.setEndTime(req.getEndTime());
                 selectInfoListNewReq.setId(id);
-                List<HydrographRes> hydrographResList = allService.selectInfoListAllNew(selectInfoListNewReq);
+                List<HydrographRes> hydrographResList = allService.selectInfoListByIdsNew(selectInfoListNewReq);
                 if(null!=hydrographResList){
                     resList.addAll(hydrographResList);
                 }
@@ -345,6 +350,35 @@ public class WaterSituationServiceImpl implements WaterSituationService {
         if(result.isEmpty()){
             return RestResponse.no("暂无数据");
         }else {
+            Comparator<FlowRes> comparing = Comparator.comparing(FlowRes::getTime);
+            Collections.sort(result, comparing.reversed());
+            /*String endTime = result.get(0).getTime();
+            String startTime = result.get(result.size()-1).getTime();
+            Map<String, List<FlowRes>> collect1 = result.stream().collect(Collectors.groupingBy(FlowRes::getTime));
+            String[] split1_1 = startTime.split(" ");
+            String[] split2_1 = split1_1[0].split(":");
+            String[] split3_1 = split1_1[1].split(":");
+            String[] split1_2 = endTime.split(" ");
+            String[] split2_2 = split1_2[0].split(":");
+            String[] split3_2 = split1_2[1].split(":");
+            LocalDateTime start = LocalDateTime.of(Integer.valueOf(split2_1[0]), Integer.valueOf(split2_1[1]), Integer.valueOf(split2_1[2]), Integer.valueOf(split3_1[0]), Integer.valueOf(split3_1[1]));
+            LocalDateTime end = LocalDateTime.of(Integer.valueOf(split2_2[0]), Integer.valueOf(split2_2[1]), Integer.valueOf(split2_2[2]), Integer.valueOf(split3_2[0]), Integer.valueOf(split3_2[1]));
+
+            LocalDateTime currentTime = start;
+            while (!currentTime.isAfter(end)) {
+                FlowRes flowRes = new FlowRes();
+                String formattedDateTime = currentTime.format(formatter);
+                List<FlowRes> flowResList1 = collect1.get(formattedDateTime);
+                if(flowResList1==null && flowResList1.size()==0){
+                    flowRes.setFlow(null);
+                    flowRes.setTime(formattedDateTime);
+                }else {
+                    flowRes.setFlow(flowResList1.stream().map(FlowRes::getFlow).reduce(Double::sum).orElse(0.00));
+                    flowRes.setTime(formattedDateTime);
+                }
+                flowResList.add(flowRes);
+                currentTime = currentTime.plusMinutes(60);
+            }*/
             return RestResponse.ok(result);
         }
     }

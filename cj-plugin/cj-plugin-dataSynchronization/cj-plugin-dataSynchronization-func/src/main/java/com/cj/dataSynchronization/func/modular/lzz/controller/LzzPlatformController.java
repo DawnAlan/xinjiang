@@ -126,4 +126,21 @@ public class LzzPlatformController {
             return RestResponse.no("error");
         }
     }
+
+    @ApiOperationSupport(order = 3)
+    @ApiOperation("库区雨量站信息录入")
+    @PostMapping("/insertLzzKqRailBetweenTime")
+    public RestResponse insertLzzKqRailBetweenTime(@RequestBody ReqParam reqParam) {
+        try {
+            RestResponse restResponse = lzzPlatformService.insertLzzKqRailBetweenTimeByMyself(sdf.parse(reqParam.getStartDate()),sdf.parse(reqParam.getEndDate()));
+            if(restResponse.getCode()==200){
+                return RestResponse.ok("ok");
+            }else {
+                return RestResponse.no("error");
+            }
+        }catch (Exception e) {
+            e.printStackTrace();
+            return RestResponse.no("error");
+        }
+    }
 }

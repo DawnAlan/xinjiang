@@ -196,13 +196,13 @@ public class TimeUtils {
 			result =Math.toIntExact(months);
 		}
 		if (period.equals("旬")){
-			Period duration = Period.between(localDate1, localDate2);
-			int year = duration.getYears();
 			long months = ChronoUnit.MONTHS.between(localDate1, localDate2);
 			int month =Math.toIntExact(months);
-			long days =  Duration.between(localDate1.atStartOfDay(), localDate2.atStartOfDay()).toDays();
-			int day = Math.toIntExact(days);
-			result = year * 12 * 3 + month * 3 + day / 10 +1;
+			int day0 = getSpecificDate(dateStart).get("日");
+			int xun0 = day0<=10?1:(day0<=20?2:3);
+			int day1 = getSpecificDate(dateEnd).get("日");
+			int xun1 = day1<=10?1:(day1<=20?2:3);
+			result =  month * 3 + xun1-xun0 ;
 			return result;
 		}
 		if (period.equals("日")){

@@ -63,27 +63,27 @@ public class IrrigatedAreaServiceImpl implements IrrigatedAreaService {
 
     @Override
     public RestResponse getAllTree() {
-        List<AllTreeDto> allTree = IrrigatedAreaInvoke.getAllTree();
-        if(null == allTree && allTree.size()<0){
+        List<QueryMonitorBasicDto> queryMonitorBasic = IrrigatedAreaInvoke.getQueryMonitorBasic();
+        if(null == queryMonitorBasic || queryMonitorBasic.size()<0){
             return RestResponse.no("平台无数据");
         }
         List<IrrigatedPlatformTree> irrigatedPlatformTreeList = new ArrayList<>();
-        for(AllTreeDto dto : allTree){
+        for(QueryMonitorBasicDto dto : queryMonitorBasic){
             IrrigatedPlatformTree tree = new IrrigatedPlatformTree();
             tree.setId(dto.getID());
             tree.setName(dto.getNAME());
             tree.setParentId(dto.getPARENT_ID());
-            tree.setBeginTime(dto.getBEGIN_TIME());
-            tree.setBeginTimeMark(dto.getBEGIN_TIME_MARK());
+            //tree.setBeginTime(dto.getBEGIN_TIME());
+            //tree.setBeginTimeMark(dto.getBEGIN_TIME_MARK());
             tree.setElevation(dto.getELEVATION());
-            tree.setIsWaterLevel(dto.getIS_WATER_LEVEL());
-            tree.setLocationType(dto.getLOCATION_TYPE());
-            tree.setLocationTypeName(dto.getLOCATION_TYPE_NAME());
-            tree.setMeasureType(dto.getMEASURE_TYPE());
+            //tree.setIsWaterLevel(dto.getIS_WATER_LEVEL());
+            //tree.setLocationType(dto.getLOCATION_TYPE());
+            //tree.setLocationTypeName(dto.getLOCATION_TYPE_NAME());
+            //tree.setMeasureType(dto.getMEASURE_TYPE());
             tree.setMonitorType(dto.getMONITOR_TYPE());
-            tree.setNodetype(dto.getNODETYPE());
+            //tree.setNodetype(dto.getNODETYPE());
             tree.setSelfCode(dto.getSELF_CODE());
-            tree.setWaterlevelNotnormal(dto.getWATERLEVEL_NOTNORMAL());
+            //tree.setWaterlevelNotnormal(dto.getWATERLEVEL_NOTNORMAL());
             irrigatedPlatformTreeList.add(tree);
         }
         boolean b = irrigatedPlatformTreeService.saveOrUpdateBatch(irrigatedPlatformTreeList);
@@ -567,7 +567,6 @@ public class IrrigatedAreaServiceImpl implements IrrigatedAreaService {
         //monitorType 01-计量点  03-雨量站 04-管道
         if(StringUtils.isNotEmpty(id)){
             List<IrrigatedPlatformDataInfo> resultList = new ArrayList<>();
-            IrrigatedPlatformTree byId = irrigatedPlatformTreeService.getById(id);
             List<HistoryDataVo> historyDataForWater = IrrigatedAreaInvoke.getHistoryDataForRain(id, startTime, endTime);
             if(historyDataForWater!=null && historyDataForWater.size()>0){
                 for(HistoryDataVo vo:historyDataForWater){

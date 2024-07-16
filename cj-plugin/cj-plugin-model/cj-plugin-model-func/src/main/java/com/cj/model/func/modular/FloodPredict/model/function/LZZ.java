@@ -1,5 +1,6 @@
 package com.cj.model.func.modular.FloodPredict.model.function;
 
+import com.cj.model.func.modular.FloodPredict.utils.InputUtils;
 import com.cj.model.func.modular.FloodPrevent.bean.req.ReqCurve;
 import com.cj.model.func.modular.FloodPrevent.entity.*;
 import com.cj.model.func.modular.FloodPrevent.function.Cascade;
@@ -43,7 +44,7 @@ public class LZZ {
         if (isReference){
             reservoir.setH_begin(1394.5);
         }else {
-            reservoir.setH_begin(1357.9);
+            reservoir.setH_begin(InputUtils.lzzWaterLevel);
         }
 
         //库容曲线数组

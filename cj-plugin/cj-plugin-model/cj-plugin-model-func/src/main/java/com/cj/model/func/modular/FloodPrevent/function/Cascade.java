@@ -1,6 +1,5 @@
 package com.cj.model.func.modular.FloodPrevent.function;
 
-import com.cj.common.util.UUIDUtils;
 import com.cj.model.func.modular.FloodPrevent.bean.req.ReqCurve;
 import com.cj.model.func.modular.FloodPrevent.bean.req.ReqFloodPrevent;
 import com.cj.model.func.modular.FloodPrevent.bean.res.ResOption;
@@ -8,17 +7,17 @@ import com.cj.model.func.modular.FloodPrevent.entity.*;
 import com.cj.model.func.modular.FloodPrevent.model.Model;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.util.IOUtils;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.springframework.util.StringUtils;
+
 
 import java.io.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.*;
+
 
 
 public class Cascade{
@@ -55,7 +54,7 @@ public class Cascade{
             }
             //动态汛限水位
             try{
-                if (reqFloodPrevent.getLimitLevels() != null && reqFloodPrevent.getLimitLevels().size() == 12) {
+                if (reqFloodPrevent.getLimitLevels() != null && reqFloodPrevent.getLimitLevels().get(reservoirName).length == 12) {
                     reservoir.setLimitLevels(reqFloodPrevent.getLimitLevels().get(reservoirName));
                 }
             }
@@ -64,7 +63,7 @@ public class Cascade{
             }
             //动态生态流量
             try{
-                if (reqFloodPrevent.getEco() != null && reqFloodPrevent.getEco().size() == 12) {
+                if (reqFloodPrevent.getEco() != null && reqFloodPrevent.getEco().get(reservoirName).length == 12) {
                     reservoir.setEco(reqFloodPrevent.getEco().get(reservoirName));
                 }
             }
@@ -268,7 +267,7 @@ public class Cascade{
                             //检查曲线单调性
                             else{
                                 List<CurveParam> curve = capacityCurves.get(string);
-                                for (int i = 0; i < curve.size() - 1; i++) {
+                                for (int i = 0; i < curve.size()-1; i++) {
                                     if(curve.get(i).getLevel()>=curve.get(i+1).getLevel()||curve.get(i).getValue()>curve.get(i+1).getValue()){
                                         inform+=reservoirName+"库容曲线单调性异常；";
                                         whether=false;
@@ -319,7 +318,7 @@ public class Cascade{
                                         }
                                         else{
                                             List<CurveParam> curve = gateCurves.get(string).get(str);
-                                            for (int i = 0; i < curve.size() - 1; i++) {
+                                            for (int i = 0; i < curve.size()-1; i++) {
                                                 if(curve.get(i).getLevel()>=curve.get(i+1).getLevel()){
                                                     inform+=string+str+"闸门曲线单调性异常；";
                                                     whether=false;
@@ -327,7 +326,6 @@ public class Cascade{
                                                 }
                                             }
                                         }
-
                                         if(whether){
                                             gate.setCurve(gateCurves.get(string).get(str));
                                         }
@@ -347,8 +345,8 @@ public class Cascade{
                 }
             }
         }
-        if (StringUtils.hasText(inform)) {
-            inform += "异常曲线将使用默认曲线替代，请从水情管理处核验曲线。";
+        if(!inform.equals("")){
+            inform+="已采用默认曲线替代，请从水情管理处核验曲线状况";
         }
         return inform;
     }
@@ -406,4 +404,5 @@ public class Cascade{
             e.printStackTrace();
         }
     }
+
 }

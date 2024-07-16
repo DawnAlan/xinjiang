@@ -590,8 +590,8 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                         e.printStackTrace();
                         log.error("-------------------------------------------error-------------------------------------------");
                         log.error("报错信息："+getStringBuilder(e).toString());
-                        incomingWaterForecastService.lambdaUpdate().eq(IncomingWaterForecast::getId,incomingWaterForecast.getId()).remove();
-                        //incomingWaterForecastService.lambdaUpdate().set(IncomingWaterForecast::getStatus,3).eq(IncomingWaterForecast::getId,incomingWaterForecast.getId()).update();
+                        //incomingWaterForecastService.lambdaUpdate().eq(IncomingWaterForecast::getId,incomingWaterForecast.getId()).remove();
+                        incomingWaterForecastService.lambdaUpdate().set(IncomingWaterForecast::getStatus,3).eq(IncomingWaterForecast::getId,incomingWaterForecast.getId()).update();
                     }
                 }
             });

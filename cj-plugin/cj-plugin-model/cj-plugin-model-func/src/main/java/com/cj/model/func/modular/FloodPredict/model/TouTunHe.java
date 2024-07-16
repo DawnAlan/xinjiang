@@ -55,7 +55,7 @@ public class TouTunHe {
             Flood_qj = getOneStationFlood(QJDATA, param, "楼头区间");
         }
         //头屯河入库
-        List<Flood> Flood_Tth = getTTH(param,Flood_Lzz, Flood_qj);
+        List<Flood> Flood_Tth = getTTH(param,forecastParam.getInflowRunoffs(),Flood_Lzz, Flood_qj);
         List<Flood> result = new ArrayList<>();
         result.addAll(Flood_Three);
         result.addAll(Flood_Lzz);
@@ -72,6 +72,7 @@ public class TouTunHe {
         return temporaryXlsx;
     }
 
+
     /**
      * A3表数据修改
      * 添加历史模拟时的历史降水数据
@@ -86,7 +87,7 @@ public class TouTunHe {
         List<PredictInputData> QJ = new ArrayList<>();//从A3中获取的
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         boolean isrecentPredict = (paramNew.getPredictionTime().after(sdf.parse("2024-05-01 00:00:00")) && paramNew.getModelType() == 3);
-        if (paramNew.getPredictionTime().before(InputUtils.historyDate)&&!isrecentPredict) {
+        if (paramNew.getPredictionTime().after(InputUtils.historyDate)&&!isrecentPredict) {
             Object[][] lzzData = InputUtils.historyData.get("楼庄子日");
             Object[][] tthData = InputUtils.historyData.get("楼头区间日");
             Date startTime = paramNew.getDataStartTime();
@@ -113,50 +114,53 @@ public class TouTunHe {
             }
         }
         else {//本地文件未能记录该数据，从A3表中读取
-            List<PredictInputData> flowData = paramNew.getInflowRunoffs();
+            List<PredictInputData> flowData = new ArrayList<>();
+            for (PredictInputData data : paramNew.getInflowRunoffs()) {
+                flowData.add(data.clone());
+            }
             for (PredictInputData flowDatum : flowData) {
                 if (flowDatum.getLocation().equals("楼庄子")) {
-                    if (flowDatum.getFlow() != null) {
+                    if (flowDatum.getFlow() != null&&flowDatum.getDataType().equals("flow")) {
                         LZZ.add(flowDatum);
                     }
+                    if (flowDatum.getFlow() != null&&flowDatum.getDataType().equals("waterLevel")) {
+                        InputUtils.lzzWaterLevel = flowDatum.getFlow();
+                    }
                 } else if (flowDatum.getLocation().equals("头屯河")) {
-                    if (flowDatum.getFlow() != null) {
+                    if (flowDatum.getFlow() != null&&flowDatum.getDataType().equals("flow")) {
                         QJ.add(flowDatum);
+                    }
+                    if (flowDatum.getFlow() != null&&flowDatum.getDataType().equals("waterLevel")) {
+                        InputUtils.tthWaterLevel = flowDatum.getFlow();
                     }
                 }
             }
             for (PredictInputData predictInputData : QJ) {
+                boolean hasValidFlow = false; // 标志变量
                 for (PredictInputData lzz : LZZ) {
                     if (tu.DateCompare(predictInputData.getDates(), lzz.getDates(), "小时")) {
                         double f = (predictInputData.getFlow() - lzz.getFlow() >= 0 ? predictInputData.getFlow() - lzz.getFlow() : 0);
                         predictInputData.setFlow(f);
+                        hasValidFlow = true; // 找到匹配，设置标志
                     }
-                    else {
-                        predictInputData.setFlow(0.0);
-                    }
+                }
+                // 如果没有有效的匹配，Flow 不变
+                if (!hasValidFlow) {
+                    predictInputData.setFlow(predictInputData.getFlow()); // 保持原值
                 }
             }
         }
         //返回所需数据类型数据
         List<Map<String,List<PredictInputData>>> QJResult = new ArrayList<>();
         List<Map<String,List<PredictInputData>>> LZZResult = new ArrayList<>();
-        Map<String,List<PredictInputData>> LZZFlow = new HashMap<>();
-        Map<String,List<PredictInputData>> QJFlow = new HashMap<>();
-        if (paramNew.getModelType()==1){
-            LZZFlow.put("流量",LZZ);
-            LZZResult.add(LZZFlow);
-            QJFlow.put("流量",QJ);
-            QJResult.add(QJFlow);
-        }else {
+        if (paramNew.getModelType() != 1) {
             List<PredictInputData> RAT = du.getRAndT(paramNew);//获得相应的温度和降水
             LZZ = du.addRAndT(LZZ, RAT);
-            LZZFlow.put("流量",LZZ);
-            LZZResult.add(LZZFlow);
             QJ = du.addRAndT(QJ, RAT);
-            QJFlow.put("流量",QJ);
-            QJResult.add(QJFlow);
         }
-
+        Map<String,List<PredictInputData>> LZZFlow = new HashMap<>();
+        LZZFlow.put("流量",LZZ);
+        LZZResult.add(LZZFlow);
         if (paramNew.getModelType() == 3) {
             List<Map<String,List<PredictInputData>>> integration = du.lzzRainIntegration(paramNew);//整合雨量站数据转为模型所需类型
             LZZResult.add(integration.get(0));//前期雨量
@@ -165,7 +169,9 @@ public class TouTunHe {
         threeResults.put("楼庄子", LZZResult);
         threeResults.put("3号桥", LZZResult);
         //区间-数据
-
+        Map<String,List<PredictInputData>> QJFlow = new HashMap<>();
+        QJFlow.put("流量",QJ);
+        QJResult.add(QJFlow);
         if (paramNew.getModelType() == 3) {
             List<Map<String,List<PredictInputData>>> QJRain = du.irrigateRainIntegration(paramNew);
             QJResult.add(QJRain.get(0));
@@ -192,8 +198,8 @@ public class TouTunHe {
         //判断是否为短期预报，是则使用物理模型
         if (param.getIsShortForecast()) {
             Date time = param.getPreStartTime();
-            int before = (param.getLocation().equals("楼头区间")) ? 3 : 7;
-            int after = (param.getLocation().equals("楼头区间")) ? 3 : 8;
+            int before = (param.getLocation().equals("楼头区间")) ? 3 : 5;
+            int after = (param.getLocation().equals("楼头区间")) ? 3 : 5;
             int month = tu.getSpecificDate(time).get("月");
             int l = param.getPeriodStepNumber() / 24 + 1;
             Object[][] snowFlood = new Object[l][2];
@@ -267,32 +273,52 @@ public class TouTunHe {
     /**
      * 返回楼庄子出库和头屯河入库
      */
-    public List<Flood> getTTH(ForecastInputParam param,List<Flood> Lzz, List<Flood> qj) {
+    public List<Flood> getTTH(ForecastInputParam param,List<PredictInputData> tthInflow,List<Flood> Lzz, List<Flood> qj) {
         List<Flood> result = new ArrayList<>();
+        List<PredictInputData> QJ = new ArrayList<>();
         int timeLength = Integer.parseInt(Lzz.get(0).getScale());
         Object[][] tthIn;
         double qjFlood = 0.0;
         double lzzFlood = 0.0;
-        int late = 1;
+        int late = 2;
         if (param.getIsShortForecast()){
             int hours;
             if (!param.getIsReferenceWater()){
+                for (PredictInputData flowDatum : tthInflow) {
+                    if (flowDatum.getFlow() != null&&flowDatum.getDataType().equals("flow")&&flowDatum.getLocation().equals("头屯河")) {
+                        QJ.add(flowDatum);
+                    }
+                }
+                param.setIsSnowMeltModel(false);
+                double[] inFlow = new SubBasinForecast().flowDistribution(param,new Object[0][0],QJ,new ArrayList<>());
                 hours = InputUtils.beforeHours;
+                tthIn= new Object[Lzz.size() - hours][2];
+                if (Lzz.get(0).getFloodLevel().equals("一年一遇")){
+                    for (int i = hours; i < Lzz.size(); i++) {
+                        tthIn[i-hours][0] = Lzz.get(i).getTime();
+                        tthIn[i-hours][1] = (inFlow[i-hours]+qj.get(i).getPreQ());
+                        lzzFlood += inFlow[i-hours];
+                        qjFlood += qj.get(i).getPreQ();
+                    }
+                }else {
+                    for (int i = hours; i < Lzz.size(); i++) {
+                        tthIn[i-hours][0] = Lzz.get(i).getTime();
+                        tthIn[i-hours][1] = (i - late > hours ? Lzz.get(i - late).getOutQ() + qj.get(i - late).getPreQ() : Lzz.get(hours).getOutQ() + qj.get(hours).getPreQ());
+                        lzzFlood += Lzz.get(i).getOutQ();
+                        qjFlood += qj.get(i).getPreQ();
+                    }
+                }
             }else {
                 hours = 0;
+                tthIn= new Object[Lzz.size()][2];
+                for (int i = 0; i < Lzz.size(); i++) {
+                    tthIn[i][0] = Lzz.get(i).getTime();
+                    tthIn[i][1] = (i - late > 0 ? Lzz.get(i - late).getOutQ() + qj.get(i - late).getPreQ() : Lzz.get(0).getOutQ() + qj.get(0).getPreQ());
+                    lzzFlood += Lzz.get(i).getOutQ();
+                    qjFlood += qj.get(i).getPreQ();
+                }
             }
             //头屯河入库
-            tthIn = new Object[Lzz.size() - hours][2];
-            for (int i = hours; i < Lzz.size(); i++) {
-                tthIn[i-hours][0] = Lzz.get(i).getTime();
-                if (Integer.parseInt(Lzz.get(0).getScale()) < 3600 * 24) {
-                    tthIn[i-hours][1] = (i - late > hours ? Lzz.get(i - late).getOutQ() + qj.get(i - late).getPreQ() : Lzz.get(hours).getOutQ() + qj.get(hours).getPreQ());
-                } else {
-                    tthIn[i-hours][1] = Lzz.get(i).getOutQ() + qj.get(i).getPreQ();
-                }
-                lzzFlood += Lzz.get(i).getOutQ();
-                qjFlood += qj.get(i).getPreQ();
-            }
             SubBasinForecast subBasinForecast = new SubBasinForecast();
             List<Object[][]> tthInformation = subBasinForecast.getFloodInformation(tthIn);
             String level = subBasinForecast.getFloodLevel(tthIn, "头屯河");
@@ -300,7 +326,7 @@ public class TouTunHe {
             Object[][] floodNature = tthInformation.get(1);
             StringBuilder tthRain = new StringBuilder();
             ReqCurve reqCurve = new ReqCurve();
-            List<Option> tthInList = TTH.Calculate(param.getBasinStr(),tthIn, timeLength,reqCurve);
+            List<Option> tthInList = TTH.Calculate(param.getBasinStr(),tthIn, timeLength,reqCurve,param.getIsReferenceWater());
             Object[][] water_outQ = new Object[tthInList.size()][3];//水位、出库流量、汛限水位
             int waterLevel = tu.getSpecificDate(Lzz.get(0).getTime()).get("月") == 7 ? 987 : 988;
             for (int i = 0; i < tthInList.size(); i++) {
@@ -337,6 +363,7 @@ public class TouTunHe {
                 tth.setFloodLevel(level);//洪水等级
                 tth.setWarningTime(0);//是否超过汛限水位
                 tth.setRainProcess(Math.round((Lzz.get(i).getRainProcess() * 0.7514 + qj.get(i).getRainProcess() * 0.2486) * 100) / 100.0);//雨情
+                tth.setConfluenceTime(qj.get(i).getConfluenceTime());//汇流时间
                 result.add(tth);
             }
             for (int i = 0; i < Lzz.size()-hours; i++) {
@@ -357,6 +384,7 @@ public class TouTunHe {
                 tth.setWarningTime((Integer) water_outQ[i][2]);//超警时段
                 tth.setOutQ((Double) water_outQ[i][1]);//出库流量
                 tth.setRainProcess(Lzz.get(i).getRainProcess() * 0.7514 + qj.get(i).getRainProcess() * 0.2486);//雨情
+                tth.setConfluenceTime(qj.get(i).getConfluenceTime());//汇流时间
                 result.add(tth);
             }
         } else {
@@ -376,6 +404,7 @@ public class TouTunHe {
                 tth.setFloodLevel("");//洪水等级
                 tth.setWarningTime(0);//是否超过汛限水位
                 tth.setRainProcess(0.0);//雨情
+                tth.setConfluenceTime("");//汇流时间
                 result.add(tth);
             }
         }

@@ -99,6 +99,9 @@ public class Flood implements Serializable {
     @TableField(value = "RAIN_PROCESS")
     @Excel(name = "RAIN_PROCESS",width = 15,orderNum = "10")
     private Double rainProcess;
-
+    @ApiModelProperty("汇流时间")
+    @TableField(value = "CONFLUENCE_TIME")
+    @Excel(name = "CONFLUENCE_TIME",width = 15,orderNum = "10")
+    private String confluenceTime;
 }
 

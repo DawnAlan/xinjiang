@@ -1,5 +1,6 @@
 package com.cj.model.func.modular.FloodPredict.model.function;
 
+import com.cj.model.func.modular.FloodPredict.utils.InputUtils;
 import com.cj.model.func.modular.FloodPredict.utils.TimeUtils;
 import com.cj.model.func.modular.FloodPrevent.bean.req.ReqCurve;
 import com.cj.model.func.modular.FloodPrevent.entity.*;
@@ -12,7 +13,7 @@ import static com.cj.model.func.modular.FloodPrevent.function.Cascade.Update;
 
 public class TTH {
     static TimeUtils tu = new TimeUtils();
-    public static List<Option> Calculate(String basinStr, Object[][] pre, int delta, ReqCurve reqCurve)  {
+    public static List<Option> Calculate(String basinStr, Object[][] pre, int delta, ReqCurve reqCurve,Boolean isReferenceWater)  {
         List<Option> result;
 
         Basin basin = new Basin();
@@ -42,7 +43,12 @@ public class TTH {
         reservoir.setT_Delta(delta);
         //起调水位
         int waterLevel = tu.getSpecificDate((Date) pre[0][0]).get("月") == 7 ? 987 : 988;
-        reservoir.setH_begin(waterLevel);
+        if (isReferenceWater){
+            reservoir.setH_begin(waterLevel);
+        }else {
+            reservoir.setH_begin(InputUtils.tthWaterLevel);
+        }
+
         //库容曲线数组
         List<CurveParam> curve1 = reservoir.getCapacityCurve();
         double[][] curve2 = new double[2][curve1.size()];

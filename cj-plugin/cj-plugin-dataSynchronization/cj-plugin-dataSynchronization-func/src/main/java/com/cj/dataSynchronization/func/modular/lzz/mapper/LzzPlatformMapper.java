@@ -25,6 +25,9 @@ public interface LzzPlatformMapper {
     @Select("select time,FACTV as v,SENID from wds.RTSQ where SENID = #{senId} and CONVERT(nvarchar(21),[TIME],121) BETWEEN #{startTime} AND #{endTime} order by time asc")
     List<ParamDto> selectInfoBetweenTime(@Param("senId") String senId, @Param("startTime") String startTime, @Param("endTime") String endTime);
 
+    @Select("select time,FACTV as v,SENID from wds.RTSQ where SENID = #{senId} and CONVERT(nvarchar(21),[TIME],121) BETWEEN #{startTime} AND #{endTime} order by time desc")
+    List<ParamDto> selectInfoBetweenTimeForKq(@Param("senId") String senId, @Param("startTime") String startTime, @Param("endTime") String endTime);
+
     @Select("select time,FACTV/3600 as v,SENID from wds.RTSQ where SENID = #{senId} and CONVERT(nvarchar(13),[TIME],121) = #{time}")
     ParamDto selectLzzInfoByTime(@Param("senId") String senId, @Param("time") String time);
 

@@ -396,6 +396,8 @@ public class ExcelTool {
         cell14.setCellValue("WARNING_TIME");//超过警戒水位时间
         Cell cell15 = row0.createCell(15);
         cell15.setCellValue("RAIN_PROCESS");//雨情
+        Cell cell16 = row0.createCell(16);
+        cell16.setCellValue("CONFLUENCE_TIME");//汇流时间
         // 先判断工作簿是否存在，不存在则创建，存在则继续填写
         if (sheet != null) {
             int nextRowNum = sheet.getLastRowNum() + 1;

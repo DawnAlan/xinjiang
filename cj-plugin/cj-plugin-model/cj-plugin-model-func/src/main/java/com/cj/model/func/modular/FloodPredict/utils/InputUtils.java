@@ -15,6 +15,9 @@ public class InputUtils {
 
     public static Date historyDate;
 
+    public static Double lzzWaterLevel = 1394.5;
+    public static Double tthWaterLevel = 988.0;
+
     public static Map<String,Object[][]> historyData;
 
     public static Map<String,Object[][]> hortonParam;

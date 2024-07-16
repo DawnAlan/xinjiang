@@ -23,6 +23,7 @@ public interface AllService {
 
     RestResponse selectInfoList(SelectInfoListReq req);
     List<HydrographRes> selectInfoListAllNew(SelectInfoListNewReq req);
+    List<HydrographRes> selectInfoListByIdsNew(SelectInfoListNewReq req);
 
     RestResponse selectListForIndustrialWaterFee(SelectListForIndustrialWaterFeeReq req);
 
