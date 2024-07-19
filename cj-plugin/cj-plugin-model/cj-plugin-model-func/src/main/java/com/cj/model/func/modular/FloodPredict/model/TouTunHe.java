@@ -9,6 +9,7 @@ import com.cj.model.func.modular.FloodPrevent.entity.Option;
 import com.cj.model.func.modular.entity.Flood;
 import lombok.SneakyThrows;
 
+
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -40,18 +41,15 @@ public class TouTunHe {
             Flood_qj = new SimulatedRunoff().simulation(param);
         }else {
             //数据输入
-            Map<String, List<Map<String,List<PredictInputData>>>> stationsData = getOneStationDataList(forecastParam);
+            Map<String, InputDataSet> stationsData = getOneStationDataList(forecastParam);
             //楼庄子
-            List<Map<String,List<PredictInputData>>> LZZDATA;
-            LZZDATA = stationsData.get("楼庄子");
+            InputDataSet LZZDATA = stationsData.get("楼庄子");
             Flood_Lzz = getOneStationFlood(LZZDATA, param, "楼庄子");
             //三号桥
-            List<Map<String,List<PredictInputData>>> SHQDATA;
-            SHQDATA = stationsData.get("3号桥");
+            InputDataSet SHQDATA = stationsData.get("3号桥");
             Flood_Three = getOneStationFlood(SHQDATA, param, "3号桥");
             //区间
-            List<Map<String,List<PredictInputData>>> QJDATA;
-            QJDATA = stationsData.get("楼头区间");
+            InputDataSet QJDATA = stationsData.get("楼头区间");
             Flood_qj = getOneStationFlood(QJDATA, param, "楼头区间");
         }
         //头屯河入库
@@ -72,7 +70,6 @@ public class TouTunHe {
         return temporaryXlsx;
     }
 
-
     /**
      * A3表数据修改
      * 添加历史模拟时的历史降水数据
@@ -80,14 +77,14 @@ public class TouTunHe {
      * @return 三个站点的日尺度历史径流，小时尺度雨量和日尺度雨量
      */
     @SneakyThrows
-    public Map<String, List<Map<String,List<PredictInputData>>>> getOneStationDataList(ForecastInputParamNew paramNew){
-        Map<String, List<Map<String,List<PredictInputData>>>> threeResults = new HashMap<>();
+    public Map<String, InputDataSet> getOneStationDataList(ForecastInputParamNew paramNew){
+        Map<String, InputDataSet> threeResults = new HashMap<>();
         //日尺度径流数据（从云端文件或者A3表中获取)
         List<PredictInputData> LZZ = new ArrayList<>();//从A3中获取的
         List<PredictInputData> QJ = new ArrayList<>();//从A3中获取的
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         boolean isrecentPredict = (paramNew.getPredictionTime().after(sdf.parse("2024-05-01 00:00:00")) && paramNew.getModelType() == 3);
-        if (paramNew.getPredictionTime().after(InputUtils.historyDate)&&!isrecentPredict) {
+        if (paramNew.getPredictionTime().before(InputUtils.historyDate)&&!isrecentPredict) {
             Object[][] lzzData = InputUtils.historyData.get("楼庄子日");
             Object[][] tthData = InputUtils.historyData.get("楼头区间日");
             Date startTime = paramNew.getDataStartTime();
@@ -130,7 +127,7 @@ public class TouTunHe {
                     if (flowDatum.getFlow() != null&&flowDatum.getDataType().equals("flow")&&flowDatum.getFlow()<500.0) {
                         QJ.add(flowDatum);
                     }
-                    if (flowDatum.getFlow() != null&&flowDatum.getDataType().equals("waterLevel")&&flowDatum.getFlow()>900.0) {
+                    if (flowDatum.getFlow() != null&&flowDatum.getDataType().equals("waterLevel")&&flowDatum.getFlow()>1000.0) {
                         InputUtils.tthWaterLevel = flowDatum.getFlow();
                     }
                 }
@@ -151,55 +148,51 @@ public class TouTunHe {
             }
         }
         //返回所需数据类型数据
-        List<Map<String,List<PredictInputData>>> QJResult = new ArrayList<>();
-        List<Map<String,List<PredictInputData>>> LZZResult = new ArrayList<>();
+        InputDataSet QJResult = new InputDataSet();
+        InputDataSet LZZResult = new InputDataSet();
         if (paramNew.getModelType() != 1) {
-            List<PredictInputData> RAT = du.getRAndT(paramNew);//获得相应的温度和降水
+            List<RainFallDto> RAT = du.getRAndT(paramNew);//获得相应的温度和降水
             LZZ = du.addRAndT(LZZ, RAT);
             QJ = du.addRAndT(QJ, RAT);
         }
-        Map<String,List<PredictInputData>> LZZFlow = new HashMap<>();
-        LZZFlow.put("流量",LZZ);
-        LZZResult.add(LZZFlow);
+        LZZResult.setFlowData(LZZ);
+        QJResult.setFlowData(QJ);
         if (paramNew.getModelType() == 3) {
-            List<Map<String,List<PredictInputData>>> integration = du.lzzRainIntegration(paramNew);//整合雨量站数据转为模型所需类型
-            LZZResult.add(integration.get(0));//前期雨量
-            LZZResult.add(integration.get(1));//预报降雨
+            InputDataSet integration = du.rainIntegration(paramNew);//整合雨量站数据转为模型所需类型
+            LZZResult.setRainHourData(integration.getRainHourData());//预报降雨
+            LZZResult.setRainDayData(integration.getRainDayData());//前期雨量
+            QJResult.setRainHourData(integration.getRainHourData());
+            QJResult.setRainDayData(integration.getRainDayData());
         }
         threeResults.put("楼庄子", LZZResult);
         threeResults.put("3号桥", LZZResult);
-        //区间-数据
-        Map<String,List<PredictInputData>> QJFlow = new HashMap<>();
-        QJFlow.put("流量",QJ);
-        QJResult.add(QJFlow);
-        if (paramNew.getModelType() == 3) {
-            List<Map<String,List<PredictInputData>>> QJRain = du.irrigateRainIntegration(paramNew);
-            QJResult.add(QJRain.get(0));
-            QJResult.add(QJRain.get(1));
-        }
         threeResults.put("楼头区间", QJResult);
-
         return threeResults;
     }
 
     /**
      * 获取单个站点的洪水数据
      */
-    public List<Flood> getOneStationFlood(List<Map<String,List<PredictInputData>>> Data, ForecastInputParam param, String stationName) {
+    public List<Flood> getOneStationFlood(InputDataSet Data, ForecastInputParam param, String stationName) {
         param.setLocation(stationName);
         String Option = stationName + param.getPeriod();
+        Hydrology hydrology = new Hydrology();
+        for (Hydrology station: param.getFloodBasin().getHydrologies()){
+            if (station.getStationName().equals(stationName)){
+                hydrology = station;
+            }
+        }
         Object[][] historyInput = InputUtils.historyData.get(Option);
         //数据驱动模型输入
-        List<PredictInputData> machineData = Data.get(0).get("流量");
+        List<PredictInputData> machineData = Data.getFlowData();
         //数据驱动模型数据输入尺度转换
         List<PredictInputData> re = tu.ChangeDate(machineData, param.getPeriod());
         Object[][] machineInputData = mdu.listToObject(re, stationName);
-
         //判断是否为短期预报，是则使用物理模型
         if (param.getIsShortForecast()) {
             Date time = param.getPreStartTime();
-            int before = (param.getLocation().equals("楼头区间")) ? 3 : 5;
-            int after = (param.getLocation().equals("楼头区间")) ? 3 : 5;
+            int before = hydrology.getSnowMonth()[0];
+            int after = hydrology.getSnowMonth()[1];
             int month = tu.getSpecificDate(time).get("月");
             int l = param.getPeriodStepNumber() / 24 + 1;
             Object[][] snowFlood = new Object[l][2];

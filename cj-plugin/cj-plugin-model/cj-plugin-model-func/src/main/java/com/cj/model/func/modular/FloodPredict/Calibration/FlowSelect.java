@@ -1,114 +1,61 @@
 package com.cj.model.func.modular.FloodPredict.Calibration;
 
-import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.entity.IrrigatedPlatformDataInfo;
-import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.entity.LzzGaugingStation;
-import com.cj.model.func.modular.FloodPredict.Calibration.entity.OneCalibrationParam;
+import com.cj.model.func.modular.FloodPredict.Calibration.entity.CalibrationParam;
+import com.cj.model.func.modular.FloodPredict.entity.Hydrology;
+import com.cj.model.func.modular.FloodPredict.entity.PredictInputData;
 import com.cj.model.func.modular.FloodPredict.utils.InputUtils;
 import com.cj.model.func.modular.FloodPredict.utils.TimeUtils;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 public class FlowSelect {
 
-    TimeUtils timeUtils = new TimeUtils();
+    TimeUtils tu = new TimeUtils();
 
-    //获取3个断面洪水持续时间
-    public List<Object[]> getFloodDate(OneCalibrationParam input)  {
-        List<Object[]> result = new ArrayList<>();
-        FlowSelect flowSelect = new FlowSelect();
-        List<LzzGaugingStation> threeFlow = new ArrayList<>();
-        List<LzzGaugingStation> lzzFlow = new ArrayList<>();
-        List<IrrigatedPlatformDataInfo> qjFlow = new ArrayList<>();
+    //获取断面洪水持续时间
+    public  List<Object[]> getFloodDate(CalibrationParam input, Hydrology hydrology)  {
+        List<Object[]> result;
+        List<PredictInputData> flow;
+        String station = hydrology.getIncludingWater().get(0);
+        flow = input.getFlowData().get(station).stream()
+                .filter(data -> data.getDates().after(input.getStartTime()))
+                .collect(Collectors.toList());
 
-        Date dateStart = input.getStartTime();
-        Date dateEnd = input.getEndTime();
-//        switch (input.getLocation()) {
-//            case "3号桥":
-//                for (int i = 0; i < input.getLzzHydrologyParam().getThreeGaugingStation().size(); i++) //3号桥流量
-//                {
-//                    if (input.getLzzHydrologyParam().getThreeGaugingStation().get(i).getGatherTime().after(input.getStartTime())) {
-//                        threeFlow.add(input.getLzzHydrologyParam().getThreeGaugingStation().get(i));
-//                    }
-//                }
-//                Object[][] threeObjectFlow = flowSelect.getFlow(threeFlow, new ArrayList<>(), dateStart, dateEnd);
-//                result = flowSelect.floodList("3号桥", flowSelect.getFloodSelect("3号桥", threeObjectFlow));
-//                break;
-//            case "楼庄子":
-//                for (int i = 0; i < input.getLzzHydrologyParam().getLzzInput().size(); i++) //楼庄子流量
-//                {
-//                    if (input.getLzzHydrologyParam().getLzzInput().get(i).getGatherTime().after(input.getStartTime())) {
-//                        lzzFlow.add(input.getLzzHydrologyParam().getLzzInput().get(i));
-//                    }
-//                }
-//                Object[][] lzzObjectFlow = flowSelect.getFlow(lzzFlow, new ArrayList<>(), dateStart, dateEnd);
-//                result = flowSelect.floodList("楼庄子", flowSelect.getFloodSelect("楼庄子", lzzObjectFlow));
-//                break;
-//            case "头屯河":
-//                for (int i = 0; i < input.getIrrigatedHydrologyParam().getTthInput().size(); i++) //头屯河进库流量
-//                {
-//                    if (input.getIrrigatedHydrologyParam().getTthInput().get(i).getMonitorTime().after(input.getStartTime())) {
-//                        qjFlow.add(input.getIrrigatedHydrologyParam().getTthInput().get(i));
-//                    }
-//                }
-//                Object[][] qjObjectFlow = flowSelect.getFlow(new ArrayList<>(), qjFlow, dateStart, dateEnd);
-//                result = flowSelect.floodList("头屯河", flowSelect.getFloodSelect("头屯河", qjObjectFlow));
-//                break;
-//        }
+        Object[][] objectFlow = getFlow(flow, input.getStartTime(), input.getEndTime());
+        result = floodList(hydrology.getStationName(), getFloodSelect(hydrology.getStationName(), objectFlow));
         return result;
     }
 
     /**
      * 将数据库中数据转换为Object数组以便于进行洪水切片
      */
-    public Object[][] getFlow(List<LzzGaugingStation> flow, List<IrrigatedPlatformDataInfo> qjFlow, Date dateStart, Date dateEnd) {
-        int durationLong = timeUtils.duration(dateStart, dateEnd, "小时");
+    private Object[][] getFlow(List<PredictInputData> flow, Date dateStart, Date dateEnd) {
+        int durationLong = tu.duration(dateStart, dateEnd, "小时");
         List<Date> dateList = new ArrayList<>();
         Object[][] hisF = new Object[durationLong][2];
-        if (qjFlow.isEmpty()) {//3号桥和楼庄子的历史流量
-            for (LzzGaugingStation lzzGaugingStation : flow) {
-                dateList.add(lzzGaugingStation.getGatherTime());
-            }
-            for (int i = 0; i < durationLong; i++) {
-                Calendar calendar1 = Calendar.getInstance();
-                calendar1.setTime(dateStart);
-                for (LzzGaugingStation lzzGaugingStation : flow) {
-                    if (timeUtils.DateCompare(dateStart, lzzGaugingStation.getGatherTime(), "小时")) {
-                        hisF[i][0] = lzzGaugingStation.getGatherTime();
-                        hisF[i][1] = lzzGaugingStation.getFlow() == null ? 0.0 : lzzGaugingStation.getFlow();
-                        break;
-                    } else {
-                        hisF[i][0] = dateStart;
-                        int n = timeUtils.findNearestTime(dateList, dateStart);
-                        hisF[i][1] = flow.get(n).getFlow() == null ? 0.0 : flow.get(n).getFlow();
-                    }
+        for (PredictInputData predictInputData : flow) {
+            dateList.add(predictInputData.getDates());
+        }
+        for (int i = 0; i < durationLong; i++) {
+            Calendar calendar1 = Calendar.getInstance();
+            calendar1.setTime(dateStart);
+            for (PredictInputData data : flow) {
+                if (tu.DateCompare(dateStart, data.getDates(), "小时")) {
+                    hisF[i][0] = data.getDates();
+                    hisF[i][1] = data.getFlow() == null ? 0.0 : data.getFlow();
+                    break;
+                } else {
+                    hisF[i][0] = dateStart;
+                    int n = tu.findNearestTime(dateList, dateStart);
+                    hisF[i][1] = flow.get(n).getFlow() == null ? 0.0 : flow.get(n).getFlow();
                 }
-                calendar1.add(Calendar.HOUR_OF_DAY, 1);
-                dateStart = calendar1.getTime();
             }
-        } else {//楼头区间的历史流量
-            for (IrrigatedPlatformDataInfo irrigatedPlatformDataInfo : qjFlow) {
-                dateList.add(irrigatedPlatformDataInfo.getMonitorTime());
-            }
-            for (int i = 0; i < durationLong; i++) {
-                Calendar calendar1 = Calendar.getInstance();
-                calendar1.setTime(dateStart);
-                for (IrrigatedPlatformDataInfo irrigatedPlatformDataInfo : qjFlow) {
-                    if (timeUtils.DateCompare(dateStart, irrigatedPlatformDataInfo.getMonitorTime(), "小时")) {
-                        hisF[i][0] = irrigatedPlatformDataInfo.getMonitorTime();
-                        hisF[i][1] = irrigatedPlatformDataInfo.getSqMonitorFlow() == null ? 0.0 : irrigatedPlatformDataInfo.getSqMonitorFlow();
-                        break;
-                    } else {
-                        hisF[i][0] = dateStart;
-                        int n = timeUtils.findNearestTime(dateList, dateStart);
-                        hisF[i][1] = qjFlow.get(n).getSqMonitorFlow() == null ? 0.0 : qjFlow.get(n).getSqMonitorFlow();
-                    }
-                }
-                calendar1.add(Calendar.HOUR_OF_DAY, 1);
-                dateStart = calendar1.getTime();
-            }
+            calendar1.add(Calendar.HOUR_OF_DAY, 1);
+            dateStart = calendar1.getTime();
         }
         return hisF;
     }
@@ -117,7 +64,7 @@ public class FlowSelect {
      * 通过基准线筛选洪水过程
      * @return 洪水过程或者在所选时段内无较大来水时为空
      */
-    public Object[][] getFloodSelect(String location,Object[][] predict) {
+    private Object[][] getFloodSelect(String location,Object[][] predict) {
         Object[][] flood = new Object[predict.length][3];
         double max = 0.0;
         double min = 1000000.0;
@@ -137,22 +84,22 @@ public class FlowSelect {
             throw new RuntimeException(location+"所选时段内无较大来水，无法对模型参数进行有效优化");
         }
 
-        if (max >= 300)//如果洪峰大于300
+        if (max >= 500)//如果洪峰大于300
         {
-            throw new RuntimeException(location+"所选时段内历史数据有误，最大洪峰超过300立方米每秒");
+            throw new RuntimeException(location+"所选时段内历史数据有误，最大洪峰超过500立方米每秒");
         }
         double line = min + dt * 0.4;//洪水标准线
         for (int i = 0; i < predict.length; i++)//找到所有大于标准线的来水
         {
+            //预报流量
+            //时间
             if ((double) predict[i][1] > line) {
                 flood[i][0] = 1;
-                flood[i][1] = predict[i][0];//时间
-                flood[i][2] = predict[i][1];//预报流量
             } else {
                 flood[i][0] = 0;
-                flood[i][1] = predict[i][0];//时间
-                flood[i][2] = predict[i][1];//预报流量
             }
+            flood[i][1] = predict[i][0];//时间
+            flood[i][2] = predict[i][1];//预报流量
         }
         int m = 0;//洪峰的数量
         List<Integer> loc = new ArrayList<>();//记录变化的位置
@@ -243,17 +190,16 @@ public class FlowSelect {
                 flood[i + 1][0] = 0;
             }
         }
-//        ExcelTool.writeObjectExcel("D:\\204\\2.头屯河\\径流预报数据文件\\月尺度来水过程.xlsx","洪水过程",flood);
         return flood;
     }
 
     /**
-     * 获取超过72个小时的来水过程
+     * 获取超过X个小时的来水过程
      *
      * @param flow 来水过程
      * @return 几个来水过程的开始时间和结束时间或者在未获得可用洪水数据时返回空
      */
-    public List<Object[]> floodList(String location,Object[][] flow) {
+    private List<Object[]> floodList(String location,Object[][] flow) {
         //判断数据库中是否有数据
         if (flow == null) {
             throw new RuntimeException(location+"未从本数据集中获得可用洪水数据");
@@ -279,7 +225,7 @@ public class FlowSelect {
                 flowList.add(flow[i]);
                 number++;
             } else {
-                if (number >= 72) {//判断一场洪水是否超过72个小时
+                if (number >= 10) {//判断一场洪水是否超过10个小时
                     Object[][] resultObject = new Object[flowList.size()][3];
                     for (int j = 0; j < flowList.size(); j++) {
                         resultObject[j] = flowList.get(j);

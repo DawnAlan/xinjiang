@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -722,7 +723,8 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
 
     @Override
     public RestResponse insertLzzInputFlow() {
-        List<LzzGaugingStation> list = lzzGaugingStationService.lambdaQuery().in(LzzGaugingStation::getTreeId, "2023101301", "2023101302").orderByDesc(LzzGaugingStation::getGatherTime).last("limit 2").list();
+        List<LzzGaugingStation> list = lzzGaugingStationService.lambdaQuery().eq(LzzGaugingStation::getGatherTime,timeData.format(new Date())).
+                in(LzzGaugingStation::getTreeId, "2023101301", "2023101302").orderByDesc(LzzGaugingStation::getGatherTime).last("limit 2").list();
         if(list.size()==2){
             LzzGaugingStation station = new LzzGaugingStation();
             station.setId("楼庄子进库流量:"+list.get(0).getGatherTime().getTime());
@@ -829,5 +831,12 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
         }else {
             return RestResponse.no("error");
         }
+    }
+    private Date calculateTime(Date time,int minute){
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(time);
+        calendar.add(Calendar.MINUTE,minute);
+        Date date = calendar.getTime();
+        return date;
     }
 }

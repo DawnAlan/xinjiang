@@ -85,6 +85,8 @@ public class ForecastInputParam {
     private Double preRainFall;
     //预报雨量
     private List<RainFallDto> rainFallDtos;
+    //流域参数
+    private FloodBasin floodBasin;
 
     /**
      * 模型内部参数

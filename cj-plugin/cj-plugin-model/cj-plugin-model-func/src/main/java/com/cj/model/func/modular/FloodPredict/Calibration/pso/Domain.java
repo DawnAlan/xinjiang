@@ -59,14 +59,6 @@ public class Domain {
     /**
      * @param positionDomain Position domain
      * @param evaluationFunc Evaluation function
-     */
-    public Domain(Interval[] positionDomain, Function<double[], Double> evaluationFunc) {
-        this(positionDomain, evaluationFunc, 0);
-    }
-
-    /**
-     * @param positionDomain Position domain
-     * @param evaluationFunc Evaluation function
      * @param targetValue The evaluation function value to look for
      */
     public Domain(Interval[] positionDomain, Function<double[], Double> evaluationFunc, double targetValue) {

@@ -1,16 +1,22 @@
 package com.cj.model.func.modular.FloodPredict.utils;
 
 import cn.hutool.core.util.RandomUtil;
+import com.alibaba.excel.metadata.csv.CsvRow;
+import com.cj.common.util.UUIDUtils;
+import com.cj.model.func.core.util.MinioUtils;
 import com.cj.model.func.modular.FloodPredict.entity.DataWrite;
 import com.cj.model.func.modular.FloodPredict.entity.PredictInputData;
+import javafx.scene.shape.Line;
 import lombok.SneakyThrows;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.openxml4j.util.ZipSecureFile;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import java.io.*;
 import java.net.URL;
 import java.nio.file.Files;
@@ -23,7 +29,7 @@ import java.util.*;
  */
 @Component
 public class ExcelTool {
-    public static void writeDoubleExcel(String path, String sheetName, double[][] data) throws IOException, InvalidFormatException {
+    public static void writeDoubleExcel(String path, String sheetName, double[][] data){
         XSSFWorkbook workbook = null;
 
         // 检查文件是否存在
@@ -79,7 +85,6 @@ public class ExcelTool {
 
     public static void writeExcel(String path, List<DataWrite> historyData){
         XSSFWorkbook workbook = null;
-
         // 检查文件是否存在
         File file = new File(path);
         if (file.exists()) {
@@ -107,6 +112,7 @@ public class ExcelTool {
             e.printStackTrace();
         }
     }
+
     public static void fillObjectSheet(XSSFWorkbook workbook, String sheetName, Object[][] data)  {
         assert workbook != null;
         boolean sheetExists = false;
@@ -278,7 +284,7 @@ public class ExcelTool {
      * @throws IOException
      * @throws InvalidFormatException
      */
-    public static void writeListPredictListExcel(String path, String sheetName, List<PredictInputData> inputDataList) throws IOException, InvalidFormatException {
+    public static void writeListPredictListExcel(String path, String sheetName, List<PredictInputData> inputDataList) {
         Object[][] inputData = new Object[inputDataList.size() + 1][5];
         inputData[0][0] = "站点";
         inputData[0][1] = "日期";
@@ -332,9 +338,9 @@ public class ExcelTool {
             sheet = workbook.createSheet(sheetName);
         }
         int l = 0;
-        for (int i = 0; i < data.size(); i++) {
-            if (data.get(i).size()>l){
-                l=data.get(i).size();
+        for (List<Double> datum : data) {
+            if (datum.size() > l) {
+                l = datum.size();
             }
         }
         for (int i = 0; i < data.get(0).size(); i++) {
@@ -464,7 +470,7 @@ public class ExcelTool {
         String savePath = System.getProperty("java.io.tmpdir") + name + RandomUtil.randomString(10) + time+".xlsx";
         String filePath = path + name +".xlsx";
         downloadFile(filePath, savePath);
-        InputStream fis = new FileInputStream(savePath);
+        InputStream fis = Files.newInputStream(Paths.get(savePath));
         ZipSecureFile.setMinInflateRatio(-1.0d);
         Workbook wb = new XSSFWorkbook(fis);
         int numberOfSheets = wb.getNumberOfSheets();
@@ -480,7 +486,7 @@ public class ExcelTool {
     public static Map<String,Object[][]> readExcel2(String path, String name) throws IOException {
         Map<String,Object[][]> result = new HashMap<>();
         String filePath = path+name+".xlsx";
-        InputStream fis = new FileInputStream(filePath);
+        InputStream fis = Files.newInputStream(Paths.get(filePath));
         ZipSecureFile.setMinInflateRatio(-1.0d);
         Workbook wb = new XSSFWorkbook(fis);
         int numberOfSheets = wb.getNumberOfSheets();
@@ -491,14 +497,14 @@ public class ExcelTool {
         fis.close();
         return result;
     }
+
     public static Object[][] readStringExcel(String path, String sheetName) throws IOException {
-        InputStream fis = new FileInputStream(path);
+        InputStream fis = Files.newInputStream(Paths.get(path));
         ZipSecureFile.setMinInflateRatio(-1.0d);
         Workbook wb = new XSSFWorkbook(fis);
         Sheet sheet = wb.getSheet(sheetName);
         return readSheet(sheet);
     }
-
 
     protected static Object[][] readSheet(Sheet sheet) {
         Object[][] output = null;

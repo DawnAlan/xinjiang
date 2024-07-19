@@ -493,7 +493,6 @@ public class ShanBeiModel {
                 Q[j+1] = CS * Q[j];
             } else {
                 Q[j+1] = CS * Q[j] + (1 - CS) * I[j - L];
-
             }
         }
         for (int j = 0; j < NumPeriod-1; j++) {

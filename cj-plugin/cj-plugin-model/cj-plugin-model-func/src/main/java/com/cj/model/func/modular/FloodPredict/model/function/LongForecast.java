@@ -149,7 +149,7 @@ public class LongForecast {
         datalist.add(temperatureData);
         //降水
         rainData = new double[input.length];
-        if (input[0].length >= 4) {
+        if (!param.getIsSnowMeltModel()) {
             for (int i = 0; i < input.length; i++) {
                 rainData[i] = du.rainStringToDouble(input[i]);
             }

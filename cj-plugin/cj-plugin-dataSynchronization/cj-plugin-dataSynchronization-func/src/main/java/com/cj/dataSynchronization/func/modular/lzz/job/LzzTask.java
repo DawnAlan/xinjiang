@@ -44,6 +44,7 @@ public class LzzTask {
     @XxlJob("saveLzzInputFlow")
     private void saveLzzInputFlow(){
         try {
+            Thread.sleep(10000);
             lzzPlatformService.insertLzzInputFlow();
         }catch (Exception e) {
             e.printStackTrace();

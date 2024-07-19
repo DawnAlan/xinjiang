@@ -103,10 +103,25 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
         return JSONObject.parseObject(basin, BasinParam.class);
     }
 
+    private FloodBasin loadFloodBasinParam() throws IOException {
+        InputStream tth = minioUtils.getObject("tth", "tthUseFile/FloodBasin.json");
+        String basin = IOUtils.toString(tth, StandardCharsets.UTF_8);
+        return JSONObject.parseObject(basin, FloodBasin.class);
+    }
+
     @Override
     public RestResponse<BasinParam> getBasinParam() {
         try {
             return RestResponse.ok(loadBasinParam());
+        } catch (Exception e){
+            throw new CommonException(e.getMessage());
+        }
+    }
+
+    @Override
+    public RestResponse<FloodBasin> getFloodBasinParam() {
+        try {
+            return RestResponse.ok(loadFloodBasinParam());
         } catch (Exception e){
             throw new CommonException(e.getMessage());
         }
@@ -315,6 +330,7 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                                 });
                         forcastInputParamNew.setParamMap(paramMap);
                         forcastInputParamNew.setBasinStr(JSONObject.toJSONString(loadBasinParam()));
+                        forcastInputParamNew.setFloodBasin(loadFloodBasinParam());
                         TemporaryXlsx floodList = new TouTunHe().getFloodList(forcastInputParamNew);
                         //生成模型结果文件
                         String fileAddress = floodList.getPath();
@@ -549,6 +565,7 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                         //调用模型方法生成模型结果，更新到数据库
                         //System.out.println("Hello pool");
                         forcastInputParamNew.setBasinStr(JSONObject.toJSONString(req.getBasinParam() == null ? loadBasinParam() : req.getBasinParam()));
+                        forcastInputParamNew.setFloodBasin(loadFloodBasinParam());
                         Map<String, ShanbeiParam> paramMap =  new HashMap<>();
                         modelParametersService.lambdaQuery().eq(ModelParameters::getIsDefault, 1).list()
                                 .forEach(param -> {
@@ -752,6 +769,8 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                                     }});
                                 });
                         forcastInputParamNew.setParamMap(paramMap);
+                        forcastInputParamNew.setBasinStr(JSONObject.toJSONString(loadBasinParam()));
+                        forcastInputParamNew.setFloodBasin(loadFloodBasinParam());
                         //调用模型方法生成模型结果，更新到数据库
                         TemporaryXlsx floodList = new TouTunHe().getFloodList(forcastInputParamNew);
                         //生成模型结果文件

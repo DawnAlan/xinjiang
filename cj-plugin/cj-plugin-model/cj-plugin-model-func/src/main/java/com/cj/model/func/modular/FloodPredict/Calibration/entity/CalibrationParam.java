@@ -1,5 +1,6 @@
 package com.cj.model.func.modular.FloodPredict.Calibration.entity;
-import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.entity.LzzGaugingStation;
+import com.cj.model.func.modular.FloodPredict.entity.FloodBasin;
+import com.cj.model.func.modular.FloodPredict.entity.PredictInputData;
 import com.cj.model.func.modular.FloodPredict.entity.RainFallDto;
 import lombok.Data;
 
@@ -15,6 +16,8 @@ public class CalibrationParam {
     private Date startTime;
     //率定结束时间
     private Date endTime;
+    //率定断面位置
+    private String location;
     //人工率定站点参数
     private Map<String,ShanbeiParam> manualParam;
     //选择的站点参数
@@ -22,7 +25,9 @@ public class CalibrationParam {
     //雨量站信息
     private Map<String, List<RainFallDto>>rainfall;
     //水位站信息
-    private Map<String,List<LzzGaugingStation>> waterLevel;
+    private Map<String,List<PredictInputData>> flowData;
+    //流域参数
+    private FloodBasin floodBasin;
     //文件存储路径
     private String filePath;
 }

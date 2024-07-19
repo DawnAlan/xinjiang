@@ -3,6 +3,7 @@ package com.cj.model.func.modular.FloodPredict.entity;
 import lombok.Data;
 
 import java.util.Date;
+
 @Data
 public class PredictInputData implements Cloneable {
     private Date dates;//日期

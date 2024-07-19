@@ -378,6 +378,7 @@ public class MachineModel {
      }
 
 
+
     /**
      * 方便检验训练成果
      *

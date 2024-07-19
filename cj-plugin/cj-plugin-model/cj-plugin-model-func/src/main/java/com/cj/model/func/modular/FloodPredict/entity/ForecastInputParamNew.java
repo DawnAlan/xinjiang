@@ -28,6 +28,10 @@ public class ForecastInputParamNew {
     private Map<String,List<RainFallDto>>rainfall;
     //水位站信息
     private Map<String,List<LzzGaugingStation>> waterLevel;
+    //水位站数据
+    private Map<String,List<PredictInputData>> flowData;
+    //物理模型参数
+    private Map<String, ShanbeiParam> paramMap;
     //预报雨量
     private List<RainFallDto> rainFallDtos;
     //日尺度预报数据
@@ -46,7 +50,7 @@ public class ForecastInputParamNew {
     private Boolean isTrain;
     //文件路径
     private String basinStr;
-    //物理模型参数
-    private Map<String, ShanbeiParam> paramMap;
+    //流域参数
+    private FloodBasin floodBasin;
 
 }

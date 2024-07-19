@@ -37,8 +37,10 @@ public class  ParameterValidation {
         checkElementIndex(0, arrays.length);
         boolean identical = true;
         for (int i = 1; i < arrays.length; ++i)
-            if (arrays[i].length != arrays[0].length)
+            if (arrays[i].length != arrays[0].length) {
                 identical = false;
+                break;
+            }
         checkArgument(identical, "序列长度不一致");
         return arrays[0].length;
     }

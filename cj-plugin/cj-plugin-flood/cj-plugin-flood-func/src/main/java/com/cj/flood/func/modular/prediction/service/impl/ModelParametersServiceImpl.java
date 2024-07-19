@@ -26,7 +26,9 @@ import com.cj.model.func.modular.FloodPredict.Calibration.entity.CalibrationOutp
 import com.cj.model.func.modular.FloodPredict.Calibration.entity.CalibrationParam;
 import com.cj.model.func.modular.FloodPredict.Calibration.entity.ShanbeiParam;
 
+import com.cj.model.func.modular.FloodPredict.entity.PredictInputData;
 import com.cj.model.func.modular.FloodPredict.entity.RainFallDto;
+import com.cj.model.func.modular.FloodPredict.utils.TimeUtils;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,6 +76,8 @@ public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMappe
     private RedisUtil redisUtil;
 
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+    TimeUtils tu = new TimeUtils();
 
     public Map<String, List<ModelParameters>> queryList() {
         List<ModelParameters> parametersList = this.lambdaQuery()
@@ -125,7 +129,7 @@ public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMappe
         //修改后的参数
         calibrationParam.setManualParam(manualParam);
         calibrationParam.setRainfall(setRainfallData(startTime, endTime));
-        calibrationParam.setWaterLevel(setWaterLevelData(startTime, endTime));
+        calibrationParam.setFlowData(setWaterLevelData(startTime, endTime));
         Map<String, CalibrationOutput> calibrationOutput = shanBeiCalibration.calibration(calibrationParam);
         //Assert.isTrue(!validError(calibrationOutput), "参数率定模型调用返回异常,请检查后重试");
         Date now = new Date();
@@ -138,24 +142,25 @@ public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMappe
                 );
                 return;
             }
-            ModelParameters modelParameters = ModelParameters.builder()
-                    .id(UUID.randomUUID().toString())
-                    .siteName(key)
-                    .area(value.getParam().getArea())
-                    .b(value.getParam().getB())
-                    .cs(value.getParam().getCS())
-                    .date(now)
-                    .kc(value.getParam().getKC())
-                    .l(value.getParam().getL())
-                    .fc(value.getParam().getFC())
-                    .fm(value.getParam().getFM())
-                    .k(value.getParam().getK())
-                    .fb(value.getParam().getFB())
-                    .wm(value.getParam().getWM())
-                    .rate(value.getParam().getQC())
-                    .isDefault(0)
-                    .fromId(input.getParametersList().stream().filter(n -> n.getSiteName().equals(key)).findFirst().orElse(ModelParameters.builder().build()).getId())
-                    .build();
+            ModelParameters modelParameters = null;
+//            ModelParameters modelParameters = ModelParameters.builder()
+//                    .id(UUID.randomUUID().toString())
+//                    .siteName(key)
+//                    .area(value.getParam().getArea())
+//                    .b(value.getParam().getB())
+//                    .cs(value.getParam().getCS())
+//                    .date(now)
+//                    .kc(value.getParam().getKC())
+//                    .l(value.getParam().getL())
+//                    .fc(value.getParam().getFC())
+//                    .fm(value.getParam().getFM())
+//                    .k(value.getParam().getK())
+//                    .fb(value.getParam().getFB())
+//                    .wm(value.getParam().getWM())
+//                    .rate(value.getParam().getQC())
+//                    .isDefault(0)
+//                    .fromId(input.getParametersList().stream().filter(n -> n.getSiteName().equals(key)).findFirst().orElse(ModelParameters.builder().build()).getId())
+//                    .build();
             List<ModelParametersDetail> detailList = new ArrayList<>();
             for (int i = 0; i < value.getFlowList().size(); i++) {
                 ModelParametersDetail detail = ModelParametersDetail.builder()
@@ -232,11 +237,54 @@ public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMappe
         return rainfall;
     }
 
-    private Map<String,List<LzzGaugingStation>> setWaterLevelData(Date startTime, Date endTime) {
-        Map<String,List<LzzGaugingStation>> waterLevel = new HashMap<>();
-        waterLevel.put("3号桥水位站",lzzGaugingStationService.lambdaQuery().eq(LzzGaugingStation::getStationName,"3号桥水位站").between(LzzGaugingStation::getGatherTime,startTime,endTime).list());
-        waterLevel.put("天谷自动水位站",lzzGaugingStationService.lambdaQuery().eq(LzzGaugingStation::getStationName,"天谷自动水位站").between(LzzGaugingStation::getGatherTime,startTime,endTime).list());
+    private Map<String,List<PredictInputData>> setWaterLevelData(Date startTime, Date endTime) {
+        Map<String,List<PredictInputData>> waterLevel = new HashMap<>();
+        List<LzzGaugingStation> threeStation = lzzGaugingStationService.lambdaQuery().eq(LzzGaugingStation::getStationName,"3号桥水位站").between(LzzGaugingStation::getGatherTime,startTime,endTime).list();
+        waterLevel.put("3号桥", setWaterStationData(threeStation));
+        List<LzzGaugingStation> tianStation = lzzGaugingStationService.lambdaQuery().eq(LzzGaugingStation::getStationName,"天谷自动水位站").between(LzzGaugingStation::getGatherTime,startTime,endTime).list();
+        waterLevel.put("楼庄子进库", setWaterStationData(tianStation));
+        List<LzzGaugingStation> lzzOutStation = lzzGaugingStationService.lambdaQuery().eq(LzzGaugingStation::getStationName,"楼庄子出库水位站").between(LzzGaugingStation::getGatherTime,startTime,endTime).list();
+        waterLevel.put("楼庄子出库", setWaterStationData(lzzOutStation));
+        List<IrrigatedPlatformDataInfo> tthStation = irrigatedPlatformDataInfoService.lambdaQuery().eq(IrrigatedPlatformDataInfo::getMonitorName,"入库流量").between(IrrigatedPlatformDataInfo::getMonitorTime,startTime,endTime).list();
+        waterLevel.put("头屯河进库", setHourWater(setWaterStationIr(tthStation)));
         return waterLevel;
+    }
+
+    private List<PredictInputData> setWaterStationData(List<LzzGaugingStation> inputData){
+        List<PredictInputData> result = new ArrayList<>();
+        for (LzzGaugingStation inputDatum : inputData) {
+            PredictInputData data = new PredictInputData();
+            data.setDates(inputDatum.getGatherTime());
+            data.setLocation(inputDatum.getStationName());
+            data.setFlow(inputDatum.getFlow());
+            data.setTemperature(inputDatum.getTemperature());
+            result.add(data);
+        }
+        return result;
+    }
+    private List<PredictInputData> setWaterStationIr(List<IrrigatedPlatformDataInfo> inputData){
+        List<PredictInputData> result = new ArrayList<>();
+        for (IrrigatedPlatformDataInfo inputDatum : inputData) {
+            PredictInputData data = new PredictInputData();
+            data.setDates(inputDatum.getMonitorTime());
+            data.setLocation(inputDatum.getMonitorName());
+            data.setFlow(inputDatum.getSqMonitorFlow());
+            result.add(data);
+        }
+        return result;
+    }
+    private List<PredictInputData> setHourWater(List<PredictInputData> inputData){
+        List<PredictInputData> result = new ArrayList<>();
+        for (int i = 1; i < inputData.size(); i++) {
+            PredictInputData info = new PredictInputData();
+            Boolean isSameHour = tu.DateCompare(inputData.get(i-1).getDates(),inputData.get(i).getDates(),"小时");
+            if (!isSameHour){
+                info.setDates(inputData.get(i).getDates());
+                info.setLocation(inputData.get(i).getLocation());
+                info.setFlow(inputData.get(i).getFlow());
+            }
+        }
+        return result;
     }
 
     private boolean validError(Map<String, CalibrationOutput> calibrationOutput) {

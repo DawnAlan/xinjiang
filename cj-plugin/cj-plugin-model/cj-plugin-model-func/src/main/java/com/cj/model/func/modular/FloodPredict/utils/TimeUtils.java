@@ -4,6 +4,7 @@ import com.cj.model.func.modular.FloodPredict.model.entity.DateIndex;
 import com.cj.model.func.modular.FloodPredict.entity.PredictInputData;
 import java.text.SimpleDateFormat;
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
@@ -237,8 +238,16 @@ public class TimeUtils {
 		int month1 = getSpecificDate(date2).get("月");
 		int day1 = getSpecificDate(date2).get("日");
 		int hour1 = getSpecificDate(date2).get("小时");
+		// 将Date对象转换为Instant对象
+		Instant instant1 = date1.toInstant();
+		Instant instant2 = date2.toInstant();
+		LocalDateTime dateTime1 = LocalDateTime.ofInstant(instant1, ZoneId.systemDefault());
+		LocalDateTime dateTime2 = LocalDateTime.ofInstant(instant2, ZoneId.systemDefault());
+
 		if (period.equals("小时")){
-			if (year1==year & month1==month & day1==day & hour1==hour){
+			if (year1==year & month1==month & day1==day & hour1==hour && Math.abs(Duration.between(dateTime1, dateTime2).getSeconds()) < 3599){
+				result=true;
+			} else if (dateTime1.toLocalDate().isEqual(dateTime2.toLocalDate()) && Math.abs(Duration.between(dateTime1, dateTime2).getSeconds()) <= 1) {
 				result=true;
 			}
 		}
@@ -267,38 +276,17 @@ public class TimeUtils {
 	 */
 	public int findNearestTime(List<Date> timeSeries, Date inputTime) {
 		Collections.sort(timeSeries);
-
 		int index = Collections.binarySearch(timeSeries, inputTime);
 		if (index >= 0) {
 			return index; // 输入时间点恰好存在于时间序列中
 		}
-
-		index = -index - 1; // 找到输入时间点应该插入的位置
-
+		index = - index - 1; // 找到输入时间点应该插入的位置
 		if (index == 0) {
 			return 0; // 输入时间点比时间序列中最小的时间还小
 		}
-
 		if (index == timeSeries.size()) {
 			return timeSeries.size() - 1; // 输入时间点比时间序列中最大的时间还大
 		}
-
-//		Date before = timeSeries.get(index - 1);
-//		Date after = timeSeries.get(index);
-//		LocalDate localDate1 = before.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-//		LocalDate localDate2 = inputTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-//		LocalDate localDate3 = after.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-		// 计算相差天数并返回
-//		long duration =  Duration.between(localDate1.atStartOfDay(), localDate2.atStartOfDay()).toHours();
-//		int n = Math.toIntExact(duration);
-//		m是后面的时间与需要寻找的时间之间的差值
-//		long duration2 =  Duration.between(localDate2.atStartOfDay(), localDate3.atStartOfDay()).toHours();
-//		int m = Math.toIntExact(duration2);
-//		if (m < n) {
-//			return index;
-//		} else {
-//			return index-1;
-//		}
 		return index;
 	}
 	/**
@@ -534,6 +522,15 @@ public class TimeUtils {
 				break;
 		}
 		return cal.getTime();
+	}
+
+	public String DateToString(Date date){
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+		// 将 java.util.Date 转换为 LocalDateTime （如果你的环境支持 java.time API）
+		LocalDateTime dateTime = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+		// 格式化 LocalDateTime 对象为字符串
+		String formattedDate = dateTime.format(formatter);
+		return formattedDate;
 	}
 
 }

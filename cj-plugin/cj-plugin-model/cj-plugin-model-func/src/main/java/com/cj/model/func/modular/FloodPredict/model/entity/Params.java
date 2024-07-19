@@ -9,8 +9,7 @@ import com.cj.model.func.modular.FloodPredict.entity.ForecastInputParam;
  *
  */
 public class Params {
-	
-	public String layerCount = "7,30,1";
+
 	
 	public String cluster = "kmeans";
 

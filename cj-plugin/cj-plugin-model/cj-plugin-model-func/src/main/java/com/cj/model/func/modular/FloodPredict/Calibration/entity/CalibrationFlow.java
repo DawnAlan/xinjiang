@@ -18,6 +18,7 @@ public class CalibrationFlow {
 
     //率定参数模型预报径流
     private Double newParamFlow;
+
     //率定期雨量
     private Double historyRainfall;
 }
