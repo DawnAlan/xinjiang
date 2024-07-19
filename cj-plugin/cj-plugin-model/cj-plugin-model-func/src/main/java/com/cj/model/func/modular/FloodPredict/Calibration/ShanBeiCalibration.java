@@ -23,6 +23,7 @@ public class ShanBeiCalibration {
     private final TimeUtils tu = new TimeUtils();
 
     public Map<String, CalibrationOutput> calibration(CalibrationParam input) {
+        Map<String, CalibrationOutput> result = new HashMap<>();
         FloodBasin floodBasin = input.getFloodBasin();
         for (Hydrology station: floodBasin.getHydrologies()){
             if (station.getStationName().equals(input.getLocation())){
@@ -31,13 +32,24 @@ public class ShanBeiCalibration {
         }
         paramStatic = floodBasin.getParamMap();
         //导入输入数据
-        getTimesData(input);
+        try {
+            getTimesData(input);
+        }catch (RuntimeException e){
+            e.printStackTrace();
+            result.put(input.getLocation(), new CalibrationOutput() {
+                {setParam(new HashMap<>());}
+                {setFlowList(new ArrayList<>());}
+                {setError(e.getMessage());}});
+        }
+
         //获取率定结果
-        Map<String, CalibrationOutput> result = new HashMap<>();
         if (hydrology.getPosition()==0){//上游
             String station = hydrology.getIncludingWater().get(0);
             if (input.getFlowData()==null||input.getFlowData().get(station).isEmpty()){
-                result.put(input.getLocation(), new CalibrationOutput() {{setError("未获取"+station+"历史数据");}});
+                result.put(input.getLocation(), new CalibrationOutput() {
+                    {setParam(new HashMap<>());}
+                    {setFlowList(new ArrayList<>());}
+                    {setError("未获取"+station+"历史数据");}});
             }else {
                 result.put(input.getLocation(), getCalResult(input));
             }
@@ -48,7 +60,10 @@ public class ShanBeiCalibration {
                 final String station;
                 if (input.getFlowData()==null||input.getFlowData().get(station0).isEmpty()) station = station0;
                 else station = station1;
-                result.put(input.getLocation(), new CalibrationOutput() {{setError("未获取"+ station +"历史数据");}});
+                result.put(input.getLocation(), new CalibrationOutput() {
+                    {setParam(new HashMap<>());}
+                    {setFlowList(new ArrayList<>());}
+                    {setError("未获取"+ station +"历史数据");}});
             }else {
                 result.put(input.getLocation(), getCalResult(input));
             }
