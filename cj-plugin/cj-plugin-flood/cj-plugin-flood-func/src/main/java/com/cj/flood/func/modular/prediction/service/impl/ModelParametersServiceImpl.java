@@ -121,10 +121,12 @@ public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMappe
         Map<String, ShanbeiParam> historyParam = new HashMap<>();
         historyList.forEach(r -> setShanbeiParam(historyParam, r));
 
+        String siteName = input.getParametersList().get(0).getSiteName();
         CalibrationParam calibrationParam = new CalibrationParam();
         calibrationParam.setIsAutomatic(input.getIsAutomatic());
         calibrationParam.setStartTime(input.getStartTime());
         calibrationParam.setEndTime(input.getEndTime());
+        calibrationParam.setLocation(siteName);
         //固定或者默认模型参数
         calibrationParam.setHistoryParam(historyParam);
         //修改后的参数
@@ -135,7 +137,6 @@ public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMappe
         //Assert.isTrue(!validError(calibrationOutput), "参数率定模型调用返回异常,请检查后重试");
         Date now = new Date();
         Map<String, Object> modelMap = new HashMap<>();
-        String siteName = input.getParametersList().get(0).getSiteName();
         CalibrationOutput calibrationOutputValue = calibrationOutput.get(siteName);
         modelMap.put("siteName", siteName);
         modelMap.put("error", calibrationOutputValue.getError());
@@ -215,7 +216,7 @@ public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMappe
                 for(LzzRainfallStation lzzRainfallStation:lzzRainfallStations){
                     RainFallDto rainfallDto = new RainFallDto();
                     rainfallDto.setRainFall(lzzRainfallStation.getRainfall().doubleValue());
-                    rainfallDto.setTemperature(lzzRainfallStation.getTemperature().doubleValue());
+                    rainfallDto.setTemperature(lzzRainfallStation.getTemperature() == null ? 0 : lzzRainfallStation.getTemperature().doubleValue());
                     rainfallDto.setDate(sdf.format(lzzRainfallStation.getTime()));
                     rainfallDto.setArea(lzzRainfallStations.get(0).getStationName());
                     rainfallDtos.add(rainfallDto);
