@@ -22,16 +22,19 @@ import com.cj.middleDatabase.func.modular.lzz.lzzRainfallStation.service.LzzRain
 import com.cj.middleDatabase.func.modular.lzz.lzzRainfallStation.entity.LzzRainfallStation;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.entity.IrrigatedPlatformDataInfo;
 import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.entity.LzzGaugingStation;
+import com.cj.model.func.core.util.MinioUtils;
 import com.cj.model.func.modular.FloodPredict.Calibration.ShanBeiCalibration;
 import com.cj.model.func.modular.FloodPredict.Calibration.entity.CalibrationOutput;
 import com.cj.model.func.modular.FloodPredict.Calibration.entity.CalibrationParam;
 import com.cj.model.func.modular.FloodPredict.Calibration.entity.ShanbeiParam;
 
+import com.cj.model.func.modular.FloodPredict.entity.FloodBasin;
 import com.cj.model.func.modular.FloodPredict.entity.PredictInputData;
 import com.cj.model.func.modular.FloodPredict.entity.RainFallDto;
 import com.cj.model.func.modular.FloodPredict.utils.TimeUtils;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -39,6 +42,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -62,6 +68,8 @@ public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMappe
     @Autowired
     private LzzRainfallStationService lzzRainfallStationService;
 
+    @Autowired
+    private MinioUtils minioUtils;
     private ShanBeiCalibration shanBeiCalibration = new ShanBeiCalibration();
     @Autowired
     private IrrigatedPlatformDataInfoService irrigatedPlatformDataInfoService;
@@ -79,6 +87,12 @@ public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMappe
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     TimeUtils tu = new TimeUtils();
+
+    private FloodBasin loadFloodBasinParam() throws IOException {
+        InputStream tth = minioUtils.getObject("tth", "tthUseFile/FloodBasin.json");
+        String basin = IOUtils.toString(tth, StandardCharsets.UTF_8);
+        return JSONObject.parseObject(basin, FloodBasin.class);
+    }
 
     public Map<String, List<ModelParameters>> queryList() {
         List<ModelParameters> parametersList = this.lambdaQuery()
@@ -127,6 +141,7 @@ public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMappe
         calibrationParam.setStartTime(input.getStartTime());
         calibrationParam.setEndTime(input.getEndTime());
         calibrationParam.setLocation(siteName);
+        calibrationParam.setFloodBasin(loadFloodBasinParam());
         //固定或者默认模型参数
         calibrationParam.setHistoryParam(historyParam);
         //修改后的参数
