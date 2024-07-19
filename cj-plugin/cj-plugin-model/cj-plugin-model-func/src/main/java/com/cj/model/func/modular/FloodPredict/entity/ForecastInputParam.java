@@ -76,7 +76,7 @@ public class ForecastInputParam {
     //文件路径
     public String basinStr;
     //参数
-    public Map<String, ShanbeiParam> paramMap;
+    public Map<String,Map<String, ShanbeiParam>> paramMap;
     //日尺度预报数据
     private List<PredictInputData> preRainTem;
     //前期径流

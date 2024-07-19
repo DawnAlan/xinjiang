@@ -10,6 +10,7 @@ import com.cj.flood.func.modular.prediction.bean.dto.OverallSituationUnitMgrDto;
 import com.cj.flood.func.modular.prediction.bean.req.CalibrateReq;
 import com.cj.flood.func.modular.prediction.bean.req.ModelParameterDetailReq;
 import com.cj.flood.func.modular.prediction.bean.req.ModelParametersReq;
+import com.cj.flood.func.modular.prediction.bean.req.SetDefaultParametersReq;
 import com.cj.flood.func.modular.prediction.entity.ModelParametersDetail;
 import com.cj.flood.func.modular.prediction.mapper.ModelParametersMapper;
 import com.cj.flood.func.modular.prediction.entity.ModelParameters;
@@ -96,7 +97,7 @@ public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMappe
     @SneakyThrows
     @Override
     @Transactional
-    public List calibrate(CalibrateReq input) {
+    public Map calibrate(CalibrateReq input) {
         // 获取当前日期的Calendar实例
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(input.getStartTime());
@@ -133,52 +134,54 @@ public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMappe
         Map<String, CalibrationOutput> calibrationOutput = shanBeiCalibration.calibration(calibrationParam);
         //Assert.isTrue(!validError(calibrationOutput), "参数率定模型调用返回异常,请检查后重试");
         Date now = new Date();
-        List modelList = new ArrayList<>();
-        calibrationOutput.forEach((key, value) -> {
-            if (StringUtils.hasText(value.getError())) {
-                modelList.add(new HashMap<String, String>() {{
-                    put("siteName", key);
-                    put("error", value.getError());}}
-                );
-                return;
-            }
-            ModelParameters modelParameters = null;
-//            ModelParameters modelParameters = ModelParameters.builder()
-//                    .id(UUID.randomUUID().toString())
-//                    .siteName(key)
-//                    .area(value.getParam().getArea())
-//                    .b(value.getParam().getB())
-//                    .cs(value.getParam().getCS())
-//                    .date(now)
-//                    .kc(value.getParam().getKC())
-//                    .l(value.getParam().getL())
-//                    .fc(value.getParam().getFC())
-//                    .fm(value.getParam().getFM())
-//                    .k(value.getParam().getK())
-//                    .fb(value.getParam().getFB())
-//                    .wm(value.getParam().getWM())
-//                    .rate(value.getParam().getQC())
-//                    .isDefault(0)
-//                    .fromId(input.getParametersList().stream().filter(n -> n.getSiteName().equals(key)).findFirst().orElse(ModelParameters.builder().build()).getId())
-//                    .build();
-            List<ModelParametersDetail> detailList = new ArrayList<>();
-            for (int i = 0; i < value.getFlowList().size(); i++) {
-                ModelParametersDetail detail = ModelParametersDetail.builder()
-                        .id(UUID.randomUUID().toString())
-                        .parentId(modelParameters.getId())
-                        .time(value.getFlowList().get(i).getTime())
-                        .historyFlow(value.getFlowList().get(i).getHistoryFlow())
-                        .preParamFlow(value.getFlowList().get(i).getPreParamFlow())
-                        .newParamFlow(value.getFlowList().get(i).getNewParamFlow())
-                        .preParamRainfall(value.getFlowList().get(i).getHistoryRainfall())
-                        .build();
-                detailList.add(detail);
-            }
-            modelList.add(modelParameters);
-            modelParametersService.save(modelParameters);
-            modelParametersDetailService.saveBatch(detailList);
+        Map<String, Object> modelMap = new HashMap<>();
+        String siteName = input.getParametersList().get(0).getSiteName();
+        CalibrationOutput calibrationOutputValue = calibrationOutput.get(siteName);
+        modelMap.put("siteName", siteName);
+        modelMap.put("error", calibrationOutputValue.getError());
+        modelMap.put("rainfallStation", calibrationOutputValue.getParam());
+        List<ModelParameters> modelParametersList = new ArrayList<>();
+        String modelId = UUID.randomUUID().toString();
+        calibrationOutputValue.getParam().forEach((k, v) -> {
+            ModelParameters modelParameters = ModelParameters.builder()
+                    .id(UUID.randomUUID().toString())
+                    .modelId(modelId)
+                    .siteName(siteName)
+                    .rainfallStation(k)
+                    .area(v.getArea())
+                    .b(v.getB())
+                    .cs(v.getCS())
+                    .date(now)
+                    .kc(v.getKC())
+                    .l(v.getL())
+                    .fc(v.getFC())
+                    .fm(v.getFM())
+                    .k(v.getK())
+                    .fb(v.getFB())
+                    .wm(v.getWM())
+                    .rate(v.getQC())
+                    .isDefault(0)
+                    .fromId(input.getParametersList().get(0).getModelId())
+                    .build();
+            modelParametersList.add(modelParameters);
         });
-        return modelList;
+        List<ModelParametersDetail> detailList = new ArrayList<>();
+        calibrationOutputValue.getFlowList().forEach(flow -> {
+            ModelParametersDetail detail = ModelParametersDetail.builder()
+                    .id(UUID.randomUUID().toString())
+                    .parentId(modelId)
+                    .time(flow.getTime())
+                    .historyFlow(flow.getHistoryFlow())
+                    .preParamFlow(flow.getPreParamFlow())
+                    .newParamFlow(flow.getNewParamFlow())
+                    .preParamRainfall(flow.getHistoryRainfall())
+                    .build();
+            detailList.add(detail);
+        });
+        modelMap.put("flowList", detailList);
+        modelParametersService.saveBatch(modelParametersList);
+        modelParametersDetailService.saveBatch(detailList);
+        return modelMap;
     }
 
     private void setShanbeiParam(Map<String, ShanbeiParam> param, ModelParameters r) {
@@ -195,7 +198,7 @@ public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMappe
         shanbeiParam.setWM(r.getWm());
         shanbeiParam.setB(r.getB());
         shanbeiParam.setL(r.getL());
-        param.put(r.getSiteName(), shanbeiParam);
+        param.put(r.getRainfallStation(), shanbeiParam);
     }
 
     private Map<String,List<RainFallDto>> setRainfallData(Date startTime, Date endTime) {
@@ -300,26 +303,30 @@ public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMappe
     @Override
     @Transactional
     public Boolean del(List<String> input) {
-        Integer idDel = this.baseMapper.deleteBatchIds(input);
+        for (int i = 0; i < input.size(); i++) {
+            HashMap<String, Object> map = new HashMap<>();
+            map.put("MODEL_ID",input.get(i));
+            this.removeByMap(map);
+        }
         for (int i = 0; i < input.size(); i++) {
             HashMap<String, Object> map = new HashMap<>();
             map.put("PARENT_ID",input.get(i));
             modelParametersDetailService.removeByMap(map);
         }
-        return idDel > 0;
+        return true;
     }
 
     @Override
     @Transactional
-    public boolean setDefault(ModelParametersReq input) {
-        List<ModelParameters> model = this.lambdaQuery().eq(ModelParameters::getSiteName,input.getSiteName())
+    public boolean setDefault(SetDefaultParametersReq req) {
+        List<ModelParameters> model = this.lambdaQuery().eq(ModelParameters::getSiteName, req.getSiteName())
                 .eq(ModelParameters::getIsDefault, 1)
                 .list();
         if (!CollectionUtils.isEmpty(model)) {
             model.forEach(n -> n.setIsDefault(0));
             this.updateBatchById(model);
         }
-        model = this.lambdaQuery().eq(ModelParameters::getId, input.getId()).list();
+        model = this.lambdaQuery().eq(ModelParameters::getModelId, req.getModelId()).list();
         model.forEach(n -> n.setIsDefault(1));
         this.updateBatchById(model);
         return true;
@@ -348,7 +355,7 @@ public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMappe
     @Override
     public RestResponse paramDetail(ModelParameterDetailReq req) {
         IPage<ModelParametersDetail> page = new Page<>(req.getPageNo(), req.getPageSize());
-        return RestResponse.ok(modelParametersDetailService.lambdaQuery().eq(ModelParametersDetail::getParentId, req.getId()).page(page));
+        return RestResponse.ok(modelParametersDetailService.lambdaQuery().eq(ModelParametersDetail::getParentId, req.getModelId()).page(page));
     }
 }
 

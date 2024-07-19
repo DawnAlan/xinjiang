@@ -5,6 +5,7 @@ import com.cj.common.model.RestResponse;
 import com.cj.flood.func.modular.prediction.bean.req.CalibrateReq;
 import com.cj.flood.func.modular.prediction.bean.req.ModelParameterDetailReq;
 import com.cj.flood.func.modular.prediction.bean.req.ModelParametersReq;
+import com.cj.flood.func.modular.prediction.bean.req.SetDefaultParametersReq;
 import com.cj.flood.func.modular.prediction.entity.ModelParameters;
 
 import java.util.List;
@@ -20,12 +21,12 @@ public interface ModelParametersService extends IService<ModelParameters> {
 
     Map<String, List<ModelParameters>> queryList();
 
-    List calibrate(CalibrateReq input);
+    Map calibrate(CalibrateReq input);
 
 
     Boolean del(List<String> input);
 
-    boolean setDefault(ModelParametersReq input);
+    boolean setDefault(SetDefaultParametersReq req);
 
     boolean ls(ModelParametersReq input);
 

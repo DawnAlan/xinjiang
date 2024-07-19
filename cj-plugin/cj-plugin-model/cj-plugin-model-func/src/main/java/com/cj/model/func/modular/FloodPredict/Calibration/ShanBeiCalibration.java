@@ -340,7 +340,6 @@ public class ShanBeiCalibration {
             forecastInputParamNew.setPeriodTimeStep(1);
             forecastInputParamNew.setRainfall(inputData.getRainfall());
             forecastInputParamNew.setFlowData(inputData.getFlowData());
-            forecastInputParamNew.setParamMap(inputData.getHistoryParam());
             forecastInputParamNew.setModelType(3);
             CalibrationData data = getOneTimeData(forecastInputParamNew);
             dataList.add(data);

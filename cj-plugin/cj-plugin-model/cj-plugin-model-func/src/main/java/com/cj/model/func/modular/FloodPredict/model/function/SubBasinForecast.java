@@ -28,7 +28,7 @@ public class SubBasinForecast {
      */
     public List<Flood> getShortResult(ForecastInputParam param, InputDataSet Data, Object[][] snowData) {
         FloodBasin floodBasin = param.getFloodBasin();
-        Map<String,ShanbeiParam> paramMap = param.getFloodBasin().getParamMap();
+        Map<String,ShanbeiParam> paramMap = param.getParamMap().get(param.getLocation()) == null ? param.getFloodBasin().getParamMap():param.getParamMap().get(param.getLocation());
         for (Hydrology station: floodBasin.getHydrologies()){
             if (station.getStationName().equals(param.getLocation())){
                 hydrology = station;
@@ -51,9 +51,6 @@ public class SubBasinForecast {
                     .max()
                     .orElse(0.0);
             setParams(shanbeiparam,max);
-            if (param.getLocation().equals("3号桥")){
-                shanbeiparam.setL(Math.max(shanbeiparam.getL() - 1,0));
-            }
             double[] subBasinQ = getSubBasinQ(shanbeiparam, hourRain, dayRain);//子流域产流量
             for (int j = 0; j < rainQ.length; j++) {
                 rainQ[j] += subBasinQ[j];//总产流量

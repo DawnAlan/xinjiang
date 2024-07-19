@@ -4,6 +4,7 @@ import com.cj.common.model.RestResponse;
 import com.cj.flood.func.modular.prediction.bean.req.CalibrateReq;
 import com.cj.flood.func.modular.prediction.bean.req.ModelParameterDetailReq;
 import com.cj.flood.func.modular.prediction.bean.req.ModelParametersReq;
+import com.cj.flood.func.modular.prediction.bean.req.SetDefaultParametersReq;
 import com.cj.flood.func.modular.prediction.service.ModelParametersService;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import io.swagger.annotations.Api;
@@ -52,8 +53,8 @@ public class ModelParametersController {
     @ApiOperationSupport(order = 4)
     @ApiOperation("设置默认参数")
     @PostMapping("/setDefault")
-    public RestResponse setDefault(@RequestBody ModelParametersReq input) {
-        if (modelParametersService.setDefault(input)) {
+    public RestResponse setDefault(@RequestBody SetDefaultParametersReq req) {
+        if (modelParametersService.setDefault(req)) {
             return RestResponse.ok(true);
         } else {
             return RestResponse.no("设置默认参数失败！");

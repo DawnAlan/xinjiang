@@ -31,7 +31,7 @@ public class ForecastInputParamNew {
     //水位站数据
     private Map<String,List<PredictInputData>> flowData;
     //物理模型参数
-    private Map<String, ShanbeiParam> paramMap;
+    private Map<String,Map<String, ShanbeiParam>> paramMap;
     //预报雨量
     private List<RainFallDto> rainFallDtos;
     //日尺度预报数据

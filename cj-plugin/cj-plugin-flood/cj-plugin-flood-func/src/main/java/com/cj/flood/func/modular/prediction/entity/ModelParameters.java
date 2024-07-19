@@ -19,8 +19,12 @@ import java.io.Serializable;
 public class ModelParameters extends Model<ModelParameters> {
 
     private String id;
+    //同一次率定id相同
+    private String modelId;
     //站点名称
     private String siteName;
+    //雨量站
+    private String rainfallStation;
     //面积
     private Double area;
     //透水系数

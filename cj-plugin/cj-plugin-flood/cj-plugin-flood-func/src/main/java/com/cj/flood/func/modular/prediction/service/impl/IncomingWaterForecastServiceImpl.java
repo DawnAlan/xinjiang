@@ -311,23 +311,29 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                         forcastInputParamNew.setWaterLevel(waterLevel);
                         forcastInputParamNew.setRainfall(rainfall);
                         //调用模型方法生成模型结果，更新到数据库
-                        Map<String, ShanbeiParam> paramMap =  new HashMap<>();
-                        modelParametersService.lambdaQuery().eq(ModelParameters::getIsDefault, 1).list()
-                                .forEach(param -> {
-                                    paramMap.put(param.getSiteName(), new ShanbeiParam(){{
-                                        setArea(param.getArea());
-                                        setFC(param.getFc());
-                                        setFM(param.getFm());
-                                        setFB(param.getFb());
-                                        setCS(param.getCs());
-                                        setKC(param.getKc());
-                                        setWM(param.getWm());
-                                        setFM(param.getFm());
-                                        setK(param.getK());
-                                        setB(param.getB());
-                                        setL(param.getL());
-                                    }});
-                                });
+                        Map<String, Map<String, ShanbeiParam>> paramMap =  new HashMap<>();
+
+                        List<ModelParameters> defaultParamList = modelParametersService.lambdaQuery().eq(ModelParameters::getIsDefault, 1).list();
+                        List<String> siteList = defaultParamList.stream().map(ModelParameters::getSiteName).distinct().collect(Collectors.toList());
+                        siteList.forEach(site -> {
+                            Map<String, ShanbeiParam> shanbeiParamMap = new HashMap<>();
+                            defaultParamList.stream().filter(n -> n.getSiteName().equals(site))
+                                    .forEach(param -> shanbeiParamMap
+                                            .put(param.getRainfallStation(), new ShanbeiParam(){{
+                                                setArea(param.getArea());
+                                                setFC(param.getFc());
+                                                setFM(param.getFm());
+                                                setFB(param.getFb());
+                                                setCS(param.getCs());
+                                                setKC(param.getKc());
+                                                setWM(param.getWm());
+                                                setFM(param.getFm());
+                                                setK(param.getK());
+                                                setB(param.getB());
+                                                setL(param.getL());
+                                            }}));
+                            paramMap.put(site, shanbeiParamMap);
+                        });
                         forcastInputParamNew.setParamMap(paramMap);
                         forcastInputParamNew.setBasinStr(JSONObject.toJSONString(loadBasinParam()));
                         forcastInputParamNew.setFloodBasin(loadFloodBasinParam());
@@ -566,23 +572,29 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                         //System.out.println("Hello pool");
                         forcastInputParamNew.setBasinStr(JSONObject.toJSONString(req.getBasinParam() == null ? loadBasinParam() : req.getBasinParam()));
                         forcastInputParamNew.setFloodBasin(loadFloodBasinParam());
-                        Map<String, ShanbeiParam> paramMap =  new HashMap<>();
-                        modelParametersService.lambdaQuery().eq(ModelParameters::getIsDefault, 1).list()
-                                .forEach(param -> {
-                                    paramMap.put(param.getSiteName(), new ShanbeiParam(){{
-                                        setArea(param.getArea());
-                                        setFC(param.getFc());
-                                        setFM(param.getFm());
-                                        setFB(param.getFb());
-                                        setCS(param.getCs());
-                                        setKC(param.getKc());
-                                        setWM(param.getWm());
-                                        setFM(param.getFm());
-                                        setK(param.getK());
-                                        setB(param.getB());
-                                        setL(param.getL());
-                                    }});
-                                });
+                        Map<String, Map<String, ShanbeiParam>> paramMap =  new HashMap<>();
+                        List<ModelParameters> defaultParamList = modelParametersService.lambdaQuery().eq(ModelParameters::getIsDefault, 1).list();
+                        List<String> siteList = defaultParamList.stream().map(ModelParameters::getSiteName).distinct().collect(Collectors.toList());
+                        siteList.forEach(site -> {
+                            Map<String, ShanbeiParam> shanbeiParamMap = new HashMap<>();
+                            defaultParamList.stream().filter(n -> n.getSiteName().equals(site))
+                                    .forEach(param -> shanbeiParamMap
+                                            .put(param.getRainfallStation(), new ShanbeiParam(){{
+                                                setArea(param.getArea());
+                                                setFC(param.getFc());
+                                                setFM(param.getFm());
+                                                setFB(param.getFb());
+                                                setCS(param.getCs());
+                                                setKC(param.getKc());
+                                                setWM(param.getWm());
+                                                setFM(param.getFm());
+                                                setK(param.getK());
+                                                setB(param.getB());
+                                                setL(param.getL());
+                                            }}));
+                            paramMap.put(site, shanbeiParamMap);
+                        });
+
                         forcastInputParamNew.setParamMap(paramMap);
                         TemporaryXlsx floodList = new TouTunHe().getFloodList(forcastInputParamNew);
                         //生成模型结果文件
@@ -751,23 +763,28 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                         waterLevel.put("天谷自动水位站",lzzGaugingStationService.lambdaQuery().eq(LzzGaugingStation::getStationName,"天谷自动水位站").list());
                         forcastInputParamNew.setWaterLevel(waterLevel);
                         forcastInputParamNew.setRainfall(rainfall);
-                        Map<String, ShanbeiParam> paramMap =  new HashMap<>();
-                        modelParametersService.lambdaQuery().eq(ModelParameters::getIsDefault, 1).list()
-                                .forEach(param -> {
-                                    paramMap.put(param.getSiteName(), new ShanbeiParam(){{
-                                        setArea(param.getArea());
-                                        setFC(param.getFc());
-                                        setFM(param.getFm());
-                                        setFB(param.getFb());
-                                        setCS(param.getCs());
-                                        setKC(param.getKc());
-                                        setWM(param.getWm());
-                                        setFM(param.getFm());
-                                        setK(param.getK());
-                                        setB(param.getB());
-                                        setL(param.getL());
-                                    }});
-                                });
+                        Map<String, Map<String, ShanbeiParam>> paramMap =  new HashMap<>();
+                        List<ModelParameters> defaultParamList = modelParametersService.lambdaQuery().eq(ModelParameters::getIsDefault, 1).list();
+                        List<String> siteList = defaultParamList.stream().map(ModelParameters::getSiteName).distinct().collect(Collectors.toList());
+                        siteList.forEach(site -> {
+                            Map<String, ShanbeiParam> shanbeiParamMap = new HashMap<>();
+                            defaultParamList.stream().filter(n -> n.getSiteName().equals(site))
+                                    .forEach(param -> shanbeiParamMap
+                                            .put(param.getRainfallStation(), new ShanbeiParam(){{
+                                                setArea(param.getArea());
+                                                setFC(param.getFc());
+                                                setFM(param.getFm());
+                                                setFB(param.getFb());
+                                                setCS(param.getCs());
+                                                setKC(param.getKc());
+                                                setWM(param.getWm());
+                                                setFM(param.getFm());
+                                                setK(param.getK());
+                                                setB(param.getB());
+                                                setL(param.getL());
+                                            }}));
+                            paramMap.put(site, shanbeiParamMap);
+                        });
                         forcastInputParamNew.setParamMap(paramMap);
                         forcastInputParamNew.setBasinStr(JSONObject.toJSONString(loadBasinParam()));
                         forcastInputParamNew.setFloodBasin(loadFloodBasinParam());
