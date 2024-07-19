@@ -70,6 +70,14 @@ public class TrendsTableParamController {
         return trendsTableParamService.select(req);
     }
 
+    @ApiOperationSupport(order = 5)
+    @ApiOperation("基准流量查询单位列表")
+    @CommonLog(value = "基准流量查询单位列表")
+    @GetMapping("/selectListByBenchmarkTraffic")
+    public RestResponse<List<TrendsTableParam>> selectListByBenchmarkTraffic(@RequestParam("useStation") String useStation) {
+        return trendsTableParamService.selectListByBenchmarkTraffic(useStation);
+    }
+
 
 }
 

@@ -483,6 +483,10 @@ public class TimeUtils {
 		}
 		//小时尺度据不做处理直接输出
 		else result = data;
+		//单一数据无法转换
+		if (data.size()==1){
+			result = data;
+		}
 
 		return result;
 	}

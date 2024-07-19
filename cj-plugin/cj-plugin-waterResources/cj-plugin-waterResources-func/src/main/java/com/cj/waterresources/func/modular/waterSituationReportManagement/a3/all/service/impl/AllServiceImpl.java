@@ -2073,6 +2073,80 @@ public class AllServiceImpl implements AllService {
         return result;
     }
 
+    @Override
+    public Boolean benchmarkTraffic(String unitName,String id, String startTime, String endTime, Double benchmarkValue) {
+        Boolean result = true;
+        if(unitName.equals("河东管理站")){
+            List<DayWaterSituationStatisticsTableHd> dayWaterSituationStatisticsTableHds = dayWaterSituationStatisticsTableHdMapper.planComparedToActual(null, startTime, endTime);
+            Map<Date, List<DayWaterSituationStatisticsTableHd>> collect = dayWaterSituationStatisticsTableHds.stream().collect(Collectors.groupingBy(DayWaterSituationStatisticsTableHd::getRecordTime));
+            Set<Date> dates = collect.keySet();
+            for(Date date : dates){
+                List<DayWaterSituationStatisticsTableHd> dayWaterSituationStatisticsTableHds1 = collect.get(date);
+                dayWaterSituationStatisticsTableHds1.stream().forEach(t->{
+                    if(t.getTableHeadId().equals(id)){
+                        t.setV((t.getV()==null?0.00:t.getV())-benchmarkValue);
+                    }
+                });
+                RestResponse update = dayWaterSituationStatisticsTableHdService.update(dayWaterSituationStatisticsTableHds1);
+                if(update.getCode()!=200){
+                    return false;
+                }
+            }
+        }
+        if(unitName.equals("河西管理站")){
+            List<DayWaterSituationStatisticsTableHx> dayWaterSituationStatisticsTableHxs = dayWaterSituationStatisticsTableHxMapper.planComparedToActual(null, startTime, endTime);
+            Map<Date, List<DayWaterSituationStatisticsTableHx>> collect = dayWaterSituationStatisticsTableHxs.stream().collect(Collectors.groupingBy(DayWaterSituationStatisticsTableHx::getRecordTime));
+            Set<Date> dates = collect.keySet();
+            for(Date date : dates){
+                List<DayWaterSituationStatisticsTableHx> dayWaterSituationStatisticsTableHxs1 = collect.get(date);
+                dayWaterSituationStatisticsTableHxs1.stream().forEach(t->{
+                    if(t.getTableHeadId().equals(id)){
+                        t.setV((t.getV()==null?0.00:t.getV())-benchmarkValue);
+                    }
+                });
+                RestResponse update = dayWaterSituationStatisticsTableHxService.update(dayWaterSituationStatisticsTableHxs1);
+                if(update.getCode()!=200){
+                    return false;
+                }
+            }
+        }
+        if(unitName.equals("渠首管理站")){
+            List<DayWaterSituationStatisticsTableQs> dayWaterSituationStatisticsTableQss = dayWaterSituationStatisticsTableQsMapper.planComparedToActual(null, startTime, endTime);
+            Map<Date, List<DayWaterSituationStatisticsTableQs>> collect = dayWaterSituationStatisticsTableQss.stream().collect(Collectors.groupingBy(DayWaterSituationStatisticsTableQs::getRecordTime));
+            Set<Date> dates = collect.keySet();
+            for(Date date : dates){
+                List<DayWaterSituationStatisticsTableQs> dayWaterSituationStatisticsTableQss1 = collect.get(date);
+                dayWaterSituationStatisticsTableQss1.stream().forEach(t->{
+                    if(t.getTableHeadId().equals(id)){
+                        t.setV((t.getV()==null?0.00:t.getV())-benchmarkValue);
+                    }
+                });
+                RestResponse update = dayWaterSituationStatisticsTableQsService.update(dayWaterSituationStatisticsTableQss1);
+                if(update.getCode()!=200){
+                    return false;
+                }
+            }
+        }
+        if(unitName.equals("灯笼渠绿化")){
+            List<DayWaterSituationStatisticsTableQsLh> dayWaterSituationStatisticsTableQsLhs = dayWaterSituationStatisticsTableQsLhMapper.planComparedToActual(null, startTime, endTime);
+            Map<Date, List<DayWaterSituationStatisticsTableQsLh>> collect = dayWaterSituationStatisticsTableQsLhs.stream().collect(Collectors.groupingBy(DayWaterSituationStatisticsTableQsLh::getRecordTime));
+            Set<Date> dates = collect.keySet();
+            for(Date date : dates){
+                List<DayWaterSituationStatisticsTableQsLh> dayWaterSituationStatisticsTableQsLhs1 = collect.get(date);
+                dayWaterSituationStatisticsTableQsLhs1.stream().forEach(t->{
+                    if(t.getTableHeadId().equals(id)){
+                        t.setV((t.getV()==null?0.00:t.getV())-benchmarkValue);
+                    }
+                });
+                RestResponse update = dayWaterSituationStatisticsTableQsLhService.update(dayWaterSituationStatisticsTableQsLhs1);
+                if(update.getCode()!=200){
+                    return false;
+                }
+            }
+        }
+        return result;
+    }
+
     private void setV(List<WaterFeeStatisticsDetails> waterFeeStatisticsDetails){
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         String mk = (String) redisUtil.get("trendsTableParam:list");

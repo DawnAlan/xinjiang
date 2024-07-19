@@ -143,4 +143,21 @@ public class LzzPlatformController {
             return RestResponse.no("error");
         }
     }
+
+    @ApiOperationSupport(order = 4)
+    @ApiOperation("楼庄子进库流量数据同步")
+    @PostMapping("/insertLzzInputFlowBetweenTime")
+    public RestResponse insertLzzInputFlowBetweenTime(@RequestBody ReqParam reqParam) {
+        try {
+            RestResponse restResponse = lzzPlatformService.insertLzzInputFlowBetweenTime(reqParam.getStartDate(),reqParam.getEndDate());
+            if(restResponse.getCode()==200){
+                return RestResponse.ok("ok");
+            }else {
+                return RestResponse.no("error");
+            }
+        }catch (Exception e) {
+            e.printStackTrace();
+            return RestResponse.no("error");
+        }
+    }
 }

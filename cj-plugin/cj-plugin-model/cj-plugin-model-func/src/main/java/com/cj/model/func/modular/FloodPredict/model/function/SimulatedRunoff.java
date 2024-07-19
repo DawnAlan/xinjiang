@@ -20,7 +20,6 @@ public class SimulatedRunoff {
     String floodSource;//洪水来源
     String floodTime;//洪水传播时间
     String floodComposition;//洪水组成
-    int hours = InputUtils.beforeHours;//前期落地雨时间
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     List<RainFallDto> bylch = new ArrayList<>();
     List<RainFallDto> dngh = new ArrayList<>();
@@ -37,7 +36,6 @@ public class SimulatedRunoff {
     List<RainFallDto> ggh = new ArrayList<>();
     List<RainFallDto> hjgh = new ArrayList<>();
     public List<Flood> simulation(ForecastInputParam param) {
-
         double preFlow = param.getPreFlow();
         double preRain = param.getPreRainFall();
         List<RainFallDto> rain = param.getRainFallDtos();
@@ -136,31 +134,31 @@ public class SimulatedRunoff {
         areaMap.put("甘沟雨量站",75.84);
         areaMap.put("头屯河水库雨量站",56.54);
         Map<String,Integer> lMap = new HashMap<>();
-        lMap.put("八一林场自动雨量站", 10);
-        lMap.put("东南沟自动雨量站", 8);
-        lMap.put("黑沟自动雨量站",0);
-        lMap.put("加普沙自动雨量站",8);
-        lMap.put("喀什沟自动雨量站",0);
-        lMap.put("煤矿沟自动雨量站",3);
-        lMap.put("萨尔达万自动雨量站",3);
-        lMap.put("无名沟自动雨量站",4);
-        lMap.put("宰尔德自动雨量站",4);
+        lMap.put("八一林场自动雨量站", 12);
+        lMap.put("东南沟自动雨量站", 10);
+        lMap.put("黑沟自动雨量站",1);
+        lMap.put("加普沙自动雨量站",12);
+        lMap.put("喀什沟自动雨量站",1);
+        lMap.put("煤矿沟自动雨量站",4);
+        lMap.put("萨尔达万自动雨量站",4);
+        lMap.put("无名沟自动雨量站",6);
+        lMap.put("宰尔德自动雨量站",6);
         lMap.put("制材厂自动雨量站",0);
-        lMap.put("小渠子雨量站",2);
-        lMap.put("团结一队雨量站",1);
+        lMap.put("小渠子雨量站",3);
+        lMap.put("团结一队雨量站",2);
         lMap.put("甘沟雨量站",1);
         lMap.put("头屯河水库雨量站",0);
         Map<String, Double> csMap = new HashMap<>();
-        csMap.put("八一林场自动雨量站", 0.9);
-        csMap.put("东南沟自动雨量站", 0.9);
-        csMap.put("黑沟自动雨量站", 0.7);
-        csMap.put("加普沙自动雨量站", 0.9);
-        csMap.put("喀什沟自动雨量站", 0.7);
+        csMap.put("八一林场自动雨量站", 0.85);
+        csMap.put("东南沟自动雨量站", 0.85);
+        csMap.put("黑沟自动雨量站", 0.6);
+        csMap.put("加普沙自动雨量站", 0.85);
+        csMap.put("喀什沟自动雨量站", 0.6);
         csMap.put("煤矿沟自动雨量站", 0.7);
         csMap.put("萨尔达万自动雨量站", 0.7);
         csMap.put("无名沟自动雨量站", 0.7);
         csMap.put("宰尔德自动雨量站", 0.7);
-        csMap.put("制材厂自动雨量站", 0.7);
+        csMap.put("制材厂自动雨量站", 0.6);
         csMap.put("小渠子雨量站", 0.8);
         csMap.put("团结一队雨量站", 0.8);
         csMap.put("甘沟雨量站", 0.8);
@@ -335,28 +333,30 @@ public class SimulatedRunoff {
                 }
                 break;
         }
-//        Object[][] subFlow = new Object[rainQ.length+1][flow.size()+1];
-//        int a = 1;
-//        for (Map.Entry<String,double[]> entry:flow.entrySet()){
-//            String key  = entry.getKey();
-//            double[] f = entry.getValue();
-//            subFlow[0][a] = key;
-//            for (int i = 0; i < f.length; i++) {
-//                subFlow[1+i][a] = f[i];
-//            }
-//            a++;
-//        }
-//        subFlow[0][0] = "时间";
-//        for (int i = 0; i < rainQ.length; i++) {
-//            subFlow[1+i][0]=tu.addCalendar(param.getPreStartTime(),"小时",i);
-//        }
-//        ExcelTool.writeObjectExcel("D:\\204\\2.头屯河\\径流预报数据文件\\子流域模拟洪水.xlsx","子流域",subFlow);
         //获得径流序列包含了降水融雪地下水
         Object[][] shortFlow = mixedFlood(rainQ,preFlow,param.getPreStartTime());
         floodSource = new SubBasinForecast().getFloodSources(flow,param);//洪水来源
-        floodTime = new SubBasinForecast().getFloodTime(lTime);//洪水汇流时间
         floodComposition = getFloodComposition(param, preFlow, rainQ);//洪水组成
         floodLevel = new SubBasinForecast().getFloodLevel(shortFlow, param.getLocation());//洪水等级
+        Map<String, Integer> updatedMap = new HashMap<>();
+        for (Map.Entry<String, Integer> mapEntry : lTime.entrySet()) {
+            String key = mapEntry.getKey();
+            Integer value = mapEntry.getValue();
+            switch (floodLevel) {
+                case "二十年一遇":
+                case "五十年一遇":
+                    updatedMap.put(key, value - 1);
+                    break;
+                case "百年一遇":
+                    updatedMap.put(key, value - 2);
+                    break;
+                case "千年一遇":
+                    updatedMap.put(key, value - 3);
+                    break;
+            }
+        }
+        lTime.putAll(updatedMap); // 更新原始 Map
+        floodTime = new SubBasinForecast().getFloodTime(lTime);//洪水汇流时间
         //将Object转化为Flood类型
         double[] surface = pointToSurface(param);
         return setShortFlood(shortFlow, param, surface);

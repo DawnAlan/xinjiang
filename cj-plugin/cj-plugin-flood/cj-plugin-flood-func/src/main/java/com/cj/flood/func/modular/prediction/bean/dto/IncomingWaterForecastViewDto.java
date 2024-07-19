@@ -34,4 +34,6 @@ public class IncomingWaterForecastViewDto implements Serializable {
     private Integer sort;
 
     private String name;
+
+    private List<ConfluenceTimeDto> confluenceTime;
 }

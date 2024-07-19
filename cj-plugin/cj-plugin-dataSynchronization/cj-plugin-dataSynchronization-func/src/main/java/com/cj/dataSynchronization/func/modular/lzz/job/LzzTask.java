@@ -41,6 +41,16 @@ public class LzzTask {
         }
     }
 
+    @XxlJob("saveLzzInputFlow")
+    private void saveLzzInputFlow(){
+        try {
+            lzzPlatformService.insertLzzInputFlow();
+        }catch (Exception e) {
+            e.printStackTrace();
+            log.error(e.getLocalizedMessage());
+        }
+    }
+
     private Date calculateTime(Date time,int hour){
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(time);

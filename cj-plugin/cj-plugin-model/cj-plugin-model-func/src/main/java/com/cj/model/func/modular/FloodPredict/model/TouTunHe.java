@@ -120,17 +120,17 @@ public class TouTunHe {
             }
             for (PredictInputData flowDatum : flowData) {
                 if (flowDatum.getLocation().equals("楼庄子")) {
-                    if (flowDatum.getFlow() != null&&flowDatum.getDataType().equals("flow")) {
+                    if (flowDatum.getFlow() != null&&flowDatum.getDataType().equals("flow")&&flowDatum.getFlow()<500.0) {
                         LZZ.add(flowDatum);
                     }
-                    if (flowDatum.getFlow() != null&&flowDatum.getDataType().equals("waterLevel")) {
+                    if (flowDatum.getFlow() != null&&flowDatum.getDataType().equals("waterLevel")&&flowDatum.getFlow()>1000.0) {
                         InputUtils.lzzWaterLevel = flowDatum.getFlow();
                     }
                 } else if (flowDatum.getLocation().equals("头屯河")) {
-                    if (flowDatum.getFlow() != null&&flowDatum.getDataType().equals("flow")) {
+                    if (flowDatum.getFlow() != null&&flowDatum.getDataType().equals("flow")&&flowDatum.getFlow()<500.0) {
                         QJ.add(flowDatum);
                     }
-                    if (flowDatum.getFlow() != null&&flowDatum.getDataType().equals("waterLevel")) {
+                    if (flowDatum.getFlow() != null&&flowDatum.getDataType().equals("waterLevel")&&flowDatum.getFlow()>900.0) {
                         InputUtils.tthWaterLevel = flowDatum.getFlow();
                     }
                 }
@@ -278,6 +278,7 @@ public class TouTunHe {
         List<PredictInputData> QJ = new ArrayList<>();
         int timeLength = Integer.parseInt(Lzz.get(0).getScale());
         Object[][] tthIn;
+        double lzzIn = 0.0;
         double qjFlood = 0.0;
         double lzzFlood = 0.0;
         int late = 2;
@@ -297,6 +298,7 @@ public class TouTunHe {
                     for (int i = hours; i < Lzz.size(); i++) {
                         tthIn[i-hours][0] = Lzz.get(i).getTime();
                         tthIn[i-hours][1] = (inFlow[i-hours]+qj.get(i).getPreQ());
+                        lzzIn += Lzz.get(i).getPreQ();
                         lzzFlood += inFlow[i-hours];
                         qjFlood += qj.get(i).getPreQ();
                     }
@@ -304,6 +306,7 @@ public class TouTunHe {
                     for (int i = hours; i < Lzz.size(); i++) {
                         tthIn[i-hours][0] = Lzz.get(i).getTime();
                         tthIn[i-hours][1] = (i - late > hours ? Lzz.get(i - late).getOutQ() + qj.get(i - late).getPreQ() : Lzz.get(hours).getOutQ() + qj.get(hours).getPreQ());
+                        lzzIn += Lzz.get(i).getPreQ();
                         lzzFlood += Lzz.get(i).getOutQ();
                         qjFlood += qj.get(i).getPreQ();
                     }
@@ -314,6 +317,7 @@ public class TouTunHe {
                 for (int i = 0; i < Lzz.size(); i++) {
                     tthIn[i][0] = Lzz.get(i).getTime();
                     tthIn[i][1] = (i - late > 0 ? Lzz.get(i - late).getOutQ() + qj.get(i - late).getPreQ() : Lzz.get(0).getOutQ() + qj.get(0).getPreQ());
+                    lzzIn += Lzz.get(i).getPreQ();
                     lzzFlood += Lzz.get(i).getOutQ();
                     qjFlood += qj.get(i).getPreQ();
                 }
@@ -342,9 +346,9 @@ public class TouTunHe {
                 String area = splitPair[0];
                 double value = Double.parseDouble(splitPair[1]);
                 if (area.contains("自动雨量站")) {
-                    tthRain.append(area.replaceAll("自动雨量站", "")).append(":").append(Math.round((float) value * lzzFlood / (qjFlood + lzzFlood) * 100) / 100.0).append(",");
+                    tthRain.append(area.replaceAll("自动雨量站", "")).append(":").append(Math.round((float) value * lzzIn / (qjFlood + lzzIn) * 100) / 100.0).append(",");
                 } else {
-                    tthRain.append(area.replaceAll("雨量站", "")).append(":").append(Math.round((float) value * qjFlood / (qjFlood + lzzFlood) * 100) / 100.0).append(",");
+                    tthRain.append(area.replaceAll("雨量站", "")).append(":").append(Math.round((float) value * qjFlood  / (qjFlood + lzzIn) * 100) / 100.0).append(",");
                 }
             }
             //连续列的赋值

@@ -345,6 +345,29 @@ public class TrendsTableParamServiceImpl extends ServiceImpl<TrendsTableParamMap
         }
     }
 
+    @Override
+    public RestResponse<List<TrendsTableParam>> selectListByBenchmarkTraffic(String useStation) {
+        List<TrendsTableParam> list = new ArrayList<>();
+        String mk = (String) redisUtil.get("trendsTableParam:list");
+        if(StringUtils.isEmpty(mk)){
+            updateCache();
+            mk = (String) redisUtil.get("trendsTableParam:list");
+        }
+        List<TrendsTableParam> trendsTableParamList = JSONObject.parseArray(mk, TrendsTableParam.class);
+        List<String> strings = trendsTableParamList.stream().filter(t -> t.getUseType() == 2  && StringUtils.isNotEmpty(t.getUnitId())&& StringUtils.isEmpty(t.getIsParent())).map(TrendsTableParam::getUnitId).collect(Collectors.toList());
+        for (String s:strings){
+            List<TrendsTableParam> collect = trendsTableParamList.stream().filter(t -> t.getUseType() == 1 && StringUtils.isNotEmpty(t.getUnitId()) && t.getUnitId().equals(s) && t.getUseStation().equals(useStation) && StringUtils.isEmpty(t.getIsParent())).collect(Collectors.toList());
+            if(collect.size()>0){
+                list.add(collect.get(0));
+            }
+        }
+        if(null != list && list.size()>0){
+            return RestResponse.ok(list);
+        }else {
+            return RestResponse.no("暂无数据");
+        }
+    }
+
     public void getParamTree(List<WaterDailyParamSelectRes> resultList,List<TrendsTableParam> list){
         List<WaterPriceManagement> list1 = waterPriceManagementService.list();
         if(resultList.size()>0){

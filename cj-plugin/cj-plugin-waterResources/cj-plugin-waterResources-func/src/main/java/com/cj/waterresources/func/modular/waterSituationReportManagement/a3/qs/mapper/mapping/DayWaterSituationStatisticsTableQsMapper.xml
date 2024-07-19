@@ -69,7 +69,7 @@
             <if test="startTime !=null and startTime !='' and endTime !=null and endTime !='' ">
                 and TO_CHAR(RECORD_TIME,'YYYY-MM-DD') between #{startTime} and #{endTime}
             </if>
-            and TIME = '今日均'
+                and TIME = '今日均'
         </where>
     </select>
 

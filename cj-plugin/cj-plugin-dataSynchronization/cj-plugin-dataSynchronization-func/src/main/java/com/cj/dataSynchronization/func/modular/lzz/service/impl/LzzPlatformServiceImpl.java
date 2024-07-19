@@ -721,6 +721,79 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
     }
 
     @Override
+    public RestResponse insertLzzInputFlow() {
+        List<LzzGaugingStation> list = lzzGaugingStationService.lambdaQuery().in(LzzGaugingStation::getTreeId, "2023101301", "2023101302").orderByDesc(LzzGaugingStation::getGatherTime).last("limit 2").list();
+        if(list.size()==2){
+            LzzGaugingStation station = new LzzGaugingStation();
+            station.setId("楼庄子进库流量:"+list.get(0).getGatherTime().getTime());
+            station.setStationName("楼庄子进库流量");
+            station.setTreeId("2023101303");
+            LzzGaugingStation station1 = list.get(0);
+            LzzGaugingStation station2 = list.get(1);
+            Double waterLevel = NumberUtil.holdDecimal((station1.getRelativeWaterLevel() + station1.getRelativeWaterLevelTwo() + station1.getRelativeWaterLevelThree() +
+                    station2.getRelativeWaterLevel() + station2.getRelativeWaterLevelTwo() + station2.getRelativeWaterLevelThree()) / 6, 3);
+            Double flowRate = NumberUtil.holdDecimal((station1.getFlowRate() + station1.getFlowRateTwo() + station1.getFlowRateThree() +
+                    station2.getFlowRate() + station2.getFlowRateTwo() + station2.getFlowRateThree()) / 6, 3);
+            Double flow = NumberUtil.holdDecimal((station1.getFlow() + station1.getFlowTwo() + station1.getFlowThree() +
+                    station2.getFlow() + station2.getFlowTwo() + station2.getFlowThree()), 3);
+            Double totalFlow = NumberUtil.holdDecimal((station1.getTotalFlow() + station1.getTotalFlowTwo() + station1.getTotalFlowThree() +
+                    station2.getTotalFlow() + station2.getTotalFlowTwo() + station2.getTotalFlowThree()), 3);
+            station.setRelativeWaterLevel(waterLevel);
+            station.setFlowRate(flowRate);
+            station.setFlow(flow);
+            station.setTotalFlow(totalFlow);
+            station.setGatherTime(station1.getGatherTime());
+            station.setRecordTime(DateUtil.parse(sdf1.format(list.get(0).getGatherTime()),"yyyy-MM-dd"));
+            boolean save = lzzGaugingStationService.saveOrUpdate(station);
+            if(save){
+                return RestResponse.ok("ok");
+            }else {
+                return RestResponse.no("error");
+            }
+        }else {
+            return RestResponse.ok("数据不全");
+        }
+    }
+
+    @Override
+    public RestResponse insertLzzInputFlowBetweenTime(String startTime, String endTime) {
+        List<LzzGaugingStation> result = new ArrayList<>();
+        List<LzzGaugingStation> list = lzzGaugingStationService.lambdaQuery().in(LzzGaugingStation::getTreeId, "2023101301", "2023101302").between(LzzGaugingStation::getRecordTime, startTime, endTime).list();
+        Map<Date, List<LzzGaugingStation>> collect = list.stream().collect(Collectors.groupingBy(LzzGaugingStation::getGatherTime));
+        collect.forEach((k,v)->{
+            if(v.size()==2){
+                LzzGaugingStation station = new LzzGaugingStation();
+                station.setId("楼庄子进库流量:"+v.get(0).getGatherTime().getTime());
+                station.setStationName("楼庄子进库流量");
+                station.setTreeId("2023101303");
+                LzzGaugingStation station1 = v.get(0);
+                LzzGaugingStation station2 = v.get(1);
+                Double waterLevel = NumberUtil.holdDecimal((station1.getRelativeWaterLevel() + station1.getRelativeWaterLevelTwo() + station1.getRelativeWaterLevelThree() +
+                        station2.getRelativeWaterLevel() + station2.getRelativeWaterLevelTwo() + station2.getRelativeWaterLevelThree()) / 6, 3);
+                Double flowRate = NumberUtil.holdDecimal((station1.getFlowRate() + station1.getFlowRateTwo() + station1.getFlowRateThree() +
+                        station2.getFlowRate() + station2.getFlowRateTwo() + station2.getFlowRateThree()) / 6, 3);
+                Double flow = NumberUtil.holdDecimal((station1.getFlow() + station1.getFlowTwo() + station1.getFlowThree() +
+                        station2.getFlow() + station2.getFlowTwo() + station2.getFlowThree()), 3);
+                Double totalFlow = NumberUtil.holdDecimal((station1.getTotalFlow() + station1.getTotalFlowTwo() + station1.getTotalFlowThree() +
+                        station2.getTotalFlow() + station2.getTotalFlowTwo() + station2.getTotalFlowThree()), 3);
+                station.setRelativeWaterLevel(waterLevel);
+                station.setFlowRate(flowRate);
+                station.setFlow(flow);
+                station.setTotalFlow(totalFlow);
+                station.setGatherTime(station1.getGatherTime());
+                station.setRecordTime(DateUtil.parse(sdf1.format(v.get(0).getGatherTime()),"yyyy-MM-dd"));
+                result.add(station);
+            }
+        });
+        boolean b = lzzGaugingStationService.saveOrUpdateBatch(result);
+        if(b){
+            return RestResponse.ok("ok");
+        }else {
+            return RestResponse.no("error");
+        }
+    }
+
+    @Override
     public RestResponse insertTree() {
         List<UserIdParam> userIdParams = pubUserService.selectPidList();
         List<LzzPlatformTree> lzzPlatformTrees = new ArrayList<>();
@@ -757,11 +830,4 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
             return RestResponse.no("error");
         }
     }
-
-    public static void main(String[] args) {
-        for(int i =3;i>1;i--){
-            System.out.println(i-1);
-        }
-    }
-
 }

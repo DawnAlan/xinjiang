@@ -1306,7 +1306,7 @@ public class MachineDataUtils {
         Date dateEnd = InputUtils.historyDate;
 
         if (param.getPeriod().equals("日")) {//计算预报时间和历史记录时间的相差天数
-            if (param.getPreStartTime().before(dateEnd)){
+            if (param.getPreStartTime().before(dateEnd)||preliminaryData.length==0){
                 return copyPartData(historyInput,param.getPreStartTime());
             }else {
                 Date dateStart = (Date) preliminaryData[0][0];

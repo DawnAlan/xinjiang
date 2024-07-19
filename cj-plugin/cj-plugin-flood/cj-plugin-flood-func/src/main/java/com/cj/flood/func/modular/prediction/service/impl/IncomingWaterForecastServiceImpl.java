@@ -1001,6 +1001,19 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                 }
             }
             incomingWaterForecastViewDto.setQCause(qCause);
+            List<ConfluenceTimeDto> confluenceTime = new ArrayList<>();
+            String confluenceTimeValue = flood.getConfluenceTime();
+            if(StringUtils.isNotEmpty(confluenceTimeValue)){
+                String[] confluenceTimeSplit = confluenceTimeValue.split(",");
+                for(String qCauseSplitTemp : confluenceTimeSplit){
+                    ConfluenceTimeDto dto = new ConfluenceTimeDto();
+                    String[] split2 = qCauseSplitTemp.split(":");
+                    dto.setName(split2[0]);
+                    dto.setValue(split2[1]);
+                    confluenceTime.add(dto);
+                }
+            }
+            incomingWaterForecastViewDto.setConfluenceTime(confluenceTime);
             List<IncomingWaterForecastKVDto> qComposition = new ArrayList<>();
             String qCompositionValue = flood.getQComposition();
             if(StringUtils.isNotEmpty(qCompositionValue)){

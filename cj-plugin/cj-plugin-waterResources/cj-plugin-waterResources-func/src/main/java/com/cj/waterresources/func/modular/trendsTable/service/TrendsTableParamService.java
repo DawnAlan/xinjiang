@@ -30,6 +30,7 @@ public interface TrendsTableParamService extends IService<TrendsTableParam> {
     RestResponse<List<WaterDailyParamSelectRes>> select(QueryTrendsTableParamReq req);
 
     RestResponse<List<TrendsTableParam>> selectNoParent();
+    RestResponse<List<TrendsTableParam>> selectListByBenchmarkTraffic(String useStation);
 
     void updateCache();
 

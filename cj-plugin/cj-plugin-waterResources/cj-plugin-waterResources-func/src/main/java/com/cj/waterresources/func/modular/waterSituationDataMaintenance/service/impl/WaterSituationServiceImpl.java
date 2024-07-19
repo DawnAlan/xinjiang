@@ -245,7 +245,7 @@ public class WaterSituationServiceImpl implements WaterSituationService {
                     resList.add(res);
                 });
             }
-            List<LzzRainfallStation> listLzzRain = lzzRainfallStationService.selectInfoByCondition(byId.getMonitorId(),null,req.getStartTime(),req.getEndTime());
+            List<LzzRainfallStation> listLzzRain = lzzRainfallStationService.selectInfoByCondition(byId.getMonitorId(),null,req.getStartTime()+" 00:00",req.getEndTime()+" 23:00");
             if(null != listLzzRain && listLzzRain.size()>0){
                 listLzzRain.stream().collect(Collectors.toList()).forEach(t->{
                     HydrographRes res = new HydrographRes();

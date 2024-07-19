@@ -33,7 +33,7 @@ import java.util.Map;
 @Validated
 @RestController
 @RequestMapping("waterFeeStatisticsDetails")
-public class WaterFeeStatisticsDetailsController {
+public class  WaterFeeStatisticsDetailsController {
 
     @Autowired
     private WaterFeeStatisticsDetailsService waterFeeStatisticsDetailsService;

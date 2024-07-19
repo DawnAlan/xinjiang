@@ -44,6 +44,9 @@ public interface LzzPlatformService {
     RestResponse insertGaugingStationTemperatureBetweenTime(Date startTime, Date endTime);
     RestResponse insertGaugingStationBetweenTime(Date startTime, Date endTime);
 
+    RestResponse insertLzzInputFlow();
+    RestResponse insertLzzInputFlowBetweenTime(String startTime, String endTime);
+
     RestResponse insertTree();
     RestResponse updateTree();
 }

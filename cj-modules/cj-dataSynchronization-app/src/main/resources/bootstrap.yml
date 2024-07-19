@@ -6,13 +6,13 @@ spring:
   cloud:
     nacos:
       config:
-        server-addr: 172.16.0.120:8848
+        server-addr: 10.65.2.101:8848
         namespace: cj-cloud-2x-${spring.profiles.active}
         group: ${spring.profiles.active}
         prefix: ${spring.application.name}
         file-extension: yaml
         username: nacos
-        password: nacos
+        password: Lylw@1995pqzxc!..
 
 
 #10.65.73.17
@@ -30,7 +30,7 @@ irrigatedArea:
 xxl:
   job:
     admin:
-      addresses: http://172.16.0.120:9004/xxl-job-admin
+      addresses: http://10.65.2.101:9004/xxl-job-admin
     accessToken:
     executor:
       appname: xxl-job-executor-save-data
