@@ -79,7 +79,7 @@ public class FlowSelect {
         }
         double dt = max - min;//差值
 
-        if (max <= 10 || dt / min <= 2)//如果洪峰小于10或者来水变幅很小
+        if (max <= 10 || max / min <= 2)//如果洪峰小于10或者来水变幅很小
         {
             throw new RuntimeException(location+"所选时段内无较大来水，无法对模型参数进行有效优化");
         }
