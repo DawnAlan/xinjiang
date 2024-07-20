@@ -19,3 +19,15 @@ minio:
   secretKey: Ylw@d687pqzxc #密码
   bucket: tth
 floodModelFilePath: /tth/tthUseFile/
+xxl:
+  job:
+    admin:
+      addresses: http://192.168.101.125:9004/xxl-job-admin
+    accessToken:
+    executor:
+      appname: xxl-job-executor-flood
+      address:
+      ip:
+      port: 9995
+      logpath: /data/applogs/xxl-job/jobhandler
+      logretentiondays: 30
