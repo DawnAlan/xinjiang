@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.RedisUtil;
+import com.cj.common.util.UUIDUtils;
 import com.cj.flood.func.modular.prediction.bean.dto.OverallSituationUnitMgrDto;
 import com.cj.flood.func.modular.prediction.bean.req.CalibrateReq;
 import com.cj.flood.func.modular.prediction.bean.req.ModelParameterDetailReq;
@@ -112,14 +113,7 @@ public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMappe
     @Override
     @Transactional
     public Map calibrate(CalibrateReq input) {
-        // 获取当前日期的Calendar实例
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(input.getStartTime());
-        // 设置日期为当前日期的前20天
-        calendar.add(Calendar.DAY_OF_MONTH, -30);
-        // 获取设置后的时间
-        Date startTime = calendar.getTime();
-        Date endTime = input.getEndTime();
+
 
         //固定或者默认模型参数
 //        input.getHistoryParam();
@@ -138,16 +132,15 @@ public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMappe
         String siteName = input.getParametersList().get(0).getSiteName();
         CalibrationParam calibrationParam = new CalibrationParam();
         calibrationParam.setIsAutomatic(input.getIsAutomatic());
-        calibrationParam.setStartTime(input.getStartTime());
-        calibrationParam.setEndTime(input.getEndTime());
+        calibrationParam.setTime(input.getTime());
         calibrationParam.setLocation(siteName);
         calibrationParam.setFloodBasin(loadFloodBasinParam());
         //固定或者默认模型参数
         calibrationParam.setHistoryParam(historyParam);
         //修改后的参数
         calibrationParam.setManualParam(manualParam);
-        calibrationParam.setRainfall(setRainfallData(startTime, endTime));
-        calibrationParam.setFlowData(setWaterLevelData(startTime, endTime));
+        calibrationParam.setRainfall(setRainfallData(input.getTime(),siteName));
+        calibrationParam.setFlowData(setWaterLevelData(input.getTime(),siteName));
         Map<String, CalibrationOutput> calibrationOutput = shanBeiCalibration.calibration(calibrationParam);
         //Assert.isTrue(!validError(calibrationOutput), "参数率定模型调用返回异常,请检查后重试");
         Date now = new Date();
@@ -157,10 +150,10 @@ public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMappe
         modelMap.put("error", calibrationOutputValue.getError());
         modelMap.put("rainfallStation", calibrationOutputValue.getParam());
         List<ModelParameters> modelParametersList = new ArrayList<>();
-        String modelId = UUID.randomUUID().toString();
+        String modelId = UUIDUtils.getUUID();
         calibrationOutputValue.getParam().forEach((k, v) -> {
             ModelParameters modelParameters = ModelParameters.builder()
-                    .id(UUID.randomUUID().toString())
+                    .id(UUIDUtils.getUUID())
                     .modelId(modelId)
                     .siteName(siteName)
                     .rainfallStation(k)
@@ -184,7 +177,7 @@ public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMappe
         List<ModelParametersDetail> detailList = new ArrayList<>();
         calibrationOutputValue.getFlowList().forEach(flow -> {
             ModelParametersDetail detail = ModelParametersDetail.builder()
-                    .id(UUID.randomUUID().toString())
+                    .id(UUIDUtils.getUUID())
                     .parentId(modelId)
                     .time(flow.getTime())
                     .historyFlow(flow.getHistoryFlow())
@@ -217,54 +210,112 @@ public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMappe
         param.put(r.getRainfallStation(), shanbeiParam);
     }
 
-    private Map<String,List<RainFallDto>> setRainfallData(Date startTime, Date endTime) {
+    private Map<String,List<RainFallDto>> setRainfallData(List<Date[]> time,String location) {
         Map<String,List<RainFallDto>> rainfall = new HashMap<>();
         String overall = (String) redisUtil.get("overallSituationUnitMgr:list");
         List<OverallSituationUnitMgrDto> overallSituationUnitMgrDtoList = JSONObject.parseArray(overall, OverallSituationUnitMgrDto.class);
         List<OverallSituationUnitMgrDto> collect = overallSituationUnitMgrDtoList.stream().filter(t -> t.getPName().equals("雨量站")).collect(Collectors.toList());
-        List<String> tthIds = collect.stream().filter(t -> t.getDataResource() != null && t.getDataResource() == 1 && org.apache.commons.lang3.StringUtils.isNotEmpty(t.getMonitorId())).map(OverallSituationUnitMgrDto::getMonitorId).collect(Collectors.toList());
-        List<String> lzzIds = collect.stream().filter(t -> t.getDataResource() != null && t.getDataResource() == 2 && org.apache.commons.lang3.StringUtils.isNotEmpty(t.getMonitorId())).map(OverallSituationUnitMgrDto::getMonitorId).collect(Collectors.toList());
-        for(String id:lzzIds){
-            List<LzzRainfallStation> lzzRainfallStations = lzzRainfallStationService.selectInfoByCondition(id, null, sdf.format(startTime), sdf.format(endTime));
-            if (!lzzRainfallStations.isEmpty()) {
-                List<RainFallDto> rainfallDtos = new ArrayList<>();
-                for(LzzRainfallStation lzzRainfallStation:lzzRainfallStations){
-                    RainFallDto rainfallDto = new RainFallDto();
-                    rainfallDto.setRainFall(lzzRainfallStation.getRainfall().doubleValue());
-                    rainfallDto.setTemperature(lzzRainfallStation.getTemperature() == null ? 0 : lzzRainfallStation.getTemperature().doubleValue());
-                    rainfallDto.setDate(sdf.format(lzzRainfallStation.getTime()));
-                    rainfallDto.setArea(lzzRainfallStations.get(0).getStationName());
-                    rainfallDtos.add(rainfallDto);
+        if (location.equals("3号桥")||location.equals("楼庄子")){
+            List<String> lzzIds = collect.stream().filter(t -> t.getDataResource() != null && t.getDataResource() == 2 && org.apache.commons.lang3.StringUtils.isNotEmpty(t.getMonitorId())).map(OverallSituationUnitMgrDto::getMonitorId).collect(Collectors.toList());
+            for(String id:lzzIds){
+                List<LzzRainfallStation> lzzRainfallStations = new ArrayList<>();
+                for (int i = 0; i < time.size(); i++) {
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.setTime(time.get(i)[0]);
+                    calendar.add(Calendar.DAY_OF_MONTH, -20);
+                    Date startTime = calendar.getTime();
+                    Date endTime = time.get(i)[1];
+                    lzzRainfallStations.addAll(lzzRainfallStationService.selectInfoByCondition(id, null, sdf.format(startTime), sdf.format(endTime)));
                 }
-                rainfall.put(lzzRainfallStations.get(0).getStationName(),rainfallDtos);
+                if (!lzzRainfallStations.isEmpty()) {
+                    List<RainFallDto> rainfallDtos = new ArrayList<>();
+                    for(LzzRainfallStation lzzRainfallStation:lzzRainfallStations){
+                        RainFallDto rainfallDto = new RainFallDto();
+                        rainfallDto.setRainFall(lzzRainfallStation.getRainfall().doubleValue());
+                        rainfallDto.setTemperature(lzzRainfallStation.getTemperature() == null ? 0 : lzzRainfallStation.getTemperature().doubleValue());
+                        rainfallDto.setDate(sdf.format(lzzRainfallStation.getTime()));
+                        rainfallDto.setArea(lzzRainfallStations.get(0).getStationName());
+                        rainfallDtos.add(rainfallDto);
+                    }
+                    // 按日期去重
+                    List<RainFallDto> uniqueRainfallDtos = rainfallDtos.stream()
+                            .collect(Collectors.toMap(
+                                    RainFallDto::getDate,  // 使用日期作为键
+                                    dto -> dto,            // 值保持不变
+                                    (existing, replacement) -> existing)) // 如果键重复，保留第一个出现的值
+                            .values()
+                            .stream()
+                            .sorted(Comparator.comparing(RainFallDto::getDate)) // 按日期排序
+                            .collect(Collectors.toList());
+                    rainfall.put(lzzRainfallStations.get(0).getStationName(), uniqueRainfallDtos);
+                }
             }
-        }
-        for(String id:tthIds){
-            List<IrrigatedPlatformDataInfo> irrigatedPlatformDataInfos = irrigatedPlatformDataInfoService.selectInfoByCondition(id, null, sdf.format(startTime), sdf.format(endTime));
-            if (!irrigatedPlatformDataInfos.isEmpty()) {
-                List<RainFallDto> rainfallDtos = new ArrayList<>();
-                for(IrrigatedPlatformDataInfo irrigatedPlatformDataInfo:irrigatedPlatformDataInfos){
-                    RainFallDto rainfallDto = new RainFallDto();
-                    rainfallDto.setRainFall(irrigatedPlatformDataInfo.getYqRainFallOne());
-                    rainfallDto.setDate(sdf.format(irrigatedPlatformDataInfo.getMonitorTime()));
-                    rainfallDto.setArea(irrigatedPlatformDataInfos.get(0).getMonitorName());
-                    rainfallDtos.add(rainfallDto);
+        }else {
+            List<String> tthIds = collect.stream().filter(t -> t.getDataResource() != null && t.getDataResource() == 1 && org.apache.commons.lang3.StringUtils.isNotEmpty(t.getMonitorId())).map(OverallSituationUnitMgrDto::getMonitorId).collect(Collectors.toList());
+            for(String id:tthIds){
+                List<IrrigatedPlatformDataInfo> irrigatedPlatformDataInfos = new ArrayList<>();
+                for (int i = 0; i < time.size(); i++) {
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.setTime(time.get(i)[0]);
+                    calendar.add(Calendar.DAY_OF_MONTH, -20);
+                    Date startTime = calendar.getTime();
+                    Date endTime = time.get(i)[1];
+                    irrigatedPlatformDataInfos.addAll(irrigatedPlatformDataInfoService.selectInfoByCondition(id, null, sdf.format(startTime), sdf.format(endTime)));
                 }
-                rainfall.put(irrigatedPlatformDataInfos.get(0).getMonitorName(),rainfallDtos);
+                if (!irrigatedPlatformDataInfos.isEmpty()) {
+                    List<RainFallDto> rainfallDtos = new ArrayList<>();
+                    for(IrrigatedPlatformDataInfo irrigatedPlatformDataInfo:irrigatedPlatformDataInfos){
+                        RainFallDto rainfallDto = new RainFallDto();
+                        rainfallDto.setRainFall(irrigatedPlatformDataInfo.getYqRainFallOne());
+                        rainfallDto.setDate(sdf.format(irrigatedPlatformDataInfo.getMonitorTime()));
+                        rainfallDto.setArea(irrigatedPlatformDataInfos.get(0).getMonitorName());
+                        rainfallDtos.add(rainfallDto);
+                    }
+                    // 按日期去重
+                    List<RainFallDto> uniqueRainfallDtos = rainfallDtos.stream()
+                            .collect(Collectors.toMap(
+                                    RainFallDto::getDate,  // 使用日期作为键
+                                    dto -> dto,            // 值保持不变
+                                    (existing, replacement) -> existing)) // 如果键重复，保留第一个出现的值
+                            .values()
+                            .stream()
+                            .sorted(Comparator.comparing(RainFallDto::getDate)) // 按日期排序
+                            .collect(Collectors.toList());
+                    rainfall.put(irrigatedPlatformDataInfos.get(0).getMonitorName(), uniqueRainfallDtos);
+                }
             }
         }
         return rainfall;
     }
 
-    private Map<String,List<PredictInputData>> setWaterLevelData(Date startTime, Date endTime) {
+    private Map<String,List<PredictInputData>> setWaterLevelData(List<Date[]> time,String location) {
         Map<String,List<PredictInputData>> waterLevel = new HashMap<>();
-        List<LzzGaugingStation> threeStation = lzzGaugingStationService.lambdaQuery().eq(LzzGaugingStation::getStationName,"3号桥水位站").between(LzzGaugingStation::getGatherTime,startTime,endTime).list();
+        List<LzzGaugingStation> threeStation = new ArrayList<>();
+        List<LzzGaugingStation> tianStation = new ArrayList<>();
+        List<LzzGaugingStation> lzzOutStation = new ArrayList<>();
+        List<IrrigatedPlatformDataInfo> tthStation = new ArrayList<>();
+        for (int i = 0; i < time.size(); i++) {
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(time.get(i)[0]);
+            calendar.add(Calendar.DAY_OF_MONTH, -20);
+            Date startTime = calendar.getTime();
+            Date endTime = time.get(i)[1];
+            switch (location){
+                case "3号桥":
+                    threeStation.addAll(lzzGaugingStationService.lambdaQuery().eq(LzzGaugingStation::getStationName,"3号桥水位站").between(LzzGaugingStation::getGatherTime,startTime,endTime).list());
+                    break;
+                case "楼庄子":
+                    tianStation.addAll(lzzGaugingStationService.lambdaQuery().eq(LzzGaugingStation::getStationName,"天谷自动水位站").between(LzzGaugingStation::getGatherTime,startTime,endTime).list());
+                    break;
+                case "头屯河":
+                case "楼头区间":
+                    lzzOutStation.addAll(lzzGaugingStationService.lambdaQuery().eq(LzzGaugingStation::getStationName,"楼庄子出库水位站").between(LzzGaugingStation::getGatherTime,startTime,endTime).list());
+                    tthStation.addAll(irrigatedPlatformDataInfoService.lambdaQuery().eq(IrrigatedPlatformDataInfo::getMonitorName,"入库流量").between(IrrigatedPlatformDataInfo::getMonitorTime,startTime,endTime).list());
+            }
+        }
         waterLevel.put("3号桥", setWaterStationData(threeStation));
-        List<LzzGaugingStation> tianStation = lzzGaugingStationService.lambdaQuery().eq(LzzGaugingStation::getStationName,"天谷自动水位站").between(LzzGaugingStation::getGatherTime,startTime,endTime).list();
         waterLevel.put("楼庄子进库", setWaterStationData(tianStation));
-        List<LzzGaugingStation> lzzOutStation = lzzGaugingStationService.lambdaQuery().eq(LzzGaugingStation::getStationName,"楼庄子出库水位站").between(LzzGaugingStation::getGatherTime,startTime,endTime).list();
         waterLevel.put("楼庄子出库", setWaterStationData(lzzOutStation));
-        List<IrrigatedPlatformDataInfo> tthStation = irrigatedPlatformDataInfoService.lambdaQuery().eq(IrrigatedPlatformDataInfo::getMonitorName,"入库流量").between(IrrigatedPlatformDataInfo::getMonitorTime,startTime,endTime).list();
         waterLevel.put("头屯河进库", setHourWater(setWaterStationIr(tthStation)));
         return waterLevel;
     }
@@ -272,25 +323,49 @@ public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMappe
     private List<PredictInputData> setWaterStationData(List<LzzGaugingStation> inputData){
         List<PredictInputData> result = new ArrayList<>();
         for (LzzGaugingStation inputDatum : inputData) {
-            PredictInputData data = new PredictInputData();
-            data.setDates(inputDatum.getGatherTime());
-            data.setLocation(inputDatum.getStationName());
-            data.setFlow(inputDatum.getFlow());
-            data.setTemperature(inputDatum.getTemperature());
-            result.add(data);
+            if (inputDatum.getFlow()!=null){
+                PredictInputData data = new PredictInputData();
+                data.setDates(inputDatum.getGatherTime());
+                data.setLocation(inputDatum.getStationName());
+                data.setFlow(inputDatum.getFlow());
+                data.setTemperature(inputDatum.getTemperature());
+                result.add(data);
+            }
         }
-        return result;
+        // 按日期去重
+        List<PredictInputData> uniqueRainfallDtos = new ArrayList<>(result.stream()
+                .collect(Collectors.toMap(
+                        PredictInputData::getDates,  // 使用日期作为键
+                        dto -> dto,            // 值保持不变
+                        (existing, replacement) -> existing)) // 如果键重复，保留第一个出现的值
+                .values()
+                .stream()
+                .sorted(Comparator.comparing(PredictInputData::getDates)) // 按日期排序
+                .collect(Collectors.toList()));
+        return uniqueRainfallDtos;
     }
     private List<PredictInputData> setWaterStationIr(List<IrrigatedPlatformDataInfo> inputData){
         List<PredictInputData> result = new ArrayList<>();
         for (IrrigatedPlatformDataInfo inputDatum : inputData) {
-            PredictInputData data = new PredictInputData();
-            data.setDates(inputDatum.getMonitorTime());
-            data.setLocation(inputDatum.getMonitorName());
-            data.setFlow(inputDatum.getSqMonitorFlow());
-            result.add(data);
+            if (inputDatum.getSqMonitorFlow()!=null){
+                PredictInputData data = new PredictInputData();
+                data.setDates(inputDatum.getMonitorTime());
+                data.setLocation(inputDatum.getMonitorName());
+                data.setFlow(inputDatum.getSqMonitorFlow());
+                result.add(data);
+            }
         }
-        return result;
+        // 按日期去重
+        List<PredictInputData> uniqueRainfallDtos = new ArrayList<>(result.stream()
+                .collect(Collectors.toMap(
+                        PredictInputData::getDates,  // 使用日期作为键
+                        dto -> dto,            // 值保持不变
+                        (existing, replacement) -> existing)) // 如果键重复，保留第一个出现的值
+                .values()
+                .stream()
+                .sorted(Comparator.comparing(PredictInputData::getDates)) // 按日期排序
+                .collect(Collectors.toList()));
+        return uniqueRainfallDtos;
     }
     private List<PredictInputData> setHourWater(List<PredictInputData> inputData){
         List<PredictInputData> result = new ArrayList<>();

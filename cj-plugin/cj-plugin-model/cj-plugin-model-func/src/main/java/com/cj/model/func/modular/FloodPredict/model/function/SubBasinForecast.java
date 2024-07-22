@@ -28,7 +28,7 @@ public class SubBasinForecast {
      */
     public List<Flood> getShortResult(ForecastInputParam param, InputDataSet Data, Object[][] snowData) {
         FloodBasin floodBasin = param.getFloodBasin();
-        Map<String,ShanbeiParam> paramMap = param.getParamMap().get(param.getLocation()) == null ? param.getFloodBasin().getParamMap():param.getParamMap().get(param.getLocation());
+        Map<String,ShanbeiParam> paramMap = param.getFloodBasin().getParamMap();
         for (Hydrology station: floodBasin.getHydrologies()){
             if (station.getStationName().equals(param.getLocation())){
                 hydrology = station;
@@ -51,6 +51,9 @@ public class SubBasinForecast {
                     .max()
                     .orElse(0.0);
             setParams(shanbeiparam,max);
+            if (param.getLocation().equals("3号桥")){
+                shanbeiparam.setL(Math.max(shanbeiparam.getL() - 1,0));
+            }
             double[] subBasinQ = getSubBasinQ(shanbeiparam, hourRain, dayRain);//子流域产流量
             for (int j = 0; j < rainQ.length; j++) {
                 rainQ[j] += subBasinQ[j];//总产流量
@@ -699,7 +702,9 @@ public class SubBasinForecast {
         Date currentDate = param.getPreStartTime();
         Date beforeDate1 = timeUtils.addCalendar(param.getPreStartTime(), "小时", -InputUtils.beforeHours);
         Date beforeDate0 = timeUtils.addCalendar(param.getPreStartTime(), "日", -5);
+        int month = timeUtils.getSpecificDate(param.getPreStartTime()).get("月");
         int num = param.getPeriodStepNumber() * param.getPeriodStepSize();
+        String location = param.getLocation();
         double[] result = new double[num];
         //基础流量
         Double baseAve;
@@ -720,12 +725,6 @@ public class SubBasinForecast {
             }
             baseAve = sum / a;
         } else {
-            baseAve = 100.0;
-        }
-        if (baseAve > 50)//基础径流偏大
-        {
-            int month = timeUtils.getSpecificDate(param.getPreStartTime()).get("月");
-            String location = param.getLocation();
             if (!location.equals("楼头区间")) {
                 double[] baseFlow = new double[]{1.29, 1.19, 1.77, 2.78, 5.0, 5.49, 6.5, 6.7, 4.18, 2.5, 2.23, 1.52};
                 baseAve = baseFlow[month - 1];
@@ -747,13 +746,6 @@ public class SubBasinForecast {
             }
             currentFlow = preFlow.get(a - 1).getFlow();
         } else {
-            currentFlow = 100.0;
-        }
-
-        if (currentFlow > 50)//基础径流偏大
-        {
-            int month = timeUtils.getSpecificDate(param.getPreStartTime()).get("月");
-            String location = param.getLocation();
             if (!location.equals("楼头区间")) {
                 double[] baseFlow = new double[]{1.29, 1.19, 1.77, 2.78, 5.0, 5.49, 6.5, 6.7, 4.18, 2.5, 2.23, 1.52};
                 currentFlow = baseFlow[month - 1];

@@ -3,9 +3,8 @@ package com.cj.model.func.modular.FloodPredict.Calibration;
 import com.cj.model.func.modular.FloodPredict.Calibration.entity.*;
 import com.cj.model.func.modular.FloodPredict.Calibration.pso.*;
 import com.cj.model.func.modular.FloodPredict.entity.*;
-import com.cj.model.func.modular.FloodPredict.model.function.SnowMeltModel;
 import com.cj.model.func.modular.FloodPredict.utils.*;
-import com.cj.model.func.modular.entity.Flood;
+
 import java.util.*;
 import java.util.stream.DoubleStream;
 
@@ -17,6 +16,8 @@ public class ShanBeiCalibration {
     private List<CalibrationData> dataList = new ArrayList<>();
     //流域信息
     private Hydrology hydrology  = new Hydrology();
+    //流域参数
+    private FloodBasin floodBasin = new FloodBasin();
     //固定的参数
     private Map<String,ShanbeiParam> paramStatic = new HashMap<>();
     private final DataUtils du = new DataUtils();
@@ -24,7 +25,7 @@ public class ShanBeiCalibration {
 
     public Map<String, CalibrationOutput> calibration(CalibrationParam input) {
         Map<String, CalibrationOutput> result = new HashMap<>();
-        FloodBasin floodBasin = input.getFloodBasin();
+        floodBasin = input.getFloodBasin();
         for (Hydrology station: floodBasin.getHydrologies()){
             if (station.getStationName().equals(input.getLocation())){
                 hydrology = station;
@@ -88,72 +89,76 @@ public class ShanBeiCalibration {
     private CalibrationOutput stationCalibration(CalibrationParam input) {
         CalibrationOutput results = new CalibrationOutput();
         Map<String,ShanbeiParam> paramMap;
-        Interval[] regionIntervals = new Interval[0];
         // 定义模型各参数的有效范围
-        switch (hydrology.getStationName()){
-            case "3号桥":
-                regionIntervals = new Interval[]{
-                        new Interval(150, 250),//WM
-                        new Interval(18, 30),//FC
-                        new Interval(60, 100),//FM
-                        new Interval(0.1, 0.3),//K
-                        //加普沙
-                        new Interval(0.8, 0.92),//CS
-                        new Interval(10, 16),//L
-                        //八一林场
-                        new Interval(0.8, 0.92),//CS
-                        new Interval(12, 18),//L
-                        //无名河+宰尔德+东南沟
-                        new Interval(0.8, 0.92),//CS
-                        new Interval(8, 16),//L
-                        //萨尔达万+煤矿沟
-                        new Interval(0.6, 0.8),//CS
-                        new Interval(4, 6),//L
-                };
-                break;
-            case "楼庄子":
-                regionIntervals = new Interval[]{
-                        new Interval(150, 250),//WM
-                        new Interval(18, 30),//FC
-                        new Interval(60, 100),//FM
-                        new Interval(0.1, 0.3),//K
-                        //加普沙
-                        new Interval(0.8, 0.92),//CS
-                        new Interval(10, 18),//L
-                        //八一林场
-                        new Interval(0.8, 0.92),//CS
-                        new Interval(12, 20),//L
-                        //无名河+宰尔德+东南沟
-                        new Interval(0.8, 0.92),//CS
-                        new Interval(10, 18),//L
-                        //萨尔达万+煤矿沟
-                        new Interval(0.6, 0.8),//CS
-                        new Interval(4, 8),//L
-                        //黑沟+喀什沟
-                        new Interval(0.6, 0.8),//CS
-                        new Interval(0, 4),//L
-                        //制材厂
-                        new Interval(0.6, 0.8),//CS
-                        new Interval(0, 2),//L
-                };
-                break;
-            case "头屯河":
-                regionIntervals = new Interval[]{
-                        new Interval(150, 250),//WM
-                        new Interval(18, 30),//FC
-                        new Interval(60, 100),//FM
-                        new Interval(0.1, 0.3),//K
-                        //小渠子+团结一队
-                        new Interval(0.7, 0.9),//CS
-                        new Interval(0, 4),//L
-                        //甘沟
-                        new Interval(0.8, 0.92),//CS
-                        new Interval(0, 3),//L
-                        //头屯河水库
-                        new Interval(0.7, 0.9),//CS
-                        new Interval(0, 1),//L
-                };
+        List<FloodBasin.Item> range= floodBasin.getParamRange().get(input.getLocation());
+        Interval[] regionIntervals = new Interval[range.size()];
+        for (int i = 0; i < range.size(); i++) {
+            regionIntervals[i] = new Interval(range.get(i).getValues()[0],range.get(i).getValues()[1]);
         }
+//        switch (hydrology.getStationName()){
+//            case "3号桥":
+//                regionIntervals = new Interval[]{
+//                        new Interval(150, 250),//WM
+//                        new Interval(18, 30),//FC
+//                        new Interval(60, 100),//FM
+//                        new Interval(0.1, 0.3),//K
+//                        //加普沙
+//                        new Interval(0.8, 0.92),//CS
+//                        new Interval(10, 16),//L
+//                        //八一林场
+//                        new Interval(0.8, 0.92),//CS
+//                        new Interval(12, 18),//L
+//                        //无名河+宰尔德+东南沟
+//                        new Interval(0.8, 0.92),//CS
+//                        new Interval(8, 16),//L
+//                        //萨尔达万+煤矿沟
+//                        new Interval(0.6, 0.8),//CS
+//                        new Interval(4, 6),//L
+//                };
+//                break;
+//            case "楼庄子":
+//                regionIntervals = new Interval[]{
+//                        new Interval(150, 250),//WM
+//                        new Interval(18, 30),//FC
+//                        new Interval(60, 100),//FM
+//                        new Interval(0.1, 0.3),//K
+//                        //加普沙
+//                        new Interval(0.8, 0.92),//CS
+//                        new Interval(10, 18),//L
+//                        //八一林场
+//                        new Interval(0.8, 0.92),//CS
+//                        new Interval(12, 20),//L
+//                        //无名河+宰尔德+东南沟
+//                        new Interval(0.8, 0.92),//CS
+//                        new Interval(10, 18),//L
+//                        //萨尔达万+煤矿沟
+//                        new Interval(0.6, 0.8),//CS
+//                        new Interval(4, 8),//L
+//                        //黑沟+喀什沟
+//                        new Interval(0.6, 0.8),//CS
+//                        new Interval(0, 4),//L
+//                        //制材厂
+//                        new Interval(0.6, 0.8),//CS
+//                        new Interval(0, 2),//L
+//                };
+//                break;
+//            case "头屯河":
+//                regionIntervals = new Interval[]{
+//                        new Interval(150, 250),//WM
+//                        new Interval(18, 30),//FC
+//                        new Interval(60, 100),//FM
+//                        new Interval(0.1, 0.3),//K
+//                        //小渠子+团结一队
+//                        new Interval(0.7, 0.9),//CS
+//                        new Interval(0, 4),//L
+//                        //甘沟
+//                        new Interval(0.8, 0.92),//CS
+//                        new Interval(0, 3),//L
+//                        //头屯河水库
+//                        new Interval(0.7, 0.9),//CS
+//                        new Interval(0, 1),//L
+//                };
+//        }
         if (!input.getIsAutomatic()){
             paramMap = input.getManualParam();
         }else {
@@ -199,9 +204,9 @@ public class ShanBeiCalibration {
                 //结果输出
                 CalibrationFlow calibrationFlow = new CalibrationFlow();
                 calibrationFlow.setTime((Date) hisF[j][0]);
-                calibrationFlow.setHistoryFlow((Double) hisF[j][1]);
-                calibrationFlow.setPreParamFlow(QHistory[j]);
-                calibrationFlow.setNewParamFlow(Q[j]);
+                calibrationFlow.setHistoryFlow(Math.round((Double) hisF[j][1] * 100.0) / 100.0);
+                calibrationFlow.setPreParamFlow(Math.round(QHistory[j] * 100.0) / 100.0);
+                calibrationFlow.setNewParamFlow(Math.round(Q[j] * 100.0) / 100.0);
                 calibrationFlow.setHistoryRainfall((Double) rainFall[j][1]);
                 flowList.add(calibrationFlow);
             }
@@ -272,44 +277,44 @@ public class ShanBeiCalibration {
      */
     public Map<String,ShanbeiParam> paramAssignment(double[] params){
         //子流域参数赋值
-        ShanbeiParam param = new ShanbeiParam();
         Map<String,ShanbeiParam> paramMap = new HashMap<>();
         List<String> rainStations = hydrology.getRainStation();
         switch (hydrology.getStationName()){
             case "3号桥":
             case "楼庄子":
-                param.setWM(params[0]);
-                param.setFC(params[1]);
-                param.setFM(params[2]);
-                param.setK(params[3]);
                 for (int i = 0; i < rainStations.size(); i++) {
+                    ShanbeiParam param = new ShanbeiParam();
+                    param.setWM(Math.round(params[0] * 100.0) / 100.0);
+                    param.setFC(Math.round(params[1] * 100.0) / 100.0);
+                    param.setFM(Math.round(params[2] * 100.0) / 100.0);
+                    param.setK(Math.round(params[3] * 100.0) / 100.0);
                     param.setArea(paramStatic.get(rainStations.get(i)).getArea());
                     param.setB(paramStatic.get(rainStations.get(i)).getB());
                     param.setFB(paramStatic.get(rainStations.get(i)).getFB());
-                    param.setK(paramStatic.get(rainStations.get(i)).getK());
+                    param.setKC(paramStatic.get(rainStations.get(i)).getKC());
                     if (rainStations.get(i).equals("加普沙自动雨量站")){
-                        param.setCS(params[4]);
+                        param.setCS(Math.round(params[4] * 100.0) / 100.0);
                         param.setL((int) params[5]);
                     }
                     if (rainStations.get(i).equals("八一林场自动雨量站")){
-                        param.setCS(params[6]);
+                        param.setCS(Math.round(params[6] * 100.0) / 100.0);
                         param.setL((int) params[7]);
                     }
                     if (rainStations.get(i).equals("无名沟自动雨量站")||rainStations.get(i).equals("宰尔德自动雨量站")||rainStations.get(i).equals("东南沟自动雨量站")){
-                        param.setCS(params[8]);
+                        param.setCS(Math.round(params[8] * 100.0) / 100.0);
                         param.setL((int) params[9]);
                     }
                     if (rainStations.get(i).equals("萨尔达万自动雨量站")||rainStations.get(i).equals("煤矿沟自动雨量站")){
-                        param.setCS(params[10]);
+                        param.setCS(Math.round(params[10] * 100.0) / 100.0);
                         param.setL((int) params[11]);
                     }
                     if (hydrology.getStationName().equals("楼庄子")){
                         if (rainStations.get(i).equals("黑沟自动雨量站")||rainStations.get(i).equals("喀什沟自动雨量站")){
-                            param.setCS(params[12]);
+                            param.setCS(Math.round(params[12] * 100.0) / 100.0);
                             param.setL((int) params[13]);
                         }
                         if (rainStations.get(i).equals("制材厂自动雨量站")){
-                            param.setCS(params[14]);
+                            param.setCS(Math.round(params[14] * 100.0) / 100.0);
                             param.setL((int) params[15]);
                         }
                     }
@@ -317,21 +322,22 @@ public class ShanBeiCalibration {
                 }
                 break;
             case "头屯河":
-                param.setWM(params[0]);
-                param.setFC(params[1]);
-                param.setFM(params[2]);
-                param.setK(params[3]);
                 for (int i = 0; i < rainStations.size(); i++) {
+                    ShanbeiParam param = new ShanbeiParam();
+                    param.setWM(Math.round(params[0] * 100.0) / 100.0);
+                    param.setFC(Math.round(params[1] * 100.0) / 100.0);
+                    param.setFM(Math.round(params[2] * 100.0) / 100.0);
+                    param.setK(Math.round(params[3] * 100.0) / 100.0);
                     param.setArea(paramStatic.get(rainStations.get(i)).getArea());
                     param.setB(paramStatic.get(rainStations.get(i)).getB());
                     param.setFB(paramStatic.get(rainStations.get(i)).getFB());
-                    param.setK(paramStatic.get(rainStations.get(i)).getK());
+                    param.setKC(paramStatic.get(rainStations.get(i)).getKC());
                     if (rainStations.get(i).equals("小渠子雨量站")||rainStations.get(i).equals("团结一队雨量站")){
-                        param.setCS(params[4]);
+                        param.setCS(Math.round(params[4] * 100.0) / 100.0);
                         param.setL((int) params[5]);
                     }
                     if (rainStations.get(i).equals("头屯河水库雨量站")){
-                        param.setCS(params[6]);
+                        param.setCS(Math.round(params[6] * 100.0) / 100.0);
                         param.setL((int) params[7]);
                     }
                     paramMap.put(rainStations.get(i),param);
@@ -356,6 +362,7 @@ public class ShanBeiCalibration {
             forecastInputParamNew.setRainfall(inputData.getRainfall());
             forecastInputParamNew.setFlowData(inputData.getFlowData());
             forecastInputParamNew.setModelType(3);
+            forecastInputParamNew.setIsSimulation(false);
             CalibrationData data = getOneTimeData(forecastInputParamNew);
             dataList.add(data);
         }
@@ -435,28 +442,29 @@ public class ShanBeiCalibration {
         result.setHisF(hisF);
         //前期径流，融雪期为融雪径流
         Object[][] baseF = new Object[paramNew.getPeriodTimeNum() / 24 + 1][2];
-        int month = tu.getSpecificDate(paramNew.getPredictionTime()).get("月");
-        if (month>=hydrology.getSnowMonth()[0]&&month<=hydrology.getSnowMonth()[1]) {//融雪期
-            baseF = snowBase(hydrology.getIncludingStation().get(0),paramNew.getPredictionTime(),paramNew.getPeriodTimeNum());
-        }else {//非融雪期
-            double base = 0.0;
-            int number = 0;
-            for (PredictInputData data:flow){
-                if (data.getDates().after(tu.addCalendar(paramNew.getPredictionTime(),"日",-2))&&
-                data.getDates().before(tu.addCalendar(paramNew.getPredictionTime(),"小时",-InputUtils.beforeHours))){
-                    base += data.getFlow();
-                    number++;
-                }
-            }
-            for (int i = 0; i < baseF.length; i++) {
-                baseF[i][0]=tu.addCalendar(paramNew.getPredictionTime(), "日",i);
-                if (number!=0){
-                    baseF[i][1]=base/number;
-                }else {
-                    baseF[i][1]= du.setNullTemFlow(hydrology.getStationName(), paramNew.getPredictionTime());
-                }
+//        int month = tu.getSpecificDate(paramNew.getPredictionTime()).get("月");
+//        if (month>=hydrology.getSnowMonth()[0]&&month<=hydrology.getSnowMonth()[1]) {//融雪期
+//            baseF = snowBase(hydrology.getIncludingStation().get(0),paramNew.getPredictionTime(),paramNew.getPeriodTimeNum());
+//        }else {//非融雪期}
+
+        double base = 0.0;
+        int number = 0;
+        for (PredictInputData data:flowData.get(hydrology.getStationName())){
+            if (data.getDates().after(tu.addCalendar(paramNew.getPredictionTime(),"日",-2))&&
+            data.getDates().before(tu.addCalendar(paramNew.getPredictionTime(),"小时",-InputUtils.beforeHours))){
+                base += data.getFlow();
+                number++;
             }
         }
+        for (int i = 0; i < baseF.length; i++) {
+            baseF[i][0]=tu.addCalendar(paramNew.getPredictionTime(), "日",i);
+            if (number!=0){
+                baseF[i][1]=base/number;
+            }else {
+                baseF[i][1]= du.setNullTemFlow(hydrology.getStationName(), paramNew.getPredictionTime())[1];
+            }
+        }
+
         result.setBaseF(baseF);
         return result;
     }
@@ -509,41 +517,41 @@ public class ShanBeiCalibration {
     /**
      * 获取融雪基础径流
      */
-    public Object[][] snowBase(String location, Date startTime, int number) {
-        Object[][] result = new Object[number / 24 + 1][2];
-        Object[][] input = InputUtils.historyData.get(location+"日");
-        int days = number / 24 + 1;
-        for (int i = 0; i < days; i++) {
-            int l = 0;//截至到预报时间目前的日尺度数据
-            for (int j = 0; j < input.length; j++) {
-                if (((Date) input[j][0]).before(startTime)) {
-                    l++;
-                }
-            }
-            Object[][] snowData = new Object[l][4];
-            System.arraycopy(input, 0, snowData, 0, l);
-            Object[][] snowMeltInput = new MachineDataUtils().snowMeltDate(snowData, location);
-            SnowMeltModel snowMeltModel = new SnowMeltModel();
-            ForecastInputParamNew paramNew = new ForecastInputParamNew();
-            paramNew.setPeriodTimeNum(1);
-            paramNew.setPeriodTimeStep(1);
-            paramNew.setPredictionTime(startTime);
-            du.getDaysData(paramNew);
-            ForecastInputParam snowParam = new ForecastInputParam();
-            snowParam.setLocation(location);
-            snowParam.setPreStartTime(startTime);
-            snowParam.setIsSnowMeltModel(true);
-            snowParam.setIsAverage(true);
-            snowParam.setPeriodStepNumber(1);
-            snowParam.setPeriodStepSize(1);
-            snowParam.setPreRainTem(paramNew.getPreRainTem());
-            List<Flood> snowList = snowMeltModel.snowForecast(snowMeltInput, snowParam);
-            result[i][0] = snowList.get(0).getTime();
-            result[i][1] = snowList.get(0).getPreQ();
-            startTime = tu.addCalendar(startTime,"日", 1);
-        }
-        return result;
-    }
+//    public Object[][] snowBase(String location, Date startTime, int number) {
+//        Object[][] result = new Object[number / 24 + 1][2];
+//        Object[][] input = InputUtils.historyData.get(location+"日");
+//        int days = number / 24 + 1;
+//        for (int i = 0; i < days; i++) {
+//            int l = 0;//截至到预报时间目前的日尺度数据
+//            for (int j = 0; j < input.length; j++) {
+//                if (((Date) input[j][0]).before(startTime)) {
+//                    l++;
+//                }
+//            }
+//            Object[][] snowData = new Object[l][4];
+//            System.arraycopy(input, 0, snowData, 0, l);
+//            Object[][] snowMeltInput = new MachineDataUtils().snowMeltDate(snowData, location);
+//            SnowMeltModel snowMeltModel = new SnowMeltModel();
+//            ForecastInputParamNew paramNew = new ForecastInputParamNew();
+//            paramNew.setPeriodTimeNum(1);
+//            paramNew.setPeriodTimeStep(1);
+//            paramNew.setPredictionTime(startTime);
+//            du.getDaysData(paramNew);
+//            ForecastInputParam snowParam = new ForecastInputParam();
+//            snowParam.setLocation(location);
+//            snowParam.setPreStartTime(startTime);
+//            snowParam.setIsSnowMeltModel(true);
+//            snowParam.setIsAverage(true);
+//            snowParam.setPeriodStepNumber(1);
+//            snowParam.setPeriodStepSize(1);
+//            snowParam.setPreRainTem(paramNew.getPreRainTem());
+//            List<Flood> snowList = snowMeltModel.snowForecast(snowMeltInput, snowParam);
+//            result[i][0] = snowList.get(0).getTime();
+//            result[i][1] = snowList.get(0).getPreQ();
+//            startTime = tu.addCalendar(startTime,"日", 1);
+//        }
+//        return result;
+//    }
 
     public double[] getSubBasinQ(CalibrationData input,Map<String,ShanbeiParam> paramMap){
         List<String> rainStation = hydrology.getRainStation();
@@ -582,7 +590,7 @@ public class ShanBeiCalibration {
             qr[i] = (double) qualifyNum[i] / size;
             sum += qr[i];
         }
-        return sum * 100;
+        return Math.round(sum * 100 * 100.0) / 100.0;
     }
 
     /**

@@ -13,11 +13,11 @@ public class CalibrateReq {
     @ApiModelProperty("模型类型(true-自动率定，false-人工率定)")
     private Boolean isAutomatic;
     //率定开始时间
-    @ApiModelProperty("率定开始时间")
-    private Date startTime;
-    //率定结束时间
-    @ApiModelProperty("率定结束时间")
-    private Date endTime;
+    @ApiModelProperty("率定时间")
+    private List<Date[]> time;
+//    //率定结束时间
+//    @ApiModelProperty("率定结束时间")
+//    private Date endTime;
     @ApiModelProperty("断面参数列表")
     private List<ModelParameters> parametersList;
 }

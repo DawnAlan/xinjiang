@@ -222,26 +222,26 @@ public class DataUtils {
     }
 
     /**
-     * 返回预报开始时间前20天到预报结束时间之间的小时尺度的水文站流量数据
+     * 返回预报开始时间前7天到预报结束时间之间的小时尺度的水文站流量数据
      * @param paramNew
      * @return
      */
     public Map<String,List<PredictInputData>> flowIntegration(ForecastInputParamNew paramNew){
         Map<String,List<PredictInputData>> result = new HashMap<>();
-        Date start = tu.addCalendar(paramNew.getPredictionTime(),"日",-InputUtils.beforeDays);
-        Date end = tu.addCalendar(paramNew.getPredictionTime(),"小时",paramNew.getPeriodTimeNum()+1);
+        Date start = tu.addCalendar(paramNew.getPredictionTime(),"日",-7);
+        Date end = tu.addCalendar(paramNew.getPredictionTime(),"小时",paramNew.getPeriodTimeNum());
         Map<String,List<PredictInputData>> flowAll = paramNew.getFlowData();
         for (Map.Entry<String, List<PredictInputData>> entry : flowAll.entrySet()){
             String key = entry.getKey();
             List<PredictInputData> value = entry.getValue();
             List<PredictInputData> flow = new ArrayList<>();
             for (PredictInputData data:value){
-                if (data.getDates().after(start)&&data.getDates().before(end)){
+                if (data.getDates().after(tu.addCalendar(start,"小时",-1)) && data.getDates().before(tu.addCalendar(end,"小时",1))){
                     flow.add(data);
                 }
             }
             List<PredictInputData> flow1 = new ArrayList<>();
-            for (int i = 0; i < paramNew.getPeriodTimeNum(); i++) {
+            for (int i = 0; i < tu.duration(start,end,"小时"); i++) {
                 PredictInputData predictInputData = new PredictInputData();
                 Date time = tu.addCalendar(start,"小时",i);
                 if (flow.isEmpty()){
@@ -290,7 +290,7 @@ public class DataUtils {
             dateList.add(sdf.parse(raindate.getDate()));
         }
         int d = tu.findNearestTime(dateList, dateStart);
-        if (param.getIsSimulation()){
+        if (param.getIsSimulation()==null||param.getIsSimulation()){
             for (int i = 0; i < InputUtils.beforeHours; i++) {
                 data = new RainFallDto();
                 for (int j = 0; d + j < input.size() && j < n; j++) {
@@ -342,13 +342,18 @@ public class DataUtils {
             {
                 int start_inputEnd = tu.duration(dateStart, inputEnd, "小时") + 1;
                 start_inputEnd = Math.min(start_inputEnd,n);
-                int length = param.getRainFallDtos().size();
+
                 if (start_inputEnd < 0)//预报开始时间在数据库中没有，也就是全部读取预报值
                 {
                     for (int i = 0; i < n; i++) {
                         data = new RainFallDto();
-                        if (length > 0)//有预报值
+                        if (param.getRainFallDtos()==null||param.getRainFallDtos().isEmpty())//没有预报值，数据库中也没有数据
                         {
+                            data = setNoCorTime(dateStart, input.get(0).getArea());
+                        }
+                        else //有预报值
+                        {
+                            int length = param.getRainFallDtos().size();
                             for (int j = 0; j < length; j++) {
                                 Date date = sdf.parse(rainPre.get(j).getDate());
                                 Boolean dateCompare = tu.DateCompare(dateStart, date, "小时");
@@ -376,9 +381,6 @@ public class DataUtils {
                                     }
                                 }
                             }
-                        } else //没有预报值，数据库中也没有数据
-                        {
-                            data = setNoCorTime(dateStart, input.get(0).getArea());
                         }
                         calendar.setTime(dateStart);
                         calendar.add(Calendar.HOUR_OF_DAY, 1);
@@ -392,7 +394,11 @@ public class DataUtils {
                     int inputEnd_dateEnd = tu.duration(dateStart, dataEnd, "小时");//数据库末尾到预报结束时间的距离
                     for (int i = 0; i < inputEnd_dateEnd; i++) {
                         data = new RainFallDto();
-                        if (length > 0) {
+                        if (param.getRainFallDtos()==null||param.getRainFallDtos().isEmpty()){
+                            data = setNoCorTime(dateStart, input.get(0).getArea());
+                        }
+                        else  {
+                            int length = param.getRainFallDtos().size();
                             for (int j = 0; j < length; j++) {
                                 Date date = sdf.parse(rainPre.get(j).getDate());
                                 Boolean dateCompare = tu.DateCompare(dateStart, date, "小时");
@@ -421,8 +427,6 @@ public class DataUtils {
                                     }
                                 }
                             }
-                        } else {
-                            data = setNoCorTime(dateStart, input.get(0).getArea());
                         }
                         calendar.setTime(dateStart);
                         calendar.add(Calendar.HOUR_OF_DAY, 1);

@@ -5,6 +5,8 @@ import com.cj.model.func.modular.FloodPredict.entity.Hydrology;
 import com.cj.model.func.modular.FloodPredict.entity.PredictInputData;
 import com.cj.model.func.modular.FloodPredict.utils.InputUtils;
 import com.cj.model.func.modular.FloodPredict.utils.TimeUtils;
+
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -18,15 +20,19 @@ public class FlowSelect {
 
     //获取断面洪水持续时间
     public  List<Object[]> getFloodDate(CalibrationParam input, Hydrology hydrology)  {
-        List<Object[]> result;
+        List<Object[]> result = new ArrayList<>();
         List<PredictInputData> flow;
         String station = hydrology.getIncludingWater().get(0);
-        flow = input.getFlowData().get(station).stream()
-                .filter(data -> data.getDates().after(input.getStartTime()))
-                .collect(Collectors.toList());
-
-        Object[][] objectFlow = getFlow(flow, input.getStartTime(), input.getEndTime());
-        result = floodList(hydrology.getStationName(), getFloodSelect(hydrology.getStationName(), objectFlow));
+        for (int i = 0; i < input.getTime().size(); i++) {
+            Date start = input.getTime().get(i)[0];
+            Date end = input.getTime().get(i)[1];
+            flow = input.getFlowData().get(station).stream()
+                    .filter(data -> data.getDates().after(start)&&data.getDates().before(end))
+                    .collect(Collectors.toList());
+            Object[][] objectFlow = getFlow(flow, start, end);
+            Object[][] flowSelect = getFloodSelect(hydrology.getStationName(), objectFlow,start,end);
+            result.addAll(floodList(hydrology.getStationName(),flowSelect,start,end));
+        }
         return result;
     }
 
@@ -64,7 +70,7 @@ public class FlowSelect {
      * 通过基准线筛选洪水过程
      * @return 洪水过程或者在所选时段内无较大来水时为空
      */
-    private Object[][] getFloodSelect(String location,Object[][] predict) {
+    private Object[][] getFloodSelect(String location,Object[][] predict,Date start,Date end) {
         Object[][] flood = new Object[predict.length][3];
         double max = 0.0;
         double min = 1000000.0;
@@ -78,15 +84,17 @@ public class FlowSelect {
             }
         }
         double dt = max - min;//差值
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        String dateDuration = sdf.format(start)+sdf.format(end);
 
-        if (max <= 10 || max / min <= 2)//如果洪峰小于10或者来水变幅很小
+        if (max <= 10 || dt <= 8 || max / min <= 2)//如果洪峰小于10或者来水变幅很小
         {
-            throw new RuntimeException(location+"所选时段内无较大来水，无法对模型参数进行有效优化");
+            throw new RuntimeException(location+dateDuration+"内无较大来水，无法对模型参数进行有效优化");
         }
 
         if (max >= 500)//如果洪峰大于300
         {
-            throw new RuntimeException(location+"所选时段内历史数据有误，最大洪峰超过500立方米每秒");
+            throw new RuntimeException(location+dateDuration+"内历史数据有误，最大洪峰超过500立方米每秒");
         }
         double line = min + dt * 0.4;//洪水标准线
         for (int i = 0; i < predict.length; i++)//找到所有大于标准线的来水
@@ -199,10 +207,12 @@ public class FlowSelect {
      * @param flow 来水过程
      * @return 几个来水过程的开始时间和结束时间或者在未获得可用洪水数据时返回空
      */
-    private List<Object[]> floodList(String location,Object[][] flow) {
+    private List<Object[]> floodList(String location,Object[][] flow,Date start, Date end) {
         //判断数据库中是否有数据
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        String dateDuration = sdf.format(start)+sdf.format(end);
         if (flow == null) {
-            throw new RuntimeException(location+"未从本数据集中获得可用洪水数据");
+            throw new RuntimeException(location+"未从本数据集中获得"+dateDuration+"可用洪水数据");
         } else {
             // 判断数组中的元素是否全部为 null 或者长度为 0 的一维数组
             boolean isEmpty = true;
@@ -213,7 +223,7 @@ public class FlowSelect {
                 }
             }
             if (isEmpty) {
-                throw new RuntimeException(location+"未从本数据集中获得可用洪水数据");
+                throw new RuntimeException(location+"未从本数据集中获得"+dateDuration+"可用洪水数据");
             }
         }
         List<Object[][]> flowResult = new ArrayList<>();
@@ -237,7 +247,7 @@ public class FlowSelect {
             }
         }
         if (flowResult.isEmpty()) {
-            throw new RuntimeException(location+"洪水持续时间过短");
+            throw new RuntimeException(location+dateDuration+"洪水持续时间过短");
         }
         //获取不同时间来水的开始和结束时间
         for (Object[][] objects : flowResult) {

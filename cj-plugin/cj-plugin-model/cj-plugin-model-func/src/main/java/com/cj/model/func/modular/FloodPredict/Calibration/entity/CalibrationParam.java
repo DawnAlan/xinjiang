@@ -13,9 +13,9 @@ public class CalibrationParam {
     //模型类型(true-自动率定，false-人工率定)
     private Boolean isAutomatic;
     //率定开始时间
-    private Date startTime;
+    private List<Date[]> time;
     //率定结束时间
-    private Date endTime;
+    //private Date endTime;
     //率定断面位置
     private String location;
     //人工率定站点参数
