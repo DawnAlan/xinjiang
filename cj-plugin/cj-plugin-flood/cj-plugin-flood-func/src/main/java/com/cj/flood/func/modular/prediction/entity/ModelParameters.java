@@ -61,5 +61,7 @@ public class ModelParameters extends Model<ModelParameters> {
     private  Integer isDefault;
 
     private String fromId;
+
+    private String timeRegion;
 }
 

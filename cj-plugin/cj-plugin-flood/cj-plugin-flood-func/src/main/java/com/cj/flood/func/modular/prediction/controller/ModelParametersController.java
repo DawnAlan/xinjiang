@@ -1,10 +1,7 @@
 package com.cj.flood.func.modular.prediction.controller;
 
 import com.cj.common.model.RestResponse;
-import com.cj.flood.func.modular.prediction.bean.req.CalibrateReq;
-import com.cj.flood.func.modular.prediction.bean.req.ModelParameterDetailReq;
-import com.cj.flood.func.modular.prediction.bean.req.ModelParametersReq;
-import com.cj.flood.func.modular.prediction.bean.req.SetDefaultParametersReq;
+import com.cj.flood.func.modular.prediction.bean.req.*;
 import com.cj.flood.func.modular.prediction.service.ModelParametersService;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import io.swagger.annotations.Api;
@@ -32,15 +29,15 @@ public class ModelParametersController {
     @ApiOperationSupport(order = 1)
     @ApiOperation("模型率定参数查询")
     @PostMapping("/queryList")
-    public RestResponse queryList() {
-        return RestResponse.ok(modelParametersService.queryList());
+    public RestResponse queryList(@RequestBody QueryListReq req) {
+        return RestResponse.ok(modelParametersService.queryList(req));
     }
 
     @ApiOperationSupport(order = 2)
     @ApiOperation("默认模型率定参数查询")
     @PostMapping("/queryDefaultList")
-    public RestResponse queryDefaultList() {
-        return RestResponse.ok(modelParametersService.queryDefaultList());
+    public RestResponse queryDefaultList(@RequestBody String siteName) {
+        return RestResponse.ok(modelParametersService.queryDefaultList(siteName));
     }
 
     @ApiOperationSupport(order = 3)

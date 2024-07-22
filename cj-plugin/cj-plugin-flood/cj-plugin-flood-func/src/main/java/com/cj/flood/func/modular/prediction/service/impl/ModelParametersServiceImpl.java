@@ -8,10 +8,7 @@ import com.cj.common.model.RestResponse;
 import com.cj.common.util.RedisUtil;
 import com.cj.common.util.UUIDUtils;
 import com.cj.flood.func.modular.prediction.bean.dto.OverallSituationUnitMgrDto;
-import com.cj.flood.func.modular.prediction.bean.req.CalibrateReq;
-import com.cj.flood.func.modular.prediction.bean.req.ModelParameterDetailReq;
-import com.cj.flood.func.modular.prediction.bean.req.ModelParametersReq;
-import com.cj.flood.func.modular.prediction.bean.req.SetDefaultParametersReq;
+import com.cj.flood.func.modular.prediction.bean.req.*;
 import com.cj.flood.func.modular.prediction.entity.ModelParametersDetail;
 import com.cj.flood.func.modular.prediction.mapper.ModelParametersMapper;
 import com.cj.flood.func.modular.prediction.entity.ModelParameters;
@@ -95,18 +92,18 @@ public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMappe
         return JSONObject.parseObject(basin, FloodBasin.class);
     }
 
-    public Map<String, List<ModelParameters>> queryList() {
-        List<ModelParameters> parametersList = this.lambdaQuery()
-//                .like(!input.getSiteName().isEmpty(), ModelParameters::getSiteName, input.getSiteName())
-//                .between(input.getStartTime() != null, ModelParameters::getDate, input.getStartTime(), input.getEndTime())
-                .list();
-        return parametersList.stream().collect(Collectors.groupingByConcurrent(ModelParameters::getSiteName));
-
+    public IPage<ModelParameters> queryList(QueryListReq req) {
+        IPage<ModelParameters> page = new Page<>(req.getPageNo(), req.getPageSize());
+        return this.lambdaQuery()
+                .eq(ModelParameters::getSiteName, req.getSiteName())
+                .ge(req.getStartTime() != null, ModelParameters::getDate, req.getStartTime())
+                .le(req.getEndTime() != null, ModelParameters::getDate, req.getEndTime())
+                .page(page);
     }
 
     @Override
-    public List queryDefaultList() {
-        return this.lambdaQuery().eq(ModelParameters::getIsDefault, 1).list();
+    public List queryDefaultList(String siteName) {
+        return this.lambdaQuery().eq(ModelParameters::getSiteName, siteName).eq(ModelParameters::getIsDefault, 1).list();
     }
 
     @SneakyThrows
@@ -171,6 +168,7 @@ public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMappe
                     .rate(v.getQC())
                     .isDefault(0)
                     .fromId(input.getParametersList().get(0).getModelId())
+                    .timeRegion(JSONObject.toJSONString(input.getTime()))
                     .build();
             modelParametersList.add(modelParameters);
         });
