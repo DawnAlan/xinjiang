@@ -1,6 +1,8 @@
 package com.cj.msg.controller;
 
 import com.cj.common.model.RestResponse;
+import com.cj.msg.entity.OverallMsgInsertReq;
+import com.cj.msg.entity.OverallMsgQueryReq;
 import com.cj.msg.service.OverallMsgService;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSupport;
@@ -10,6 +12,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.List;
+
 /**
  * 全局消息管理(OverallMsg)表控制层
  *
@@ -57,5 +61,25 @@ public class OverallMsgController {
         return overallMsgService.editReadStatus(id);
     }
 
+    @ApiOperationSupport(order = 5)
+    @ApiOperation("插入数据")
+    @PostMapping("/insert")
+    public RestResponse insert(@RequestBody OverallMsgInsertReq req) {
+        return overallMsgService.insert(req);
+    }
+
+    @ApiOperationSupport(order = 6)
+    @ApiOperation("查询数据")
+    @PostMapping("/query")
+    public RestResponse query(@RequestBody OverallMsgQueryReq req) {
+        return overallMsgService.query(req);
+    }
+
+    @ApiOperationSupport(order = 6)
+    @ApiOperation("删除数据")
+    @PostMapping("/del")
+    public RestResponse query(@RequestBody List<String> ids) {
+        return RestResponse.ok(overallMsgService.removeBatchByIds(ids));
+    }
 }
 
