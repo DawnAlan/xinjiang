@@ -181,4 +181,9 @@ public class WaterResourceApiContextBean implements WaterResourceApi {
         String data = waterResourceFeign.getRealTimeWaterLevelData(time);
         return data;
     }
+
+    @Override
+    public void sendMsg(String msg) {
+        waterResourceFeign.sendMsg(msg);
+    }
 }

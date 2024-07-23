@@ -153,4 +153,9 @@ public class WaterResourceFeignProvider implements WaterResourceFeign {
     public String getRealTimeWaterLevelData(String time) {
         return waterResourceApiProvider.getRealTimeWaterLevelData(time);
     }
+
+    @Override
+    public void sendMsg(String msg) {
+        waterResourceApiProvider.sendMsg(msg);
+    }
 }
