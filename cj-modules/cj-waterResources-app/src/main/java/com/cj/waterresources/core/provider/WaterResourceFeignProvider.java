@@ -148,4 +148,9 @@ public class WaterResourceFeignProvider implements WaterResourceFeign {
     public String getOverallSituationUnitMgrList() {
         return waterResourceApiProvider.getOverallSituationUnitMgrList();
     }
+
+    @Override
+    public String getRealTimeWaterLevelData(String time) {
+        return waterResourceApiProvider.getRealTimeWaterLevelData(time);
+    }
 }

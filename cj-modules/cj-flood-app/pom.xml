@@ -149,7 +149,11 @@
             <artifactId>cj-plugin-flood-func</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>com.cj</groupId>
+            <artifactId>cj-plugin-waterResources-feign</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
