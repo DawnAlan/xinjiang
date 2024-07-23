@@ -17,7 +17,7 @@ import java.util.Map;
  */
 public interface ModelParametersService extends IService<ModelParameters> {
 
-    Map<String, ModelParameters> queryList(QueryListReq req);
+    Map queryList(QueryListReq req);
 
     Map calibrate(CalibrateReq input);
 

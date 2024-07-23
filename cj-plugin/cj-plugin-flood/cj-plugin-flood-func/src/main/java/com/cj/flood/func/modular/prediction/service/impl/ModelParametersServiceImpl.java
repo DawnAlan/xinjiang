@@ -93,7 +93,7 @@ public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMappe
         return JSONObject.parseObject(basin, FloodBasin.class);
     }
 
-    public Map<String, ModelParameters> queryList(QueryListReq req) {
+    public Map<String, List<ModelParameters>> queryList(QueryListReq req) {
         return this.lambdaQuery()
                 .eq(ModelParameters::getSiteName, req.getSiteName())
                 .ge(req.getStartTime() != null, ModelParameters::getDate, req.getStartTime())
@@ -101,7 +101,7 @@ public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMappe
                 .like(StringUtils.hasText(req.getModelName()), ModelParameters::getModelName, req.getModelName())
                 .orderBy(true, req.getDateAsc() == 1, ModelParameters::getDate)
                 .list()
-                .stream().collect(Collectors.toMap(ModelParameters::getModelName, o -> o, (oldVal, newVal) -> oldVal, LinkedHashMap::new));
+                .stream().collect(Collectors.groupingBy(n -> n.getModelName() == null ? "" : n.getModelName(), LinkedHashMap::new, Collectors.toList()));
 
 //        IPage<ModelParameters> page = new Page<>(req.getPageNo(), req.getPageSize());
 //        return this.lambdaQuery()
@@ -113,12 +113,12 @@ public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMappe
     }
 
     @Override
-    public Map<String, ModelParameters> queryDefaultList(String siteName) {
+    public Map<String, List<ModelParameters>> queryDefaultList(String siteName) {
         return this.lambdaQuery()
                 .eq(ModelParameters::getSiteName, siteName)
                 .eq(ModelParameters::getIsDefault, 1)
                 .list()
-                .stream().collect(Collectors.toMap(ModelParameters::getModelName, o -> o));
+                .stream().collect(Collectors.groupingBy(n -> n.getModelName() == null ? "" : n.getModelName(), LinkedHashMap::new, Collectors.toList()));
     }
 
     @SneakyThrows
@@ -126,6 +126,9 @@ public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMappe
     @Transactional
     public Map calibrate(CalibrateReq input) {
         String siteName = input.getParametersList().get(0).getSiteName();
+        if (!StringUtils.hasText(input.getModelName())) {
+            throw new RuntimeException("模型率定名称不能为空");
+        }
         if (this.lambdaQuery().eq(ModelParameters::getSiteName, siteName).eq(ModelParameters::getModelName, input.getModelName()).count() > 0) {
             return new HashMap() {{put("msg", siteName + "已存在\"" + input.getModelName() +"\"模型率定名称");}};
         }
