@@ -64,5 +64,9 @@
             <version>2.3.1</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>com.cj</groupId>
+            <artifactId>cj-plugin-waterResources-api</artifactId>
+        </dependency>
     </dependencies>
 </project>

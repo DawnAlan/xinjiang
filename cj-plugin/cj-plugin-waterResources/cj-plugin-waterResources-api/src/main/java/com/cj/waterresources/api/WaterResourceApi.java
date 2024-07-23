@@ -57,5 +57,9 @@ public interface WaterResourceApi {
 
     String getOverallSituationUnitMgrList();
 
+    String getRealTimeWaterLevelData(String time);
+
+    void sendMsg(String msg);
+
 
 }

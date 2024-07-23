@@ -5,8 +5,10 @@ import com.alibaba.fastjson.JSONObject;
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.NumberUtil;
 import com.cj.common.util.RedisUtil;
+import com.cj.common.util.UUIDUtils;
 import com.cj.dataSynchronization.func.modular.lzz.bean.ParamDto;
 import com.cj.dataSynchronization.func.modular.lzz.bean.UserIdParam;
+import com.cj.dataSynchronization.func.modular.lzz.bean.WarnDto;
 import com.cj.dataSynchronization.func.modular.lzz.mapper.LzzPlatformMapper;
 import com.cj.dataSynchronization.func.modular.lzz.mapper.LzzRainFailMapper;
 import com.cj.dataSynchronization.func.modular.lzz.service.LzzPlatformService;
@@ -19,6 +21,9 @@ import com.cj.middleDatabase.func.modular.lzz.lzzRainfallStation.entity.LzzRainf
 import com.cj.middleDatabase.func.modular.lzz.lzzRainfallStation.service.LzzRainfallStationService;
 import com.cj.middleDatabase.func.modular.lzz.storageCapacityCurve.entity.StorageCapacityCurve;
 import com.cj.middleDatabase.func.modular.lzz.storageCapacityCurve.service.StorageCapacityCurveService;
+import com.cj.msg.entity.OverallMsg;
+import com.cj.msg.service.OverallMsgService;
+import com.cj.waterresources.api.WaterResourceApi;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -52,6 +57,9 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
     @Autowired
     private StorageCapacityCurveService storageCapacityCurveService;
 
+    @Autowired
+    private WaterResourceApi waterResourceApi;
+
 
     @Autowired
     private LzzGaugingStationService lzzGaugingStationService;
@@ -61,6 +69,9 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
 
     @Autowired
     private RedisUtil redisUtil;
+
+    @Autowired
+    private OverallMsgService overallMsgService;
 
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd");
@@ -657,6 +668,30 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
                             gaugingStation.setStationName(userPidParam.getName());
                         }
                         gaugingStation.setFlow(paramDto.getV().doubleValue());
+                        String alertLevel = "";
+                        if(gaugingStation.getFlow()!=null){
+                            alertLevel = gaugingStation.getFlow()>=210?"FOUR":gaugingStation.getFlow()>=160?"THREE":gaugingStation.getFlow()>=120?"TWO":gaugingStation.getFlow()>=100?"ONE":"";
+                        }
+                        if(StringUtils.isNotEmpty(alertLevel)){
+                            OverallMsg msg = new OverallMsg();
+                            msg.setId(UUIDUtils.getUUID());
+                            msg.setIsRead(0);
+                            msg.setCreateTime(new Date());
+                            msg.setCategory("告警");
+                            WarnDto warnDto = new WarnDto();
+                            warnDto.setTime(timeData.format(paramDto.getTime()));
+                            warnDto.setFlow(gaugingStation.getFlow());
+                            warnDto.setWarnType("flow");
+                            warnDto.setType("WaterStation");
+                            warnDto.setName(gaugingStation.getStationName());
+                            warnDto.setAlertLevel(alertLevel);
+                            msg.setContent(JSONObject.toJSONString(warnDto));
+                            List<OverallMsg> list =overallMsgService.lambdaQuery().apply("content = '"+msg.getContent()+"'").list();
+                            if(list.isEmpty()){
+                                waterResourceApi.sendMsg(msg.getContent());
+                                overallMsgService.save(msg);
+                            }
+                        }
                         gaugingStation.setId(gaugingStation.getStationName()+":"+paramDto.getTime().getTime());
                         gaugingStationList.add(gaugingStation);
                     }
@@ -732,17 +767,65 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
             station.setTreeId("2023101303");
             LzzGaugingStation station1 = list.get(0);
             LzzGaugingStation station2 = list.get(1);
-            Double waterLevel = NumberUtil.holdDecimal((station1.getRelativeWaterLevel() + station1.getRelativeWaterLevelTwo() + station1.getRelativeWaterLevelThree() +
-                    station2.getRelativeWaterLevel() + station2.getRelativeWaterLevelTwo() + station2.getRelativeWaterLevelThree()) / 6, 3);
-            Double flowRate = NumberUtil.holdDecimal((station1.getFlowRate() + station1.getFlowRateTwo() + station1.getFlowRateThree() +
-                    station2.getFlowRate() + station2.getFlowRateTwo() + station2.getFlowRateThree()) / 6, 3);
-            Double flow = NumberUtil.holdDecimal((station1.getFlow() + station1.getFlowTwo() + station1.getFlowThree() +
-                    station2.getFlow() + station2.getFlowTwo() + station2.getFlowThree()), 3);
-            Double totalFlow = NumberUtil.holdDecimal((station1.getTotalFlow() + station1.getTotalFlowTwo() + station1.getTotalFlowThree() +
-                    station2.getTotalFlow() + station2.getTotalFlowTwo() + station2.getTotalFlowThree()), 3);
+            Double waterLevel = NumberUtil.holdDecimal((
+                    (station1.getRelativeWaterLevel()==null?0.00:station1.getRelativeWaterLevel()) +
+                    (station1.getRelativeWaterLevelTwo() == null?0.00:station1.getRelativeWaterLevelTwo())+
+                    (station1.getRelativeWaterLevelThree() == null?0.00:station1.getRelativeWaterLevelThree()) +
+                    (station2.getRelativeWaterLevel() == null?0.00:station2.getRelativeWaterLevel()) +
+                    (station2.getRelativeWaterLevelTwo() == null?0.00:station2.getRelativeWaterLevelTwo()) +
+                    (station2.getRelativeWaterLevelThree() == null?0.00:station2.getRelativeWaterLevelThree())
+                    ) / 6, 3);
+            Double flowRate = NumberUtil.holdDecimal((
+                    (station1.getFlowRate() == null?0.00:station1.getFlowRate())+
+                    (station1.getFlowRateTwo() == null?0.00:station1.getFlowRateTwo())+
+                    (station1.getFlowRateThree() == null?0.00:station1.getFlowRateThree())+
+                    (station2.getFlowRate() == null?0.00:station2.getFlowRate())+
+                    (station2.getFlowRateTwo() ==null?0.00:station2.getFlowRateTwo())+
+                    (station2.getFlowRateThree() == null?0.00:station2.getFlowRateThree())
+            ) / 6, 3);
+            Double flow = NumberUtil.holdDecimal((
+                    (station1.getFlow() == null?0.00:station1.getFlow()) +
+                    (station1.getFlowTwo() == null?0.00:station1.getFlowTwo()) +
+                    (station1.getFlowThree() == null?0.00:station1.getFlowThree()) +
+                    (station2.getFlow() == null?0.00:station2.getFlow()) +
+                    (station2.getFlowTwo() == null?0.00:station2.getFlowTwo()) +
+                    (station2.getFlowThree() == null?0.00:station2.getFlowThree())
+            ), 3);
+            Double totalFlow = NumberUtil.holdDecimal((
+                    (station1.getTotalFlow() == null?0.00:station1.getTotalFlow()) +
+                    (station1.getTotalFlowTwo() == null?0.00:station1.getTotalFlowTwo()) +
+                    (station1.getTotalFlowThree() == null?0.00:station1.getTotalFlowThree()) +
+                    (station2.getTotalFlow() == null?0.00:station2.getTotalFlow()) +
+                    (station2.getTotalFlowTwo() == null?0.00:station2.getTotalFlowTwo()) +
+                    (station2.getTotalFlowThree() == null?0.00:station2.getTotalFlowThree())
+            ), 3);
             station.setRelativeWaterLevel(waterLevel);
             station.setFlowRate(flowRate);
             station.setFlow(flow);
+            String alertLevel = "";
+            if(station.getFlow()!=null){
+                alertLevel = station.getFlow()>=210?"FOUR":station.getFlow()>=160?"THREE":station.getFlow()>=120?"TWO":station.getFlow()>=100?"ONE":"";
+            }
+            if(StringUtils.isNotEmpty(alertLevel)){
+                OverallMsg msg = new OverallMsg();
+                msg.setId(UUIDUtils.getUUID());
+                msg.setIsRead(0);
+                msg.setCreateTime(new Date());
+                msg.setCategory("告警");
+                WarnDto warnDto = new WarnDto();
+                warnDto.setTime(timeData.format(list.get(0).getGatherTime()));
+                warnDto.setFlow(station.getFlow());
+                warnDto.setWarnType("flow");
+                warnDto.setType("WaterStation");
+                warnDto.setName(station.getStationName());
+                warnDto.setAlertLevel(alertLevel);
+                msg.setContent(JSONObject.toJSONString(warnDto));
+                List<OverallMsg> overallMsgs = overallMsgService.lambdaQuery().apply("content = '"+msg.getContent()+"'").list();
+                if(overallMsgs.isEmpty()){
+                    waterResourceApi.sendMsg(msg.getContent());
+                    overallMsgService.save(msg);
+                }
+            }
             station.setTotalFlow(totalFlow);
             station.setGatherTime(station1.getGatherTime());
             station.setRecordTime(DateUtil.parse(sdf1.format(list.get(0).getGatherTime()),"yyyy-MM-dd"));

@@ -90,5 +90,13 @@ public class ModelRollUpdateController {
         return modelRollUpdateService.selectModelResultList(id);
     }
 
+    @ApiOperationSupport(order = 8)
+    @ApiOperation("模型滚动更新模块查询模型详情")
+    @CommonLog(value = "模型滚动更新模块查询模型详情")
+    @GetMapping("/selectDetailsById")
+    public RestResponse selectDetailsById(@RequestParam(value = "id") String id) {
+        return modelRollUpdateService.selectDetailsById(id);
+    }
+
 }
 

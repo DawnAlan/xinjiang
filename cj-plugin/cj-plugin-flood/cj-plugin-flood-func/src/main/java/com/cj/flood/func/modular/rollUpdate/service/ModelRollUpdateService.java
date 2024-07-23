@@ -27,5 +27,7 @@ public interface ModelRollUpdateService extends IService<ModelRollUpdate> {
 
     RestResponse selectModelResultList(String id);
 
+    RestResponse selectDetailsById(String id);
+
 }
 

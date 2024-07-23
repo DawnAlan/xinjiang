@@ -7,6 +7,8 @@ import com.cj.auth.core.pojo.SaBaseLoginUser;
 import com.cj.auth.core.util.StpLoginUserUtil;
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.UUIDUtils;
+import com.cj.flood.func.modular.prediction.bean.dto.PredictionProcessDto;
+import com.cj.flood.func.modular.prediction.bean.res.IncomingWaterForecastDetailsRes;
 import com.cj.flood.func.modular.rollUpdate.bean.req.ModelRollUpdateSelectListReq;
 import com.cj.flood.func.modular.rollUpdate.entity.RollUpdateFloodControl;
 import com.cj.flood.func.modular.rollUpdate.entity.RollUpdateIncomingWater;
@@ -53,7 +55,7 @@ public class ModelRollUpdateServiceImpl extends ServiceImpl<ModelRollUpdateMappe
             String incomingWaterId ="";
             //滚动新增来水预报
             try {
-                incomingWaterId = rollUpdateIncomingWaterService.add(new Date(), modelRollUpdate.getPeriodTimeCount(), modelRollUpdate.getId());
+                incomingWaterId = rollUpdateIncomingWaterService.add(new Date(), modelRollUpdate.getPeriodTimeCount(), modelRollUpdate.getId(),saBaseLoginUser.getName());
             }catch (Exception e) {
                 log.error("来水预报模执行失败，原因：{}", e.getMessage());
                 String remark = modelRollUpdate.getRemark();
@@ -61,7 +63,7 @@ public class ModelRollUpdateServiceImpl extends ServiceImpl<ModelRollUpdateMappe
             }
             //滚动新增防洪调度
             try {
-                //incomingWaterId = rollUpdateIncomingWaterService.add(new Date(), modelRollUpdate.getPeriodTimeCount(), modelRollUpdate.getId());
+                rollUpdateFloodControlService.add(incomingWaterId, modelRollUpdate);
             }catch (Exception e) {
                 log.error("防洪调度执行失败，原因：{}", e.getMessage());
                 String remark = modelRollUpdate.getRemark();
@@ -98,6 +100,34 @@ public class ModelRollUpdateServiceImpl extends ServiceImpl<ModelRollUpdateMappe
     public RestResponse start(String ids) {
         boolean update = this.lambdaUpdate().set(ModelRollUpdate::getRunStatus, 0).in(ModelRollUpdate::getId, Arrays.stream(ids.split(",")).collect(Collectors.toList())).update();
         if (update) {
+            List<ModelRollUpdate> list = this.lambdaQuery().in(ModelRollUpdate::getId, Arrays.stream(ids.split(",")).collect(Collectors.toList())).list();
+            for (ModelRollUpdate modelRollUpdate : list) {
+                if(modelRollUpdate.getCurrentRunCount()==modelRollUpdate.getRefreshCount()){
+                    this.lambdaUpdate().set(ModelRollUpdate::getRunStatus, 1).eq(ModelRollUpdate::getId,modelRollUpdate.getId()).update();
+                }else {
+                    modelRollUpdate.setCurrentRunCount(modelRollUpdate.getCurrentRunCount()+1);
+                    String incomingWaterId ="";
+                    //滚动新增来水预报
+                    try {
+                        incomingWaterId = rollUpdateIncomingWaterService.add(new Date(), modelRollUpdate.getPeriodTimeCount(), modelRollUpdate.getId(),modelRollUpdate.getCreateBy());
+                    }catch (Exception e) {
+                        log.error("来水预报模执行失败，原因：{}", e.getMessage());
+                        String remark = modelRollUpdate.getRemark();
+                        modelRollUpdate.setRemark(StringUtils.isEmpty(remark)?"":" || " +"来水预报模型第"+modelRollUpdate.getCurrentRunCount()+"次执行失败");
+                    }
+                    //滚动新增防洪调度
+                    if(StringUtils.isNotEmpty(incomingWaterId)){
+                        try {
+                            rollUpdateFloodControlService.add(incomingWaterId, modelRollUpdate);
+                        }catch (Exception e) {
+                            log.error("防洪调度执行失败，原因：{}", e.getMessage());
+                            String remark = modelRollUpdate.getRemark();
+                            modelRollUpdate.setRemark(StringUtils.isEmpty(remark)?"":" || " +"防洪调度模型第"+modelRollUpdate.getCurrentRunCount()+"次执行失败");
+                        }
+                    }
+                    this.updateById(modelRollUpdate);
+                }
+            }
             return RestResponse.ok();
         }else {
             return RestResponse.no("启动失败");
@@ -137,6 +167,20 @@ public class ModelRollUpdateServiceImpl extends ServiceImpl<ModelRollUpdateMappe
         List<RollUpdateFloodControl> floodControl = rollUpdateFloodControlService.lambdaQuery().eq(RollUpdateFloodControl::getRollId, id).list();
         result.put("incomingWater",incomingWater);
         result.put("floodControl",floodControl);
+        return RestResponse.ok(result);
+    }
+
+    @Override
+    public RestResponse selectDetailsById(String id) {
+        Map<String, Object> result = new HashMap<>();
+        RollUpdateIncomingWater incomingWater = rollUpdateIncomingWaterService.lambdaQuery().eq(RollUpdateIncomingWater::getRollId, id).
+                orderByDesc(RollUpdateIncomingWater::getCreateTime).last("limit 1").one();
+        IncomingWaterForecastDetailsRes incomingWaterForecastDetailsRes = rollUpdateIncomingWaterService.selectDetails(incomingWater.getId());
+        RollUpdateFloodControl floodControl = rollUpdateFloodControlService.lambdaQuery().eq(RollUpdateFloodControl::getRollId, id).
+                orderByDesc(RollUpdateFloodControl::getCreateTime).last("limit 1").one();
+        Map<String, List<PredictionProcessDto>> stringListMap = rollUpdateFloodControlService.selectDetails(floodControl.getId());
+        result.put("incomingWater",incomingWaterForecastDetailsRes);
+        result.put("floodControl",stringListMap);
         return RestResponse.ok(result);
     }
 }

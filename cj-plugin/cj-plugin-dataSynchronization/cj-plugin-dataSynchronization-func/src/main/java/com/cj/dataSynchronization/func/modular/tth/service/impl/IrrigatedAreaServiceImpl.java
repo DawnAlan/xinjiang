@@ -8,6 +8,8 @@ import com.cj.common.model.RestResponse;
 import com.cj.common.util.ExcelUtils;
 import com.cj.common.util.NumberUtil;
 import com.cj.common.util.RedisUtil;
+import com.cj.common.util.UUIDUtils;
+import com.cj.dataSynchronization.func.modular.lzz.bean.WarnDto;
 import com.cj.dataSynchronization.func.modular.tth.IrrigatedAreaInvoke;
 import com.cj.dataSynchronization.func.modular.tth.dtos.*;
 import com.cj.dataSynchronization.func.modular.tth.service.IrrigatedAreaService;
@@ -19,6 +21,8 @@ import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformTree.en
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformTree.service.IrrigatedPlatformTreeService;
 import com.cj.middleDatabase.func.modular.lzz.storageCapacityCurve.entity.StorageCapacityCurve;
 import com.cj.middleDatabase.func.modular.lzz.storageCapacityCurve.service.StorageCapacityCurveService;
+import com.cj.msg.entity.OverallMsg;
+import com.cj.msg.service.OverallMsgService;
 import com.cj.waterresources.api.WaterResourceApi;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -60,6 +64,9 @@ public class IrrigatedAreaServiceImpl implements IrrigatedAreaService {
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 
     private SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+    @Autowired
+    private OverallMsgService overallMsgService;
 
     @Override
     public RestResponse getAllTree() {
@@ -250,7 +257,9 @@ public class IrrigatedAreaServiceImpl implements IrrigatedAreaService {
                     List<OverallSituationUnitMgrDto> collect = overallSituationUnitMgrDtoList.stream().filter(t -> t.getMonitorId().equals(dto.getID())).collect(Collectors.toList());
                     if(!collect.isEmpty()){
                         OverallSituationUnitMgrDto overallSituationUnitMgrDto = collect.get(0);
-                        redisUtil.set("irrigatedPlatform:today:"+overallSituationUnitMgrDto.getId(),info.getAvgFlow(),3600*24);
+                        if(DateUtil.parse(dto.getMONITOR_TIME(),"yyyy-MM-dd HH:mm").equals(DateUtil.parse(dto.getMONITOR_TIME(),"yyyy-MM-dd")+" 19:55")){
+                            redisUtil.set("irrigatedPlatform:today:"+overallSituationUnitMgrDto.getId(),info.getAvgFlow(),3600*24);
+                        }
                         redisUtil.set("irrigatedPlatform:sq:date:id:"+info.getMonitorTime()+":"+overallSituationUnitMgrDto.getId(),info.getSqMonitorFlow(),3600*24);
                     }
                     if(info.getMonitorName().equals("头屯河水库水位")){
@@ -259,9 +268,57 @@ public class IrrigatedAreaServiceImpl implements IrrigatedAreaService {
                     }
                     if(info.getMonitorName().equals("出库流量")){
                         redisUtil.set("irrigatedPlatform:sq:tth:out:"+sdf.format(info.getMonitorTime()),info.getSqMonitorFlow(),3600*24*2);
+                        String alertLevel = "";
+                        if(info.getSqMonitorFlow()!=null){
+                            alertLevel = info.getSqMonitorFlow()>=210?"FOUR":info.getSqMonitorFlow()>=160?"THREE":info.getSqMonitorFlow()>=120?"TWO":info.getSqMonitorFlow()>=100?"ONE":"";
+                        }
+                        if(StringUtils.isNotEmpty(alertLevel)){
+                            OverallMsg msg = new OverallMsg();
+                            msg.setId(UUIDUtils.getUUID());
+                            msg.setIsRead(0);
+                            msg.setCreateTime(new Date());
+                            msg.setCategory("告警");
+                            WarnDto warnDto = new WarnDto();
+                            warnDto.setTime(dto.getMONITOR_TIME());
+                            warnDto.setFlow(info.getSqMonitorFlow());
+                            warnDto.setWarnType("flow");
+                            warnDto.setType("WaterStation");
+                            warnDto.setName("头屯河出库");
+                            warnDto.setAlertLevel(alertLevel);
+                            msg.setContent(JSONObject.toJSONString(warnDto));
+                            List<OverallMsg> overallMsgs = overallMsgService.lambdaQuery().apply("content = '"+msg.getContent()+"'").list();
+                            if(overallMsgs.isEmpty()){
+                                waterResourceApi.sendMsg(msg.getContent());
+                                overallMsgService.save(msg);
+                            }
+                        }
                     }
                     if(info.getMonitorName().equals("入库流量")){
                         redisUtil.set("irrigatedPlatform:sq:tth:input:"+sdf.format(info.getMonitorTime()),info.getSqMonitorFlow(),3600*24*2);
+                        String alertLevel = "";
+                        if(info.getSqMonitorFlow()!=null){
+                            alertLevel = info.getSqMonitorFlow()>=210?"FOUR":info.getSqMonitorFlow()>=160?"THREE":info.getSqMonitorFlow()>=120?"TWO":info.getSqMonitorFlow()>=100?"ONE":"";
+                        }
+                        if(StringUtils.isNotEmpty(alertLevel)){
+                            OverallMsg msg = new OverallMsg();
+                            msg.setId(UUIDUtils.getUUID());
+                            msg.setIsRead(0);
+                            msg.setCreateTime(new Date());
+                            msg.setCategory("告警");
+                            WarnDto warnDto = new WarnDto();
+                            warnDto.setTime(dto.getMONITOR_TIME());
+                            warnDto.setFlow(info.getSqMonitorFlow());
+                            warnDto.setWarnType("flow");
+                            warnDto.setType("WaterStation");
+                            warnDto.setName("头屯河入库");
+                            warnDto.setAlertLevel(alertLevel);
+                            msg.setContent(JSONObject.toJSONString(warnDto));
+                            List<OverallMsg> overallMsgs = overallMsgService.lambdaQuery().apply("content = '"+msg.getContent()+"'").list();
+                            if(overallMsgs.isEmpty()){
+                                waterResourceApi.sendMsg(msg.getContent());
+                                overallMsgService.save(msg);
+                            }
+                        }
                     }
                     if(info.getMonitorName().equals("八钢工业取水口")){
                         redisUtil.set("irrigatedPlatform:sq:tth:aq:"+sdf.format(info.getMonitorTime()),info.getSqMonitorFlow(),3600*24*2);

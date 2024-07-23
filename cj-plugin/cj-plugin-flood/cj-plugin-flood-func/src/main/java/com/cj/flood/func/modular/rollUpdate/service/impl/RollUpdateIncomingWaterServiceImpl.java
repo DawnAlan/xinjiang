@@ -9,9 +9,11 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cj.auth.core.pojo.SaBaseLoginUser;
 import com.cj.auth.core.util.StpLoginUserUtil;
 import com.cj.common.model.RestResponse;
+import com.cj.common.util.ExcelUtils;
 import com.cj.common.util.RedisUtil;
 import com.cj.common.util.UUIDUtils;
-import com.cj.flood.func.modular.prediction.bean.dto.OverallSituationUnitMgrDto;
+import com.cj.flood.func.modular.prediction.bean.dto.*;
+import com.cj.flood.func.modular.prediction.bean.res.IncomingWaterForecastDetailsRes;
 import com.cj.flood.func.modular.prediction.entity.BasinParam;
 import com.cj.flood.func.modular.prediction.entity.IncomingWaterForecast;
 import com.cj.flood.func.modular.prediction.entity.ModelParameters;
@@ -28,10 +30,12 @@ import com.cj.middleDatabase.func.modular.lzz.lzzGaugingStation.service.LzzGaugi
 import com.cj.middleDatabase.func.modular.lzz.lzzRainfallStation.entity.LzzRainfallStation;
 import com.cj.middleDatabase.func.modular.lzz.lzzRainfallStation.service.LzzRainfallStationService;
 import com.cj.model.func.core.util.MinioUtils;
+import com.cj.model.func.core.util.MultipartFileUtil;
 import com.cj.model.func.modular.FloodPredict.Calibration.entity.ShanbeiParam;
 import com.cj.model.func.modular.FloodPredict.entity.*;
 import com.cj.model.func.modular.FloodPredict.model.TouTunHe;
 import com.cj.model.func.modular.FloodPredict.utils.InputUtils;
+import com.cj.model.func.modular.entity.Flood;
 import io.minio.ObjectWriteResponse;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -39,6 +43,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -93,7 +98,7 @@ public class RollUpdateIncomingWaterServiceImpl extends ServiceImpl<RollUpdateIn
             RollUpdateIncomingWater incomingWaterForecast = new RollUpdateIncomingWater();
             incomingWaterForecast.setId(UUIDUtils.getUUID());
             incomingWaterForecast.setCreateTime(new Date());
-            incomingWaterForecast.setProgrammeName(sdf2.format(time)+"一键来水");
+            incomingWaterForecast.setProgrammeName(sdf2.format(time)+"滚动更新预报");
             incomingWaterForecast.setModelType(2);
             incomingWaterForecast.setPredictionTime(sdf3.parse(sdf1.format(time)+" 00:00"));
             incomingWaterForecast.setPeriodTimeType(3);
@@ -338,6 +343,170 @@ public class RollUpdateIncomingWaterServiceImpl extends ServiceImpl<RollUpdateIn
             return null;
         }
     }
+
+    @Override
+    public IncomingWaterForecastDetailsRes selectDetails(String id) {
+        log.error("--------------------------------进入查询模型详情接口");
+        try {
+            IncomingWaterForecastDetailsRes res = new IncomingWaterForecastDetailsRes();
+            RollUpdateIncomingWater incomingWaterForecast = this.getById(id);
+            if(null != incomingWaterForecast){
+                res.setPredictionTime(incomingWaterForecast.getPredictionTime());
+                res.setEndTime(incomingWaterForecast.getEndTime());
+                res.setProgrammeName(incomingWaterForecast.getProgrammeName());
+                String modelResultAddress = incomingWaterForecast.getModelResultAddress();
+                if(StringUtils.isNotEmpty(modelResultAddress)){
+                    log.error("--------------------------------从minio前获取InputStream");
+                    InputStream tth = minioUtils.getObject("tth", modelResultAddress);
+                    log.error("--------------------------------从minio获取InputStream");
+                    String[] split = modelResultAddress.split("/");
+                    String[] split1 = split[split.length - 1].split("\\.");
+                    MultipartFile multipartFile = MultipartFileUtil.inputStreamToMultipartFile(tth, split1[0]);
+                    log.error("--------------------------------转换multipartFile");
+                    List<Flood> floods = ExcelUtils.importExcel(multipartFile, Flood.class);
+                    log.error("--------------------------------转换成list"+floods.toString());
+                    Map<String, IncomingWaterForecastViewDto> view = new LinkedHashMap<>();
+                    List<Object> viewForFourPredictions = new LinkedList<>();
+                    IncomingWaterForecastViewDto threeBridge = getIncomingWaterForecastViewDto(floods, "3号桥");
+                    threeBridge.setSort(1);
+                    if(null != threeBridge){
+                        threeBridge.setName("3号桥");
+                        viewForFourPredictions.add(JSONObject.parseObject(JSONObject.toJSONString(threeBridge)));
+                        view.put("3号桥",threeBridge);
+                    }else {
+                        view.put("3号桥",null);
+                    }
+                    IncomingWaterForecastViewDto lzzEntryStation = getIncomingWaterForecastViewDto(floods, "楼庄子");
+                    lzzEntryStation.setSort(2);
+                    if(null != lzzEntryStation){
+                        lzzEntryStation.setName("楼庄子");
+                        viewForFourPredictions.add(JSONObject.parseObject(JSONObject.toJSONString(lzzEntryStation)));
+                        view.put("楼庄子",lzzEntryStation);
+                    }else {
+                        view.put("楼庄子",null);
+                    }
+                    IncomingWaterForecastViewDto tthEntryStation = getIncomingWaterForecastViewDto(floods, "楼头区间");
+                    tthEntryStation.setSort(3);
+                    if(null != tthEntryStation){
+                        tthEntryStation.setName("楼头区间");
+                        viewForFourPredictions.add(JSONObject.parseObject(JSONObject.toJSONString(tthEntryStation)));
+                        view.put("楼头区间",tthEntryStation);
+                    }else {
+                        view.put("楼头区间",null);
+                    }
+                    IncomingWaterForecastViewDto tREntryStation = getIncomingWaterForecastViewDto(floods, "头屯河");
+                    tREntryStation.setSort(4);
+                    if(null != tREntryStation){
+                        tREntryStation.setName("头屯河");
+                        viewForFourPredictions.add(JSONObject.parseObject(JSONObject.toJSONString(tREntryStation)));
+                        view.put("头屯河",tREntryStation);
+                    }else {
+                        view.put("头屯河",null);
+                    }
+                    res.setView(view);
+                    res.setViewForFourPredictions(viewForFourPredictions);
+                    return res;
+                }else {
+                    return null;
+                }
+            }else {
+                return null;
+            }
+        }catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public IncomingWaterForecastViewDto getIncomingWaterForecastViewDto(List<Flood> floods,String station){
+        List<Flood> threeBridge = floods.stream().filter(t -> t.getLocation().equals(station)).collect(Collectors.toList());
+        if(null != threeBridge && threeBridge.size() > 0) {
+            IncomingWaterForecastViewDto incomingWaterForecastViewDto = new IncomingWaterForecastViewDto();
+            List<Flood> threeBridgeFloodPeak = threeBridge.stream().filter(t -> null != t.getPeakIndex() && t.getPeakIndex() != 0).collect(Collectors.toList());
+            if(null != threeBridgeFloodPeak && threeBridgeFloodPeak.size() >0){
+                Map<Integer, FloodPeakDto> floodPeak = new HashMap<>();
+                Map<Integer, List<Flood>> threeBridgeCollect = threeBridgeFloodPeak.stream().collect(Collectors.groupingBy(Flood::getPeakIndex));
+                Set<Integer> threeBridgePeakIndex = threeBridgeCollect.keySet();
+                for(Integer threeBridgeIndex : threeBridgePeakIndex){
+                    List<Flood> threeBridgeFloodPeakDetailsList = threeBridgeCollect.get(threeBridgeIndex).stream().sorted(Comparator.comparing(Flood::getPeakTime)).collect(Collectors.toList());
+                    FloodPeakDto floodPeakDto = new FloodPeakDto();
+                    Flood floodTemp = threeBridgeFloodPeakDetailsList.get(0);
+                    floodPeakDto.setFloodLevel(floodTemp.getFloodLevel());
+                    floodPeakDto.setPeakTime(floodTemp.getPeakTime());
+                    floodPeakDto.setPeakDuration(floodTemp.getPeakDuration());
+                    floodPeak.put(threeBridgeIndex,floodPeakDto);
+                }
+                incomingWaterForecastViewDto.setFloodPeak(floodPeak);
+            }
+            List<PredictionDto> predictionProcess = new ArrayList<>();
+            for (Flood flood:threeBridge){
+                PredictionDto predictionProcessDto = new PredictionDto();
+                predictionProcessDto.setPreQ(flood.getPreQ());
+                predictionProcessDto.setTime(flood.getTime());
+                predictionProcessDto.setWaterLevel(flood.getWaterLevel());
+                predictionProcessDto.setOutQ(flood.getOutQ());
+                predictionProcessDto.setFloodVolume(flood.getFloodVolume());
+                predictionProcessDto.setRainfall(flood.getRainProcess());
+                predictionProcess.add(predictionProcessDto);
+            }
+            incomingWaterForecastViewDto.setPredictionProcess(predictionProcess);
+            Flood flood = threeBridge.get(0);
+            List<IncomingWaterForecastKVDto> qCause = new ArrayList<>();
+            String qCauseValue = flood.getQCause();
+            if(StringUtils.isNotEmpty(qCauseValue)){
+                String[] qCauseSplit = qCauseValue.split(",");
+                for(String qCauseSplitTemp : qCauseSplit){
+                    IncomingWaterForecastKVDto dto = new IncomingWaterForecastKVDto();
+                    String[] split2 = qCauseSplitTemp.split(":");
+                    dto.setName(split2[0]);
+                    dto.setValue(Double.parseDouble(split2[1]));
+                    qCause.add(dto);
+                }
+            }
+            incomingWaterForecastViewDto.setQCause(qCause);
+            List<ConfluenceTimeDto> confluenceTime = new ArrayList<>();
+            String confluenceTimeValue = flood.getConfluenceTime();
+            if(StringUtils.isNotEmpty(confluenceTimeValue)){
+                String[] confluenceTimeSplit = confluenceTimeValue.split(",");
+                for(String qCauseSplitTemp : confluenceTimeSplit){
+                    ConfluenceTimeDto dto = new ConfluenceTimeDto();
+                    String[] split2 = qCauseSplitTemp.split(":");
+                    dto.setName(split2[0]);
+                    dto.setValue(split2[1]);
+                    confluenceTime.add(dto);
+                }
+            }
+            incomingWaterForecastViewDto.setConfluenceTime(confluenceTime);
+            List<IncomingWaterForecastKVDto> qComposition = new ArrayList<>();
+            String qCompositionValue = flood.getQComposition();
+            if(StringUtils.isNotEmpty(qCompositionValue)){
+                String[] qCompositionSplit = qCompositionValue.split(",");
+                for(String qCompositionSplitTemp : qCompositionSplit){
+                    IncomingWaterForecastKVDto dto = new IncomingWaterForecastKVDto();
+                    String[] split2 = qCompositionSplitTemp.split(":");
+                    dto.setName(split2[0]);
+                    dto.setValue(Double.parseDouble(split2[1]));
+                    qComposition.add(dto);
+                }
+            }
+            incomingWaterForecastViewDto.setQComposition(qComposition);
+            List<Flood> collect = threeBridge.stream().filter(f -> f.getPeakIndex() == 1).collect(Collectors.toList());
+            if(null != collect && collect.size() > 0){
+                Flood flood1 = collect.get(0);
+                incomingWaterForecastViewDto.setPeakFlood(flood1.getPeakFlood());
+                incomingWaterForecastViewDto.setPeakVolume(flood1.getFloodVolume());
+            }else {
+                incomingWaterForecastViewDto.setPeakFlood(null);
+                incomingWaterForecastViewDto.setPeakVolume(null);
+            }
+            List<Date> overAlarmProcess = threeBridge.stream().filter(t ->t.getWarningTime() != null && t.getWarningTime() == 1).map(Flood::getTime).collect(Collectors.toList());
+            incomingWaterForecastViewDto.setOverAlarmProcess(overAlarmProcess);
+            return incomingWaterForecastViewDto;
+        }else {
+            return null;
+        }
+    }
+
 
     public static String getFileName(String fileUrl) {
         String[] parts = fileUrl.split("\\\\");

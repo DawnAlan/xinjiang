@@ -67,5 +67,17 @@ public class ModelRollUpdate extends Model<ModelRollUpdate> {
     @ApiModelProperty(value = "备注")
     private String remark;
 
+    @ApiModelProperty(value = "楼庄子动态汛限水位")
+    private String limitLevelsLzz;
+
+    @ApiModelProperty(value = "头屯河动态汛限水位")
+    private String limitLevelsTth;
+
+    @ApiModelProperty(value = "楼庄子生态流量")
+    private String ecosLzz;
+
+    @ApiModelProperty(value = "头屯河生态流量")
+    private String ecosTth;
+
 }
 

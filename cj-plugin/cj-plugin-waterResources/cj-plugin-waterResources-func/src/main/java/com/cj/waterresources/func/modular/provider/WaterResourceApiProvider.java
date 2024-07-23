@@ -6,6 +6,7 @@ import com.cj.common.util.RedisUtil;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.entity.IrrigatedPlatformDataInfo;
 import com.cj.middleDatabase.func.modular.irrigatedArea.irrigatedPlatformDataInfo.service.IrrigatedPlatformDataInfoService;
 import com.cj.waterresources.api.WaterResourceApi;
+import com.cj.waterresources.func.core.utils.WebSocketServer;
 import com.cj.waterresources.func.modular.homePage.bean.res.WaterStorageOverviewRes;
 import com.cj.waterresources.func.modular.homePage.inspection.InspectionInterface;
 import com.cj.waterresources.func.modular.homePage.inspection.response.AbnormalRes;
@@ -39,6 +40,8 @@ import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.entity.W
 import com.cj.waterresources.func.modular.waterPrice.waterFeeStatistics.service.WaterFeeStatisticsTotalService;
 import com.cj.waterresources.func.modular.waterResourceAllcation.entity.WaterResourceAllocation;
 import com.cj.waterresources.func.modular.waterResourceAllcation.service.WaterResourceAllocationService;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.bean.res.RealTimeEngineeringSituationDataRes;
+import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.all.service.AllService;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.bean.res.LzzReportFormsRes;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.entity.DayWaterSituationStatisticsTableLzz;
 import com.cj.waterresources.func.modular.waterSituationReportManagement.a3.lzz.service.DayWaterSituationStatisticsTableLzzService;
@@ -87,6 +90,7 @@ public class WaterResourceApiProvider implements WaterResourceApi {
     private final WaterStorageSchedulingTotalFormService waterStorageSchedulingTotalFormService;
     private final OverallSituationUnitMgrService overallSituationUnitMgrService;
     private final RedisUtil redisUtil;
+    private final AllService allService;
 
     @Override
     public String getYearWaterPlan(String area,Integer year) {
@@ -798,6 +802,15 @@ public class WaterResourceApiProvider implements WaterResourceApi {
         return overall;
     }
 
+    @Override
+    public String getRealTimeWaterLevelData(String time) {
+        RestResponse<List<RealTimeEngineeringSituationDataRes>> realTimeWaterLevelData = allService.getRealTimeWaterLevelData(time);
+        if(realTimeWaterLevelData.getCode()==200){
+            return JSONObject.toJSONString(realTimeWaterLevelData.getData());
+        }
+        return "";
+    }
+
     public String determineTenDays(Integer day){
         if(day<=10){
             return "上旬";
@@ -855,6 +868,12 @@ public class WaterResourceApiProvider implements WaterResourceApi {
             }
         }
         return tthYearFloodRetentionCapacity;
+    }
+
+    @SneakyThrows
+    @Override
+    public void sendMsg(String msg){
+        WebSocketServer.sendInfo(msg,"warning",null);
     }
 
 }

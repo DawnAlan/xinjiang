@@ -90,7 +90,7 @@ public class OverallMsgServiceImpl extends ServiceImpl<OverallMsgMapper, Overall
     public RestResponse query(OverallMsgQueryReq req) {
         IPage<OverallMsg> page = new Page<>(req.getPageNo(), req.getPageSize());
         return RestResponse.ok(this.lambdaQuery()
-                .eq(OverallMsg::getCategory, "预警")
+                .eq(OverallMsg::getCategory, "告警")
                 .ge(req.getStarTime() != null , OverallMsg::getCreateTime, req.getStarTime())
                 .le(req.getEndTime() != null , OverallMsg::getCreateTime, req.getEndTime())
                 .page(page));

@@ -115,4 +115,10 @@ public interface WaterResourceFeign {
 
     @RequestMapping("/feign/provider/waterResource/getOverallSituationUnitMgrList")
     String getOverallSituationUnitMgrList();
+
+    @RequestMapping("/feign/provider/waterResource/getRealTimeWaterLevelData")
+    String getRealTimeWaterLevelData(@RequestParam(value = "time", required =true)String time);
+
+    @RequestMapping("/feign/provider/waterResource/sendMsg")
+    void sendMsg(@RequestParam(value = "msg", required =true)String msg);
 }

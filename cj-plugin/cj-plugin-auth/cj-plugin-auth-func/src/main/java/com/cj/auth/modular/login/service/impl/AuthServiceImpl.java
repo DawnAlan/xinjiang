@@ -13,7 +13,10 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.cj.auth.modular.login.service.AuthService;
+import com.cj.common.util.RedisUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import com.cj.auth.api.SaBaseLoginUserApi;
@@ -71,6 +74,9 @@ public class AuthServiceImpl implements AuthService {
 
     @Value("${auth.captcha.circleCount:0}")
     private Integer circleCount;
+
+    @Autowired
+    private RedisUtil redisUtil;
 
     @Override
     public AuthPicValidCodeResult getPicCaptcha(String type) {
@@ -197,6 +203,16 @@ public class AuthServiceImpl implements AuthService {
         } else {
             AuthDeviceTypeEnum.validate(device);
         }
+        String tempCode = (String)redisUtil.get("login_error_count:"+account);
+        Integer count = 0;
+        if(StringUtils.isNotEmpty(tempCode)){
+            count = Integer.parseInt(tempCode);
+            if(count>=3){
+                redisUtil.set("login_error_count:"+account,count.toString(),5*60);
+                throw new CommonException(AuthExceptionEnum.LOGIN_ERROR_COUNT.getValue());
+            }
+        }
+
         // 校验验证码
         // 获取验证码
         String validCode = authAccountPasswordLoginParam.getValidCode();
@@ -229,6 +245,8 @@ public class AuthServiceImpl implements AuthService {
                 throw new CommonException(AuthExceptionEnum.ACCOUNT_ERROR.getValue());
             }
             if (!saBaseLoginUser.getPassword().equals(passwordHash)) {
+                count+=1;
+                redisUtil.set("login_error_count:"+account,count.toString());
                 throw new CommonException(AuthExceptionEnum.PWD_ERROR.getValue());
             }
             // 执行B端登录

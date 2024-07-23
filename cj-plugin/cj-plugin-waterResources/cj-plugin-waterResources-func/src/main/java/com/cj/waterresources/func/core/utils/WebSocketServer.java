@@ -100,7 +100,7 @@ public class WebSocketServer {
         for (WebSocketServer item : webSocketSet) {
             try {
                 //这里可以设定只推送给这个sid的，为null则全部推送
-                if(sid==null && topic ==null) {
+                if(sid==null || topic ==null) {
                     item.sendMessage(message);
                 }else if(item.sid.equals(sid) && item.topic.equals(topic)){
                     item.sendMessage(message);

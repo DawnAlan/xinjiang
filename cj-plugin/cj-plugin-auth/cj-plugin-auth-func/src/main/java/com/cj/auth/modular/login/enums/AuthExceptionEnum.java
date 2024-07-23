@@ -64,7 +64,9 @@ public enum AuthExceptionEnum {
     /**
      * 密码解密失败，请检查前端公钥
      */
-    PWD_DECRYPT_ERROR("密码解密失败，请检查前端公钥");
+    PWD_DECRYPT_ERROR("密码解密失败，请检查前端公钥"),
+
+    LOGIN_ERROR_COUNT("登录错误次数过多，请稍后再试");
 
     private final String value;
 

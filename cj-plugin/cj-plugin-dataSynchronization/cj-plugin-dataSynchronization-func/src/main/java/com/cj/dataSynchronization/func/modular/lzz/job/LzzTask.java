@@ -64,7 +64,21 @@ public class LzzTask {
     public void receive(String msg) {
         log.info("接收到消息--" + msg);
         LzzGaugingStation station = JSONObject.parseObject(msg, LzzGaugingStation.class);
+        LzzGaugingStation one = lzzGaugingStationService.lambdaQuery().eq(LzzGaugingStation::getTreeId, station.getTreeId()).orderByDesc(LzzGaugingStation::getGatherTime).last("limit 1").one();
+        station.setRelativeWaterLevel(station.getRelativeWaterLevel()==null? one.getRelativeWaterLevel() : station.getRelativeWaterLevel());
+        station.setFlow(station.getFlow()==null? one.getFlow() : station.getFlow());
+        station.setFlowRate(station.getFlowRate()==null? one.getFlowRate() : station.getFlowRate());
+        station.setTotalFlow(station.getTotalFlow()==null? one.getTotalFlow() : station.getTotalFlow());
+        station.setRelativeWaterLevelTwo(station.getRelativeWaterLevelTwo()==null? one.getRelativeWaterLevelTwo() : station.getRelativeWaterLevelTwo());
+        station.setFlowTwo(station.getFlowTwo()==null? one.getFlowTwo() : station.getFlowTwo());
+        station.setFlowRateTwo(station.getFlowRateTwo()==null? one.getFlowRateTwo() : station.getFlowRateTwo());
+        station.setRelativeWaterLevelThree(station.getRelativeWaterLevelThree()==null? one.getRelativeWaterLevelThree() : station.getRelativeWaterLevelThree());
+        station.setFlowThree(station.getFlowThree()==null? one.getFlowThree() : station.getFlowThree());
+        station.setFlowRateThree(station.getFlowRateThree()==null? one.getFlowRateThree() : station.getFlowRateThree());
+        station.setTotalFlowTwo(station.getTotalFlowTwo()==null? one.getTotalFlowTwo() : station.getTotalFlowTwo());
+        station.setTotalFlowThree(station.getTotalFlowThree()==null? one.getTotalFlowThree() : station.getTotalFlowThree());
         boolean b = lzzGaugingStationService.saveOrUpdate(station);
+
         log.info("存入数据库的结果：" + b);
     }
 }
