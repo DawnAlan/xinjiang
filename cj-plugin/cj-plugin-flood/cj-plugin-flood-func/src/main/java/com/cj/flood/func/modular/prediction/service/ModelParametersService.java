@@ -17,7 +17,7 @@ import java.util.Map;
  */
 public interface ModelParametersService extends IService<ModelParameters> {
 
-    IPage<ModelParameters> queryList(QueryListReq req);
+    Map<String, ModelParameters> queryList(QueryListReq req);
 
     Map calibrate(CalibrateReq input);
 
@@ -30,6 +30,6 @@ public interface ModelParametersService extends IService<ModelParameters> {
 
     RestResponse paramDetail(ModelParameterDetailReq req);
 
-    List queryDefaultList(String siteName);
+    Map queryDefaultList(String siteName);
 }
 

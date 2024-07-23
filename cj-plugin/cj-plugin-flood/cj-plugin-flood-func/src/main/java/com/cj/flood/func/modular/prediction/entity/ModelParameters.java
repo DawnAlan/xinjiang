@@ -21,6 +21,8 @@ public class ModelParameters extends Model<ModelParameters> {
     private String id;
     //同一次率定id相同
     private String modelId;
+    //率定名称
+    private String modelName;
     //站点名称
     private String siteName;
     //雨量站

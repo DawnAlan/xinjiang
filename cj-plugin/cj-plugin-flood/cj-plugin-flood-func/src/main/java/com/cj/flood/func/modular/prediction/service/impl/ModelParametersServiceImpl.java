@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.cj.common.exception.CommonException;
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.RedisUtil;
 import com.cj.common.util.UUIDUtils;
@@ -92,25 +93,42 @@ public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMappe
         return JSONObject.parseObject(basin, FloodBasin.class);
     }
 
-    public IPage<ModelParameters> queryList(QueryListReq req) {
-        IPage<ModelParameters> page = new Page<>(req.getPageNo(), req.getPageSize());
+    public Map<String, ModelParameters> queryList(QueryListReq req) {
         return this.lambdaQuery()
                 .eq(ModelParameters::getSiteName, req.getSiteName())
                 .ge(req.getStartTime() != null, ModelParameters::getDate, req.getStartTime())
                 .le(req.getEndTime() != null, ModelParameters::getDate, req.getEndTime())
-                .page(page);
+                .like(StringUtils.hasText(req.getModelName()), ModelParameters::getModelName, req.getModelName())
+                .orderBy(true, req.getDateAsc() == 1, ModelParameters::getDate)
+                .list()
+                .stream().collect(Collectors.toMap(ModelParameters::getModelName, o -> o, (oldVal, newVal) -> oldVal, LinkedHashMap::new));
+
+//        IPage<ModelParameters> page = new Page<>(req.getPageNo(), req.getPageSize());
+//        return this.lambdaQuery()
+//                .eq(ModelParameters::getSiteName, req.getSiteName())
+//                .ge(req.getStartTime() != null, ModelParameters::getDate, req.getStartTime())
+//                .le(req.getEndTime() != null, ModelParameters::getDate, req.getEndTime())
+//                .like(StringUtils.hasText(req.getModelName()), ModelParameters::getModelName, req.getModelName())
+//                .page(page);
     }
 
     @Override
-    public List queryDefaultList(String siteName) {
-        return this.lambdaQuery().eq(ModelParameters::getSiteName, siteName).eq(ModelParameters::getIsDefault, 1).list();
+    public Map<String, ModelParameters> queryDefaultList(String siteName) {
+        return this.lambdaQuery()
+                .eq(ModelParameters::getSiteName, siteName)
+                .eq(ModelParameters::getIsDefault, 1)
+                .list()
+                .stream().collect(Collectors.toMap(ModelParameters::getModelName, o -> o));
     }
 
     @SneakyThrows
     @Override
     @Transactional
     public Map calibrate(CalibrateReq input) {
-
+        String siteName = input.getParametersList().get(0).getSiteName();
+        if (this.lambdaQuery().eq(ModelParameters::getSiteName, siteName).eq(ModelParameters::getModelName, input.getModelName()).count() > 0) {
+            return new HashMap() {{put("msg", siteName + "已存在\"" + input.getModelName() +"\"模型率定名称");}};
+        }
 
         //固定或者默认模型参数
 //        input.getHistoryParam();
@@ -126,7 +144,6 @@ public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMappe
         Map<String, ShanbeiParam> historyParam = new HashMap<>();
         historyList.forEach(r -> setShanbeiParam(historyParam, r));
 
-        String siteName = input.getParametersList().get(0).getSiteName();
         CalibrationParam calibrationParam = new CalibrationParam();
         calibrationParam.setIsAutomatic(input.getIsAutomatic());
         calibrationParam.setTime(input.getTime());
@@ -152,6 +169,7 @@ public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMappe
             ModelParameters modelParameters = ModelParameters.builder()
                     .id(UUIDUtils.getUUID())
                     .modelId(modelId)
+                    .modelName(input.getModelName())
                     .siteName(siteName)
                     .rainfallStation(k)
                     .area(v.getArea())
