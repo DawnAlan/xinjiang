@@ -1,10 +1,9 @@
 package com.cj.flood.func.modular.prediction.service.impl;
 
+import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.cj.common.exception.CommonException;
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.RedisUtil;
 import com.cj.common.util.UUIDUtils;
@@ -74,8 +73,6 @@ public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMappe
     private IrrigatedPlatformDataInfoService irrigatedPlatformDataInfoService;
     @Autowired
     private ModelParametersDetailService modelParametersDetailService;
-    @Autowired
-    private ModelParametersService modelParametersService;
 
     @Value("${model.flood.lzzInputStationName:天谷自动水位站}")
     private String lzzInputStationName;
@@ -207,7 +204,7 @@ public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMappe
             detailList.add(detail);
         });
         modelMap.put("flowList", detailList);
-        modelParametersService.saveBatch(modelParametersList);
+        this.saveBatch(modelParametersList);
         modelParametersDetailService.saveBatch(detailList);
         return modelMap;
     }
@@ -464,8 +461,19 @@ public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMappe
 
     @Override
     public RestResponse paramDetail(ModelParameterDetailReq req) {
-        IPage<ModelParametersDetail> page = new Page<>(req.getPageNo(), req.getPageSize());
-        return RestResponse.ok(modelParametersDetailService.lambdaQuery().eq(ModelParametersDetail::getParentId, req.getModelId()).page(page));
+        String timeRegionStr = this.lambdaQuery().eq(ModelParameters::getModelId, req.getModelId()).list().get(0).getTimeRegion();
+        List<Date[]> timeRegion = JSONObject.parseArray(timeRegionStr, Date[].class);
+        List<ModelParametersDetail> list = modelParametersDetailService.lambdaQuery().eq(ModelParametersDetail::getParentId, req.getModelId()).list();
+        Map<String, List<ModelParametersDetail>> result = new LinkedHashMap<>();
+        timeRegion.forEach(region ->
+                result.put(sdf.format(region[0]) + "|" + sdf.format(region[1]),
+                        list.stream()
+                                .filter(n -> n.getTime().getTime() >= region[0].getTime()
+                                        && n.getTime().getTime() <= region[1].getTime())
+                                .sorted(Comparator.comparing(ModelParametersDetail::getTime))
+                                .collect(Collectors.toList()))
+        );
+        return RestResponse.ok(result);
     }
 }
 
