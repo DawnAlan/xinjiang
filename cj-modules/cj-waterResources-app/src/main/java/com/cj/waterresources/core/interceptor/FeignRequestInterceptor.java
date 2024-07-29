@@ -34,7 +34,6 @@ public class FeignRequestInterceptor implements RequestInterceptor {
                     if (name.equals("content-length")){
                         continue;
                     }
-
                     requestTemplate.header(name, value);
                     log.info(">>> feign header set key:{}, value:{}", name, value);
                 }

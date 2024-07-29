@@ -48,5 +48,8 @@ public class InstructionFeedback extends Model<InstructionFeedback> {
 
     @ApiModelProperty(value = "接收人ID")
     private String recipientId;
+
+    @ApiModelProperty(value = "是否是供水科(0-不是 1-是)")
+    private Integer isGsk;
 }
 

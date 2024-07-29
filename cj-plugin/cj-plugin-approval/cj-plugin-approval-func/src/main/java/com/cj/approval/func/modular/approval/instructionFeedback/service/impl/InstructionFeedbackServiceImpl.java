@@ -147,12 +147,19 @@ public class InstructionFeedbackServiceImpl extends ServiceImpl<InstructionFeedb
 
     private String splicingMsg(InstructionFeedback instructionFeedback){
         String msg = "";
-        msg += sdf.format(instructionFeedback.getFeedbackTime());
-        //反馈状态(1-未开始 2-开始 3-进行中 4-已完成)
-        msg += " 指令 "+(instructionFeedback.getFeedbackStatus()==1?"未开始":instructionFeedback.getFeedbackStatus()==2?"开始":instructionFeedback.getFeedbackStatus()==3?"进行中":instructionFeedback.getFeedbackStatus()==4?"已完成":"未知状态");
-        msg += "。"+instructionFeedback.getFeedbackBy()+"通知"+instructionFeedback.getRecipient()+instructionFeedback.getFeedbackContext()+"。";
-        msg += "配水人员为："+instructionFeedback.getExecutive();
+        if(instructionFeedback.getIsGsk()==0){
+            msg += sdf.format(instructionFeedback.getFeedbackTime());
+            //反馈状态(1-未开始 2-开始 3-进行中 4-已完成)
+            msg += " 指令 "+(instructionFeedback.getFeedbackStatus()==1?"未开始":instructionFeedback.getFeedbackStatus()==2?"开始":instructionFeedback.getFeedbackStatus()==3?"进行中":instructionFeedback.getFeedbackStatus()==4?"已完成":"未知状态");
+            msg += "。"+instructionFeedback.getFeedbackBy()+"通知"+instructionFeedback.getRecipient()+instructionFeedback.getFeedbackContext()+"。";
+            msg += "配水人员为："+instructionFeedback.getExecutive();
+        }else {
+            msg += sdf.format(instructionFeedback.getFeedbackTime());
+            //反馈状态(1-未开始 2-开始 3-进行中 4-已完成)
+            msg += " "+instructionFeedback.getFeedbackBy()+"通知"+instructionFeedback.getRecipient()+":"+instructionFeedback.getFeedbackContext();
+        }
         return msg;
     }
+
 }
 

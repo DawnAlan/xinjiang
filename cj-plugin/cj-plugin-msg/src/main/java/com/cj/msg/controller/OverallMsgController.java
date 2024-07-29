@@ -1,6 +1,7 @@
 package com.cj.msg.controller;
 
 import com.cj.common.model.RestResponse;
+import com.cj.msg.entity.OverallMsg;
 import com.cj.msg.entity.OverallMsgInsertReq;
 import com.cj.msg.entity.OverallMsgQueryReq;
 import com.cj.msg.service.OverallMsgService;
@@ -8,11 +9,15 @@ import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSupport;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * 全局消息管理(OverallMsg)表控制层
@@ -80,6 +85,20 @@ public class OverallMsgController {
     @PostMapping("/del")
     public RestResponse query(@RequestBody List<String> ids) {
         return RestResponse.ok(overallMsgService.removeBatchByIds(ids));
+    }
+
+    @ApiOperationSupport(order = 7)
+    @ApiOperation("获取预警模型列表")
+    @GetMapping("/getModelList")
+    public RestResponse getModelList() {
+        List<OverallMsg> list = overallMsgService.lambdaQuery().eq(OverallMsg::getCategory, "预警").list();
+        Map<String, List<OverallMsg>> collect = list.stream().filter(t-> StringUtils.isNotEmpty(t.getSubject())).collect(Collectors.groupingBy(OverallMsg::getSubject));
+        Set<String> strings = collect.keySet();
+        if(strings.size() > 0){
+            return RestResponse.ok(strings);
+        }else {
+            return RestResponse.no("暂无数据");
+        }
     }
 }
 

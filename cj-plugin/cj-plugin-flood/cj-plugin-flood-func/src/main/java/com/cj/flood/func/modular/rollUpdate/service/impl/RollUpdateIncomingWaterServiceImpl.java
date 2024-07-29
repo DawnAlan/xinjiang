@@ -20,6 +20,7 @@ import com.cj.flood.func.modular.prediction.entity.ModelParameters;
 import com.cj.flood.func.modular.prediction.mapper.IncomingWaterForecastMapper;
 import com.cj.flood.func.modular.prediction.service.IncomingWaterForecastService;
 import com.cj.flood.func.modular.prediction.service.ModelParametersService;
+import com.cj.flood.func.modular.rollUpdate.entity.ModelRollUpdate;
 import com.cj.flood.func.modular.rollUpdate.mapper.RollUpdateIncomingWaterMapper;
 import com.cj.flood.func.modular.rollUpdate.entity.RollUpdateIncomingWater;
 import com.cj.flood.func.modular.rollUpdate.service.RollUpdateIncomingWaterService;
@@ -93,19 +94,19 @@ public class RollUpdateIncomingWaterServiceImpl extends ServiceImpl<RollUpdateIn
     }
 
     @Override
-    public String add(Date time,int periodTimeNum,String rollId,String user) {
+    public String add(Date time, ModelRollUpdate modelRollUpdate, String user) {
         try {
             RollUpdateIncomingWater incomingWaterForecast = new RollUpdateIncomingWater();
             incomingWaterForecast.setId(UUIDUtils.getUUID());
             incomingWaterForecast.setCreateTime(new Date());
-            incomingWaterForecast.setProgrammeName(sdf2.format(time)+"滚动更新预报");
-            incomingWaterForecast.setModelType(2);
-            incomingWaterForecast.setPredictionTime(sdf3.parse(sdf1.format(time)+" 00:00"));
-            incomingWaterForecast.setPeriodTimeType(3);
+            incomingWaterForecast.setProgrammeName(modelRollUpdate.getSchemeName());
+            incomingWaterForecast.setModelType(3);
+            incomingWaterForecast.setPredictionTime(sdf3.parse(sdf3.format(time)));
+            incomingWaterForecast.setPeriodTimeType(4);
             incomingWaterForecast.setPeriodTimeStep(1);
-            incomingWaterForecast.setPeriodTimeNum(periodTimeNum);
+            incomingWaterForecast.setPeriodTimeNum(modelRollUpdate.getPeriodTimeCount());
             incomingWaterForecast.setStatus(1);
-            incomingWaterForecast.setRollId(rollId);
+            incomingWaterForecast.setRollId(modelRollUpdate.getId());
             incomingWaterForecast.setCreateBy(user);
             //(1-月 2-旬 3-日 4-小时)
             if(incomingWaterForecast.getPeriodTimeType()==1){
@@ -164,6 +165,7 @@ public class RollUpdateIncomingWaterServiceImpl extends ServiceImpl<RollUpdateIn
                         forcastInputParamNew.setIsReferenceWater(false);
                         forcastInputParamNew.setPreFlow(0.0);
                         forcastInputParamNew.setPreRainFall(0.0);
+                        forcastInputParamNew.setRainFallDtos(new ArrayList<>());
                         List<Date> dates = InputUtils.judgeDate(incomingWaterForecast.getPredictionTime(),incomingWaterForecast.getPeriodTimeNum());
                         String overall = (String) redisUtil.get("overallSituationUnitMgr:list");
                         List<OverallSituationUnitMgrDto> overallSituationUnitMgrDtoList = JSONObject.parseArray(overall, OverallSituationUnitMgrDto.class);
@@ -335,12 +337,12 @@ public class RollUpdateIncomingWaterServiceImpl extends ServiceImpl<RollUpdateIn
             if(res){
                 return incomingWaterForecast.getId();
             }else {
-                return null;
+                throw new RuntimeException("生成来水预报模型失败");
             }
         }catch (Exception e) {
             log.error("生成模型结果错误:"+e.getMessage());
             e.printStackTrace();
-            return null;
+            throw new RuntimeException("生成来水预报模型失败");
         }
     }
 

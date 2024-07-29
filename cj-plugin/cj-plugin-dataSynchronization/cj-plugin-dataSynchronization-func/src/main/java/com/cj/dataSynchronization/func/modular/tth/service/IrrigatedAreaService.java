@@ -15,8 +15,10 @@ public interface IrrigatedAreaService {
     RestResponse importHistoryData(MultipartFile file);
 
     RestResponse selectHistoryData(String type,String id,String startTime,String endTime);
+    RestResponse calculateHistoryDataAverageValue(String id,String time);
 
     RestResponse saveHistoryData(String id,String startTime,String endTime);
     RestResponse saveHistoryDataForRain(String id,String startTime,String endTime);
 
+    RestResponse insertWarningInfo(String startTime, String endTime);
 }

@@ -9,7 +9,7 @@ import com.cj.common.util.ExcelUtils;
 import com.cj.common.util.NumberUtil;
 import com.cj.common.util.RedisUtil;
 import com.cj.common.util.UUIDUtils;
-import com.cj.dataSynchronization.func.modular.lzz.bean.WarnDto;
+import com.cj.msg.entity.WarnDto;
 import com.cj.dataSynchronization.func.modular.tth.IrrigatedAreaInvoke;
 import com.cj.dataSynchronization.func.modular.tth.dtos.*;
 import com.cj.dataSynchronization.func.modular.tth.service.IrrigatedAreaService;
@@ -34,7 +34,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -257,9 +256,8 @@ public class IrrigatedAreaServiceImpl implements IrrigatedAreaService {
                     List<OverallSituationUnitMgrDto> collect = overallSituationUnitMgrDtoList.stream().filter(t -> t.getMonitorId().equals(dto.getID())).collect(Collectors.toList());
                     if(!collect.isEmpty()){
                         OverallSituationUnitMgrDto overallSituationUnitMgrDto = collect.get(0);
-                        if(DateUtil.parse(dto.getMONITOR_TIME(),"yyyy-MM-dd HH:mm").equals(DateUtil.parse(dto.getMONITOR_TIME(),"yyyy-MM-dd")+" 19:55")){
-                            redisUtil.set("irrigatedPlatform:today:"+overallSituationUnitMgrDto.getId(),info.getAvgFlow(),3600*24);
-                        }
+                        redisUtil.set("irrigatedPlatform:today:"+overallSituationUnitMgrDto.getId(),info.getAvgFlow(),3600*24);
+                        redisUtil.set("irrigatedPlatform:yesterday:"+overallSituationUnitMgrDto.getId(),info.getYesterdayAvgFlow(),3600*24);
                         redisUtil.set("irrigatedPlatform:sq:date:id:"+info.getMonitorTime()+":"+overallSituationUnitMgrDto.getId(),info.getSqMonitorFlow(),3600*24);
                     }
                     if(info.getMonitorName().equals("头屯河水库水位")){
@@ -276,13 +274,16 @@ public class IrrigatedAreaServiceImpl implements IrrigatedAreaService {
                             OverallMsg msg = new OverallMsg();
                             msg.setId(UUIDUtils.getUUID());
                             msg.setIsRead(0);
+                            msg.setSubject("waterLevel");
+                            msg.setCreateUser("头屯河出库");
+                            msg.setReceiveUser(alertLevel);
                             msg.setCreateTime(new Date());
                             msg.setCategory("告警");
                             WarnDto warnDto = new WarnDto();
                             warnDto.setTime(dto.getMONITOR_TIME());
                             warnDto.setFlow(info.getSqMonitorFlow());
                             warnDto.setWarnType("flow");
-                            warnDto.setType("WaterStation");
+                            warnDto.setType("waterStation");
                             warnDto.setName("头屯河出库");
                             warnDto.setAlertLevel(alertLevel);
                             msg.setContent(JSONObject.toJSONString(warnDto));
@@ -303,13 +304,16 @@ public class IrrigatedAreaServiceImpl implements IrrigatedAreaService {
                             OverallMsg msg = new OverallMsg();
                             msg.setId(UUIDUtils.getUUID());
                             msg.setIsRead(0);
+                            msg.setCreateUser("头屯河入库");
+                            msg.setReceiveUser(alertLevel);
+                            msg.setSubject("waterLevel");
                             msg.setCreateTime(new Date());
                             msg.setCategory("告警");
                             WarnDto warnDto = new WarnDto();
                             warnDto.setTime(dto.getMONITOR_TIME());
                             warnDto.setFlow(info.getSqMonitorFlow());
                             warnDto.setWarnType("flow");
-                            warnDto.setType("WaterStation");
+                            warnDto.setType("waterStation");
                             warnDto.setName("头屯河入库");
                             warnDto.setAlertLevel(alertLevel);
                             msg.setContent(JSONObject.toJSONString(warnDto));
@@ -417,6 +421,28 @@ public class IrrigatedAreaServiceImpl implements IrrigatedAreaService {
             return RestResponse.ok(historyDataForPipeLine);
         }
         return null;
+    }
+
+    @SneakyThrows
+    @Override
+    public RestResponse calculateHistoryDataAverageValue(String id, String time) {
+        Map<String,Object> result= new HashMap<>();
+        Date startTime = sdf.parse(time + " 20:00");
+        Date endTime = calculateTime(startTime, -24);
+        List<HistoryDataVo> historyDataForWater = IrrigatedAreaInvoke.getHistoryDataForWater(id, sdf.format(endTime), sdf.format(startTime));
+        if(historyDataForWater.isEmpty()){
+            return RestResponse.no("该时间段暂无数据");
+        }else {
+            double flow = historyDataForWater.stream().filter(t->t.getMONITOR_FLOW()!=null).mapToDouble(HistoryDataVo::getMONITOR_FLOW).sum();
+            double level = historyDataForWater.stream().filter(t->t.getWATER_LEVEL()!=null).mapToDouble(HistoryDataVo::getWATER_LEVEL).sum();
+            result.put("flow_all", NumberUtil.holdDecimal(flow/historyDataForWater.size(),3));
+            result.put("flow_*300", NumberUtil.holdDecimal(flow*300,3));
+            result.put("level_all",NumberUtil.holdDecimal(level/historyDataForWater.size(),3));
+            result.put("flow", NumberUtil.holdDecimal(flow/historyDataForWater.stream().filter(t->t.getMONITOR_FLOW()!=null).count(),3));
+            result.put("level",NumberUtil.holdDecimal(level/historyDataForWater.stream().filter(t->t.getWATER_LEVEL()!=null).count(),3));
+
+            return RestResponse.ok(result);
+        }
     }
 
     @SneakyThrows
@@ -732,6 +758,81 @@ public class IrrigatedAreaServiceImpl implements IrrigatedAreaService {
                 return RestResponse.no("保存历史数据失败");
             }
         }
+    }
+
+    @Override
+    public RestResponse insertWarningInfo(String startTime, String endTime) {
+        List<IrrigatedPlatformDataInfo> list = irrigatedPlatformDataInfoService.lambdaQuery().between(IrrigatedPlatformDataInfo::getMonitorTime, startTime, endTime).
+                in(IrrigatedPlatformDataInfo::getMonitorName, "出库流量", "入库流量").
+                gt(IrrigatedPlatformDataInfo::getSqMonitorFlow, 100).list();
+        if(!list.isEmpty()){
+            List<OverallMsg> msgList = new ArrayList<>();
+            for (IrrigatedPlatformDataInfo info : list){
+                if(info.getMonitorName().equals("出库流量")){
+                    String alertLevel = "";
+                    if(info.getSqMonitorFlow()!=null){
+                        alertLevel = info.getSqMonitorFlow()>=210?"FOUR":info.getSqMonitorFlow()>=160?"THREE":info.getSqMonitorFlow()>=120?"TWO":info.getSqMonitorFlow()>=100?"ONE":"";
+                    }
+                    if(StringUtils.isNotEmpty(alertLevel)){
+                        OverallMsg msg = new OverallMsg();
+                        msg.setId(UUIDUtils.getUUID());
+                        msg.setIsRead(0);
+                        msg.setSubject("waterLevel");
+                        msg.setCreateUser("头屯河出库");
+                        msg.setReceiveUser(alertLevel);
+                        msg.setCreateTime(info.getMonitorTime());
+                        msg.setCategory("告警");
+                        WarnDto warnDto = new WarnDto();
+                        warnDto.setTime(sdf.format(info.getMonitorTime()));
+                        warnDto.setFlow(info.getSqMonitorFlow());
+                        warnDto.setWarnType("flow");
+                        warnDto.setType("waterStation");
+                        warnDto.setName("头屯河出库");
+                        warnDto.setAlertLevel(alertLevel);
+                        msg.setContent(JSONObject.toJSONString(warnDto));
+                        List<OverallMsg> overallMsgs = overallMsgService.lambdaQuery().apply("content = '"+msg.getContent()+"'").list();
+                        if(overallMsgs.isEmpty()){
+                            msgList.add(msg);
+                        }
+                    }
+                }
+                if(info.getMonitorName().equals("入库流量")){
+                    String alertLevel = "";
+                    if(info.getSqMonitorFlow()!=null){
+                        alertLevel = info.getSqMonitorFlow()>=210?"FOUR":info.getSqMonitorFlow()>=160?"THREE":info.getSqMonitorFlow()>=120?"TWO":info.getSqMonitorFlow()>=100?"ONE":"";
+                    }
+                    if(StringUtils.isNotEmpty(alertLevel)){
+                        OverallMsg msg = new OverallMsg();
+                        msg.setId(UUIDUtils.getUUID());
+                        msg.setIsRead(0);
+                        msg.setSubject("waterLevel");
+                        msg.setCreateUser("头屯河入库");
+                        msg.setReceiveUser(alertLevel);
+                        msg.setCreateTime(info.getMonitorTime());
+                        msg.setCategory("告警");
+                        WarnDto warnDto = new WarnDto();
+                        warnDto.setTime(sdf.format(info.getMonitorTime()));
+                        warnDto.setFlow(info.getSqMonitorFlow());
+                        warnDto.setWarnType("flow");
+                        warnDto.setType("waterStation");
+                        warnDto.setName("头屯河入库");
+                        warnDto.setAlertLevel(alertLevel);
+                        msg.setContent(JSONObject.toJSONString(warnDto));
+                        List<OverallMsg> overallMsgs = overallMsgService.lambdaQuery().apply("content = '"+msg.getContent()+"'").list();
+                        if(overallMsgs.isEmpty()){
+                            msgList.add(msg);
+                        }
+                    }
+                }
+            }
+            boolean b = overallMsgService.saveBatch(msgList);
+            if(b){
+                return RestResponse.ok("ok");
+            }else {
+                return RestResponse.no("error");
+            }
+        }
+        return RestResponse.no("无数据");
     }
 
     private Date calculateTime(Date time,int hour){

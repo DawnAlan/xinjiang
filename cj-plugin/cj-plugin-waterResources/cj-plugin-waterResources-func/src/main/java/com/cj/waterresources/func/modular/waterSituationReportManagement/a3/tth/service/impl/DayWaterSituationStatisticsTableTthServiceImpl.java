@@ -339,7 +339,7 @@ public class DayWaterSituationStatisticsTableTthServiceImpl extends ServiceImpl<
                 tth.setId(UUIDUtils.getUUID());
                 String tableParamString = (String)redisUtil.get("trendsTableParam:object:"+t);
                 TrendsTableParam tableParam = JSONObject.parseObject(tableParamString, TrendsTableParam.class);
-                Double flow = (Double) redisUtil.get("irrigatedPlatform:today:"+tableParam.getUnitId());
+                Double flow = (Double) redisUtil.get("irrigatedPlatform:yesterday:"+tableParam.getUnitId());
                 tth.setV(flow==null?null:flow);
                 tth.setTime("今日均");
                 tth.setRecordTime(new Date());

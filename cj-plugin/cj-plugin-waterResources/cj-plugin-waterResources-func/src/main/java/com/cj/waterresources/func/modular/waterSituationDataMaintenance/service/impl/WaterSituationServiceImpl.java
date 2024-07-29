@@ -233,7 +233,7 @@ public class WaterSituationServiceImpl implements WaterSituationService {
             return RestResponse.no("所选站点不存在");
         }
         if(StringUtils.isNotEmpty(byId.getMonitorId())){
-            List<IrrigatedPlatformDataInfo> listTth = irrigatedPlatformDataInfoService.selectInfoByCondition(byId.getMonitorId(),null,req.getStartTime(),req.getEndTime());
+            List<IrrigatedPlatformDataInfo> listTth = irrigatedPlatformDataInfoService.selectInfoByCondition(byId.getMonitorId(),null,req.getStartTime()+" 00:00",req.getEndTime()+" 23:59");
             if(null != listTth && listTth.size()>0) {
                 listTth.stream().collect(Collectors.toList()).forEach(t->{
                     HydrographRes res = new HydrographRes();
@@ -245,7 +245,7 @@ public class WaterSituationServiceImpl implements WaterSituationService {
                     resList.add(res);
                 });
             }
-            List<LzzRainfallStation> listLzzRain = lzzRainfallStationService.selectInfoByCondition(byId.getMonitorId(),null,req.getStartTime()+" 00:00",req.getEndTime()+" 23:00");
+            List<LzzRainfallStation> listLzzRain = lzzRainfallStationService.selectInfoByCondition(byId.getMonitorId(),null,req.getStartTime()+" 00:00",req.getEndTime()+" 23:59");
             if(null != listLzzRain && listLzzRain.size()>0){
                 listLzzRain.stream().collect(Collectors.toList()).forEach(t->{
                     HydrographRes res = new HydrographRes();
@@ -256,7 +256,7 @@ public class WaterSituationServiceImpl implements WaterSituationService {
                     resList.add(res);
                 });
             }
-            List<LzzGaugingStation> listLzzGaugingStation = lzzGaugingStationService.selectInfoByCondition(byId.getMonitorId(),null,req.getStartTime(),req.getEndTime());
+            List<LzzGaugingStation> listLzzGaugingStation = lzzGaugingStationService.selectInfoByCondition(byId.getMonitorId(),null,req.getStartTime()+" 00:00",req.getEndTime()+" 23:59");
             if(null != listLzzGaugingStation && listLzzGaugingStation.size()>0){
                 listLzzGaugingStation.stream().collect(Collectors.toList()).forEach(t->{
                     HydrographRes res = new HydrographRes();

@@ -16,6 +16,9 @@ public class FloodBasin {
     @JsonProperty("name")
     @ApiModelProperty(value = "流域名称")
     private String name;
+    @JsonProperty("rainStation")
+    @ApiModelProperty(value = "流域雨量站")
+    private List<String> rainStation;
     @JsonProperty("hydrologies")
     @ApiModelProperty(value = "流域水文信息")
     private List<Hydrology> hydrologies;

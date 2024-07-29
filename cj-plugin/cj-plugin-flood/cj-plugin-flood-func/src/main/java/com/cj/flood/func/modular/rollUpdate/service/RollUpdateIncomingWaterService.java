@@ -3,6 +3,7 @@ package com.cj.flood.func.modular.rollUpdate.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.cj.common.model.RestResponse;
 import com.cj.flood.func.modular.prediction.bean.res.IncomingWaterForecastDetailsRes;
+import com.cj.flood.func.modular.rollUpdate.entity.ModelRollUpdate;
 import com.cj.flood.func.modular.rollUpdate.entity.RollUpdateIncomingWater;
 
 import java.util.Date;
@@ -15,7 +16,7 @@ import java.util.Date;
  */
 public interface RollUpdateIncomingWaterService extends IService<RollUpdateIncomingWater> {
 
-    String add(Date time, int periodTimeNum,String rollId,String user);
+    String add(Date time, ModelRollUpdate modelRollUpdate, String user);
     IncomingWaterForecastDetailsRes selectDetails(String id);
 
 }

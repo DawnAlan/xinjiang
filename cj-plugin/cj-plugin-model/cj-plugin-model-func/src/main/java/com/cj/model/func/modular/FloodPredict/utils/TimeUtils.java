@@ -211,11 +211,19 @@ public class TimeUtils {
 			result = Math.toIntExact(duration);
 		}
 		if (period.equals("小时")){
+			//long durationDays =  Duration.between(localDate1.atStartOfDay(), localDate2.atStartOfDay()).toDays();
+			//int hours0 = getSpecificDate(dateStart).get("小时");
+			//int hours1 = getSpecificDate(dateStart).get("小时");
+			//result = Math.toIntExact(durationDays)*24+hours1-hours0;
 			LocalDateTime localDateTime1 = dateStart.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
 			LocalDateTime localDateTime2 = dateEnd.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
 			Duration duration = Duration.between(localDateTime1, localDateTime2);
 			long hours = duration.toHours();
 			result = Math.toIntExact(hours);
+			int minutes = getSpecificDate(dateStart).get("分钟");
+			if (minutes!=0){
+				result = Math.toIntExact(hours)+1;
+			}
 		}
 		return result;
 	}

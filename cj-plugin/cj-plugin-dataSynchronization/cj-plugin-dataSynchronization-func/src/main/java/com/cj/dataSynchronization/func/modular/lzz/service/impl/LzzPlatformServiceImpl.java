@@ -8,7 +8,7 @@ import com.cj.common.util.RedisUtil;
 import com.cj.common.util.UUIDUtils;
 import com.cj.dataSynchronization.func.modular.lzz.bean.ParamDto;
 import com.cj.dataSynchronization.func.modular.lzz.bean.UserIdParam;
-import com.cj.dataSynchronization.func.modular.lzz.bean.WarnDto;
+import com.cj.msg.entity.WarnDto;
 import com.cj.dataSynchronization.func.modular.lzz.mapper.LzzPlatformMapper;
 import com.cj.dataSynchronization.func.modular.lzz.mapper.LzzRainFailMapper;
 import com.cj.dataSynchronization.func.modular.lzz.service.LzzPlatformService;
@@ -33,7 +33,6 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -682,7 +681,7 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
                             warnDto.setTime(timeData.format(paramDto.getTime()));
                             warnDto.setFlow(gaugingStation.getFlow());
                             warnDto.setWarnType("flow");
-                            warnDto.setType("WaterStation");
+                            warnDto.setType("waterStation");
                             warnDto.setName(gaugingStation.getStationName());
                             warnDto.setAlertLevel(alertLevel);
                             msg.setContent(JSONObject.toJSONString(warnDto));
@@ -810,13 +809,16 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
                 OverallMsg msg = new OverallMsg();
                 msg.setId(UUIDUtils.getUUID());
                 msg.setIsRead(0);
+                msg.setSubject("waterLevel");
+                msg.setCreateUser(station.getStationName());
+                msg.setReceiveUser(alertLevel);
                 msg.setCreateTime(new Date());
                 msg.setCategory("告警");
                 WarnDto warnDto = new WarnDto();
                 warnDto.setTime(timeData.format(list.get(0).getGatherTime()));
                 warnDto.setFlow(station.getFlow());
                 warnDto.setWarnType("flow");
-                warnDto.setType("WaterStation");
+                warnDto.setType("waterStation");
                 warnDto.setName(station.getStationName());
                 warnDto.setAlertLevel(alertLevel);
                 msg.setContent(JSONObject.toJSONString(warnDto));
@@ -915,6 +917,50 @@ public class LzzPlatformServiceImpl implements LzzPlatformService {
             return RestResponse.no("error");
         }
     }
+
+    @Override
+    public RestResponse insertWarningInfo(String startTime, String endTime) {
+        List<LzzGaugingStation> list = lzzGaugingStationService.lambdaQuery().between(LzzGaugingStation::getGatherTime, startTime, endTime).gt(LzzGaugingStation::getFlow, 100).list();
+        if(!list.isEmpty()){
+            List<OverallMsg> msgList = new ArrayList<>();
+            for(LzzGaugingStation station:list){
+                String alertLevel = "";
+                if(station.getFlow()!=null){
+                    alertLevel = station.getFlow()>=210?"FOUR":station.getFlow()>=160?"THREE":station.getFlow()>=120?"TWO":station.getFlow()>=100?"ONE":"";
+                }
+                if(StringUtils.isNotEmpty(alertLevel)){
+                    OverallMsg msg = new OverallMsg();
+                    msg.setId(UUIDUtils.getUUID());
+                    msg.setIsRead(0);
+                    msg.setSubject("waterLevel");
+                    msg.setCreateUser(station.getStationName());
+                    msg.setReceiveUser(alertLevel);
+                    msg.setCreateTime(list.get(0).getGatherTime());
+                    msg.setCategory("告警");
+                    WarnDto warnDto = new WarnDto();
+                    warnDto.setTime(timeData.format(list.get(0).getGatherTime()));
+                    warnDto.setFlow(station.getFlow());
+                    warnDto.setWarnType("flow");
+                    warnDto.setType("waterStation");
+                    warnDto.setName(station.getStationName());
+                    warnDto.setAlertLevel(alertLevel);
+                    msg.setContent(JSONObject.toJSONString(warnDto));
+                    List<OverallMsg> overallMsgs = overallMsgService.lambdaQuery().apply("content = '"+msg.getContent()+"'").list();
+                    if(overallMsgs.isEmpty()){
+                        msgList.add(msg);
+                    }
+                }
+            }
+            boolean b = overallMsgService.saveBatch(msgList);
+            if(b){
+                return RestResponse.ok("ok");
+            }else {
+                return RestResponse.no("error");
+            }
+        }
+        return RestResponse.no("无数据");
+    }
+
     private Date calculateTime(Date time,int minute){
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(time);

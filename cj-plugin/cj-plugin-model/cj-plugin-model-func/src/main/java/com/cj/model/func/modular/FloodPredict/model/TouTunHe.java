@@ -279,7 +279,7 @@ public class TouTunHe {
             int hours;
             if (!param.getIsReferenceWater()){
                 for (PredictInputData flowDatum : tthInflow) {
-                    if (flowDatum.getFlow() != null&&flowDatum.getDataType().equals("flow")&&flowDatum.getLocation().equals("头屯河")) {
+                    if (flowDatum.getFlow() != null&&flowDatum.getDataType().equals("flow")&&flowDatum.getLocation().equals("头屯河")&&flowDatum.getFlow()<=500.0) {
                         QJ.add(flowDatum);
                     }
                 }

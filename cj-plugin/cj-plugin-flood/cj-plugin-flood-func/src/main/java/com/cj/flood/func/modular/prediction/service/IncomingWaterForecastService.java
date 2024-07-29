@@ -23,6 +23,7 @@ import java.util.Map;
 public interface IncomingWaterForecastService extends IService<IncomingWaterForecast> {
 
     RestResponse add(IncomingWaterForecastAddReq req);
+    RestResponse addForScanRainFall(IncomingWaterForecastAddReq req);
 
     RestResponse delete(String ids);
 

@@ -13,6 +13,7 @@ import com.cj.auth.core.util.StpLoginUserUtil;
 import com.cj.common.exception.CommonException;
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.ExcelUtils;
+import com.cj.common.util.NumberUtil;
 import com.cj.common.util.RedisUtil;
 import com.cj.common.util.UUIDUtils;
 import com.cj.flood.func.modular.prediction.bean.dto.*;
@@ -39,7 +40,11 @@ import com.cj.model.func.modular.FloodPredict.entity.*;
 import com.cj.model.func.modular.FloodPredict.model.TouTunHe;
 import com.cj.model.func.modular.FloodPredict.utils.InputUtils;
 import com.cj.model.func.modular.entity.Flood;
+import com.cj.msg.entity.OverallMsg;
+import com.cj.msg.entity.WarnDto;
+import com.cj.msg.service.OverallMsgService;
 import io.minio.ObjectWriteResponse;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -91,6 +96,9 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
 
     @Autowired
     private RedisUtil redisUtil;
+
+    @Autowired
+    private OverallMsgService overallMsgService;
 
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private SimpleDateFormat sdf3 = new SimpleDateFormat("yyyy-MM-dd HH:mm");
@@ -355,6 +363,7 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                         incomingWaterForecastService.lambdaUpdate().set(IncomingWaterForecast::getStatus,2).
                                 set(IncomingWaterForecast::getModelResultAddress,object).
                                 eq(IncomingWaterForecast::getId,incomingWaterForecast.getId()).update();
+                        getEarlyWarning(incomingWaterForecast.getId());
                         return true;
                     }catch (Exception e) {
                         e.printStackTrace();
@@ -615,6 +624,262 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
                         incomingWaterForecastService.lambdaUpdate().set(IncomingWaterForecast::getStatus,2).
                                 set(IncomingWaterForecast::getModelResultAddress,object).
                                 eq(IncomingWaterForecast::getId,incomingWaterForecast.getId()).update();
+                        getEarlyWarning(incomingWaterForecast.getId());
+                    }catch (Exception e) {
+                        e.printStackTrace();
+                        log.error("-------------------------------------------error-------------------------------------------");
+                        log.error("报错信息："+getStringBuilder(e).toString());
+                        //incomingWaterForecastService.lambdaUpdate().eq(IncomingWaterForecast::getId,incomingWaterForecast.getId()).remove();
+                        incomingWaterForecastService.lambdaUpdate().set(IncomingWaterForecast::getStatus,3).eq(IncomingWaterForecast::getId,incomingWaterForecast.getId()).update();
+                    }
+                }
+            });
+            if(save){
+                return RestResponse.ok("来水预报模型生成中……");
+            }else {
+                return RestResponse.no("生成模型结果失败");
+            }
+        }catch (Exception e) {
+            log.error("生成模型结果错误:"+e.getMessage());
+            e.printStackTrace();
+            return RestResponse.no(e.getMessage());
+        }
+    }
+
+    @Override
+    public RestResponse addForScanRainFall(IncomingWaterForecastAddReq req) {
+        try {
+            List<IncomingWaterForecast> list = this.lambdaQuery().eq(IncomingWaterForecast::getProgrammeName, req.getIncomingWaterForecast().getProgrammeName()).list();
+            if(!list.isEmpty()){
+                return RestResponse.no("请勿重复新增相同方案名称");
+            }
+            IncomingWaterForecast incomingWaterForecast = req.getIncomingWaterForecast();
+            incomingWaterForecast.setId(UUIDUtils.getUUID());
+            incomingWaterForecast.setCreateTime(new Date());
+            //(1-月 2-旬 3-日 4-小时)
+            if(incomingWaterForecast.getPeriodTimeType()==1){
+                Date predictionTime = incomingWaterForecast.getPredictionTime();
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(predictionTime);
+                calendar.add(Calendar.MONTH,incomingWaterForecast.getPeriodTimeStep()*incomingWaterForecast.getPeriodTimeNum());
+                Date targetDate = calendar.getTime();
+                incomingWaterForecast.setEndTime(targetDate);
+            }
+            if(incomingWaterForecast.getPeriodTimeType()==2){
+                Date predictionTime = incomingWaterForecast.getPredictionTime();
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(predictionTime);
+                calendar.add(Calendar.DATE,incomingWaterForecast.getPeriodTimeStep()*incomingWaterForecast.getPeriodTimeNum()*10);
+                Date targetDate = calendar.getTime();
+                incomingWaterForecast.setEndTime(targetDate);
+            }
+            if(incomingWaterForecast.getPeriodTimeType()==3){
+                Date predictionTime = incomingWaterForecast.getPredictionTime();
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(predictionTime);
+                calendar.add(Calendar.DATE,incomingWaterForecast.getPeriodTimeStep()*incomingWaterForecast.getPeriodTimeNum());
+                Date targetDate = calendar.getTime();
+                incomingWaterForecast.setEndTime(targetDate);
+            }
+            if(incomingWaterForecast.getPeriodTimeType()==4){
+                Date predictionTime = incomingWaterForecast.getPredictionTime();
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(predictionTime);
+                calendar.add(Calendar.HOUR,incomingWaterForecast.getPeriodTimeStep()*incomingWaterForecast.getPeriodTimeNum());
+                Date targetDate = calendar.getTime();
+                incomingWaterForecast.setEndTime(targetDate);
+            }
+            incomingWaterForecast.setStatus(1);
+            incomingWaterForecast.setCreateBy("system");
+            boolean save = this.save(incomingWaterForecast);
+            ExecutorService pool = Executors.newSingleThreadExecutor();
+            pool.submit(new Runnable() {
+                private IncomingWaterForecastService incomingWaterForecastService = SpringUtil.getBean(IncomingWaterForecastService.class);
+                private LzzGaugingStationService lzzGaugingStationService = SpringUtil.getBean(LzzGaugingStationService.class);
+                private LzzRainfallStationService lzzRainfallStationService = SpringUtil.getBean(LzzRainfallStationService.class);
+                private IrrigatedPlatformDataInfoService irrigatedPlatformDataInfoService = SpringUtil.getBean(IrrigatedPlatformDataInfoService.class);
+
+                private IncomingWaterForecastMapper incomingWaterForecastMapper = SpringUtil.getBean(IncomingWaterForecastMapper.class);
+                private ModelParametersService modelParametersService = SpringUtil.getBean(ModelParametersService.class);
+
+                @Override
+                public void run() {
+                    try {
+                        InputUtils.getData(minioUrl+floodModelFilePath);
+                        ForecastInputParamNew forcastInputParamNew = new ForecastInputParamNew();
+                        forcastInputParamNew.setPredictionTime(incomingWaterForecast.getPredictionTime());
+                        forcastInputParamNew.setModelType(incomingWaterForecast.getModelType());
+                        forcastInputParamNew.setPeriodTimeNum(incomingWaterForecast.getPeriodTimeNum());
+                        forcastInputParamNew.setPeriodTimeStep(incomingWaterForecast.getPeriodTimeStep());
+                        forcastInputParamNew.setPeriodTimeType(incomingWaterForecast.getPeriodTimeType());
+                        if(!req.getIsSimulation()){
+                            req.getRainFallDtos().forEach(t->t.setArea("面雨量"));
+                        }else {
+                            forcastInputParamNew.setPreFlow(req.getPreFlow());
+                            forcastInputParamNew.setPreRainFall(req.getPreRainFall());
+                        }
+                        forcastInputParamNew.setIsSimulation(req.getIsSimulation());
+                        forcastInputParamNew.setIsReferenceWater(req.getIsReferenceWater());
+                        forcastInputParamNew.setRainFallDtos(req.getRainFallDtos());
+                        List<Date> dates = InputUtils.judgeDate(incomingWaterForecast.getPredictionTime(),incomingWaterForecast.getPeriodTimeNum());
+                        String overall = (String) redisUtil.get("overallSituationUnitMgr:list");
+                        List<OverallSituationUnitMgrDto> overallSituationUnitMgrDtoList = JSONObject.parseArray(overall, OverallSituationUnitMgrDto.class);
+                        Map<String,List<RainFallDto>> rainfall = new HashMap<>();
+                        Map<String,List<LzzGaugingStation>> waterLevel = new HashMap<>();
+                        List<OverallSituationUnitMgrDto> collect = overallSituationUnitMgrDtoList.stream().filter(t -> t.getPName().equals("雨量站")).collect(Collectors.toList());
+                        List<String> tthIds = collect.stream().filter(t -> t.getDataResource() != null && t.getDataResource() == 1 && StringUtils.isNotEmpty(t.getMonitorId())).map(OverallSituationUnitMgrDto::getMonitorId).collect(Collectors.toList());
+                        List<String> lzzIds = collect.stream().filter(t -> t.getDataResource() != null && t.getDataResource() == 2 && StringUtils.isNotEmpty(t.getMonitorId())).map(OverallSituationUnitMgrDto::getMonitorId).collect(Collectors.toList());
+                        if(dates.isEmpty()){
+                            List<PredictInputData> resultListTemp = new ArrayList<>();
+                            LocalDateTime now = LocalDateTime.now();
+                            int year = now.getYear();
+                            String startTime = year+"-01-01";
+                            String endTime = sdf1.format(sdf1.parse(now.toString()));
+                            List<PredictInputData> lzz = incomingWaterForecastMapper.selectResultLzzByPrediction(startTime, endTime);
+                            lzz.forEach(t->t.setLocation("楼庄子"));
+                            List<PredictInputData> tth = incomingWaterForecastMapper.selectResultTthByPrediction(startTime, endTime);
+                            tth.forEach(t->t.setLocation("头屯河"));
+                            resultListTemp.addAll(lzz);
+                            resultListTemp.addAll(tth);
+                            for(String id:lzzIds){
+                                List<LzzRainfallStation> lzzRainfallStations = lzzRainfallStationService.selectInfoByCondition(id, null, startTime, endTime);
+                                if (!lzzRainfallStations.isEmpty()) {
+                                    List<RainFallDto> rainfallDtos = new ArrayList<>();
+                                    for(LzzRainfallStation lzzRainfallStation:lzzRainfallStations){
+                                        RainFallDto rainfallDto = new RainFallDto();
+                                        rainfallDto.setRainFall(lzzRainfallStation.getRainfall().doubleValue());
+                                        rainfallDto.setTemperature(lzzRainfallStation.getTemperature()==null?0.0:lzzRainfallStation.getTemperature().doubleValue());
+                                        rainfallDto.setDate(sdf.format(lzzRainfallStation.getTime()));
+                                        rainfallDto.setArea(lzzRainfallStations.get(0).getStationName());
+                                        rainfallDtos.add(rainfallDto);
+                                    }
+                                    Comparator<RainFallDto> realFlowResComparator = Comparator.comparing(RainFallDto::getDate);
+                                    //正序
+                                    rainfallDtos.sort(realFlowResComparator);
+                                    rainfall.put(lzzRainfallStations.get(0).getStationName(),rainfallDtos);
+                                }
+                            }
+                            for(String id:tthIds){
+                                List<IrrigatedPlatformDataInfo> irrigatedPlatformDataInfos = irrigatedPlatformDataInfoService.selectInfoByCondition(id, null, startTime, endTime);
+                                if (!irrigatedPlatformDataInfos.isEmpty()) {
+                                    List<RainFallDto> rainfallDtos = new ArrayList<>();
+                                    for(IrrigatedPlatformDataInfo irrigatedPlatformDataInfo:irrigatedPlatformDataInfos){
+                                        RainFallDto rainfallDto = new RainFallDto();
+                                        rainfallDto.setRainFall(irrigatedPlatformDataInfo.getYqRainFallOne());
+                                        rainfallDto.setDate(sdf.format(irrigatedPlatformDataInfo.getMonitorTime()));
+                                        rainfallDto.setArea(irrigatedPlatformDataInfos.get(0).getMonitorName());
+                                        rainfallDtos.add(rainfallDto);
+                                    }
+                                    Comparator<RainFallDto> realFlowResComparator = Comparator.comparing(RainFallDto::getDate);
+                                    //正序
+                                    rainfallDtos.sort(realFlowResComparator);
+                                    rainfall.put(irrigatedPlatformDataInfos.get(0).getMonitorName(),rainfallDtos);
+                                }
+                            }
+                            waterLevel.put("3号桥水位站",lzzGaugingStationService.lambdaQuery().eq(LzzGaugingStation::getStationName,"3号桥水位站").between(LzzGaugingStation::getGatherTime,startTime,endTime).list());
+                            waterLevel.put("天谷自动水位站",lzzGaugingStationService.lambdaQuery().eq(LzzGaugingStation::getStationName,"天谷自动水位站").between(LzzGaugingStation::getGatherTime,startTime,endTime).list());
+                            forcastInputParamNew.setInflowRunoffs(resultListTemp);
+                            forcastInputParamNew.setDataStartTime(sdf.parse("2023-01-01 00:00:00"));
+                        }else {
+                            List<PredictInputData> resultListTemp = new ArrayList<>();
+                            Date startTime = dates.get(0);
+                            Date endTime = dates.get(1);
+                            List<PredictInputData> lzz = incomingWaterForecastMapper.selectResultLzzByPrediction(sdf1.format(startTime), sdf1.format(endTime));
+                            lzz.forEach(t->t.setLocation("楼庄子"));
+                            List<PredictInputData> tth = incomingWaterForecastMapper.selectResultTthByPrediction(sdf1.format(startTime), sdf1.format(endTime));
+                            tth.forEach(t->t.setLocation("头屯河"));
+                            resultListTemp.addAll(lzz);
+                            resultListTemp.addAll(tth);
+                            for(String id:lzzIds){
+                                List<LzzRainfallStation> lzzRainfallStations = lzzRainfallStationService.selectInfoByCondition(id, null, sdf.format(startTime), sdf1.format(endTime));
+                                if (!lzzRainfallStations.isEmpty()) {
+                                    List<RainFallDto> rainfallDtos = new ArrayList<>();
+                                    for(LzzRainfallStation lzzRainfallStation:lzzRainfallStations){
+                                        RainFallDto rainfallDto = new RainFallDto();
+                                        rainfallDto.setRainFall(lzzRainfallStation.getRainfall().doubleValue());
+                                        rainfallDto.setTemperature(lzzRainfallStation.getTemperature()==null?0.0:lzzRainfallStation.getTemperature().doubleValue());
+                                        rainfallDto.setDate(sdf.format(lzzRainfallStation.getTime()));
+                                        rainfallDto.setArea(lzzRainfallStations.get(0).getStationName());
+                                        rainfallDtos.add(rainfallDto);
+                                    }
+                                    Comparator<RainFallDto> realFlowResComparator = Comparator.comparing(RainFallDto::getDate);
+                                    //正序
+                                    rainfallDtos.sort(realFlowResComparator);
+                                    rainfall.put(lzzRainfallStations.get(0).getStationName(),rainfallDtos);
+                                }
+                            }
+                            for(String id:tthIds){
+                                List<IrrigatedPlatformDataInfo> irrigatedPlatformDataInfos = irrigatedPlatformDataInfoService.selectInfoByCondition(id, null, sdf.format(startTime), sdf1.format(endTime));
+                                if (!irrigatedPlatformDataInfos.isEmpty()) {
+                                    List<RainFallDto> rainfallDtos = new ArrayList<>();
+                                    for(IrrigatedPlatformDataInfo irrigatedPlatformDataInfo:irrigatedPlatformDataInfos){
+                                        RainFallDto rainfallDto = new RainFallDto();
+                                        rainfallDto.setRainFall(irrigatedPlatformDataInfo.getYqRainFallOne());
+                                        rainfallDto.setDate(sdf.format(irrigatedPlatformDataInfo.getMonitorTime()));
+                                        rainfallDto.setArea(irrigatedPlatformDataInfos.get(0).getMonitorName());
+                                        rainfallDtos.add(rainfallDto);
+                                    }
+                                    Comparator<RainFallDto> realFlowResComparator = Comparator.comparing(RainFallDto::getDate);
+                                    //正序
+                                    rainfallDtos.sort(realFlowResComparator);
+                                    rainfall.put(irrigatedPlatformDataInfos.get(0).getMonitorName(),rainfallDtos);
+                                }
+                            }
+                            waterLevel.put("3号桥水位站",lzzGaugingStationService.lambdaQuery().eq(LzzGaugingStation::getStationName,"3号桥水位站").between(LzzGaugingStation::getGatherTime,startTime,endTime).list());
+                            waterLevel.put("天谷自动水位站",lzzGaugingStationService.lambdaQuery().eq(LzzGaugingStation::getStationName,"天谷自动水位站").between(LzzGaugingStation::getGatherTime,startTime,endTime).list());
+                            forcastInputParamNew.setInflowRunoffs(resultListTemp);
+                            forcastInputParamNew.setDataStartTime(startTime);
+                        }
+                        forcastInputParamNew.setWaterLevel(waterLevel);
+                        forcastInputParamNew.setRainfall(rainfall);
+                        //调用模型方法生成模型结果，更新到数据库
+                        //System.out.println("Hello pool");
+                        forcastInputParamNew.setBasinStr(JSONObject.toJSONString(req.getBasinParam() == null ? loadBasinParam() : req.getBasinParam()));
+                        forcastInputParamNew.setFloodBasin(loadFloodBasinParam());
+                        Map<String, Map<String, ShanbeiParam>> paramMap =  new HashMap<>();
+                        List<ModelParameters> defaultParamList = modelParametersService.lambdaQuery().eq(ModelParameters::getIsDefault, 1).list();
+                        List<String> siteList = defaultParamList.stream().map(ModelParameters::getSiteName).distinct().collect(Collectors.toList());
+                        siteList.forEach(site -> {
+                            Map<String, ShanbeiParam> shanbeiParamMap = new HashMap<>();
+                            defaultParamList.stream().filter(n -> n.getSiteName().equals(site))
+                                    .forEach(param -> shanbeiParamMap
+                                            .put(param.getRainfallStation(), new ShanbeiParam(){{
+                                                setArea(param.getArea());
+                                                setFC(param.getFc());
+                                                setFM(param.getFm());
+                                                setFB(param.getFb());
+                                                setCS(param.getCs());
+                                                setKC(param.getKc());
+                                                setWM(param.getWm());
+                                                setFM(param.getFm());
+                                                setK(param.getK());
+                                                setB(param.getB());
+                                                setL(param.getL());
+                                            }}));
+                            paramMap.put(site, shanbeiParamMap);
+                        });
+
+                        forcastInputParamNew.setParamMap(paramMap);
+                        TemporaryXlsx floodList = new TouTunHe().getFloodList(forcastInputParamNew);
+                        //生成模型结果文件
+                        String fileAddress = floodList.getPath();
+                        String[] split = fileAddress.split("\\\\");
+                        Date date = new Date();
+                        String yyyyMMdd = DateUtil.format(date, "yyyyMMdd");
+                        String hh = DateUtil.format(date, "HH");
+                        String mm = DateUtil.format(date, "mm");
+                        String ss = DateUtil.format(date, "ss");
+                        if (org.springframework.util.StringUtils.hasText(floodList.getUpdateFilePath())) {
+                            minioUtils.putObject("tth", "/tthUseFile/"+getFileName(floodList.getUpdateFilePath()),floodList.getUpdateFilePath());
+                            // FileUtil.del(floodList.getUpdateFilePath());
+                        }
+                        ObjectWriteResponse objectWriteResponse = minioUtils.putObject("tth", yyyyMMdd+"/"+hh+"/"+mm+"/"+ss+"/"+ UUID.fastUUID().toString(true)+"/"+split[split.length-1], fileAddress);
+                        FileUtil.del(fileAddress);
+                        String object = objectWriteResponse.object();
+                        incomingWaterForecastService.lambdaUpdate().set(IncomingWaterForecast::getStatus,2).
+                                set(IncomingWaterForecast::getModelResultAddress,object).
+                                eq(IncomingWaterForecast::getId,incomingWaterForecast.getId()).update();
+                        getEarlyWarning(incomingWaterForecast.getId());
                     }catch (Exception e) {
                         e.printStackTrace();
                         log.error("-------------------------------------------error-------------------------------------------");
@@ -657,8 +922,16 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
     @Override
     public RestResponse delete(String ids) {
         try {
+            List<String> strings = this.baseMapper.selectBatchIds(Arrays.stream(ids.split(",")).collect(Collectors.toList())).stream().map(IncomingWaterForecast::getProgrammeName).collect(Collectors.toList());
+            StringBuilder sb = new StringBuilder();
+            for(String s:strings){
+                sb.append("'"+s+"'");
+                sb.append(",");
+            }
+            sb.deleteCharAt(sb.length()-1);
             boolean b = this.removeBatchByIds(Arrays.stream(ids.split(",")).collect(Collectors.toList()));
             if(b) {
+                overallMsgService.lambdaUpdate().eq(OverallMsg::getCategory,"预警").apply("SUBJECT in ("+sb.toString()+")").remove();
                 return RestResponse.ok("删除成功");
             }else {
                 return RestResponse.no("删除失败");
@@ -1066,7 +1339,7 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
             List<Flood> collect = threeBridge.stream().filter(f -> f.getPeakIndex() == 1).collect(Collectors.toList());
             if(null != collect && collect.size() > 0){
                 Flood flood1 = collect.get(0);
-                incomingWaterForecastViewDto.setPeakFlood(flood1.getPeakFlood());
+                incomingWaterForecastViewDto.setPeakFlood(NumberUtil.holdDecimal(flood1.getPeakFlood(),2));
                 incomingWaterForecastViewDto.setPeakVolume(flood1.getFloodVolume());
             }else {
                 incomingWaterForecastViewDto.setPeakFlood(null);
@@ -1137,6 +1410,51 @@ public class IncomingWaterForecastServiceImpl extends ServiceImpl<IncomingWaterF
     public static String getFileName(String fileUrl) {
         String[] parts = fileUrl.split("\\\\");
         return parts[parts.length - 1];
+    }
+
+    @SneakyThrows
+    private void getEarlyWarning(String id){
+        IncomingWaterForecast incomingWaterForecast = this.getById(id);
+        //文件路径
+        String modelResultAddress = incomingWaterForecast.getModelResultAddress();
+        InputStream tth = minioUtils.getObject("tth", modelResultAddress);
+        String[] split = modelResultAddress.split("\\\\");
+        String[] split1 = split[split.length - 1].split("\\.");
+        MultipartFile multipartFile = MultipartFileUtil.inputStreamToMultipartFile(tth, split1[0]);
+        List<Flood> floods = ExcelUtils.importExcel(multipartFile, Flood.class);
+        Map<String, List<Flood>> collect = floods.stream().filter(t -> t.getPreQ() != null).collect(Collectors.groupingBy(Flood::getLocation));
+        List<OverallMsg> msgList = new ArrayList<>();
+        //100,120,160,210
+        collect.forEach((k,v)->{
+            collect.get(k).stream().forEach(f->{
+                String alertLevel =  f.getPreQ()>=220?"FOUR":f.getPreQ()>=160?"THREE":f.getPreQ()>=120?"TWO":f.getPreQ()>=100?"ONE":"";
+                if(StringUtils.isNotEmpty(alertLevel)) {
+                    OverallMsg msg = new OverallMsg();
+                    msg.setId(UUIDUtils.getUUID());
+                    msg.setIsRead(0);
+                    msg.setSubject(incomingWaterForecast.getProgrammeName());
+                    msg.setCreateUser(f.getLocation());
+                    msg.setReceiveUser(alertLevel);
+                    msg.setCreateTime(incomingWaterForecast.getCreateTime());
+                    msg.setCategory("预警");
+                    WarnDto warnDto = new WarnDto();
+                    warnDto.setTime(sdf.format(incomingWaterForecast.getCreateTime()));
+                    warnDto.setFlow(f.getPreQ());
+                    warnDto.setWarnType("flow");
+                    warnDto.setType(incomingWaterForecast.getProgrammeName());
+                    warnDto.setName(f.getLocation());
+                    warnDto.setAlertLevel(alertLevel);
+                    msg.setContent(JSONObject.toJSONString(warnDto));
+                    List<OverallMsg> overallMsgs = overallMsgService.lambdaQuery().apply("content = '" + msg.getContent() + "'").list();
+                    if (overallMsgs.isEmpty()) {
+                        msgList.add(msg);
+                    }
+                }
+             });
+        });
+        if(!msgList.isEmpty()){
+            overallMsgService.saveBatch(msgList);
+        }
     }
 }
 

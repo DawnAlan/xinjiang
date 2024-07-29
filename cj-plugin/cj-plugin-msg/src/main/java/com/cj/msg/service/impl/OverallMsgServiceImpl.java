@@ -14,8 +14,8 @@ import com.cj.msg.entity.OverallMsgQueryReq;
 import com.cj.msg.mapper.OverallMsgMapper;
 import com.cj.msg.entity.OverallMsg;
 import com.cj.msg.service.OverallMsgService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import java.util.Date;
 import java.util.List;
@@ -90,9 +90,13 @@ public class OverallMsgServiceImpl extends ServiceImpl<OverallMsgMapper, Overall
     public RestResponse query(OverallMsgQueryReq req) {
         IPage<OverallMsg> page = new Page<>(req.getPageNo(), req.getPageSize());
         return RestResponse.ok(this.lambdaQuery()
-                .eq(OverallMsg::getCategory, "告警")
-                .ge(req.getStarTime() != null , OverallMsg::getCreateTime, req.getStarTime())
-                .le(req.getEndTime() != null , OverallMsg::getCreateTime, req.getEndTime())
+                .eq(StringUtils.isNotEmpty(req.getCategory()),OverallMsg::getCategory, req.getCategory())
+                .eq(req.getIsRead() != null,OverallMsg::getIsRead, req.getIsRead())
+                .apply(StringUtils.isNotEmpty(req.getSubject()),"subject = '"+req.getSubject()+"'")
+                .like(StringUtils.isNotEmpty(req.getCreateUser()),OverallMsg::getCreateUser,req.getCreateUser())//站点
+                .eq(StringUtils.isNotEmpty(req.getReceiveUser()),OverallMsg::getReceiveUser,req.getReceiveUser())//等级
+                .between(StringUtils.isNotEmpty(req.getStartTime()) && StringUtils.isNotEmpty(req.getEndTime()), OverallMsg::getCreateTime, req.getStartTime(),req.getEndTime())
+                .orderByDesc(OverallMsg::getCreateTime)
                 .page(page));
     }
 }

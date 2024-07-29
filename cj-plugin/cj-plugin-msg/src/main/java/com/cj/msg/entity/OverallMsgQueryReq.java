@@ -15,11 +15,18 @@ public class OverallMsgQueryReq {
 
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
-    private String starTime;
+    private String startTime;
 
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private String endTime;
     private int pageNo;
     private int pageSize;
+    private Integer isRead;
+    private String subject;
+    //站点
+    private String createUser;
+    //等级
+    private String receiveUser;
+    private String category;
 }

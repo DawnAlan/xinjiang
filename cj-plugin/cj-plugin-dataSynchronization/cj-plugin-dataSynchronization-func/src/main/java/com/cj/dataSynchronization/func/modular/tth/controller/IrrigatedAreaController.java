@@ -106,4 +106,20 @@ public class IrrigatedAreaController {
                                         @RequestParam(value = "endTime") String endTime) {
         return irrigatedAreaService.saveHistoryDataForRain(id,startTime,endTime);
     }
+
+    @ApiOperationSupport(order = 7)
+    @ApiOperation(value="告警信息录入", notes="告警信息录入")
+    @GetMapping(value = "/insertWarningInfo")
+    public RestResponse insertWarningInfo(@RequestParam(value = "startTime") String startTime,
+                                               @RequestParam(value = "endTime") String endTime) {
+        return irrigatedAreaService.insertWarningInfo(startTime,endTime);
+    }
+
+    @ApiOperationSupport(order = 8)
+    @ApiOperation(value="查询历史记录均值", notes="查询历史记录均值")
+    @GetMapping(value = "/calculateHistoryDataAverageValue")
+    public RestResponse calculateHistoryDataAverageValue(@RequestParam(value = "id") String id,
+                                          @RequestParam(value = "startTime") String time) {
+        return irrigatedAreaService.calculateHistoryDataAverageValue(id,time);
+    }
 }

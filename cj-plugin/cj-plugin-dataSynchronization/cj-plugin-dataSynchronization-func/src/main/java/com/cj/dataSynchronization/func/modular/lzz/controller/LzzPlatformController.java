@@ -160,4 +160,21 @@ public class LzzPlatformController {
             return RestResponse.no("error");
         }
     }
+
+    @ApiOperationSupport(order = 5)
+    @ApiOperation("告警信息录入")
+    @PostMapping("/insertWarningInfo")
+    public RestResponse insertWarningInfo(@RequestBody ReqParam reqParam) {
+        try {
+            RestResponse restResponse = lzzPlatformService.insertWarningInfo(reqParam.getStartDate(),reqParam.getEndDate());
+            if(restResponse.getCode()==200){
+                return RestResponse.ok("ok");
+            }else {
+                return RestResponse.no("error");
+            }
+        }catch (Exception e) {
+            e.printStackTrace();
+            return RestResponse.no("error");
+        }
+    }
 }

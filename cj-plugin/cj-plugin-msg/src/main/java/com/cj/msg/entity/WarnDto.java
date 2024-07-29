@@ -1,4 +1,4 @@
-package com.cj.dataSynchronization.func.modular.lzz.bean;
+package com.cj.msg.entity;
 
 import lombok.Data;
 

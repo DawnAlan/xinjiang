@@ -209,12 +209,19 @@ public class DataUtils {
         Date start = tu.addCalendar(paramNew.getPredictionTime(),"日",-InputUtils.beforeDays);
         Date end = tu.addCalendar(paramNew.getPredictionTime(),"小时",paramNew.getPeriodTimeNum()*paramNew.getPeriodTimeStep());
         Map<String,List<RainFallDto>> lzzData = rainRemoveNull(paramNew.getRainfall(),start,end);
-        for (Map.Entry<String, List<RainFallDto>> entry : lzzData.entrySet()) {
-            String key = entry.getKey();
-            List<RainFallDto> value = entry.getValue();
+        List<String> rainStation = paramNew.getFloodBasin().getRainStation();
+        for (int i = 0; i < rainStation.size(); i++) {
+            String key = rainStation.get(i);
+            List<RainFallDto> value = lzzData.get(key)==null?new ArrayList<RainFallDto>():lzzData.get(key);
             RainHour.put(key, getHoursRain(paramNew,value,key));
             RainDay.put(key,getTwentyDaysRain(paramNew, rainHourToDay(value),key));
         }
+//        for (Map.Entry<String, List<RainFallDto>> entry : lzzData.entrySet()) {
+//            String key = entry.getKey();
+//            List<RainFallDto> value = entry.getValue();
+//            RainHour.put(key, getHoursRain(paramNew,value,key));
+//            RainDay.put(key,getTwentyDaysRain(paramNew, rainHourToDay(value),key));
+//        }
         //添加小时尺度雨量和日尺度雨量
         result.setRainHourData(RainHour);
         result.setRainDayData(RainDay);
@@ -281,7 +288,15 @@ public class DataUtils {
         if (input!=null&&!input.isEmpty()) {
             inputEnd = sdf.parse(input.get(input.size() - 1).getDate());
         } else {
-            throw new RuntimeException("未能从数据库中获取"+location+"数据");
+            for (int i = 0; i < n; i++) {
+                data = setNoCorTime(dateStart, location);
+                calendar.setTime(dateStart);
+                calendar.add(Calendar.HOUR_OF_DAY, 1);
+                dateStart = calendar.getTime();
+                result.add(data);
+            }
+            return result;
+//            throw new RuntimeException("未能从数据库中获取"+location+"数据");
         }
         List<RainFallDto> rainPre = param.getRainFallDtos();;
         //找到最贴近的时间

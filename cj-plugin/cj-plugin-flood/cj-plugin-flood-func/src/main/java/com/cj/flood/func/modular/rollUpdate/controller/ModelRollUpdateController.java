@@ -98,5 +98,12 @@ public class ModelRollUpdateController {
         return modelRollUpdateService.selectDetailsById(id);
     }
 
+    @ApiOperationSupport(order = 8)
+    @ApiOperation("模型滚动更新模块查询模型详情")
+    @CommonLog(value = "模型滚动更新模块查询模型详情")
+    @GetMapping("/selectDetailsByInComingWaterId")
+    public RestResponse selectDetailsByInComingWaterId(@RequestParam(value = "inComingWaterId") String inComingWaterId) {
+        return modelRollUpdateService.selectDetailsByInComingWaterId(inComingWaterId);
+    }
 }
 

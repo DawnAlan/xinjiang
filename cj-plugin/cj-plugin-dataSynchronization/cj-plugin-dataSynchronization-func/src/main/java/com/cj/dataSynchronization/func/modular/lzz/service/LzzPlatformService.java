@@ -49,4 +49,6 @@ public interface LzzPlatformService {
 
     RestResponse insertTree();
     RestResponse updateTree();
+
+    RestResponse insertWarningInfo(String startTime, String endTime);
 }

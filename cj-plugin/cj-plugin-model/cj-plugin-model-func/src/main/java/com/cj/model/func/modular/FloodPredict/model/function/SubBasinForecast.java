@@ -283,7 +283,7 @@ public class SubBasinForecast {
                 }
                 break;
             }
-            if ((int) flood[0][0] == 1 && (int) flood[flood.length - 1][0] == 1)//开始为洪水，结束为洪水
+            if ((int) flood[0][0] == 1 && (int) flood[flood.length - 1][0] == 1 && !loc.isEmpty())//开始为洪水，结束为洪水
             {
                 int number = 1;
                 for (int k = 0; k <= loc.get(0) + 1; k++) {
@@ -408,12 +408,12 @@ public class SubBasinForecast {
             }
         }
         floodNature[3][1] = flood[n][1];
-        int temp = n + t - 1;
-        if (temp > 0) {
-            floodNature[3][1] = flood[temp][1];
-        } else {
-            floodNature[3][1] = flood[0][1];
-        }
+//        int temp = n + t - 1;
+//        if (temp > 0) {
+//            floodNature[3][1] = flood[temp][1];
+//        } else {
+//            floodNature[3][1] = flood[0][1];
+//        }
         result.add(flood);
         result.add(floodNature);
         return result;
