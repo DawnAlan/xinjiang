@@ -125,7 +125,7 @@ public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMappe
             throw new RuntimeException("模型率定名称不能为空");
         }
         if (this.lambdaQuery().eq(ModelParameters::getSiteName, siteName).eq(ModelParameters::getModelName, input.getModelName()).count() > 0) {
-            return new HashMap() {{put("msg", siteName + "已存在\"" + input.getModelName() +"\"模型率定名称");}};
+            throw new RuntimeException(siteName + "已存在\"" + input.getModelName() +"\"模型率定名称");
         }
 
         //固定或者默认模型参数
