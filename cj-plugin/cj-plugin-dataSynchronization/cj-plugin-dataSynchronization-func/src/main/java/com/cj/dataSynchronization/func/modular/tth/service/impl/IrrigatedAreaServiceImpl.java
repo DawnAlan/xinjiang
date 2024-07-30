@@ -256,7 +256,6 @@ public class IrrigatedAreaServiceImpl implements IrrigatedAreaService {
                     List<OverallSituationUnitMgrDto> collect = overallSituationUnitMgrDtoList.stream().filter(t -> t.getMonitorId().equals(dto.getID())).collect(Collectors.toList());
                     if(!collect.isEmpty()){
                         OverallSituationUnitMgrDto overallSituationUnitMgrDto = collect.get(0);
-                        redisUtil.set("irrigatedPlatform:today:"+overallSituationUnitMgrDto.getId(),info.getAvgFlow(),3600*24);
                         redisUtil.set("irrigatedPlatform:yesterday:"+overallSituationUnitMgrDto.getId(),info.getYesterdayAvgFlow(),3600*24);
                         redisUtil.set("irrigatedPlatform:sq:date:id:"+info.getMonitorTime()+":"+overallSituationUnitMgrDto.getId(),info.getSqMonitorFlow(),3600*24);
                     }
@@ -835,11 +834,76 @@ public class IrrigatedAreaServiceImpl implements IrrigatedAreaService {
         return RestResponse.no("无数据");
     }
 
+    @SneakyThrows
+    @Override
+    public RestResponse searchTodayValue(String time, String id) {
+        Date startTime = sdf.parse(time + " 20:00");
+        Date endTime = calculateTime(startTime, -24);
+        if(StringUtils.isEmpty(id)){
+            String overall = (String) redisUtil.get("overallSituationUnitMgr:list");
+            if(StringUtils.isEmpty(overall)){
+                overall = waterResourceApi.getOverallSituationUnitMgrList();
+            }
+            List<OverallSituationUnitMgrDto> overallSituationUnitMgrDtoList = JSONObject.parseArray(overall, OverallSituationUnitMgrDto.class);
+
+            List<IrrigatedPlatformTree> list = irrigatedPlatformTreeService.lambdaQuery().eq(IrrigatedPlatformTree::getMonitorType, "01").list();
+            for(IrrigatedPlatformTree tree:list) {
+                List<OverallSituationUnitMgrDto> collect = overallSituationUnitMgrDtoList.stream().filter(t -> t.getMonitorId().equals(tree.getId())).collect(Collectors.toList());
+                if(!collect.isEmpty()){
+                    OverallSituationUnitMgrDto overallSituationUnitMgrDto = collect.get(0);
+                    List<HistoryDataVo> historyDataForWater = IrrigatedAreaInvoke.getHistoryDataForWater(tree.getId(), sdf.format(endTime), sdf.format(startTime));
+                    if (!historyDataForWater.isEmpty()) {
+                        Comparator<HistoryDataVo> realFlowResComparator = Comparator.comparing(HistoryDataVo::getMONITOR_TIME);
+                        //正序
+                        historyDataForWater.sort(realFlowResComparator);
+                        Double value = 0.00;
+                        for(int i=0;i<historyDataForWater.size()-1;i++){
+                            HistoryDataVo start = historyDataForWater.get(i);
+                            HistoryDataVo end = historyDataForWater.get(i + 1);
+                            long s = getTime(start.getMONITOR_TIME(), end.getMONITOR_TIME());
+                            value += ((start.getMONITOR_FLOW()==null?0.00:start.getMONITOR_FLOW())+(end.getMONITOR_FLOW()==null?0.00:end.getMONITOR_FLOW()))*s/2;
+                        }
+                        redisUtil.set("irrigatedPlatform:today:"+overallSituationUnitMgrDto.getId(),NumberUtil.holdDecimal(value/86400,3),3600*24);
+                    }
+                }
+            }
+            return null;
+        }else {
+            List<HistoryDataVo> historyDataForWater = IrrigatedAreaInvoke.getHistoryDataForWater(id, sdf.format(endTime), sdf.format(startTime));
+            if(!historyDataForWater.isEmpty()){
+                Comparator<HistoryDataVo> realFlowResComparator = Comparator.comparing(HistoryDataVo::getMONITOR_TIME);
+                //正序
+                historyDataForWater.sort(realFlowResComparator);
+                Double value = 0.00;
+                for(int i=0;i<historyDataForWater.size()-1;i++){
+                    HistoryDataVo start = historyDataForWater.get(i);
+                    HistoryDataVo end = historyDataForWater.get(i + 1);
+                    long s = getTime(start.getMONITOR_TIME(), end.getMONITOR_TIME());
+                    value += ((start.getMONITOR_FLOW()==null?0.00:start.getMONITOR_FLOW())+(end.getMONITOR_FLOW()==null?0.00:end.getMONITOR_FLOW()))*s/2;
+                }
+                return RestResponse.ok(NumberUtil.holdDecimal(value/86400,3));
+            }else {
+                return RestResponse.no("无数据");
+            }
+
+        }
+    }
+
     private Date calculateTime(Date time,int hour){
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(time);
         calendar.add(Calendar.HOUR,hour);
         Date date = calendar.getTime();
         return date;
+    }
+
+    //计算两个时间相差的秒数
+    @SneakyThrows
+    public static long getTime(String startTime, String endTime){
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        long eTime = df.parse(endTime).getTime();
+        long sTime = df.parse(startTime).getTime();
+        long diff = (eTime - sTime) / 1000;
+        return diff;
     }
 }

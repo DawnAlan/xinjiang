@@ -122,4 +122,12 @@ public class IrrigatedAreaController {
                                           @RequestParam(value = "startTime") String time) {
         return irrigatedAreaService.calculateHistoryDataAverageValue(id,time);
     }
+
+    @ApiOperationSupport(order = 8)
+    @ApiOperation(value="计算今日均数据", notes="计算今日均数据")
+    @GetMapping(value = "/searchTodayValue")
+    public RestResponse searchTodayValue(@RequestParam(value = "id") String id,
+                                                         @RequestParam(value = "startTime") String time) {
+        return irrigatedAreaService.searchTodayValue(time,id);
+    }
 }

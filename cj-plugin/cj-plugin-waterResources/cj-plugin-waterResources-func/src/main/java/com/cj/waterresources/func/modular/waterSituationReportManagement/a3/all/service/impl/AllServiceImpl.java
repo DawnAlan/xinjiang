@@ -1113,7 +1113,7 @@ public class AllServiceImpl implements AllService {
                     LzzGaugingStation station = lzzGaugingStationMapper.selectInfoForIndex(mgr.getMonitorId(), date);
                     res.setFlow(station==null?null:station.getFlow());
                     if(station==null?false:station.getRelativeWaterLevel()<0){
-                        res.setWaterLevel(GetSzyDataUtils.getWaterLevelByFlow(station.getFlow(),mgr.getId()));
+                        res.setWaterLevel(GetSzyDataUtils.getWaterLevelByFlow(station.getFlow()==null?0.00:station.getFlow(),mgr.getId()));
                     }else {
                         res.setWaterLevel(station==null?null:station.getRelativeWaterLevel());
                     }
@@ -1123,7 +1123,7 @@ public class AllServiceImpl implements AllService {
                     if(null!=param){
                         DayWaterSituationStatisticsTableLzz dayWaterSituationStatisticsTableLzz = dayWaterSituationStatisticsTableLzzMapper.selectListForIndex(date, param.getId());
                         res.setFlow(dayWaterSituationStatisticsTableLzz==null?null:dayWaterSituationStatisticsTableLzz.getV());
-                        res.setWaterLevel(res.getFlow()==null?null:GetSzyDataUtils.getWaterLevelByFlow(res.getFlow(),mgr.getId()));
+                        res.setWaterLevel(res.getFlow()==null?null:GetSzyDataUtils.getWaterLevelByFlow(res.getFlow()==null?0.00:res.getFlow(),mgr.getId()));
                     }
                 }
             }
@@ -1133,7 +1133,7 @@ public class AllServiceImpl implements AllService {
                     IrrigatedPlatformDataInfo info = irrigatedPlatformDataInfoMapper.selectInfoForIndex(mgr.getMonitorId(), date);
                     res.setFlow(info==null?null:info.getSqMonitorFlow());
                     if(info==null?false:info.getSqWaterLevel()<0){
-                        res.setWaterLevel(GetSzyDataUtils.getWaterLevelByFlow(res.getFlow(),mgr.getId()));
+                        res.setWaterLevel(GetSzyDataUtils.getWaterLevelByFlow(res.getFlow()==null?0.00:res.getFlow(),mgr.getId()));
                     }else {
                         res.setWaterLevel(info==null?null:info.getSqWaterLevel());
                     }
@@ -1141,7 +1141,7 @@ public class AllServiceImpl implements AllService {
                     TrendsTableParam param = trendsTableParamList.stream().filter(t -> t.getUseStation().equals("头屯河水库") && t.getUseType() == 1 && StringUtils.isNotEmpty(t.getUnitId())&& t.getUnitId().equals(mgr.getId())).collect(Collectors.toList()).get(0);
                     DayWaterSituationStatisticsTableTth dayWaterSituationStatisticsTableTth = dayWaterSituationStatisticsTableTthMapper.selectListForIndex(date, param.getId());
                     res.setFlow(dayWaterSituationStatisticsTableTth==null?null:dayWaterSituationStatisticsTableTth.getV());
-                    res.setWaterLevel(res.getFlow()==null?null:GetSzyDataUtils.getWaterLevelByFlow(res.getFlow(),mgr.getId()));
+                    res.setWaterLevel(res.getFlow()==null?null:GetSzyDataUtils.getWaterLevelByFlow(res.getFlow()==null?0.00:res.getFlow(),mgr.getId()));
                 }
             }
             resList.add(res);

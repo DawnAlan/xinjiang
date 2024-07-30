@@ -21,4 +21,6 @@ public interface IrrigatedAreaService {
     RestResponse saveHistoryDataForRain(String id,String startTime,String endTime);
 
     RestResponse insertWarningInfo(String startTime, String endTime);
+
+    RestResponse searchTodayValue(String time, String id);
 }
