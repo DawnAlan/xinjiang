@@ -5,6 +5,9 @@ import com.cj.model.func.modular.FloodPredict.Calibration.pso.*;
 import com.cj.model.func.modular.FloodPredict.entity.*;
 import com.cj.model.func.modular.FloodPredict.utils.*;
 
+
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.DoubleStream;
 
@@ -34,7 +37,14 @@ public class ShanBeiCalibration {
         paramStatic = floodBasin.getParamMap();
         //导入输入数据
         try {
+            LocalDateTime start = LocalDateTime.now();
             getTimesData(input);
+            LocalDateTime end = LocalDateTime.now();
+            Duration duration = Duration.between(start, end);
+            long totalSeconds = duration.getSeconds();
+            long minutes = totalSeconds / 60;
+            long seconds = totalSeconds % 60;
+            System.out.println("获取输入数据的时间getTimesData: " + minutes + " 分钟 " + seconds + " 秒");
         }catch (RuntimeException e){
             e.printStackTrace();
             result.put(input.getLocation(), new CalibrationOutput() {
@@ -75,7 +85,14 @@ public class ShanBeiCalibration {
     public CalibrationOutput getCalResult(CalibrationParam input) {
         CalibrationOutput output = new CalibrationOutput();
         try {
+            LocalDateTime start = LocalDateTime.now();
             output = stationCalibration(input);
+            LocalDateTime end = LocalDateTime.now();
+            Duration duration = Duration.between(start, end);
+            long totalSeconds = duration.getSeconds();
+            long minutes = totalSeconds / 60;
+            long seconds = totalSeconds % 60;
+            System.out.println("获取率定总时间getTimesData: " + minutes + " 分钟 " + seconds + " 秒");
         } catch (RuntimeException e) {
             e.printStackTrace();
             output.setError(e.getMessage());
@@ -167,7 +184,14 @@ public class ShanBeiCalibration {
             // 创建PSO算法实例
             PSO pso = new PSO(domain);
             // 运行算法并存储结果
+            LocalDateTime start = LocalDateTime.now();
             PSOResult result = pso.Execute(100, 100);
+            LocalDateTime end = LocalDateTime.now();
+            Duration duration = Duration.between(start, end);
+            long totalSeconds = duration.getSeconds();
+            long minutes = totalSeconds / 60;
+            long seconds = totalSeconds % 60;
+            System.out.println("获取PSO率定时间getTimesData: " + minutes + " 分钟 " + seconds + " 秒");
             System.out.println(result);
             //子流域参数赋值
             paramMap = paramAssignment(result.Position);
@@ -351,11 +375,18 @@ public class ShanBeiCalibration {
      */
     public void getTimesData(CalibrationParam inputData) {
         FlowSelect flowSelect = new FlowSelect();
-        List<Object[]> dateList = flowSelect.getFloodDate(inputData,hydrology);
-        for (Object[] objects : dateList) {//多场洪水参与率定
+        LocalDateTime start = LocalDateTime.now();
+        List<Date[]> dateList = flowSelect.getFloodDate(inputData,hydrology);
+        LocalDateTime end = LocalDateTime.now();
+        Duration duration = Duration.between(start, end);
+        long totalSeconds = duration.getSeconds();
+        long minutes = totalSeconds / 60;
+        long seconds = totalSeconds % 60;
+        System.out.println("获取洪水序列的时间flowSelect.getFloodDate: " + minutes + " 分钟 " + seconds + " 秒");
+        for (Date[] objects : dateList) {//多场洪水参与率定
             ForecastInputParamNew forecastInputParamNew = new ForecastInputParamNew();
-            Date startTime = (Date) objects[0];
-            Date endTime = (Date) objects[1];
+            Date startTime = objects[0];
+            Date endTime = objects[1];
             forecastInputParamNew.setPredictionTime(startTime);//预报时间应当是先筛选出径流过程
             forecastInputParamNew.setPeriodTimeNum(tu.duration(startTime, endTime, "小时"));
             forecastInputParamNew.setPeriodTimeStep(1);

@@ -19,20 +19,25 @@ public class FlowSelect {
     TimeUtils tu = new TimeUtils();
 
     //获取断面洪水持续时间
-    public  List<Object[]> getFloodDate(CalibrationParam input, Hydrology hydrology)  {
-        List<Object[]> result = new ArrayList<>();
+    public  List<Date[]> getFloodDate(CalibrationParam input, Hydrology hydrology)  {
+        List<Date[]> result = new ArrayList<>();
         List<PredictInputData> flow;
         String station = hydrology.getIncludingWater().get(0);
-        for (int i = 0; i < input.getTime().size(); i++) {
-            Date start = input.getTime().get(i)[0];
-            Date end = input.getTime().get(i)[1];
-            flow = input.getFlowData().get(station).stream()
-                    .filter(data -> data.getDates().after(start)&&data.getDates().before(end))
-                    .collect(Collectors.toList());
-            Object[][] objectFlow = getFlow(flow, start, end);
-            Object[][] flowSelect = getFloodSelect(hydrology.getStationName(), objectFlow,start,end);
-            result.addAll(floodList(hydrology.getStationName(),flowSelect,start,end));
+        if (input.getIsSelected()){
+            for (int i = 0; i < input.getTime().size(); i++) {
+                Date start = input.getTime().get(i)[0];
+                Date end = input.getTime().get(i)[1];
+                flow = input.getFlowData().get(station).stream()
+                        .filter(data -> data.getDates().after(start)&&data.getDates().before(end))
+                        .collect(Collectors.toList());
+                Object[][] objectFlow = getFlow(flow, start, end);
+                Object[][] flowSelect = getFloodSelect(hydrology.getStationName(), objectFlow,start,end);
+                result.addAll(floodList(hydrology.getStationName(),flowSelect,start,end));
+            }
+        }else {
+            result = input.getTime();
         }
+
         return result;
     }
 
@@ -207,7 +212,7 @@ public class FlowSelect {
      * @param flow 来水过程
      * @return 几个来水过程的开始时间和结束时间或者在未获得可用洪水数据时返回空
      */
-    private List<Object[]> floodList(String location,Object[][] flow,Date start, Date end) {
+    private List<Date[]> floodList(String location,Object[][] flow,Date start, Date end) {
         //判断数据库中是否有数据
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         String dateDuration = sdf.format(start)+sdf.format(end);
@@ -228,7 +233,7 @@ public class FlowSelect {
         }
         List<Object[][]> flowResult = new ArrayList<>();
         List<Object[]> flowList = new ArrayList<>();
-        List<Object[]> result = new ArrayList<>();
+        List<Date[]> result = new ArrayList<>();
         int number = 0;
         for (int i = 0; i < flow.length - 1; i++) {
             if (((int) flow[i][0] == 0 && (int) flow[i + 1][0] != 0) || ((int) flow[i][0] != 0 && (int) flow[i + 1][0] != 0)) {
@@ -251,7 +256,7 @@ public class FlowSelect {
         }
         //获取不同时间来水的开始和结束时间
         for (Object[][] objects : flowResult) {
-            Object[] dateObject = new Object[2];
+            Date[] dateObject = new Date[2];
             Date startTime ;
             Date endTime ;
             startTime = (Date) objects[0][1];

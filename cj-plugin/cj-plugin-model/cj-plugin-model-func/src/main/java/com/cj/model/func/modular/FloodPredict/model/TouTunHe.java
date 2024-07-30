@@ -378,7 +378,7 @@ public class TouTunHe {
                 tth.setQCause(tthRain.toString());//洪水来源
                 tth.setQComposition("区间来水:" + Math.round((float) qjFlood / (qjFlood + lzzFlood) * 100) / 100.0 + "," + "楼庄子出库:" + Math.round((float) lzzFlood / (qjFlood + lzzFlood) * 100) / 100.0);//洪水组成
                 tth.setFloodLevel(level);//洪水等级
-                tth.setWarningTime((Integer) water_outQ[i][2]);//超警时段
+                tth.setWarningTime(tth.getPreQ()>=110.0?1:0);//超警时段
                 tth.setOutQ((Double) water_outQ[i][1]);//出库流量
                 tth.setRainProcess(Lzz.get(i).getRainProcess() * 0.7514 + qj.get(i).getRainProcess() * 0.2486);//雨情
                 tth.setConfluenceTime(qj.get(i).getConfluenceTime());//汇流时间

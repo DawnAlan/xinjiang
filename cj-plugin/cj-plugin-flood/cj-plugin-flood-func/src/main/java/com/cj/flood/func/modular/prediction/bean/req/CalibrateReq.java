@@ -12,6 +12,8 @@ public class CalibrateReq {
     //模型类型(true-自动率定，false-人工率定)
     @ApiModelProperty("模型类型(true-自动率定，false-人工率定)")
     private Boolean isAutomatic;
+    @ApiModelProperty("是否通过初筛选(true-程序自动筛选，false-人工筛选)")
+    private Boolean isSelected;
     @ApiModelProperty("率定名称")
     private String modelName;
     //率定开始时间

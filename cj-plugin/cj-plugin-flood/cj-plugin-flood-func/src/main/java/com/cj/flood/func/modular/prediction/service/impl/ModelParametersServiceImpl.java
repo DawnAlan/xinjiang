@@ -1,8 +1,6 @@
 package com.cj.flood.func.modular.prediction.service.impl;
 
-import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cj.common.model.RestResponse;
 import com.cj.common.util.RedisUtil;
@@ -155,6 +153,7 @@ public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMappe
         calibrationParam.setManualParam(manualParam);
         calibrationParam.setRainfall(setRainfallData(input.getTime(),siteName));
         calibrationParam.setFlowData(setWaterLevelData(input.getTime(),siteName));
+        calibrationParam.setIsSelected(input.getIsSelected());
         Map<String, CalibrationOutput> calibrationOutput = shanBeiCalibration.calibration(calibrationParam);
         //Assert.isTrue(!validError(calibrationOutput), "参数率定模型调用返回异常,请检查后重试");
         Date now = new Date();
@@ -321,7 +320,7 @@ public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMappe
                     threeStation.addAll(lzzGaugingStationService.lambdaQuery().eq(LzzGaugingStation::getStationName,"3号桥水位站").between(LzzGaugingStation::getGatherTime,startTime,endTime).list());
                     break;
                 case "楼庄子":
-                    tianStation.addAll(lzzGaugingStationService.lambdaQuery().eq(LzzGaugingStation::getStationName,"天谷自动水位站").between(LzzGaugingStation::getGatherTime,startTime,endTime).list());
+                    tianStation.addAll(lzzGaugingStationService.lambdaQuery().eq(LzzGaugingStation::getStationName, lzzInputStationName).between(LzzGaugingStation::getGatherTime,startTime,endTime).list());
                     break;
                 case "头屯河":
                 case "楼头区间":
@@ -330,7 +329,7 @@ public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMappe
             }
         }
         waterLevel.put("3号桥", setWaterStationData(threeStation));
-        waterLevel.put("楼庄子进库", setWaterStationData(tianStation));
+        waterLevel.put("楼庄子进库", setHourWater(setWaterStationData(tianStation)));
         waterLevel.put("楼庄子出库", setWaterStationData(lzzOutStation));
         waterLevel.put("头屯河进库", setHourWater(setWaterStationIr(tthStation)));
         return waterLevel;
@@ -385,13 +384,22 @@ public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMappe
     }
     private List<PredictInputData> setHourWater(List<PredictInputData> inputData){
         List<PredictInputData> result = new ArrayList<>();
+        double flowSum = 0.0;
+        int flowNum = 0;
         for (int i = 1; i < inputData.size(); i++) {
             PredictInputData info = new PredictInputData();
             Boolean isSameHour = tu.DateCompare(inputData.get(i-1).getDates(),inputData.get(i).getDates(),"小时");
             if (!isSameHour){
                 info.setDates(inputData.get(i).getDates());
                 info.setLocation(inputData.get(i).getLocation());
-                info.setFlow(inputData.get(i).getFlow());
+                info.setFlow(flowNum!=0?flowSum/flowNum:inputData.get(i).getFlow());
+                flowSum = 0.0;
+                flowNum = 0;
+            }else {
+                if (inputData.get(i).getFlow()!=null){
+                    flowSum += inputData.get(i).getFlow();
+                    flowNum++;
+                }
             }
         }
         return result;
