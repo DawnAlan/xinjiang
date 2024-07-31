@@ -395,6 +395,7 @@ public class ModelParametersServiceImpl extends ServiceImpl<ModelParametersMappe
                 info.setFlow(flowNum!=0?flowSum/flowNum:inputData.get(i).getFlow());
                 flowSum = 0.0;
                 flowNum = 0;
+                result.add(info);
             }else {
                 if (inputData.get(i).getFlow()!=null){
                     flowSum += inputData.get(i).getFlow();

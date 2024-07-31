@@ -22,7 +22,13 @@ public class FlowSelect {
     public  List<Date[]> getFloodDate(CalibrationParam input, Hydrology hydrology)  {
         List<Date[]> result = new ArrayList<>();
         List<PredictInputData> flow;
-        String station = hydrology.getIncludingWater().get(0);
+        String station;
+        if (hydrology.getPosition()==0){
+            station = hydrology.getIncludingWater().get(0);//获取流量数据
+        } else {
+            station = hydrology.getIncludingWater().get(2);//下游水库入库
+        }
+
         if (input.getIsSelected()){
             for (int i = 0; i < input.getTime().size(); i++) {
                 Date start = input.getTime().get(i)[0];
@@ -48,6 +54,9 @@ public class FlowSelect {
         int durationLong = tu.duration(dateStart, dateEnd, "小时");
         List<Date> dateList = new ArrayList<>();
         Object[][] hisF = new Object[durationLong][2];
+        if (flow==null||flow.isEmpty()){
+            throw new RuntimeException("未获取"+dateStart+"~"+dateEnd+"数据");
+        }
         for (PredictInputData predictInputData : flow) {
             dateList.add(predictInputData.getDates());
         }

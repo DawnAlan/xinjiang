@@ -51,6 +51,7 @@ public class ShanBeiCalibration {
                 {setParam(new HashMap<>());}
                 {setFlowList(new ArrayList<>());}
                 {setError(e.getMessage());}});
+            return result;
         }
 
         //获取率定结果
@@ -360,9 +361,13 @@ public class ShanBeiCalibration {
                         param.setCS(Math.round(params[4] * 100.0) / 100.0);
                         param.setL((int) params[5]);
                     }
-                    if (rainStations.get(i).equals("头屯河水库雨量站")){
+                    if (rainStations.get(i).equals("甘沟雨量站")){
                         param.setCS(Math.round(params[6] * 100.0) / 100.0);
                         param.setL((int) params[7]);
+                    }
+                    if (rainStations.get(i).equals("头屯河水库雨量站")){
+                        param.setCS(Math.round(params[8] * 100.0) / 100.0);
+                        param.setL((int) params[9]);
                     }
                     paramMap.put(rainStations.get(i),param);
                 }
@@ -459,6 +464,9 @@ public class ShanBeiCalibration {
                     index++;
                 }
             }
+            if (index==0){
+                throw new RuntimeException("未获取该时段"+hydrology.getIncludingWater().get(1)+"数据");
+            }
             outF = getContinuousSequences(outF,paramNew.getPredictionTime(), paramNew.getPeriodTimeNum(), "小时", hydrology.getStationName());
             result.setOutF(outF);
         }
@@ -469,6 +477,9 @@ public class ShanBeiCalibration {
                 hisF[index]= new Object[]{data.getDates(),data.getFlow()};
                 index++;
             }
+        }
+        if (index==0){
+            throw new RuntimeException("未获取该时段进库流量数据");
         }
         hisF = getContinuousSequences(hisF,paramNew.getPredictionTime(), paramNew.getPeriodTimeNum(), "小时", hydrology.getStationName());
         result.setHisF(hisF);
@@ -481,7 +492,7 @@ public class ShanBeiCalibration {
 
         double base = 0.0;
         int number = 0;
-        for (PredictInputData data:flowData.get(hydrology.getStationName())){
+        for (PredictInputData data:flowData.get(hydrology.getPosition()==0?hydrology.getIncludingWater().get(0):hydrology.getIncludingWater().get(2))){
             if (data.getDates().after(tu.addCalendar(paramNew.getPredictionTime(),"日",-2))&&
             data.getDates().before(tu.addCalendar(paramNew.getPredictionTime(),"小时",-InputUtils.beforeHours))){
                 base += data.getFlow();
