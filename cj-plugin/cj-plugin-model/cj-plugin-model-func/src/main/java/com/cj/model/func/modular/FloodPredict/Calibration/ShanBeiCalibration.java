@@ -394,6 +394,7 @@ public class ShanBeiCalibration {
             forecastInputParamNew.setFlowData(inputData.getFlowData());
             forecastInputParamNew.setModelType(3);
             forecastInputParamNew.setIsSimulation(false);
+            forecastInputParamNew.setFloodBasin(inputData.getFloodBasin());
             CalibrationData data = getOneTimeData(forecastInputParamNew);
             dataList.add(data);
         }

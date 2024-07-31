@@ -28,7 +28,12 @@ public class SubBasinForecast {
      */
     public List<Flood> getShortResult(ForecastInputParam param, InputDataSet Data, Object[][] snowData) {
         FloodBasin floodBasin = param.getFloodBasin();
-        Map<String,ShanbeiParam> paramMap = param.getFloodBasin().getParamMap();
+        Map<String,ShanbeiParam> paramMap;
+        if (param.getParamMap().isEmpty()){
+            paramMap = param.getFloodBasin().getParamMap();
+        }else {
+            paramMap = param.getParamMap().get(param.getLocation().equals("楼头区间")?"头屯河":param.getLocation());
+        }
         for (Hydrology station: floodBasin.getHydrologies()){
             if (station.getStationName().equals(param.getLocation())){
                 hydrology = station;
