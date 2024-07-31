@@ -261,6 +261,7 @@ public class DataUtils {
                         dates.add(data.getDates());
                     }
                     predictInputData = flow.get(tu.findNearestTime(dates,time));
+                    predictInputData.setDates(time);
                 }
                 flow1.add(predictInputData);
             }

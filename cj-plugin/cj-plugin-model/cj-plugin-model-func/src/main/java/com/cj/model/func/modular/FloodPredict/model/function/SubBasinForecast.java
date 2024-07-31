@@ -144,13 +144,14 @@ public class SubBasinForecast {
             for (int i = 0; i < n; i++) {
                 water_outQ[i][0] = lzzOutList.get(i).getH1();
                 water_outQ[i][1] = lzzOutList.get(i).getQOut();
-                water_outQ[i][2] = (((double) water_outQ[i][0] > 1394.5) ? 1 : 0);
+                water_outQ[i][2] = (((double) predict[i][1] > 110.0) ? 1 : 0);
+                //water_outQ[i][2] = (((double) water_outQ[i][0] > 1394.5) ? 1 : 0);
             }
         } else {
             for (int i = 0; i < n; i++) {
                 water_outQ[i][0] = getWaterLevel(predict, param)[i];
                 water_outQ[i][1] = predict[i * l][1];
-                water_outQ[i][2] = (((double) predict[i][1] > 60.0) ? 1 : 0);
+                water_outQ[i][2] = (((double) predict[i][1] > 110.0) ? 1 : 0);
             }
         }
         //连续列的赋值
