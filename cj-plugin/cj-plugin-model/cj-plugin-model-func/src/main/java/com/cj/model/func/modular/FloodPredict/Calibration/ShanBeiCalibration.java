@@ -1,5 +1,6 @@
 package com.cj.model.func.modular.FloodPredict.Calibration;
 
+import cn.hutool.core.date.DateUtil;
 import com.cj.model.func.modular.FloodPredict.Calibration.entity.*;
 import com.cj.model.func.modular.FloodPredict.Calibration.pso.*;
 import com.cj.model.func.modular.FloodPredict.entity.*;
@@ -16,17 +17,21 @@ import java.util.stream.DoubleStream;
 
 public class ShanBeiCalibration {
     //参与率定的数据
-    private List<CalibrationData> dataList = new ArrayList<>();
+    private List<CalibrationData> dataList;
     //流域信息
-    private Hydrology hydrology  = new Hydrology();
+    private Hydrology hydrology;
     //流域参数
-    private FloodBasin floodBasin = new FloodBasin();
+    private FloodBasin floodBasin;
     //固定的参数
-    private Map<String,ShanbeiParam> paramStatic = new HashMap<>();
+    private Map<String,ShanbeiParam> paramStatic;
     private final DataUtils du = new DataUtils();
     private final TimeUtils tu = new TimeUtils();
 
     public Map<String, CalibrationOutput> calibration(CalibrationParam input) {
+        dataList = new ArrayList<>();
+        hydrology  = new Hydrology();
+        floodBasin = new FloodBasin();
+        paramStatic = new HashMap<>();
         Map<String, CalibrationOutput> result = new HashMap<>();
         floodBasin = input.getFloodBasin();
         for (Hydrology station: floodBasin.getHydrologies()){
@@ -410,6 +415,9 @@ public class ShanBeiCalibration {
      */
     public CalibrationData getOneTimeData(ForecastInputParamNew paramNew) {
         CalibrationData result = new CalibrationData();
+        if (hydrology.getPosition()!=0){
+            du.irrigateMinuteToHour(paramNew.getRainfall());//区间雨量数据转化
+        }
         InputDataSet rainIntegration = du.rainIntegration(paramNew);//雨量站数据
         Map<String,List<PredictInputData>> flowData = du.flowIntegration(paramNew);//水位站数据
         List<String> rainStation = hydrology.getRainStation();

@@ -1508,7 +1508,8 @@ public class MachineDataUtils {
      * 中长期返回表格
      */
     public List<Flood> setLongFlood(Object[][] predict, ForecastInputParam param) {
-        int l = param.getIsSnowMeltModel()?param.getPeriodStepNumber()* param.getPeriodStepSize()/24+1:param.getPeriodStepNumber()* param.getPeriodStepSize();
+        int l = param.getIsSnowMeltModel()?param.getPeriodStepNumber()* param.getPeriodStepSize()/24+1:param.getPeriodStepNumber();
+        int length = param.getIsSnowMeltModel()?1:param.getPeriodStepSize();
         List<Flood> result = new ArrayList<>();
         double peakFlood = 0;
         int t = 0;
@@ -1532,18 +1533,18 @@ public class MachineDataUtils {
         //连续列的赋值
         for (int i = 0; i < l; i++) {
             Flood flood = new Flood();
-            Date date = (Date) predict[i * param.getPeriodStepSize()][0];
+            Date date = (Date) predict[i * length][0];
             int days = getDays(param.getPeriod(),date);
             flood.setLocation(param.getLocation());
             flood.setScale(String.valueOf(timeLength));
             flood.setPeakIndex(0);
             flood.setTime(date);
-            flood.setPreQ(Math.round((double) predict[i * param.getPeriodStepSize()][1] * 100.0) / 100.0);
-            flood.setOutQ(Math.round((double) predict[i * param.getPeriodStepSize()][1] * 100.0) / 100.0);
+            flood.setPreQ(Math.round((double) predict[i * length][1] * 100.0) / 100.0);
+            flood.setOutQ(Math.round((double) predict[i * length][1] * 100.0) / 100.0);
             flood.setWaterLevel(0.0);
             flood.setPeakFlood(peakFlood);
             flood.setPeakTime((Date) predict[t][0]);
-            flood.setFloodVolume(Math.round(days*3600*24 * param.getPeriodStepSize() * (double) predict[i * param.getPeriodStepSize()][1] / 10000 * 100.0) / 100.0);
+            flood.setFloodVolume(Math.round(days*3600*24 * length * (double) predict[i * length][1] / 10000 * 100.0) / 100.0);
             flood.setFloodLevel(judgingYearLeve(predict, param));
             flood.setRainProcess(0.0);
             result.add(flood);

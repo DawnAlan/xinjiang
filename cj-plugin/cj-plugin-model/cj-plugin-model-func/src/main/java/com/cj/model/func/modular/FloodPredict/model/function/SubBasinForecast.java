@@ -205,7 +205,7 @@ public class SubBasinForecast {
         List<Object[][]> result = new ArrayList<>();
         if (predict.length == 1) {
             Object[][] flood = new Object[predict.length][3];
-            flood[0][0] = 0;
+            flood[0][0] = 1;
             flood[0][1] = predict[0][0];
             flood[0][2] = predict[0][1];
             Object[][] floodNature = new Object[4][2];
@@ -213,8 +213,8 @@ public class SubBasinForecast {
             floodNature[1][0] = "洪峰持续时间";
             floodNature[2][0] = "洪峰";
             floodNature[3][0] = "峰现时间";
-            floodNature[0][1] = (double) predict[0][1] * 3600 * 24 * 30 / 100000.0;//万立方米
-            floodNature[1][1] = "1month";
+            floodNature[0][1] = (double) predict[0][1] * 3600 / 100000.0;//万立方米
+            floodNature[1][1] = "1h";
             floodNature[2][1] = predict[0][1];
             floodNature[3][1] = predict[0][0];
             result.add(flood);

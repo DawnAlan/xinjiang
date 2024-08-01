@@ -1,5 +1,6 @@
 package com.cj.model.func.modular.FloodPredict.utils;
 
+import cn.hutool.core.date.DateUtil;
 import com.cj.model.func.modular.FloodPredict.model.entity.DateIndex;
 import com.cj.model.func.modular.FloodPredict.entity.PredictInputData;
 import java.text.SimpleDateFormat;
@@ -184,7 +185,7 @@ public class TimeUtils {
 	 * 返回日期相差的数量（分：小时，日，月）
 	 * 后面减去前面
 	 */
-	public int duration(Date dateStart,Date dateEnd,String period){
+	public static int duration(Date dateStart,Date dateEnd,String period){
 		int result = 0;
 		LocalDate localDate1 = dateStart.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 		LocalDate localDate2 = dateEnd.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
@@ -223,7 +224,7 @@ public class TimeUtils {
 					hours++;
 				}
 			}
-			result = hours==0?1:hours;
+			result = hours;
 		}
 		return result;
 	}
@@ -236,7 +237,7 @@ public class TimeUtils {
 	 * @param date2 最终返回date2=date1
 	 * @return 如果两个日期在规定尺度上相等，则返回true
 	 */
-	public Boolean DateCompare(Date date1,Date date2,String period){
+	public static Boolean DateCompare(Date date1,Date date2,String period){
 		boolean result = false;
 		int year = getSpecificDate(date1).get("年");
 		int month = getSpecificDate(date1).get("月");
@@ -490,7 +491,7 @@ public class TimeUtils {
 	/**
 	 * 获得数据中的年、月、日、小时
 	 */
-	public Map<String, Integer> getSpecificDate(Date date){
+	public static Map<String, Integer> getSpecificDate(Date date){
 		Map<String, Integer> result = new HashMap<>();
 		int year;
 		int month;
@@ -515,7 +516,7 @@ public class TimeUtils {
 	/**
 	 * 添加时间
 	 */
-	public Date addCalendar(Date startDate,String period,int l){
+	public static Date addCalendar(Date startDate,String period,int l){
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(startDate);
 		switch (period){

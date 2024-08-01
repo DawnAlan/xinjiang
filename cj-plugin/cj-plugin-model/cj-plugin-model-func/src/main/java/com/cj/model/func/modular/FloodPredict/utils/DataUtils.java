@@ -255,15 +255,15 @@ public class DataUtils {
                     predictInputData.setDates(time);
                     predictInputData.setLocation(key);
                     predictInputData.setFlow(setNullTemFlow(key,time)[1]);
+                    flow1.add(predictInputData);
                 }else {
-                    List<Date> dates = new ArrayList<>();
                     for (PredictInputData data:flow){
-                        dates.add(data.getDates());
+                        if (tu.DateCompare(data.getDates(),time,"小时")){
+                            predictInputData = data;
+                            flow1.add(predictInputData);
+                        }
                     }
-                    predictInputData = flow.get(tu.findNearestTime(dates,time));
-                    predictInputData.setDates(time);
                 }
-                flow1.add(predictInputData);
             }
             result.put(key,flow1);
         }
@@ -774,8 +774,8 @@ public class DataUtils {
                 number++;
             }else {
                 if (number==0){//该小时只有一个时段
-                    info.setRainFall(inputList.get(i).getRainFall());
-                    info.setTemperature(inputList.get(i).getTemperature());
+                    info.setRainFall(inputList.get(i).getRainFall()==null?0.0:inputList.get(i).getRainFall());
+                    info.setTemperature(inputList.get(i).getTemperature()==null?0.0:inputList.get(i).getTemperature());
                 }else {
                     info.setRainFall(rainFall/number);
                 }
