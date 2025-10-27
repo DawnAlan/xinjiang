@@ -29,7 +29,7 @@ import java.util.*;
  */
 @Component
 public class ExcelTool {
-    public static void writeDoubleExcel(String path, String sheetName, double[][] data){
+    public static void writeDoubleExcel(String path, String sheetName, double[][] data) {
         XSSFWorkbook workbook = null;
 
         // 检查文件是否存在
@@ -83,7 +83,7 @@ public class ExcelTool {
         }
     }
 
-    public static void writeExcel(String path, List<DataWrite> historyData){
+    public static void writeExcel(String path, List<DataWrite> historyData) {
         XSSFWorkbook workbook = null;
         // 检查文件是否存在
         File file = new File(path);
@@ -100,7 +100,7 @@ public class ExcelTool {
             workbook = new XSSFWorkbook();
         }
         for (int i = 0; i < historyData.size(); i++) {
-            fillObjectSheet(workbook,historyData.get(i).getSheetName(),historyData.get(i).getData());
+            fillObjectSheet(workbook, historyData.get(i).getSheetName(), historyData.get(i).getData());
         }
 
         try {
@@ -113,7 +113,7 @@ public class ExcelTool {
         }
     }
 
-    public static void fillObjectSheet(XSSFWorkbook workbook, String sheetName, Object[][] data)  {
+    public static void fillObjectSheet(XSSFWorkbook workbook, String sheetName, Object[][] data) {
         assert workbook != null;
         boolean sheetExists = false;
         int sheetIndex = workbook.getSheetIndex(sheetName);
@@ -149,7 +149,7 @@ public class ExcelTool {
         }
     }
 
-    public static void writeLastingExcel(String path, String sheetName, Object[][] data)  {
+    public static void writeLastingExcel(String path, String sheetName, Object[][] data) {
         XSSFWorkbook workbook = null;
 
         // 检查文件是否存在
@@ -183,9 +183,9 @@ public class ExcelTool {
         cellStyle.setDataFormat(workbook.getCreationHelper().createDataFormat().getFormat("yyyy-mm-dd hh:mm:ss"));
 // 先判断工作簿是否存在，不存在则创建，存在则清空
         if (sheet != null) {
-            int l = sheet.getLastRowNum()+1;
+            int l = sheet.getLastRowNum() + 1;
             for (int i = 0; i < data.length; i++) {
-                Row row = sheet.createRow(i+l);
+                Row row = sheet.createRow(i + l);
                 for (int j = 0; j < data[i].length; j++) {
                     Cell cell = row.createCell(j);
                     if (data[i][j] instanceof String) {
@@ -214,7 +214,7 @@ public class ExcelTool {
         }
     }
 
-    public static void writeObjectExcel(String path, String sheetName, Object[][] data)  {
+    public static void writeObjectExcel(String path, String sheetName, Object[][] data) {
         XSSFWorkbook workbook = null;
 
         // 检查文件是否存在
@@ -246,7 +246,7 @@ public class ExcelTool {
         }
         CellStyle cellStyle = workbook.createCellStyle();
         cellStyle.setDataFormat(workbook.getCreationHelper().createDataFormat().getFormat("yyyy-mm-dd hh:mm:ss"));
-// 先判断工作簿是否存在，不存在则创建，存在则清空
+        // 先判断工作簿是否存在，不存在则创建，存在则清空
         if (sheet != null) {
             try {
                 // 清空工作表中的数据
@@ -320,7 +320,7 @@ public class ExcelTool {
         XSSFSheet sheet = workbook.getSheet(sheetName);
         CellStyle cellStyle = workbook.createCellStyle();
         cellStyle.setDataFormat(workbook.getCreationHelper().createDataFormat().getFormat("yyyy-mm-dd hh:mm:ss"));
-// 先判断工作簿是否存在，不存在则创建，存在则清空
+        // 先判断工作簿是否存在，不存在则创建，存在则清空
         if (sheet != null) {
             try {
                 // 清空工作表中的数据
@@ -347,7 +347,7 @@ public class ExcelTool {
             Row row = sheet.createRow(i);
             for (int j = 0; j < data.size(); j++) {
                 Cell cell = row.createCell(j);
-                if (i<data.get(j).size()){
+                if (i < data.get(j).size()) {
                     cell.setCellValue(data.get(j).get(i));
                 }
             }
@@ -464,11 +464,11 @@ public class ExcelTool {
         }
     }
 
-    public static Map<String,Object[][]> readExcel(String path, String name) throws IOException {
-        Map<String,Object[][]> result = new HashMap<>();
+    public static Map<String, Object[][]> readExcel(String path, String name) throws IOException {
+        Map<String, Object[][]> result = new HashMap<>();
         long time = new Date().getTime();
-        String savePath = System.getProperty("java.io.tmpdir") + name + RandomUtil.randomString(10) + time+".xlsx";
-        String filePath = path + name +".xlsx";
+        String savePath = System.getProperty("java.io.tmpdir") + name + RandomUtil.randomString(10) + time + ".xlsx";
+        String filePath = path + name + ".xlsx";
         downloadFile(filePath, savePath);
         InputStream fis = Files.newInputStream(Paths.get(savePath));
         ZipSecureFile.setMinInflateRatio(-1.0d);
@@ -476,23 +476,23 @@ public class ExcelTool {
         int numberOfSheets = wb.getNumberOfSheets();
         for (int i = 0; i < numberOfSheets; i++) {
             Sheet sheet = wb.getSheetAt(i);
-            result.put(sheet.getSheetName(),readSheet(sheet));
+            result.put(sheet.getSheetName(), readSheet(sheet));
         }
         fis.close();
         Files.delete(Paths.get(savePath));
         return result;
     }
 
-    public static Map<String,Object[][]> readExcel2(String path, String name) throws IOException {
-        Map<String,Object[][]> result = new HashMap<>();
-        String filePath = path+name+".xlsx";
+    public static Map<String, Object[][]> readExcel2(String path, String name) throws IOException {
+        Map<String, Object[][]> result = new HashMap<>();
+        String filePath = path + name + ".xlsx";
         InputStream fis = Files.newInputStream(Paths.get(filePath));
         ZipSecureFile.setMinInflateRatio(-1.0d);
         Workbook wb = new XSSFWorkbook(fis);
         int numberOfSheets = wb.getNumberOfSheets();
         for (int i = 0; i < numberOfSheets; i++) {
             Sheet sheet = wb.getSheetAt(i);
-            result.put(sheet.getSheetName(),readSheet(sheet));
+            result.put(sheet.getSheetName(), readSheet(sheet));
         }
         fis.close();
         return result;
@@ -542,15 +542,16 @@ public class ExcelTool {
         }
         return output;
     }
+
     @SneakyThrows
     public static String downloadFile(String fileUrl, String savePath) {
         URL url = new URL(fileUrl);
         InputStream inputStream = url.openStream();
         Path filePath = Paths.get(savePath);
-        if (Files.exists(filePath)){
+        if (Files.exists(filePath)) {
             Files.delete(filePath);
         }
-        Paths.get(savePath,getFileName(fileUrl));
+        Paths.get(savePath, getFileName(fileUrl));
         Files.copy(inputStream, filePath);
         return savePath;
     }

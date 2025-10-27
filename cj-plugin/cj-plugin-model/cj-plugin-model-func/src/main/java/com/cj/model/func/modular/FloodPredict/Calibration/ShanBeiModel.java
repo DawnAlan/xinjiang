@@ -23,7 +23,7 @@ public class ShanBeiModel {
     /// 蒸散发折减系数 KC 为流域蒸散发能力与实测水面蒸发器实测值之比, 由于干旱地区资料等方面的原因，在实际模拟计算中 KC 值往往变化很大，最后须经调试后确定，必要时可分月份优选
     double KC;
 
-//     流域土壤初始下渗率,相当于土壤干燥时的下渗率 1-2 mm/min,60-120 mm/h
+    //     流域土壤初始下渗率,相当于土壤干燥时的下渗率 1-2 mm/min,60-120 mm/h
     double f0;
 
     /// 流域土壤稳定下渗率 0.3-0.5 mm/min,18-30 mm/h
@@ -91,9 +91,9 @@ public class ShanBeiModel {
     /// 计算初始土壤含水量时，用到的日雨量 mm
     double[] PreImpact_P;
 
-    public ShanBeiModel InputData(ShanbeiParam shanbeiParam, Object[][] input, Object[][] predata)  {
+    public ShanBeiModel InputData(ShanbeiParam shanbeiParam, Object[][] input, Object[][] predata) {
         Area = shanbeiParam.getArea();
-        L = Math.max(0,shanbeiParam.getL());
+        L = Math.max(0, shanbeiParam.getL());
         FB = shanbeiParam.getFB(); //不透水面积的比例，透水面积比例为1-FB
         WM = shanbeiParam.getWM(); //张力水蓄水容量，或最大蓄水量 60-80mm
         KC = shanbeiParam.getKC(); //蒸散发折减系数 KC
@@ -105,13 +105,13 @@ public class ShanBeiModel {
         zero = 0;
         PreImpactdays = predata.length;
         for (int i = 0; i < input.length; i++) {
-            if (Double.parseDouble(input[i][2].toString())==0.0){
+            if (Double.parseDouble(input[i][2].toString()) == 0.0) {
                 zero++;
-            }else {
+            } else {
                 break;
             }
         }
-        NumPeriod = input.length-zero;
+        NumPeriod = input.length - zero;
 
 
         E = new double[NumPeriod]; // 输入数据
@@ -129,8 +129,8 @@ public class ShanBeiModel {
         PreImpact_P = new double[PreImpactdays]; // 输入数据
 
         for (int i = 0; i < NumPeriod; i++) {
-            E[i] = Double.parseDouble(input[i+zero][1].toString());
-            P[i] = Double.parseDouble(input[i+zero][2].toString());
+            E[i] = Double.parseDouble(input[i + zero][1].toString());
+            P[i] = Double.parseDouble(input[i + zero][2].toString());
             W[i] = 0;
             f[i] = 0;
             I[i] = 0;
@@ -174,7 +174,7 @@ public class ShanBeiModel {
         if (TempW > WM) {
             TempW = WM;
         }
-        if (Math.abs(TempW - W0) <= 0.01){
+        if (Math.abs(TempW - W0) <= 0.01) {
             Tempf = fc + (fm - fc) * Math.exp(-K * Tempt);
         }
         while (Math.abs(TempW - W0) > 0.01) {
@@ -255,7 +255,6 @@ public class ShanBeiModel {
             }
 
 
-
             while (Math.abs(TempW2 - W[j + 1]) > 0.01) {
                 TempW2 = TempW2 - (TempW2 - W[j + 1]) / 10;
 
@@ -328,7 +327,7 @@ public class ShanBeiModel {
         if (TempW > WM) {
             TempW = WM;
         }
-        if (Math.abs(TempW - W0) <= 0.01){
+        if (Math.abs(TempW - W0) <= 0.01) {
             Tempf = fc + (fm - fc) * Math.exp(-K * Tempt);
         }
         while (Math.abs(TempW - W0) > 0.01) {
@@ -388,7 +387,8 @@ public class ShanBeiModel {
                 W[j + 1] = W[j] + P[j] * PeriodLength - E[j] * PeriodLength - R2[j] * PeriodLength;
                 if (W[j + 1] >= WM)// 蓄水达到上限
                 {
-                    R3[j] = W[j + 1] - WM;W[j + 1] = WM;
+                    R3[j] = W[j + 1] - WM;
+                    W[j + 1] = WM;
                 }
             } else // 全流域上产流
             {
@@ -405,7 +405,6 @@ public class ShanBeiModel {
                 }
 
             }
-
 
 
             while (Math.abs(TempW2 - W[j + 1]) > 0.01) {
@@ -465,47 +464,49 @@ public class ShanBeiModel {
         }
         return this;
     }
+
     // 汇流计算
     public ShanBeiModel ConfluenceCalculation() {
         int hours = InputUtils.beforeHours;
-        for (int j = 0; j < NumPeriod-1; j++) {
-            if (L==0){
-                Q[0]=(1-CS)*I[0];
-                Q[j+1] = CS * Q[j] + (1 - CS) * I[j + 1 - L];
-            }else {
+        for (int j = 0; j < NumPeriod - 1; j++) {
+            if (L == 0) {
+                Q[0] = (1 - CS) * I[0];
+                Q[j + 1] = CS * Q[j] + (1 - CS) * I[j + 1 - L];
+            } else {
                 if (j < L) {
-                    Q[j+1] = CS * Q[j];
+                    Q[j + 1] = CS * Q[j];
                 } else {
-                    Q[j+1] = CS * Q[j] + (1 - CS) * I[j + 1 - L];
+                    Q[j + 1] = CS * Q[j] + (1 - CS) * I[j + 1 - L];
                 }
             }
         }
         double[] qResult = new double[NumPeriod + zero];
-        System.arraycopy(Q,0,qResult,zero,NumPeriod);
+        System.arraycopy(Q, 0, qResult, zero, NumPeriod);
         Q = new double[zero + NumPeriod - hours];
-        System.arraycopy(qResult,hours,Q,0,Q.length);
+        System.arraycopy(qResult, hours, Q, 0, Q.length);
         return this;
     }
+
     public ShanBeiModel ConfluenceCalculation2() {
         int hours = 0;
-        for (int j = 0; j < NumPeriod-1; j++) {
+        for (int j = 0; j < NumPeriod - 1; j++) {
             if (j < L) {
-                Q[j+1] = CS * Q[j];
+                Q[j + 1] = CS * Q[j];
             } else {
-                Q[j+1] = CS * Q[j] + (1 - CS) * I[j - L];
+                Q[j + 1] = CS * Q[j] + (1 - CS) * I[j - L];
             }
         }
-        for (int j = 0; j < NumPeriod-1; j++) {
+        for (int j = 0; j < NumPeriod - 1; j++) {
             if (j < L) {
-                Q[j+1] = Q[j];
+                Q[j + 1] = Q[j];
             } else {
-                Q[j+1] += (1 - CS) * I2[j - L];
+                Q[j + 1] += (1 - CS) * I2[j - L];
             }
         }
         double[] qResult = new double[NumPeriod + zero];
-        System.arraycopy(Q,0,qResult,zero,NumPeriod);
+        System.arraycopy(Q, 0, qResult, zero, NumPeriod);
         Q = new double[zero + NumPeriod - hours];
-        System.arraycopy(qResult,hours,Q,0,Q.length);
+        System.arraycopy(qResult, hours, Q, 0, Q.length);
         return this;
     }
 

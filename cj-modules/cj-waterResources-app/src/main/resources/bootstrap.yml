@@ -2,7 +2,7 @@ spring:
   application:
       name: cj-water-app
   profiles:
-    active: dev
+    active: test
   cloud:
     nacos:
       config:

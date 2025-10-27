@@ -254,9 +254,10 @@ public class TimeUtils {
 		LocalDateTime dateTime2 = LocalDateTime.ofInstant(instant2, ZoneId.systemDefault());
 
 		if (period.equals("小时")){
-			if (year1==year & month1==month & day1==day & hour1==hour && Math.abs(Duration.between(dateTime1, dateTime2).getSeconds()) < 3599){
+			if (year1==year & month1==month & day1==day & hour1==hour ){
 				result=true;
-			} else if (dateTime1.toLocalDate().isEqual(dateTime2.toLocalDate()) && Math.abs(Duration.between(dateTime1, dateTime2).getSeconds()) <= 1) {
+			}
+			else if (dateTime1.toLocalDate().isEqual(dateTime2.toLocalDate()) && Math.abs(Duration.between(dateTime1, dateTime2).getSeconds()) <= 1) {
 				result=true;
 			}
 		}

@@ -22,29 +22,30 @@ public class SubBasinForecast {
     DataUtils dataUtils = new DataUtils();
     TimeUtils timeUtils = new TimeUtils();
     int beforeHours = InputUtils.beforeHours;//前期落地雨时间
-    private Hydrology hydrology  = new Hydrology();
+    private Hydrology hydrology = new Hydrology();
+
     /**
      * 获得场次洪水预报数据
      */
     public List<Flood> getShortResult(ForecastInputParam param, InputDataSet Data, Object[][] snowData) {
         FloodBasin floodBasin = param.getFloodBasin();
-        Map<String,ShanbeiParam> paramMap;
-        if (param.getParamMap().isEmpty()){
+        Map<String, ShanbeiParam> paramMap;
+        if (param.getParamMap().isEmpty()) {
             paramMap = param.getFloodBasin().getParamMap();
-        }else {
-            paramMap = param.getParamMap().get(param.getLocation().equals("楼头区间")?"头屯河":param.getLocation());
+        } else {
+            paramMap = param.getParamMap().get(param.getLocation().equals("楼头区间") ? "头屯河" : param.getLocation());
         }
-        for (Hydrology station: floodBasin.getHydrologies()){
-            if (station.getStationName().equals(param.getLocation())){
+        for (Hydrology station : floodBasin.getHydrologies()) {
+            if (station.getStationName().equals(param.getLocation())) {
                 hydrology = station;
             }
         }
         //陕北模型输入、蒸散发和前期雨量
         List<PredictInputData> PreFlow = Data.getFlowData();
         Map<String, double[]> flow = new HashMap<>();
-        Map<String,Integer> lTime = new HashMap<>();
+        Map<String, Integer> lTime = new HashMap<>();
         List<String> rainStation = hydrology.getRainStation();
-        int l = param.getPeriodStepNumber() * param.getPeriodStepSize();
+        int l = param.getPeriodStepNumber() * param.getPeriodStepSize() + InputUtils.beforeHours;
         double[] rainQ = new double[l];
         for (int i = 0; i < rainStation.size(); i++) {
             String station = rainStation.get(i);
@@ -55,40 +56,40 @@ public class SubBasinForecast {
                     .mapToDouble(RainFallDto::getRainFall)
                     .max()
                     .orElse(0.0);
-            setParams(shanbeiparam,max);
-            if (param.getLocation().equals("3号桥")){
-                shanbeiparam.setL(Math.max(shanbeiparam.getL() - 1,0));
+            setParams(shanbeiparam, max);
+            if (param.getLocation().equals("3号桥")) {
+                shanbeiparam.setL(Math.max(shanbeiparam.getL() - 1, 0));
             }
             double[] subBasinQ = getSubBasinQ(shanbeiparam, hourRain, dayRain);//子流域产流量
             for (int j = 0; j < rainQ.length; j++) {
                 rainQ[j] += subBasinQ[j];//总产流量
             }
-            lTime.put(station,shanbeiparam.getL());//记录汇流时间
-            flow.put(station,subBasinQ);//记录个子流域产流
+            lTime.put(station, shanbeiparam.getL());//记录汇流时间
+            flow.put(station, subBasinQ);//记录个子流域产流
         }
         //获得径流序列包含了降水融雪地下水
         Object[][] shortFlow = mixedFlood(param, rainQ, Data, snowData);
+        floodLevel = getFloodLevel(shortFlow, param.getLocation());//洪水等级
         floodSource = getFloodSources(flow, param);//洪水来源
         floodTime = getFloodTime(lTime);//洪水传播时间
         floodComposition = getFloodComposition(param, PreFlow, rainQ, snowData);//洪水组成
-        floodLevel = getFloodLevel(shortFlow, param.getLocation());//洪水等级
         //将Object转化为Flood类型
         List<RainFallDto> surface = dataUtils.pointToSurface(Data.getRainHourData(), param.getLocation());
-        double[] surfaceRain = new double[l + InputUtils.beforeHours];
+        double[] surfaceRain = new double[l];
         for (int i = 0; i < surfaceRain.length; i++) {
             surfaceRain[i] = surface.get(i).getRainFall();
         }
         return setShortFlood(shortFlow, param, surfaceRain);
     }
 
-    public void setParams(ShanbeiParam param,Double max){
+    public void setParams(ShanbeiParam param, Double max) {
         if (max >= 16) {
-            param.setL(Math.max(param.getL()-3,0));
-            param.setCS(param.getCS()-0.1);
+            param.setL(Math.max(param.getL() - 3, 0));
+            param.setCS(param.getCS() - 0.1);
         } else if (max >= 8) {
-            param.setL(Math.max(param.getL()-1,0));
-            param.setCS(param.getCS()-0.05);
-        }else {
+            param.setL(Math.max(param.getL() - 1, 0));
+            param.setCS(param.getCS() - 0.05);
+        } else {
             param.setL(param.getL());
             param.setCS(param.getCS());
         }
@@ -114,7 +115,7 @@ public class SubBasinForecast {
         shanBeiModel.InputData(param, preREData, historyRData);
         shanBeiModel.InitialMoistureContentCalculation();
         shanBeiModel.RunoffYieldCalculation_UnevenInfiltration();
-        shanBeiModel.ConfluenceCalculation();
+        shanBeiModel.ConfluenceCalculation2();
         double[] result = new double[shanBeiModel.Q.length];
         System.arraycopy(shanBeiModel.Q, 0, result, 0, result.length);
         return result;
@@ -140,7 +141,7 @@ public class SubBasinForecast {
             }
             int timeLength = 3600 * l;
             ReqCurve reqCurve = new ReqCurve();
-            List<Option> lzzOutList = LZZ.Calculate(param.getBasinStr(), input, timeLength, reqCurve,param.getIsReferenceWater());
+            List<Option> lzzOutList = LZZ.Calculate(param.getBasinStr(), input, timeLength, reqCurve, param.getIsReferenceWater());
             for (int i = 0; i < n; i++) {
                 water_outQ[i][0] = lzzOutList.get(i).getH1();
                 water_outQ[i][1] = lzzOutList.get(i).getQOut();
@@ -160,8 +161,9 @@ public class SubBasinForecast {
             flood.setLocation(param.getLocation());//断面位置
             flood.setScale(String.valueOf(3600 * l));//尺度
             flood.setPeakIndex(0);//洪号
-            Date date = timeUtils.addCalendar(param.getPreStartTime(), "小时", -InputUtils.beforeHours + i * l);
+            Date date = timeUtils.addCalendar(param.getPreStartTime(), "小时", -InputUtils.beforeHours + i);
             flood.setTime(date);//时间
+            flood.setPreQ(Math.round((double) predict[i][1] * 100.0) / 100.0);//预报流量
             flood.setPeakFlood((Double) floodNature[2][1]);//洪峰
             flood.setPeakTime((Date) floodNature[3][1]);//峰现时间
             flood.setPeakDuration((String) floodNature[1][1]);//洪峰持续时间
@@ -179,8 +181,8 @@ public class SubBasinForecast {
             flood.setLocation(param.getLocation());//断面位置
             flood.setScale(String.valueOf(3600 * l));//尺度
             flood.setPeakIndex((Integer) floodIndex[i * l][0]);//洪号
-            flood.setTime((Date) predict[i * l][0]);//时间
-            flood.setPreQ(Math.round((double) predict[i * l][1] * 100.0) / 100.0);//预报流量
+            flood.setTime((Date) predict[i * l + InputUtils.beforeHours][0]);//时间
+            flood.setPreQ(Math.round((double) predict[i * l + InputUtils.beforeHours][1] * 100.0) / 100.0);//预报流量
             flood.setPeakFlood((Double) floodNature[2][1]);//洪峰
             flood.setPeakTime((Date) floodNature[3][1]);//峰现时间
             flood.setPeakDuration((String) floodNature[1][1]);//洪峰持续时间
@@ -233,7 +235,7 @@ public class SubBasinForecast {
             }
         }
         double dt = max - min;//差值
-        double line = Math.min(min + dt * 0.6,40.0);//洪水标准线
+        double line = Math.min(min + dt * 0.6, 40.0);//洪水标准线
         for (int i = 0; i < predict.length; i++)//找到所有大于标准线的来水
         {
             if ((double) predict[i][1] > line) {
@@ -540,37 +542,37 @@ public class SubBasinForecast {
         StringBuilder result = new StringBuilder();
         double Sum = 0.0;
         double sub;
-        Map<String,Double> subSquare = new HashMap<>();
-        switch (param.getLocation()){
-            case "3号桥":{
-                subSquare.put("宰尔德",0.06);
-                subSquare.put("东南沟",0.21);
-                subSquare.put("萨尔达万",0.02);
-                subSquare.put("煤矿沟",0.04);
-                subSquare.put("无名沟",0.03);
-                subSquare.put("八一林场",0.45);
-                subSquare.put("加普沙",0.19);
+        Map<String, Double> subSquare = new HashMap<>();
+        switch (param.getLocation()) {
+            case "3号桥": {
+                subSquare.put("宰尔德", 0.06);
+                subSquare.put("东南沟", 0.21);
+                subSquare.put("萨尔达万", 0.02);
+                subSquare.put("煤矿沟", 0.04);
+                subSquare.put("无名沟", 0.03);
+                subSquare.put("八一林场", 0.45);
+                subSquare.put("加普沙", 0.19);
                 break;
             }
-            case "楼庄子":{
-                subSquare.put("宰尔德",0.03);
-                subSquare.put("东南沟",0.16);
-                subSquare.put("萨尔达万",0.02);
-                subSquare.put("煤矿沟",0.03);
-                subSquare.put("无名沟",0.02);
-                subSquare.put("八一林场",0.33);
-                subSquare.put("加普沙",0.18);
-                subSquare.put("喀什沟",0.08);
-                subSquare.put("制材厂",0.12);
-                subSquare.put("黑沟",0.03);
+            case "楼庄子": {
+                subSquare.put("宰尔德", 0.03);
+                subSquare.put("东南沟", 0.16);
+                subSquare.put("萨尔达万", 0.02);
+                subSquare.put("煤矿沟", 0.03);
+                subSquare.put("无名沟", 0.02);
+                subSquare.put("八一林场", 0.33);
+                subSquare.put("加普沙", 0.18);
+                subSquare.put("喀什沟", 0.08);
+                subSquare.put("制材厂", 0.12);
+                subSquare.put("黑沟", 0.03);
                 break;
             }
             case "楼头区间":
-                subSquare.put("团结一队",0.17);
-                subSquare.put("小渠子",0.32);
-                subSquare.put("头屯河水库",0.29);
-                subSquare.put("甘沟",0.22);
-                subSquare.put("楼庄子库区",0.22);
+                subSquare.put("团结一队", 0.17);
+                subSquare.put("小渠子", 0.32);
+                subSquare.put("头屯河水库", 0.29);
+                subSquare.put("甘沟", 0.22);
+                subSquare.put("楼庄子库区", 0.22);
         }
         for (Map.Entry<String, double[]> entry : pointData.entrySet()) {
             double[] value = entry.getValue();
@@ -578,13 +580,16 @@ public class SubBasinForecast {
                 Sum += v;
             }
         }
+        if (pointData.containsKey("制材厂自动雨量站")) {
+            result.append("3号桥").append(":").append(",");
+        }
         for (Map.Entry<String, double[]> entry : pointData.entrySet()) {
             double subSum = 0.0;
             String key = entry.getKey();
             String location;
-            if (key.contains("自动雨量站")){
+            if (key.contains("自动雨量站")) {
                 location = key.replaceAll("自动雨量站", "");
-            }else {
+            } else {
                 location = key.replaceAll("雨量站", "");
             }
             double[] value = entry.getValue();
@@ -593,7 +598,7 @@ public class SubBasinForecast {
             }
             if (Sum != 0.0) {
                 sub = Math.round((float) subSum / Sum * 100) / 100.0;
-            }else {
+            } else {
                 sub = subSquare.get(location);
             }
             result.append(location).append(":").append(sub).append(",");
@@ -629,7 +634,7 @@ public class SubBasinForecast {
             double rong = Math.round((float) snowFlow / Sum * 100) / 100.0;
             double di = Math.round((float) base / Sum * 100) / 100.0;
             if (Sum == 0.0) {
-                result += "地下水:1.00";
+                result += "降水:0.00,融雪:0.00,地下水:1.00";
             } else {
                 result += "降水:" + shanbei + "," + "融雪:" + rong + "," + "地下水:" + di;
             }
@@ -645,13 +650,14 @@ public class SubBasinForecast {
             }
             int n = PreFlow.size() == 0 ? 1 : PreFlow.size();
             preFlow = preFlowSum / n * Q_shanbei.length;
-            double rongDate = (preFlow-base)>0?(preFlow-base):0.0;
+            double rongDate = (preFlow - base) > 0 ? (preFlow - base) : 0.0;
             double Sum = preFlow + shanbeiFlow;
             double shanbei = Math.round((float) shanbeiFlow / Sum * 100) / 100.0;
             double rong = Math.round((float) rongDate / Sum * 100) / 100.0;
+            base = Math.min(base, preFlow);
             double di = Math.round((float) base / Sum * 100) / 100.0;
             if (Sum == 0.0) {
-                result += "地下水:1.00";
+                result += "降水:0.00,融雪:0.00,地下水:1.00";
             } else {
                 result += "降水:" + shanbei + "," + "融雪:" + rong + "," + "地下水:" + di;
             }
@@ -662,18 +668,22 @@ public class SubBasinForecast {
     /**
      * 求洪水汇流时间
      */
-    public String getFloodTime(Map<String,Integer> lData) {
+    public String getFloodTime(Map<String, Integer> lData) {
         StringBuilder result = new StringBuilder();
         for (Map.Entry<String, Integer> entry : lData.entrySet()) {
             String key = entry.getKey();
             String location;
-            if (key.contains("自动雨量站")){
+            if (key.contains("自动雨量站")) {
                 location = key.replaceAll("自动雨量站", "");
-            }else {
+            } else {
                 location = key.replaceAll("雨量站", "");
             }
             String time = lData.get(key) > 0 ? lData.get(key) + "h" : "1h以内";
             result.append(location).append(":").append(time).append(",");
+        }
+        if (lData.containsKey("制材厂自动雨量站")) {
+            String time = lData.get("制材厂自动雨量站") > 0 ? lData.get("制材厂自动雨量站") + "h" : "1h以内";
+            result.append("3号桥").append(":").append(time).append(",");
         }
         return result.toString();
     }
@@ -688,9 +698,10 @@ public class SubBasinForecast {
     public Object[][] mixedFlood(ForecastInputParam param, double[] shanBeiQ, InputDataSet Data, Object[][] snowFlow) {
         List<PredictInputData> preFlow = Data.getFlowData();
         List<RainFallDto> preTemperature = Data.getRainHourData().get("制材厂自动雨量站");
-        int l = param.getPeriodStepNumber() * param.getPeriodStepSize();
+        int l = param.getPeriodStepNumber() * param.getPeriodStepSize() + InputUtils.beforeHours;
         Object[][] result = new Object[l][2];
-        Date[][] dates = timeUtils.getDateList(param.getPreStartTime(), l, 0, 1);
+        Date warmUpStart = timeUtils.addCalendar(param.getPreStartTime(), "小时", -InputUtils.beforeHours);
+        Date[][] dates = timeUtils.getDateList(warmUpStart, l, 0, 1);
         double[] snowDistribution = flowDistribution(param, snowFlow, preFlow, preTemperature);//融雪随温度分配曲线
         //获得混合后的径流序列
         for (int i = 0; i < shanBeiQ.length; i++) {
@@ -709,14 +720,14 @@ public class SubBasinForecast {
         Date beforeDate1 = timeUtils.addCalendar(param.getPreStartTime(), "小时", -InputUtils.beforeHours);
         Date beforeDate0 = timeUtils.addCalendar(param.getPreStartTime(), "日", -5);
         int month = timeUtils.getSpecificDate(param.getPreStartTime()).get("月");
-        int num = param.getPeriodStepNumber() * param.getPeriodStepSize();
+        int num = param.getPeriodStepNumber() * param.getPeriodStepSize() + InputUtils.beforeHours;
         String location = param.getLocation();
         double[] result = new double[num];
         //基础流量
         Double baseAve;
         //当前径流量
         Double currentFlow;
-        if (preFlow.size() != 0) {
+        if (!preFlow.isEmpty()) {
             //基础流量
             int a = 0;
             double sum = 0.0;
@@ -739,7 +750,7 @@ public class SubBasinForecast {
             }
         }
         //此时的径流
-        if (preFlow.size() != 0) {
+        if (!preFlow.isEmpty()) {
             //前期流量
             int a = 0;
             for (PredictInputData predictInputData : preFlow) {
@@ -759,22 +770,37 @@ public class SubBasinForecast {
                 currentFlow = 1.29;
             }
         }
+        for (int i = 0; i < InputUtils.beforeHours; i++) {//前期来流采用真实历史数据
+            Date time = timeUtils.addCalendar(beforeDate1, "小时", i);
+            if (preFlow.isEmpty()) {
+                result[i] = Math.min(currentFlow, baseAve);
+            } else {
+                PredictInputData start = preFlow.stream()
+                        .filter(d -> d.getDates().before(time))
+                        .sorted(Comparator.comparing(PredictInputData::getDates).reversed())
+                        .findFirst()
+                        .orElse(preFlow.get(0));
+                PredictInputData end = preFlow.stream()
+                        .filter(d -> d.getDates().after(time))
+                        .findFirst()
+                        .orElse(preFlow.get(preFlow.size() - 1));
+                result[i] = Linear(start, end, time);
+            }
+        }
 
         if (param.getIsSnowMeltModel()) {
             //融雪基流
             double averageData;
             double snowSum = 0.0;
-
             for (Object[] objects : snowFlow) {
                 snowSum = snowSum + (double) objects[1];
             }
             averageData = snowSum / snowFlow.length;
-
-            int l = num + beforeHours;
+            int l = num;
             double[] flow = new double[l];
             if (param.getLocation().equals("楼头区间")) {
-                System.arraycopy(flow, beforeHours, result, 0, l - beforeHours);
-            }else {
+                System.arraycopy(flow, beforeHours, result, beforeHours, l - beforeHours);
+            } else {
                 double[] temperature = new double[l];
                 for (int i = 0; i < l; i++) {
                     temperature[i] = input.get(i).getTemperature();
@@ -796,7 +822,7 @@ public class SubBasinForecast {
                     for (int i = 0; i < num; i++) {
                         result[i] = baseAve;
                     }
-                }else {
+                } else {
                     if (averageData > baseAve) {//若预报融雪大于基础流量，先去除基流影响再按温度分布
                         double data = (averageData - baseAve);
                         for (int i = 0; i < l; i++) {
@@ -817,19 +843,25 @@ public class SubBasinForecast {
                             flow[i] = baseAve;
                         }
                     }
-                    System.arraycopy(flow, beforeHours, result, 0, l - beforeHours);
+                    System.arraycopy(flow, beforeHours, result, beforeHours, l - beforeHours);
                 }
             }
         } else {
-            if (currentFlow <= baseAve) {
-                Arrays.fill(result, currentFlow);
-            } else {
-                for (int i = 0; i < num; i++) {
-                    double flow = Math.max(currentFlow * Math.pow(0.99, i), baseAve);
-                    result[i] = flow;
+            for (int i = InputUtils.beforeHours; i < num; i++) {
+                if (currentFlow <= baseAve) {
+                    result[i] = currentFlow;
+                } else {
+                    result[i] = Math.max(currentFlow * Math.pow(0.99, i), baseAve);
                 }
             }
         }
         return result;
+    }
+
+    private double Linear(PredictInputData start, PredictInputData end, Date time) {
+        int l = timeUtils.duration(start.getDates(), end.getDates(), "小时");
+        double df = l != 0 ? (end.getFlow() - start.getFlow()) / l : 0;
+        int dt = time.before(start.getDates()) ? 0 : timeUtils.duration(start.getDates(), time, "小时");
+        return start.getFlow() + df * dt;
     }
 }

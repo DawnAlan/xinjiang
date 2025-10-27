@@ -140,11 +140,7 @@ public class Test {
 //        }
 //        ExcelTool.writeObjectExcel("D:\\204\\2.头屯河\\径流预报数据文件\\2023年降雨产流.xlsx","Sheet2",c);
     }
-    public static String readJSONFromFile(String filePath) throws IOException {
-        // Read file content as string
-        byte[] encoded = Files.readAllBytes(Paths.get(filePath));
-        return new String(encoded);
-    }
+
 
     /**
      * 读取表格赋予初始值
