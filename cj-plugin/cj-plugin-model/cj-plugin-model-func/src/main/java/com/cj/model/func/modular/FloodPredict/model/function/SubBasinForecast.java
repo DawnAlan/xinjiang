@@ -168,6 +168,9 @@ public class SubBasinForecast {
             flood.setPeakTime((Date) floodNature[3][1]);//峰现时间
             flood.setPeakDuration((String) floodNature[1][1]);//洪峰持续时间
             flood.setFloodVolume((Double) floodNature[0][1]);//洪量
+            flood.setFloodVolumeOne((Double) floodNature[4][1]);//特征洪量
+            flood.setFloodVolumeThree((Double) floodNature[5][1]);
+            flood.setFloodVolumeSeven((Double) floodNature[6][1]);
             flood.setQCause(floodSource);//洪水来源
             flood.setQComposition(floodComposition);//洪水组成
             flood.setRainProcess(rain[i]);//雨情
@@ -187,6 +190,9 @@ public class SubBasinForecast {
             flood.setPeakTime((Date) floodNature[3][1]);//峰现时间
             flood.setPeakDuration((String) floodNature[1][1]);//洪峰持续时间
             flood.setFloodVolume((Double) floodNature[0][1]);//洪量
+            flood.setFloodVolumeOne((Double) floodNature[4][1]);//特征洪量
+            flood.setFloodVolumeThree((Double) floodNature[5][1]);
+            flood.setFloodVolumeSeven((Double) floodNature[6][1]);
             flood.setQCause(floodSource);//洪水来源
             flood.setQComposition(floodComposition);//洪水组成
             flood.setRainProcess(rain[i + InputUtils.beforeHours]);//雨情
@@ -210,15 +216,21 @@ public class SubBasinForecast {
             flood[0][0] = 1;
             flood[0][1] = predict[0][0];
             flood[0][2] = predict[0][1];
-            Object[][] floodNature = new Object[4][2];
+            Object[][] floodNature = new Object[7][2];
             floodNature[0][0] = "洪量";//万立方米
             floodNature[1][0] = "洪峰持续时间";
             floodNature[2][0] = "洪峰";
             floodNature[3][0] = "峰现时间";
+            floodNature[4][0] = "1日洪量";//万立方米
+            floodNature[5][0] = "3日洪量";//万立方米
+            floodNature[6][0] = "7日洪量";//万立方米
             floodNature[0][1] = (double) predict[0][1] * 3600 / 100000.0;//万立方米
             floodNature[1][1] = "1h";
             floodNature[2][1] = predict[0][1];
             floodNature[3][1] = predict[0][0];
+            floodNature[4][1] = (double) predict[0][1] * 3600 / 100000.0;
+            floodNature[5][1] = (double) predict[0][1] * 3600 / 100000.0;
+            floodNature[6][1] = (double) predict[0][1] * 3600 / 100000.0;
             result.add(flood);
             result.add(floodNature);
             return result;
@@ -324,11 +336,14 @@ public class SubBasinForecast {
         /*
          * 以下为针对分好洪号后的洪水过程
          */
-        Object[][] floodNature = new Object[4][2];
+        Object[][] floodNature = new Object[7][2];
         floodNature[0][0] = "洪量";//万立方米
         floodNature[1][0] = "洪峰持续时间";
         floodNature[2][0] = "洪峰";
         floodNature[3][0] = "峰现时间";
+        floodNature[4][0] = "1日洪量";//万立方米
+        floodNature[5][0] = "3日洪量";//万立方米
+        floodNature[6][0] = "7日洪量";//万立方米
         double Volume = 0.0;
         String duration;
         double floodSum = 0.0;
@@ -416,15 +431,60 @@ public class SubBasinForecast {
             }
         }
         floodNature[3][1] = flood[n][1];
-//        int temp = n + t - 1;
-//        if (temp > 0) {
-//            floodNature[3][1] = flood[temp][1];
-//        } else {
-//            floodNature[3][1] = flood[0][1];
-//        }
+        //1日、3日、7日洪量
+        double allVolume = 0.0;
+        for (Object[] objects : flood) {
+            allVolume += (double) objects[2];
+        }
+        allVolume = Math.round((allVolume * 3600 / 10000) * 100.0) / 100.0;//转换为万立方米
+        if (flood.length < 24) {//不足一天洪量
+            floodNature[4][1] = allVolume;
+            floodNature[5][1] = allVolume;
+            floodNature[6][1] = allVolume;
+        } else if (flood.length < 72) {
+            double Volume1 = getMaxLengthVolume(flood, 24);
+            floodNature[4][1] = Volume1;
+            floodNature[5][1] = allVolume;
+            floodNature[6][1] = allVolume;
+        } else if (flood.length < 168) {
+            double Volume1 = getMaxLengthVolume(flood, 24);
+            double Volume3 = getMaxLengthVolume(flood, 72);
+            floodNature[4][1] = Volume1;
+            floodNature[5][1] = Volume3;
+            floodNature[6][1] = allVolume;
+        }else {
+            double Volume1 = getMaxLengthVolume(flood, 24);
+            double Volume3 = getMaxLengthVolume(flood, 72);
+            double Volume7 = getMaxLengthVolume(flood, 168);
+            floodNature[4][1] = Volume1;
+            floodNature[5][1] = Volume3;
+            floodNature[6][1] = Volume7;
+        }
         result.add(flood);
         result.add(floodNature);
         return result;
+    }
+
+    /**
+     * 滑动窗口法计算洪量
+     *
+     * @param flood
+     * @param l
+     * @return
+     */
+    public double getMaxLengthVolume(Object[][] flood, int l) {
+        double maxVolume = 0.0;
+        for (int i = 0; i < flood.length - l + 1; i++) {
+            double volume = 0.0;
+            for (int j = 0; j < l; j++) {
+                volume += (double) flood[i + j][2];
+            }
+            if (maxVolume < volume) {
+                maxVolume = volume;
+            }
+        }
+        return Math.round((maxVolume * 3600 / 10000) * 100.0) / 100.0;//转换为万立方米
+
     }
 
     /**

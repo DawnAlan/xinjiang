@@ -1,5 +1,6 @@
 package com.cj.model.func.modular.FloodPredict.model;
 
+import com.alibaba.fastjson.JSONObject;
 import com.cj.model.func.modular.FloodPredict.Calibration.entity.ShanbeiParam;
 import com.cj.model.func.modular.FloodPredict.entity.*;
 import com.cj.model.func.modular.FloodPredict.utils.DataUtils;
@@ -13,6 +14,8 @@ import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import static com.cj.model.func.modular.FloodPredict.utils.Tools.readJSONFromFile;
+
 
 public class Test {
     static TimeUtils timeUtils = new TimeUtils();
@@ -23,30 +26,39 @@ public class Test {
     @SneakyThrows
     public static void main(String[] args){
 
-//        for (int i = 8; i < 9; i++) {
-//            //模型参数输入设置
-//            ForecastInputParamNew param = new ForecastInputParamNew();
-//            param.setModelType(1);//3为场次
-//            SimpleDateFormat sFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-//            String month = (i < 10 ? "0" + i : String.valueOf(i));
-//            param.setPredictionTime(sFormat.parse("2024-" + month + "-15 00:00:00"));
-//            param.setDataStartTime(sFormat.parse("2023-01-01 00:00:00"));
-//            param.setPeriodTimeType(2);//1为月，2为旬，3为日，4为小时
-//            param.setPeriodTimeStep(1);//预报步长
-//            param.setPeriodTimeNum(12);//预报数量
-//            param.setIsTrain(false);
-//            param.setBasinStr("D:\\tth_system\\end\\file\\");
-////            param = objectToList(param);//读取表格
-//            InputUtils.getData2(param.getBasinStr());
-//            List<RainFallDto> rainPre = rainPredict(param);
-//            param.setRainFallDtos(rainPre);
-//            Map<String, ShanbeiParam> a = new HashMap<>();
-//            param.setParamMap(a);
-//
-//            TemporaryXlsx result = new TemporaryXlsx();
-//            TouTunHe touTunHe = new TouTunHe();
-//            result = touTunHe.getFloodList(param);
-//        }
+        for (int i = 8; i < 9; i++) {
+            //模型参数输入设置
+            ForecastInputParamNew param = new ForecastInputParamNew();
+            param.setModelType(1);//3为场次
+            SimpleDateFormat sFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            String month = (i < 10 ? "0" + i : String.valueOf(i));
+            param.setPredictionTime(sFormat.parse("2024-" + month + "-15 00:00:00"));
+            param.setDataStartTime(sFormat.parse("2023-01-01 00:00:00"));
+            param.setPeriodTimeType(2);//1为月，2为旬，3为日，4为小时
+            param.setPeriodTimeStep(1);//预报步长
+            param.setPeriodTimeNum(12);//预报数量
+            param.setIsTrain(false);
+            param.setBasinStr("D:\\204\\2.头屯河\\资料\\tthUseFile\\");
+            FloodBasin floodBasin = JSONObject.parseObject(readJSONFromFile("D:\\204\\2.头屯河\\FloodBasin.json"), FloodBasin.class);
+            Map<String, ShanbeiParam> paramMap = floodBasin.getParamMap();
+            Map<String, Map<String, ShanbeiParam>> stringMapMap = new HashMap<>();
+            stringMapMap.put("楼庄子", paramMap);
+            stringMapMap.put("楼头区间", paramMap);
+            stringMapMap.put("头屯河", paramMap);
+
+//            param = objectToList(param);//读取表格
+            InputUtils.getData2(param.getBasinStr());
+            List<RainFallDto> rainPre = rainPredict(param);
+            param.setRainFallDtos(rainPre);
+            Map<String, Map<String,ShanbeiParam>> a = new HashMap<>();
+            param.setParamMap(stringMapMap);
+            param.setFloodBasin(floodBasin);
+
+            TemporaryXlsx result = new TemporaryXlsx();
+            TouTunHe touTunHe = new TouTunHe();
+            result = touTunHe.getFloodList(param);
+            System.out.println(result);
+        }
         ForecastInputParamNew paramNew =new ForecastInputParamNew();
         List<PredictInputData> a = new ArrayList<>();
         for (int i = 0; i < 10; i++) {

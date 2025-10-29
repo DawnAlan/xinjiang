@@ -70,6 +70,19 @@ public class Flood implements Serializable {
     @Excel(name = "FLOOD_VOLUME",width = 15,orderNum = "10")
     private Double floodVolume;
 
+    @ApiModelProperty("1日洪量")
+    @TableField(value = "MAX_FLOOD_VOLUME_ONE")
+    @Excel(name = "MAX_FLOOD_VOLUME_ONE",width = 15,orderNum = "10")
+    private Double floodVolumeOne;
+    @ApiModelProperty("3日洪量")
+    @TableField(value = "MAX_FLOOD_VOLUME_THREE")
+    @Excel(name = "MAX_FLOOD_VOLUME_THREE",width = 15,orderNum = "10")
+    private Double floodVolumeThree;
+    @ApiModelProperty("7日洪量")
+    @TableField(value = "MAX_FLOOD_VOLUME_SEVEN")
+    @Excel(name = "MAX_FLOOD_VOLUME_SEVEN",width = 15,orderNum = "10")
+    private Double floodVolumeSeven;
+
     @ApiModelProperty("洪水来源")
     @TableField(value = "Q_COMPOSITION")
     @Excel(name = "Q_COMPOSITION",width = 15,orderNum = "11")

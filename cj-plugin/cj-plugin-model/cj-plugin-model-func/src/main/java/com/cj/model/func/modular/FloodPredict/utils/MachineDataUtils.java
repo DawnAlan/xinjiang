@@ -1557,6 +1557,9 @@ public class MachineDataUtils {
             flood.setOutQ(Math.round((double) predict[i * length][1] * 100.0) / 100.0);
             flood.setWaterLevel(0.0);
             flood.setPeakFlood(peakFlood);
+            flood.setFloodVolumeOne(0.0);
+            flood.setFloodVolumeThree(0.0);
+            flood.setFloodVolumeSeven(0.0);
             flood.setPeakTime((Date) predict[t][0]);
             flood.setFloodVolume(Math.round(days * 3600 * 24 * length * (double) predict[i * length][1] / 10000 * 100.0) / 100.0);
             flood.setFloodLevel(judgingYearLeve(predict, param));

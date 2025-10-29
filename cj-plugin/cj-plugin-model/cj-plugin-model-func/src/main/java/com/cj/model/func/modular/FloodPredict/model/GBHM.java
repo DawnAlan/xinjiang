@@ -30,11 +30,11 @@ public class GBHM {
     @SneakyThrows
     public static void main(String[] args) {
         Date start = sdf.parse("2025-07-01 00:00:00");
-        Date end = sdf.parse("2025-07-02 00:00:00");
+        Date end = sdf.parse("2025-07-01 04:00:00");
 
-        Object[][] rainData_Hour = ExcelTool.readStringExcel("D:\\204\\2.头屯河\\后期维护\\2025年汛期数据.xlsx", "Hour");
-        Object[][] rainData_Day = ExcelTool.readStringExcel("D:\\204\\2.头屯河\\后期维护\\2025年汛期数据.xlsx", "Day");
-        Object[][] flow = ExcelTool.readStringExcel("D:\\204\\2.头屯河\\后期维护\\2025年汛期数据.xlsx", "Flow");
+        Object[][] rainData_Hour = ExcelTool.readStringExcel("D:\\204\\2.头屯河\\后期维护\\25汛期参数\\2025年汛期数据.xlsx", "Hour");
+        Object[][] rainData_Day = ExcelTool.readStringExcel("D:\\204\\2.头屯河\\后期维护\\25汛期参数\\2025年汛期数据.xlsx", "Day");
+        Object[][] flow = ExcelTool.readStringExcel("D:\\204\\2.头屯河\\后期维护\\25汛期参数\\2025年汛期数据.xlsx", "Flow");
         int duration = Math.min(duration(start, end, "小时"), duration(start, (Date) rainData_Hour[rainData_Hour.length - 1][0], "小时"));//预报时间长度
         InputDataSet Data = dataSet(start, end, rainData_Hour, rainData_Day, flow);
         FloodBasin floodBasin = JSONObject.parseObject(readJSONFromFile("D:\\204\\2.头屯河\\FloodBasin.json"), FloodBasin.class);

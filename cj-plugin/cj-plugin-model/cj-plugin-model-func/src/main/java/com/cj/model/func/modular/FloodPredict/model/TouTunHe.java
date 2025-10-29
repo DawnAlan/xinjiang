@@ -437,6 +437,9 @@ public class TouTunHe {
                 tth.setPeakTime((Date) floodNature[3][1]);//峰现时间
                 tth.setPeakDuration((String) floodNature[1][1]);//洪峰持续时间
                 tth.setFloodVolume((double) floodNature[0][1]);//洪量
+                tth.setFloodVolumeOne((double) floodNature[4][1]);//特征洪量
+                tth.setFloodVolumeThree((double) floodNature[5][1]);
+                tth.setFloodVolumeSeven((double) floodNature[6][1]);
                 tth.setQCause(tthRain.toString());//洪水来源
                 tth.setQComposition("区间来水:" + Math.round((float) qjFlood / (qjFlood + lzzFlood) * 100) / 100.0 + "," + "楼庄子出库:" + Math.round((float) lzzFlood / (qjFlood + lzzFlood) * 100) / 100.0);//洪水组成
                 tth.setFloodLevel(level);//洪水等级
@@ -458,6 +461,9 @@ public class TouTunHe {
                 tth.setPeakTime((Date) floodNature[3][1]);//峰现时间
                 tth.setPeakDuration((String) floodNature[1][1]);//洪峰持续时间
                 tth.setFloodVolume(timeLength < 3600 * 24 ? (double) floodNature[0][1] : Math.round((double) tthIn[i][1] * 100.0) / 100.0 * timeLength / 10000);//洪量
+                tth.setFloodVolumeOne((double) floodNature[4][1]);//特征洪量
+                tth.setFloodVolumeThree((double) floodNature[5][1]);
+                tth.setFloodVolumeSeven((double) floodNature[6][1]);
                 tth.setQCause(tthRain.toString());//洪水来源
                 tth.setQComposition("区间来水:" + Math.round((float) qjFlood / (qjFlood + lzzFlood) * 100) / 100.0 + "," + "楼庄子出库:" + Math.round((float) lzzFlood / (qjFlood + lzzFlood) * 100) / 100.0);//洪水组成
                 tth.setFloodLevel(level);//洪水等级
@@ -479,6 +485,11 @@ public class TouTunHe {
                 tth.setTime(Lzz.get(i).getTime());//时间
                 tth.setPreQ(Math.round((Lzz.get(i).getPreQ() + qj.get(i).getPreQ()) * 100.0) / 100.0);//预报流量
                 tth.setFloodVolume((double) Math.round(tth.getPreQ() * 3600 * 24 * days / 10000));//洪量
+                tth.setFloodVolumeOne(0.0);//特征洪量
+                tth.setFloodVolumeThree(0.0);
+                tth.setFloodVolumeSeven(0.0);
+                tth.setOutQ(Math.round((Lzz.get(i).getPreQ() + qj.get(i).getPreQ()) * 100.0) / 100.0);
+                tth.setWaterLevel(0.0);
                 tth.setQCause("");//洪水来源
                 tth.setQComposition("");//洪水组成
                 tth.setPeakDuration("");//洪峰持续时间

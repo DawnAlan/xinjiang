@@ -404,6 +404,12 @@ public class ExcelTool {
         cell15.setCellValue("RAIN_PROCESS");//雨情
         Cell cell16 = row0.createCell(16);
         cell16.setCellValue("CONFLUENCE_TIME");//汇流时间
+        Cell cell17 = row0.createCell(17);
+        cell17.setCellValue("MAX_FLOOD_VOLUME_ONE");//一日洪量
+        Cell cell18 = row0.createCell(18);
+        cell18.setCellValue("MAX_FLOOD_VOLUME_THREE");//三日洪量
+        Cell cell19 = row0.createCell(19);
+        cell19.setCellValue("MAX_FLOOD_VOLUME_SEVEN");//七日洪量
         // 先判断工作簿是否存在，不存在则创建，存在则继续填写
         if (sheet != null) {
             int nextRowNum = sheet.getLastRowNum() + 1;
