@@ -271,9 +271,9 @@ public class MachineModel {
         }
         machineDataUtils.resultReasonable(preResult,param.getLocation());
 //        ExcelTool.writeLastingExcel("D:\\204\\2.头屯河\\径流预报数据文件\\" + param.getNetClass() + "-RESULT.xlsx", "分解预测值", result1);
-        for (int i = 0; i < preResult.length; i++) {
-            System.out.println(preResult[i][1]);
-        }
+//        for (int i = 0; i < preResult.length; i++) {
+//            System.out.println(preResult[i][1]);
+//        }
         param.setPreStartTime(start);
         param.setPeriodStepNumber(n);
         Object[][] preResult_1 = new Object[n][2];//分解后的预测值

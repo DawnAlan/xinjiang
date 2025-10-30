@@ -1068,11 +1068,11 @@ public class DataUtils {
     public List<RainFallDto> getRAndT(ForecastInputParamNew param) {
         //雨量站整合
         List<RainFallDto> ZCCDAY = new ArrayList<>();
-        List<RainFallDto> ZCCHOUR = param.getRainfall().get("制材厂自动雨量站");
+        List<RainFallDto> ZCCHOUR = param.getRainfall().get("宰尔德自动雨量站");
         if (ZCCHOUR != null && !ZCCHOUR.isEmpty()) {
             ZCCDAY = rainHourToDay(ZCCHOUR);
         }
-        ZCCDAY = getTwentyDaysRain(param, ZCCDAY, "制材厂自动雨量站");
+        ZCCDAY = getTwentyDaysRain(param, ZCCDAY, "宰尔德自动雨量站");
         //添加日尺度温度与降水
         return ZCCDAY;
     }
