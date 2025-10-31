@@ -497,6 +497,7 @@ public class SimulatedRunoff {
             flood.setPeakTime((Date) floodNature[3][1]);//峰现时间
             flood.setPeakDuration((String) floodNature[1][1]);//洪峰持续时间
             flood.setFloodVolume((Double) floodNature[0][1]);//洪量
+            flood.setPeakVolume((Double) floodNature[7][1]);
             flood.setFloodVolumeOne((Double) floodNature[4][1]);//特征洪量
             flood.setFloodVolumeThree((Double) floodNature[5][1]);
             flood.setFloodVolumeSeven((Double) floodNature[6][1]);

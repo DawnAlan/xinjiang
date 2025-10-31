@@ -78,7 +78,7 @@ public class Tools {
         tempFileWithPath.createNewFile();
         //File tempFile = File.createTempFile("PRE_RESULT", ".xlsx");
         String path = tempFileWithPath.getAbsolutePath();
-        Object[][] floodObject = new Object[Flood.size()][20];
+        Object[][] floodObject = new Object[Flood.size()][21];
         for (int i = 0; i < Flood.size(); i++) {
             floodObject[i][0] = Flood.get(i).getLocation();
             floodObject[i][1] = Flood.get(i).getScale();
@@ -100,6 +100,7 @@ public class Tools {
             floodObject[i][17] = Flood.get(i).getFloodVolumeOne();
             floodObject[i][18] = Flood.get(i).getFloodVolumeThree();
             floodObject[i][19] = Flood.get(i).getFloodVolumeSeven();
+            floodObject[i][20] = Flood.get(i).getPeakVolume();
         }
         ExcelTool.writeFloodExcel(path, "预报结果", floodObject);
         TemporaryXlsx result = new TemporaryXlsx();
@@ -120,7 +121,7 @@ public class Tools {
      */
     @SneakyThrows
     public static void testXlsx(List<Flood> Flood){
-        Object[][] floodObject = new Object[Flood.size()][20];
+        Object[][] floodObject = new Object[Flood.size()][21];
         for (int i = 0; i < Flood.size(); i++) {
             floodObject[i][0] = Flood.get(i).getLocation();
             floodObject[i][1] = Flood.get(i).getScale();
@@ -142,6 +143,7 @@ public class Tools {
             floodObject[i][17] = Flood.get(i).getFloodVolumeOne();
             floodObject[i][18] = Flood.get(i).getFloodVolumeThree();
             floodObject[i][19] = Flood.get(i).getFloodVolumeSeven();
+            floodObject[i][20] = Flood.get(i).getPeakVolume();
         }
         ExcelTool.writeFloodExcel("D:\\204\\2.头屯河\\后期维护\\25汛期参数\\场次洪水本地测试文件.xlsx", "预报结果", floodObject);
     }

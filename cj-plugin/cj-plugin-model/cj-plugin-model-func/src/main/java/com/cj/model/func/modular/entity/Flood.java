@@ -65,6 +65,11 @@ public class Flood implements Serializable {
     @Excel(name = "PEAK_DURATION",width = 15,orderNum = "9")
     private String peakDuration;
 
+    @ApiModelProperty("洪峰洪量")
+    @TableField(value = "PEAK_VOLUME")
+    @Excel(name = "PEAK_VOLUME",width = 15,orderNum = "10")
+    private Double peakVolume;
+
     @ApiModelProperty("洪量")
     @TableField(value = "FLOOD_VOLUME")
     @Excel(name = "FLOOD_VOLUME",width = 15,orderNum = "10")

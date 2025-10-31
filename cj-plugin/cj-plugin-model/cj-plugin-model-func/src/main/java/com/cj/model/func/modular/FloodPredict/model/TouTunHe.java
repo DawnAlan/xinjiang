@@ -440,6 +440,7 @@ public class TouTunHe {
                 tth.setFloodVolumeOne((double) floodNature[4][1]);//特征洪量
                 tth.setFloodVolumeThree((double) floodNature[5][1]);
                 tth.setFloodVolumeSeven((double) floodNature[6][1]);
+                tth.setPeakVolume((double) floodNature[7][1]);//洪峰洪量
                 tth.setQCause(tthRain.toString());//洪水来源
                 tth.setQComposition("区间来水:" + Math.round((float) qjFlood / (qjFlood + lzzFlood) * 100) / 100.0 + "," + "楼庄子出库:" + Math.round((float) lzzFlood / (qjFlood + lzzFlood) * 100) / 100.0);//洪水组成
                 tth.setFloodLevel(level);//洪水等级
@@ -464,6 +465,7 @@ public class TouTunHe {
                 tth.setFloodVolumeOne((double) floodNature[4][1]);//特征洪量
                 tth.setFloodVolumeThree((double) floodNature[5][1]);
                 tth.setFloodVolumeSeven((double) floodNature[6][1]);
+                tth.setPeakVolume((double) floodNature[7][1]);//洪峰洪量
                 tth.setQCause(tthRain.toString());//洪水来源
                 tth.setQComposition("区间来水:" + Math.round((float) qjFlood / (qjFlood + lzzFlood) * 100) / 100.0 + "," + "楼庄子出库:" + Math.round((float) lzzFlood / (qjFlood + lzzFlood) * 100) / 100.0);//洪水组成
                 tth.setFloodLevel(level);//洪水等级
@@ -488,6 +490,7 @@ public class TouTunHe {
                 tth.setFloodVolumeOne(0.0);//特征洪量
                 tth.setFloodVolumeThree(0.0);
                 tth.setFloodVolumeSeven(0.0);
+                tth.setPeakVolume(0.0);
                 tth.setOutQ(Math.round((Lzz.get(i).getPreQ() + qj.get(i).getPreQ()) * 100.0) / 100.0);
                 tth.setWaterLevel(0.0);
                 tth.setQCause("");//洪水来源

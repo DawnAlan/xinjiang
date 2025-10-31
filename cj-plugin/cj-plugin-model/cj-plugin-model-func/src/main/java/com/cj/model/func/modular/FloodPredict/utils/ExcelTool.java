@@ -410,6 +410,8 @@ public class ExcelTool {
         cell18.setCellValue("MAX_FLOOD_VOLUME_THREE");//三日洪量
         Cell cell19 = row0.createCell(19);
         cell19.setCellValue("MAX_FLOOD_VOLUME_SEVEN");//七日洪量
+        Cell cell20 = row0.createCell(20);
+        cell20.setCellValue("PEAK_VOLUME");//洪峰洪量
         // 先判断工作簿是否存在，不存在则创建，存在则继续填写
         if (sheet != null) {
             int nextRowNum = sheet.getLastRowNum() + 1;

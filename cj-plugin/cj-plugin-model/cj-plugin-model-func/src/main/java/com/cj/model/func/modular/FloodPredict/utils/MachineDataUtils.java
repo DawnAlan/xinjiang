@@ -1557,6 +1557,7 @@ public class MachineDataUtils {
             flood.setOutQ(Math.round((double) predict[i * length][1] * 100.0) / 100.0);
             flood.setWaterLevel(0.0);
             flood.setPeakFlood(peakFlood);
+            flood.setPeakVolume(0.0);
             flood.setFloodVolumeOne(0.0);
             flood.setFloodVolumeThree(0.0);
             flood.setFloodVolumeSeven(0.0);

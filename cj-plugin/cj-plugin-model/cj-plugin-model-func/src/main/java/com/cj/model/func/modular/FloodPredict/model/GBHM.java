@@ -30,7 +30,7 @@ public class GBHM {
     @SneakyThrows
     public static void main(String[] args) {
         Date start = sdf.parse("2025-07-01 00:00:00");
-        Date end = sdf.parse("2025-07-01 04:00:00");
+        Date end = sdf.parse("2025-07-09 04:00:00");
 
         Object[][] rainData_Hour = ExcelTool.readStringExcel("D:\\204\\2.头屯河\\后期维护\\25汛期参数\\2025年汛期数据.xlsx", "Hour");
         Object[][] rainData_Day = ExcelTool.readStringExcel("D:\\204\\2.头屯河\\后期维护\\25汛期参数\\2025年汛期数据.xlsx", "Day");
